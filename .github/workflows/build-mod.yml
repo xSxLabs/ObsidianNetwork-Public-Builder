@@ -1,0 +1,92 @@
+name: Build xSxLabs Network Storage
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout private mod source
+        uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          token: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
+          path: mod
+          fetch-depth: 1
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        working-directory: mod
+        run: chmod +x gradlew
+
+      - name: Build mod
+        working-directory: mod
+        run: ./gradlew build --stacktrace
+
+      - name: Find built JAR
+        id: jar
+        shell: bash
+        run: |
+          JAR=$(find mod/build/libs -maxdepth 1 -type f -name "*.jar" \
+            ! -name "*sources*" \
+            ! -name "*javadoc*" \
+            ! -name "*plain*" \
+            | head -n 1)
+
+          if [ -z "$JAR" ]; then
+            echo "Keine Build-JAR gefunden."
+            exit 1
+          fi
+
+          echo "path=$JAR" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$JAR")" >> "$GITHUB_OUTPUT"
+
+      - name: Create SHA256
+        shell: bash
+        run: |
+          sha256sum "${{ steps.jar.outputs.path }}" \
+            > "${{ steps.jar.outputs.path }}.sha256"
+
+      - name: Copy private build repository
+        uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Builds
+          token: ${{ secrets.PRIVATE_BUILD_TOKEN }}
+          path: builds
+
+      - name: Save JAR in private build repository
+        shell: bash
+        env:
+          JAR: ${{ steps.jar.outputs.path }}
+          JAR_NAME: ${{ steps.jar.outputs.name }}
+        run: |
+          mkdir -p builds/jars
+
+          cp "$JAR" "builds/jars/$JAR_NAME"
+          cp "${JAR}.sha256" "builds/jars/${JAR_NAME}.sha256"
+
+          cd builds
+
+          git config user.name "xSxLabs Build Bot"
+          git config user.email "actions@github.com"
+
+          git add jars/
+
+          if git diff --cached --quiet; then
+            echo "Keine neuen Build-Dateien."
+            exit 0
+          fi
+
+          git commit -m "Build ${{ github.run_number }} - $JAR_NAME"
+          git push
