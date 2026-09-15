@@ -1,1 +1,3 @@
 # ObsidianNetwork-Public-Builder
+
+RC11_BUILD_TRIGGER=51964e5bc604130352164441491a7df7a492207a
