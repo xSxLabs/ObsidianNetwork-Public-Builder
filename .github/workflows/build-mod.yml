@@ -9,14 +9,16 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    timeout-minutes: 40
 
     steps:
-      - name: Checkout private mod source
+      - name: Checkout private source repository
         uses: actions/checkout@v6
         with:
           repository: xSxLabs/ObsidianNetwork-Build
+          ref: rc52.19-jei-missing-clear-search
           token: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
-          path: mod
+          path: source
           fetch-depth: 1
 
       - name: Set up Java 25
@@ -25,49 +27,162 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Check private source
+      - name: Set up Gradle 9.7.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.7.1'
+
+      - name: Reconstruct source
+        working-directory: source
         shell: bash
         run: |
-          echo "Private repository was checked out."
-          echo "Files in mod directory:"
-          ls -la mod
+          set -euo pipefail
 
-          if [ ! -f "mod/gradlew" ]; then
-            echo "ERROR: gradlew was not found in the private repository."
-            exit 1
-          fi
+          mkdir project
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x mod/gradlew
+          cat payload/compile-src.part* | base64 -d | tar -xJ -C project
+          cat payload/rc4-resources.part* | base64 -d | tar -xJ -C project
+          cat payload/rc6-overlay.part* | base64 -d | tar -xJ -C project
 
-      - name: Build xSxLabs Network Storage
-        working-directory: mod
-        run: ./gradlew build --stacktrace
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java')
+          p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
+          PY
 
-      - name: Find built JAR
+          python3 .github/scripts/gen_rc6_assets.py
+
+          cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
+
+          rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
+
+          python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python3 .github/scripts/gen_rc7_assets.py
+
+          for s in \
+          rc7_compile_fix \
+          rc12_fix \
+          rc13_fix \
+          rc13_finalize \
+          rc14_fix \
+          rc15_fix \
+          rc16_fix \
+          rc16_persist_fix \
+          rc16_terminal_visual_final \
+          rc17_fix \
+          rc18_fix \
+          rc19_fix \
+          rc20_fix \
+          rc21_fix \
+          rc22_fix \
+          rc24_fix \
+          rc24_followup_fix \
+          rc24_job_buffer_fix \
+          rc24_facade_fix \
+          rc26_fix \
+          rc27_followup \
+          rc28_fix \
+          rc32_followup \
+          rc33_followup \
+          rc34_followup \
+          rc35_followup \
+          rc36_followup \
+          rc36_asset_size_fix \
+          rc37_followup \
+          rc37_speed_fix \
+          rc37_iron_furnaces_factory_fix \
+          rc37_manual_crafting_perf_fix \
+          rc37_animated_texture_verify_fix \
+          rc38_followup \
+          rc39_followup \
+          rc40_ironfurnaces_native_fix \
+          rc41_factory_and_lang_fix \
+          rc43_furnace_split_fix \
+          rc44_furnace_compat_fix \
+          rc45_ironfurnaces_native_fix \
+          rc46_ironfurnaces_capability_fix \
+          rc47_autocraft_diag \
+          rc48_cancel_detach_fix \
+          rc49_cleanup_busy_release_fix \
+          rc50_survival_audit_fix \
+          rc51_server_quiet_logging \
+          rc51_localization_hotfix
+          do
+            python3 ".github/scripts/$s.py"
+          done
+
+      - name: Apply RC52 confirmed fixes
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 .github/scripts/rc52_connected_fronts_code.py
+          python3 .github/scripts/rc52_safety_hardening.py
+          python3 .github/scripts/rc52_4_cell_sync_fix.py
+          python3 .github/scripts/rc52_6_critical_hotfix.py
+          python3 .github/scripts/rc52_7_five_fixes.py
+          python3 .github/scripts/rc52_7_compile_fix.py
+          python3 .github/scripts/rc52_8_jei_network_fix.py
+          python3 .github/scripts/rc52_9_jei_plus_network_fix.py
+          python3 .github/scripts/rc52_11_five_fixes.py
+          python3 .github/scripts/rc52_11_compile_fix.py
+          python3 .github/scripts/rc52_11_extra_core_fixes.py
+          python3 .github/scripts/rc52_11_durability_sync.py
+
+          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 \
+            > /tmp/rc52_15_targeted_fixes.py
+          python3 /tmp/rc52_15_targeted_fixes.py
+
+          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 \
+            > /tmp/rc52_16_three_final_fixes.py
+          python3 /tmp/rc52_16_three_final_fixes.py
+
+          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 \
+            > /tmp/rc52_17_facade_durability_fix.py
+          python3 /tmp/rc52_17_facade_durability_fix.py
+
+          python3 .github/scripts/rc52_17_compile_fix.py
+          python3 .github/scripts/rc52_18_four_fixes.py
+          python3 .github/scripts/rc52_19_three_regression_fixes.py
+          python3 .github/scripts/rc52_19_jei_missing_clear_search.py
+          python3 .github/scripts/rc52_19_importer_exporter_rotating_port.py
+          python3 .github/scripts/rc52_19_curios_slot_texture_fix.py
+          python3 .github/scripts/rc52_19_foreign_energy_compat.py
+          python3 .github/scripts/rc52_19_terminal_tooltip_glint_fix.py
+
+      - name: Build mod
+        working-directory: source/project
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle --no-daemon --no-configuration-cache clean build --stacktrace \
+            2>&1 | tee ../build-log.txt
+
+      - name: Find and verify JAR
         id: jar
         shell: bash
         run: |
-          JAR=$(find mod/build/libs -maxdepth 1 -type f -name "*.jar" \
-            ! -name "*sources*" \
-            ! -name "*javadoc*" \
-            ! -name "*plain*" \
-            | head -n 1)
+          set -euo pipefail
 
-          if [ -z "$JAR" ]; then
-            echo "ERROR: No built mod JAR was found."
-            exit 1
-          fi
+          JAR=$(find source/project/build/libs \
+            -maxdepth 1 \
+            -type f \
+            -name '*.jar' \
+            ! -name '*sources*' \
+            ! -name '*javadoc*' \
+            | head -1)
 
-          echo "Found: $JAR"
+          test -n "$JAR"
+
+          echo "Built JAR: $JAR"
+
+          unzip -t "$JAR"
+
           echo "path=$JAR" >> "$GITHUB_OUTPUT"
           echo "name=$(basename "$JAR")" >> "$GITHUB_OUTPUT"
 
-      - name: Create SHA256
-        shell: bash
-        run: |
-          sha256sum "${{ steps.jar.outputs.path }}" \
-            > "${{ steps.jar.outputs.path }}.sha256"
+          sha256sum "$JAR" > "$JAR.sha256"
 
       - name: Checkout private build archive
         uses: actions/checkout@v6
@@ -83,10 +198,12 @@ jobs:
           JAR: ${{ steps.jar.outputs.path }}
           JAR_NAME: ${{ steps.jar.outputs.name }}
         run: |
+          set -euo pipefail
+
           mkdir -p builds/jars
 
           cp "$JAR" "builds/jars/$JAR_NAME"
-          cp "${JAR}.sha256" "builds/jars/${JAR_NAME}.sha256"
+          cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
 
           cd builds
 
@@ -96,9 +213,9 @@ jobs:
           git add jars/
 
           if git diff --cached --quiet; then
-            echo "Build already exists - nothing to commit."
+            echo "Build already exists."
             exit 0
           fi
 
-          git commit -m "Build ${{ github.run_number }} - $JAR_NAME"
+          git commit -m "Network Storage build ${{ github.run_number }} - $JAR_NAME"
           git push
