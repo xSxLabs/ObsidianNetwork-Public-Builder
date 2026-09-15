@@ -91,7 +91,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          REF="reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar"
+          REF="Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar"
           if [ ! -f "$REF" ]; then
             echo "ERROR: confirmed reference JAR missing: $REF"
             echo "Refusing to build a JAR without the confirmed texture/resource set."
