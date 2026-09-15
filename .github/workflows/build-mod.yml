@@ -86,27 +86,20 @@ jobs:
           python3 .github/scripts/rc52_19_curios_slot_texture_fix.py
           python3 .github/scripts/rc52_19_foreign_energy_compat.py
 
-      - name: Overlay confirmed reference assets
+      - name: Extract confirmed reference assets
         working-directory: source
         shell: bash
         run: |
           set -euo pipefail
           REF="Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar"
-          if [ ! -f "$REF" ]; then
-            echo "ERROR: confirmed reference JAR missing: $REF"
-            echo "Refusing to build a JAR without the confirmed texture/resource set."
-            exit 1
-          fi
+          test -f "$REF" || { echo "ERROR: confirmed reference JAR missing: $REF"; exit 1; }
           rm -rf /tmp/xsxlabs-reference
           mkdir -p /tmp/xsxlabs-reference
           unzip -q "$REF" 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
-          rm -rf project/src/main/resources/assets/obsidiannetwork
-          cp -a /tmp/xsxlabs-reference/assets/obsidiannetwork project/src/main/resources/assets/
-          test "$(find project/src/main/resources/assets/obsidiannetwork -type f | wc -l)" -ge 544
-          test -f project/src/main/resources/assets/obsidiannetwork/textures/block/ns_screen_storage.png
-          test -f project/src/main/resources/assets/obsidiannetwork/textures/block/controller_core_active.png
-          test -f project/src/main/resources/assets/obsidiannetwork/textures/slot/network_terminal.png
-          echo "Confirmed reference assets restored."
+          test "$(find /tmp/xsxlabs-reference/assets/obsidiannetwork -type f | wc -l)" -ge 544
+          test -f /tmp/xsxlabs-reference/assets/obsidiannetwork/textures/block/ns_screen_storage.png
+          test -f /tmp/xsxlabs-reference/assets/obsidiannetwork/textures/block/ns_screen_anvil.png
+          echo "Confirmed reference assets extracted for final JAR overlay."
 
       - name: Build mod
         working-directory: source/project
@@ -115,7 +108,7 @@ jobs:
           set -o pipefail
           gradle --no-daemon --no-configuration-cache clean build --stacktrace 2>&1 | tee ../build-log.txt
 
-      - name: Find and verify JAR
+      - name: Find, overlay reference assets, and verify JAR
         id: jar
         shell: bash
         run: |
@@ -124,11 +117,15 @@ jobs:
           test -n "$BUILT"
           OUT="source/project/build/libs/xSxLabs-Network-Storage-0.75.0-rc52.19.jar"
           if [ "$BUILT" != "$OUT" ]; then mv "$BUILT" "$OUT"; fi
+          cd /tmp/xsxlabs-reference
+          zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork
+          cd "$GITHUB_WORKSPACE"
           unzip -t "$OUT"
           COUNT=$(unzip -Z1 "$OUT" | grep '^assets/obsidiannetwork/' | grep -v '/$' | wc -l)
           test "$COUNT" -ge 544
           unzip -Z1 "$OUT" | grep -qx 'assets/obsidiannetwork/textures/block/ns_screen_storage.png'
-          echo "Built JAR: $OUT ($COUNT mod assets)"
+          unzip -Z1 "$OUT" | grep -qx 'assets/obsidiannetwork/textures/block/ns_screen_anvil.png'
+          echo "Built JAR: $OUT ($COUNT mod assets; confirmed reference assets overlaid)"
           echo "path=$OUT" >> "$GITHUB_OUTPUT"
           echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"
           sha256sum "$OUT" > "$OUT.sha256"
