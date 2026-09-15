@@ -2,8 +2,6 @@ name: Build xSxLabs Network Storage
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '*/5 * * * *'
 
 permissions:
   contents: write
@@ -13,36 +11,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  detect-private-source-change:
-    runs-on: ubuntu-24.04
-    outputs:
-      should_build: ${{ steps.detect.outputs.should_build }}
-      source_sha: ${{ steps.detect.outputs.source_sha }}
-    steps:
-      - name: Checkout public builder state
-        uses: actions/checkout@v6
-      - name: Detect private source change
-        id: detect
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
-        run: |
-          set -euo pipefail
-          SOURCE_SHA=$(git ls-remote "https://x-access-token:${GH_TOKEN}@github.com/xSxLabs/ObsidianNetwork-Build.git" refs/heads/0.76.0-rc01 | awk '{print $1}')
-          test -n "$SOURCE_SHA"
-          LAST=""
-          if [ -f .github/last-built-private-source.sha ]; then LAST=$(tr -d '\r\n' < .github/last-built-private-source.sha); fi
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$SOURCE_SHA" != "$LAST" ]; then echo "should_build=true" >> "$GITHUB_OUTPUT"; else echo "should_build=false" >> "$GITHUB_OUTPUT"; fi
-          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-
   build:
-    needs: detect-private-source-change
-    if: needs.detect-private-source-change.outputs.should_build == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+
     steps:
       - name: Checkout public builder
         uses: actions/checkout@v6
+
       - name: Checkout private source repository
         uses: actions/checkout@v6
         with:
@@ -51,40 +27,112 @@ jobs:
           token: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
           path: source
           fetch-depth: 1
+
+      - name: Capture private source revision
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE_SHA=$(git -C source rev-parse HEAD)
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          echo "Private source revision: $SOURCE_SHA"
+
       - name: Set up Java 25
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
+
       - name: Set up Gradle 9.7.1
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.7.1'
+
       - name: Reconstruct confirmed rc52.19 source
         working-directory: source
         shell: bash
         run: |
           set -euo pipefail
+
           mkdir project
+
           cat payload/compile-src.part* | base64 -d | tar -xJ -C project
           cat payload/rc4-resources.part* | base64 -d | tar -xJ -C project
           cat payload/rc6-overlay.part* | base64 -d | tar -xJ -C project
+
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java')
+          p = Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java')
           p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
           PY
+
           python3 .github/scripts/gen_rc6_assets.py
+
           cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
+
           rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
+
           python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
           python3 .github/scripts/gen_rc7_assets.py
-          for s in rc7_compile_fix rc12_fix rc13_fix rc13_finalize rc14_fix rc15_fix rc16_fix rc16_persist_fix rc16_terminal_visual_final rc17_fix rc18_fix rc19_fix rc20_fix rc21_fix rc22_fix rc24_fix rc24_followup_fix rc24_job_buffer_fix rc24_facade_fix rc26_fix rc27_followup rc28_fix rc32_followup rc33_followup rc34_followup rc35_followup rc36_followup rc36_asset_size_fix rc37_followup rc37_speed_fix rc37_iron_furnaces_factory_fix rc37_manual_crafting_perf_fix rc37_animated_texture_verify_fix rc38_followup rc39_followup rc40_ironfurnaces_native_fix rc41_factory_and_lang_fix rc43_furnace_split_fix rc44_furnace_compat_fix rc45_ironfurnaces_native_fix rc46_ironfurnaces_capability_fix rc47_autocraft_diag rc48_cancel_detach_fix rc49_cleanup_busy_release_fix rc50_survival_audit_fix rc51_server_quiet_logging rc51_localization_hotfix; do python3 ".github/scripts/$s.py"; done
-      - name: Apply confirmed RC52 fixes then 0.76 special terminals
+
+          for s in \
+            rc7_compile_fix \
+            rc12_fix \
+            rc13_fix \
+            rc13_finalize \
+            rc14_fix \
+            rc15_fix \
+            rc16_fix \
+            rc16_persist_fix \
+            rc16_terminal_visual_final \
+            rc17_fix \
+            rc18_fix \
+            rc19_fix \
+            rc20_fix \
+            rc21_fix \
+            rc22_fix \
+            rc24_fix \
+            rc24_followup_fix \
+            rc24_job_buffer_fix \
+            rc24_facade_fix \
+            rc26_fix \
+            rc27_followup \
+            rc28_fix \
+            rc32_followup \
+            rc33_followup \
+            rc34_followup \
+            rc35_followup \
+            rc36_followup \
+            rc36_asset_size_fix \
+            rc37_followup \
+            rc37_speed_fix \
+            rc37_iron_furnaces_factory_fix \
+            rc37_manual_crafting_perf_fix \
+            rc37_animated_texture_verify_fix \
+            rc38_followup \
+            rc39_followup \
+            rc40_ironfurnaces_native_fix \
+            rc41_factory_and_lang_fix \
+            rc43_furnace_split_fix \
+            rc44_furnace_compat_fix \
+            rc45_ironfurnaces_native_fix \
+            rc46_ironfurnaces_capability_fix \
+            rc47_autocraft_diag \
+            rc48_cancel_detach_fix \
+            rc49_cleanup_busy_release_fix \
+            rc50_survival_audit_fix \
+            rc51_server_quiet_logging \
+            rc51_localization_hotfix
+          do
+            python3 ".github/scripts/$s.py"
+          done
+
+      - name: Apply confirmed RC52 fixes
         working-directory: source
         shell: bash
         run: |
           set -euo pipefail
+
           python3 .github/scripts/rc52_connected_fronts_code.py
           python3 .github/scripts/rc52_safety_hardening.py
           python3 .github/scripts/rc52_4_cell_sync_fix.py
@@ -97,9 +145,16 @@ jobs:
           python3 .github/scripts/rc52_11_compile_fix.py
           python3 .github/scripts/rc52_11_extra_core_fixes.py
           python3 .github/scripts/rc52_11_durability_sync.py
-          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 > /tmp/a.py && python3 /tmp/a.py
-          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 > /tmp/b.py && python3 /tmp/b.py
-          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 > /tmp/c.py && python3 /tmp/c.py
+
+          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 > /tmp/a.py
+          python3 /tmp/a.py
+
+          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 > /tmp/b.py
+          python3 /tmp/b.py
+
+          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 > /tmp/c.py
+          python3 /tmp/c.py
+
           python3 .github/scripts/rc52_17_compile_fix.py
           python3 .github/scripts/rc52_18_four_fixes.py
           python3 .github/scripts/rc52_19_three_regression_fixes.py
@@ -107,45 +162,166 @@ jobs:
           python3 .github/scripts/rc52_19_importer_exporter_rotating_port.py
           python3 .github/scripts/rc52_19_curios_slot_texture_fix.py
           python3 .github/scripts/rc52_19_foreign_energy_compat.py
-          python3 .github/scripts/rc76_01_special_terminals.py
-      - name: Preserve confirmed 0.75 assets without overwriting new terminal assets
+
+      - name: Snapshot assets before 0.76 changes
+        working-directory: source/project
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf /tmp/xsxlabs-assets-before
+          mkdir -p /tmp/xsxlabs-assets-before
+
+          if [ -d src/main/resources/assets/obsidiannetwork ]; then
+            find src/main/resources/assets/obsidiannetwork -type f -print0 \
+              | sort -z \
+              | xargs -0 sha256sum \
+              > /tmp/xsxlabs-assets-before/checksums.txt
+          else
+            : > /tmp/xsxlabs-assets-before/checksums.txt
+          fi
+
+      - name: Apply 0.76 rc01 special terminals
         working-directory: source
         shell: bash
         run: |
           set -euo pipefail
+          python3 .github/scripts/rc76_01_special_terminals.py
+
+      - name: Stage only 0.76 asset changes
+        working-directory: source/project
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf /tmp/xsxlabs-076-overlay
+          mkdir -p /tmp/xsxlabs-076-overlay
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import shutil
+
+          root = Path("src/main/resources")
+          assets = root / "assets" / "obsidiannetwork"
+          before_file = Path("/tmp/xsxlabs-assets-before/checksums.txt")
+
+          before = {}
+
+          if before_file.exists():
+              for line in before_file.read_text().splitlines():
+                  if not line.strip():
+                      continue
+                  sha, path = line.split(None, 1)
+                  before[path.strip()] = sha
+
+          changed = []
+
+          if assets.exists():
+              for path in assets.rglob("*"):
+                  if not path.is_file():
+                      continue
+
+                  rel_project = path.as_posix()
+                  sha = hashlib.sha256(path.read_bytes()).hexdigest()
+
+                  if before.get(rel_project) != sha:
+                      changed.append(path)
+
+          out_root = Path("/tmp/xsxlabs-076-overlay")
+
+          for src in changed:
+              rel = src.relative_to(root)
+              dst = out_root / rel
+              dst.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(src, dst)
+
+          print(f"0.76 asset overlay files: {len(changed)}")
+
+          for path in changed:
+              print(path)
+          PY
+
+      - name: Prepare confirmed 0.75 asset baseline
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+
           REF="Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar"
+
           test -f "$REF"
-          rm -rf /tmp/xsxlabs-reference && mkdir -p /tmp/xsxlabs-reference
+
+          rm -rf /tmp/xsxlabs-reference
+          mkdir -p /tmp/xsxlabs-reference
+
           unzip -q "$REF" 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
-          test "$(find /tmp/xsxlabs-reference/assets/obsidiannetwork -type f | wc -l)" -ge 544
+
+          COUNT=$(find /tmp/xsxlabs-reference/assets/obsidiannetwork -type f | wc -l)
+
+          test "$COUNT" -ge 544
+
+          echo "Reference asset count: $COUNT"
+
       - name: Build mod
         working-directory: source/project
         shell: bash
         run: |
           set -o pipefail
-          gradle --no-daemon --no-configuration-cache clean build --stacktrace 2>&1 | tee ../build-log.txt
-      - name: Overlay confirmed assets safely and verify JAR
+          gradle --no-daemon --no-configuration-cache clean build --stacktrace \
+            2>&1 | tee ../build-log.txt
+
+      - name: Overlay confirmed assets and verify JAR
         id: jar
         shell: bash
         run: |
           set -euo pipefail
-          BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
+
+          BUILT=$(find source/project/build/libs \
+            -maxdepth 1 \
+            -type f \
+            -name '*.jar' \
+            ! -name '*sources*' \
+            ! -name '*javadoc*' \
+            | head -1)
+
           test -n "$BUILT"
+
           OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc01.jar"
-          if [ "$BUILT" != "$OUT" ]; then mv "$BUILT" "$OUT"; fi
-          rm -rf /tmp/new-assets && mkdir -p /tmp/new-assets
-          (cd source/project && find src/main/resources/assets/obsidiannetwork -type f \( -iname '*disenchant*' -o -iname '*deconstruct*' \) -print0 | tar --null -T - -cf /tmp/new-assets/new.tar 2>/dev/null || true)
-          (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
-          if [ -s /tmp/new-assets/new.tar ]; then (cd source/project && tar -xf /tmp/new-assets/new.tar && zip -q -r "$GITHUB_WORKSPACE/$OUT" src/main/resources/assets/obsidiannetwork && zipnote "$GITHUB_WORKSPACE/$OUT" >/dev/null); fi
-          # Re-overlay every current project asset so 0.76 additions/changes win over the reference baseline.
-          (cd source/project/src/main/resources && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
+
+          if [ "$BUILT" != "$OUT" ]; then
+            mv "$BUILT" "$OUT"
+          fi
+
+          (
+            cd /tmp/xsxlabs-reference
+            zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork
+          )
+
+          if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then
+            (
+              cd /tmp/xsxlabs-076-overlay
+              zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork
+            )
+          fi
+
           unzip -t "$OUT"
-          COUNT=$(unzip -Z1 "$OUT" | grep '^assets/obsidiannetwork/' | grep -v '/$' | wc -l)
+
+          COUNT=$(unzip -Z1 "$OUT" \
+            | grep '^assets/obsidiannetwork/' \
+            | grep -v '/$' \
+            | wc -l)
+
           test "$COUNT" -ge 544
-          echo "Built JAR: $OUT ($COUNT mod assets)"
+
+          echo "Built JAR: $OUT"
+          echo "Asset count: $COUNT"
+
           echo "path=$OUT" >> "$GITHUB_OUTPUT"
           echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"
+
           sha256sum "$OUT" > "$OUT.sha256"
+
       - name: Checkout private build archive
         uses: actions/checkout@v6
         with:
@@ -153,6 +329,7 @@ jobs:
           token: ${{ secrets.PRIVATE_BUILD_TOKEN }}
           path: builds
           fetch-depth: 1
+
       - name: Save build privately
         shell: bash
         env:
@@ -160,27 +337,45 @@ jobs:
           JAR_NAME: ${{ steps.jar.outputs.name }}
         run: |
           set -euo pipefail
+
           mkdir -p builds/jars
+
           cp "$JAR" "builds/jars/$JAR_NAME"
           cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
+
           cd builds
+
           git config user.name "xSxLabs Build Bot"
           git config user.email "actions@github.com"
+
           git add jars/
-          if git diff --cached --quiet; then echo "Build already exists."; exit 0; fi
+
+          if git diff --cached --quiet; then
+            echo "Build already exists."
+            exit 0
+          fi
+
           git commit -m "Network Storage build ${{ github.run_number }} - $JAR_NAME"
           git push
+
       - name: Record successfully built private source revision
         if: success()
         shell: bash
         env:
-          SOURCE_SHA: ${{ needs.detect-private-source-change.outputs.source_sha }}
+          SOURCE_SHA: ${{ steps.source.outputs.source_sha }}
         run: |
           set -euo pipefail
+
           printf '%s\n' "$SOURCE_SHA" > .github/last-built-private-source.sha
+
           git config user.name "xSxLabs Build Bot"
           git config user.email "actions@github.com"
+
           git add .github/last-built-private-source.sha
-          if git diff --cached --quiet; then exit 0; fi
+
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+
           git commit -m "Record built private source $SOURCE_SHA"
           git push
