@@ -2,16 +2,54 @@ name: Build xSxLabs Network Storage
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: xsxlabs-network-storage-build
+  cancel-in-progress: false
 
 jobs:
+  detect-private-source-change:
+    runs-on: ubuntu-24.04
+    outputs:
+      should_build: ${{ steps.detect.outputs.should_build }}
+      source_sha: ${{ steps.detect.outputs.source_sha }}
+    steps:
+      - name: Checkout public builder state
+        uses: actions/checkout@v6
+
+      - name: Detect private source change
+        id: detect
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
+        run: |
+          set -euo pipefail
+          SOURCE_SHA=$(git ls-remote "https://x-access-token:${GH_TOKEN}@github.com/xSxLabs/ObsidianNetwork-Build.git" refs/heads/rc52.19-jei-missing-clear-search | awk '{print $1}')
+          test -n "$SOURCE_SHA"
+          LAST=""
+          if [ -f .github/last-built-private-source.sha ]; then LAST=$(tr -d '\r\n' < .github/last-built-private-source.sha); fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$SOURCE_SHA" != "$LAST" ]; then
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: detect-private-source-change
+    if: needs.detect-private-source-change.outputs.should_build == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
 
     steps:
+      - name: Checkout public builder
+        uses: actions/checkout@v6
+
       - name: Checkout private source repository
         uses: actions/checkout@v6
         with:
@@ -154,4 +192,19 @@ jobs:
           git add jars/
           if git diff --cached --quiet; then echo "Build already exists."; exit 0; fi
           git commit -m "Network Storage build ${{ github.run_number }} - $JAR_NAME"
+          git push
+
+      - name: Record successfully built private source revision
+        if: success()
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ needs.detect-private-source-change.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$SOURCE_SHA" > .github/last-built-private-source.sha
+          git config user.name "xSxLabs Build Bot"
+          git config user.email "actions@github.com"
+          git add .github/last-built-private-source.sha
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Record built private source $SOURCE_SHA"
           git push
