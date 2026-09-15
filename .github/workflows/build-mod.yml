@@ -5,32 +5,26 @@ on:
   push:
     paths:
       - '.github/BUILD_TRIGGER'
-
 permissions:
   contents: write
-
 concurrency:
   group: xsxlabs-network-storage-build
   cancel-in-progress: false
-
 jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
-
     steps:
       - name: Checkout public builder
         uses: actions/checkout@v6
-
       - name: Checkout private source repository
         uses: actions/checkout@v6
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: 0.76.0-rc01
+          ref: 0.76.0-rc03
           token: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
           path: source
           fetch-depth: 1
-
       - name: Capture private source revision
         id: source
         shell: bash
@@ -38,19 +32,12 @@ jobs:
           set -euo pipefail
           SOURCE_SHA=$(git -C source rev-parse HEAD)
           echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-          echo "Private source revision: $SOURCE_SHA"
-
       - name: Set up Java 25
         uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '25'
-
+        with: {distribution: temurin, java-version: '25'}
       - name: Set up Gradle 9.7.1
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.7.1'
-
+        with: {gradle-version: '9.7.1'}
       - name: Reconstruct confirmed rc52.19 source
         working-directory: source
         shell: bash
@@ -62,8 +49,7 @@ jobs:
           cat payload/rc6-overlay.part* | base64 -d | tar -xJ -C project
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java')
-          p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
+          p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java');p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
           PY
           python3 .github/scripts/gen_rc6_assets.py
           cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
@@ -71,7 +57,6 @@ jobs:
           python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
           python3 .github/scripts/gen_rc7_assets.py
           for s in rc7_compile_fix rc12_fix rc13_fix rc13_finalize rc14_fix rc15_fix rc16_fix rc16_persist_fix rc16_terminal_visual_final rc17_fix rc18_fix rc19_fix rc20_fix rc21_fix rc22_fix rc24_fix rc24_followup_fix rc24_job_buffer_fix rc24_facade_fix rc26_fix rc27_followup rc28_fix rc32_followup rc33_followup rc34_followup rc35_followup rc36_followup rc36_asset_size_fix rc37_followup rc37_speed_fix rc37_iron_furnaces_factory_fix rc37_manual_crafting_perf_fix rc37_animated_texture_verify_fix rc38_followup rc39_followup rc40_ironfurnaces_native_fix rc41_factory_and_lang_fix rc43_furnace_split_fix rc44_furnace_compat_fix rc45_ironfurnaces_native_fix rc46_ironfurnaces_capability_fix rc47_autocraft_diag rc48_cancel_detach_fix rc49_cleanup_busy_release_fix rc50_survival_audit_fix rc51_server_quiet_logging rc51_localization_hotfix; do python3 ".github/scripts/$s.py"; done
-
       - name: Apply confirmed RC52 fixes
         working-directory: source
         shell: bash
@@ -99,118 +84,58 @@ jobs:
           python3 .github/scripts/rc52_19_importer_exporter_rotating_port.py
           python3 .github/scripts/rc52_19_curios_slot_texture_fix.py
           python3 .github/scripts/rc52_19_foreign_energy_compat.py
-
       - name: Snapshot assets before 0.76 changes
         working-directory: source/project
-        shell: bash
         run: |
-          set -euo pipefail
           rm -rf /tmp/xsxlabs-assets-before; mkdir -p /tmp/xsxlabs-assets-before
-          if [ -d src/main/resources/assets/obsidiannetwork ]; then find src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt; else : > /tmp/xsxlabs-assets-before/checksums.txt; fi
-
-      - name: Apply 0.76 rc02 special terminals
+          find src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
+      - name: Apply 0.76 rc03 special terminals
         working-directory: source
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 .github/scripts/rc76_01_special_terminals.py
-
+        run: python3 .github/scripts/rc76_01_special_terminals.py
       - name: Stage only 0.76 asset changes
         working-directory: source/project
-        shell: bash
         run: |
-          set -euo pipefail
           rm -rf /tmp/xsxlabs-076-overlay; mkdir -p /tmp/xsxlabs-076-overlay
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib, shutil
-          root=Path('src/main/resources'); assets=root/'assets'/'obsidiannetwork'; before_file=Path('/tmp/xsxlabs-assets-before/checksums.txt'); before={}
-          if before_file.exists():
-              for line in before_file.read_text().splitlines():
-                  if line.strip():
-                      sha,path=line.split(None,1); before[path.strip()]=sha
-          changed=[]
-          if assets.exists():
-              for path in assets.rglob('*'):
-                  if path.is_file() and before.get(path.as_posix()) != hashlib.sha256(path.read_bytes()).hexdigest(): changed.append(path)
-          out=Path('/tmp/xsxlabs-076-overlay')
-          for src in changed:
-              dst=out/src.relative_to(root); dst.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(src,dst)
-          print(f'0.76 asset overlay files: {len(changed)}')
+          import hashlib,shutil
+          root=Path('src/main/resources');assets=root/'assets'/'obsidiannetwork';before={}
+          for line in Path('/tmp/xsxlabs-assets-before/checksums.txt').read_text().splitlines():
+            if line.strip(): sha,path=line.split(None,1);before[path.strip()]=sha
+          for src in assets.rglob('*'):
+            if src.is_file() and before.get(src.as_posix())!=hashlib.sha256(src.read_bytes()).hexdigest():
+              dst=Path('/tmp/xsxlabs-076-overlay')/src.relative_to(root);dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dst)
           PY
-
       - name: Prepare confirmed 0.75 asset baseline
         working-directory: source
-        shell: bash
         run: |
-          set -euo pipefail
-          REF="Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar"; test -f "$REF"
           rm -rf /tmp/xsxlabs-reference; mkdir -p /tmp/xsxlabs-reference
-          unzip -q "$REF" 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
-          COUNT=$(find /tmp/xsxlabs-reference/assets/obsidiannetwork -type f | wc -l); test "$COUNT" -ge 544
-
+          unzip -q Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
+          test $(find /tmp/xsxlabs-reference/assets/obsidiannetwork -type f | wc -l) -ge 544
       - name: Build mod
         working-directory: source/project
-        shell: bash
-        run: |
-          set -o pipefail
-          gradle --no-daemon --no-configuration-cache clean build --stacktrace 2>&1 | tee ../build-log.txt
-
+        run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
       - name: Overlay confirmed assets and verify JAR
         id: jar
-        shell: bash
         run: |
           set -euo pipefail
-          BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1); test -n "$BUILT"
-          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc02.jar"
-          if [ "$BUILT" != "$OUT" ]; then mv "$BUILT" "$OUT"; fi
+          BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
+          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc03.jar"
+          [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
           unzip -t "$OUT"
-          COUNT=$(unzip -Z1 "$OUT" | grep '^assets/obsidiannetwork/' | grep -v '/$' | wc -l); test "$COUNT" -ge 544
+          test $(unzip -Z1 "$OUT" | grep '^assets/obsidiannetwork/' | grep -v '/$' | wc -l) -ge 544
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc03"'
           echo "path=$OUT" >> "$GITHUB_OUTPUT"; echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"; sha256sum "$OUT" > "$OUT.sha256"
-
       - name: Upload finished JAR for ChatGPT
         uses: actions/upload-artifact@v4
-        with:
-          name: xsxlabs-network-storage-jar
-          path: ${{ steps.jar.outputs.path }}
-          if-no-files-found: error
-          retention-days: 30
-
+        with: {name: xsxlabs-network-storage-jar, path: '${{ steps.jar.outputs.path }}', if-no-files-found: error, retention-days: 30}
       - name: Checkout private build archive
         uses: actions/checkout@v6
-        with:
-          repository: xSxLabs/ObsidianNetwork-Builds
-          token: ${{ secrets.PRIVATE_BUILD_TOKEN }}
-          path: builds
-          fetch-depth: 1
-
+        with: {repository: xSxLabs/ObsidianNetwork-Builds, token: '${{ secrets.PRIVATE_BUILD_TOKEN }}', path: builds, fetch-depth: 1}
       - name: Save build privately
-        shell: bash
-        env:
-          JAR: ${{ steps.jar.outputs.path }}
-          JAR_NAME: ${{ steps.jar.outputs.name }}
+        env: {JAR: '${{ steps.jar.outputs.path }}', JAR_NAME: '${{ steps.jar.outputs.name }}'}
         run: |
-          set -euo pipefail
           mkdir -p builds/jars; cp "$JAR" "builds/jars/$JAR_NAME"; cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/
-          if git diff --cached --quiet; then echo "Build already exists."; exit 0; fi
-          git commit -m "Network Storage build ${{ github.run_number }} - $JAR_NAME"; git push
-
-      - name: Record successfully built private source revision
-        if: success()
-        shell: bash
-        env:
-          SOURCE_SHA: ${{ steps.source.outputs.source_sha }}
-        run: |
-          set -euo pipefail
-          git fetch origin main
-          git reset --hard origin/main
-          printf '%s\n' "$SOURCE_SHA" > .github/last-built-private-source.sha
-          git config user.name "xSxLabs Build Bot"
-          git config user.email "actions@github.com"
-          git add .github/last-built-private-source.sha
-          if git diff --cached --quiet; then echo "Source revision already recorded."; exit 0; fi
-          git commit -m "Record built private source $SOURCE_SHA"
-          git push origin HEAD:main
+          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc03 - $JAR_NAME" && git push)
