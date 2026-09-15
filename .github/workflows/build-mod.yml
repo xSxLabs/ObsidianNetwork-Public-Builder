@@ -322,6 +322,15 @@ jobs:
 
           sha256sum "$OUT" > "$OUT.sha256"
 
+      # This makes the verified JAR downloadable by ChatGPT after every build.
+      - name: Upload finished JAR for ChatGPT
+        uses: actions/upload-artifact@v4
+        with:
+          name: xsxlabs-network-storage-jar
+          path: ${{ steps.jar.outputs.path }}
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Checkout private build archive
         uses: actions/checkout@v6
         with:
