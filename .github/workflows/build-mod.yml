@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: 0.76.0-rc04
+          ref: 0.76.0-rc05
           token: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
           path: source
           fetch-depth: 1
@@ -89,7 +89,7 @@ jobs:
         run: |
           rm -rf /tmp/xsxlabs-assets-before; mkdir -p /tmp/xsxlabs-assets-before
           find src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
-      - name: Apply 0.76 rc04 special terminals
+      - name: Apply 0.76 rc05 special terminals
         working-directory: source
         run: python3 .github/scripts/rc76_01_special_terminals.py
       - name: Stage only 0.76 asset changes
@@ -120,13 +120,13 @@ jobs:
         run: |
           set -euo pipefail
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
-          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc04.jar"
+          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc05.jar"
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
           unzip -t "$OUT"
           test $(unzip -Z1 "$OUT" | grep '^assets/obsidiannetwork/' | grep -v '/$' | wc -l) -ge 544
-          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc04"'
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc05"'
           echo "path=$OUT" >> "$GITHUB_OUTPUT"; echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"; sha256sum "$OUT" > "$OUT.sha256"
       - name: Upload finished JAR for ChatGPT
         uses: actions/upload-artifact@v4
@@ -138,4 +138,4 @@ jobs:
         env: {JAR: '${{ steps.jar.outputs.path }}', JAR_NAME: '${{ steps.jar.outputs.name }}'}
         run: |
           mkdir -p builds/jars; cp "$JAR" "builds/jars/$JAR_NAME"; cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc04 - $JAR_NAME" && git push)
+          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc05 - $JAR_NAME" && git push)
