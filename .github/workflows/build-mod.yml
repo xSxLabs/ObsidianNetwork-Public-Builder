@@ -149,7 +149,6 @@ jobs:
           python3 .github/scripts/rc52_19_importer_exporter_rotating_port.py
           python3 .github/scripts/rc52_19_curios_slot_texture_fix.py
           python3 .github/scripts/rc52_19_foreign_energy_compat.py
-          python3 .github/scripts/rc52_19_terminal_tooltip_glint_fix.py
 
       - name: Build mod
         working-directory: source/project
