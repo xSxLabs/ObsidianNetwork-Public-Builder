@@ -37,77 +37,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           mkdir project
-
           cat payload/compile-src.part* | base64 -d | tar -xJ -C project
           cat payload/rc4-resources.part* | base64 -d | tar -xJ -C project
           cat payload/rc6-overlay.part* | base64 -d | tar -xJ -C project
-
           python3 - <<'PY'
           from pathlib import Path
           p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java')
           p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
           PY
-
           python3 .github/scripts/gen_rc6_assets.py
-
           cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
-
           rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
-
           python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
           python3 .github/scripts/gen_rc7_assets.py
-
-          for s in \
-          rc7_compile_fix \
-          rc12_fix \
-          rc13_fix \
-          rc13_finalize \
-          rc14_fix \
-          rc15_fix \
-          rc16_fix \
-          rc16_persist_fix \
-          rc16_terminal_visual_final \
-          rc17_fix \
-          rc18_fix \
-          rc19_fix \
-          rc20_fix \
-          rc21_fix \
-          rc22_fix \
-          rc24_fix \
-          rc24_followup_fix \
-          rc24_job_buffer_fix \
-          rc24_facade_fix \
-          rc26_fix \
-          rc27_followup \
-          rc28_fix \
-          rc32_followup \
-          rc33_followup \
-          rc34_followup \
-          rc35_followup \
-          rc36_followup \
-          rc36_asset_size_fix \
-          rc37_followup \
-          rc37_speed_fix \
-          rc37_iron_furnaces_factory_fix \
-          rc37_manual_crafting_perf_fix \
-          rc37_animated_texture_verify_fix \
-          rc38_followup \
-          rc39_followup \
-          rc40_ironfurnaces_native_fix \
-          rc41_factory_and_lang_fix \
-          rc43_furnace_split_fix \
-          rc44_furnace_compat_fix \
-          rc45_ironfurnaces_native_fix \
-          rc46_ironfurnaces_capability_fix \
-          rc47_autocraft_diag \
-          rc48_cancel_detach_fix \
-          rc49_cleanup_busy_release_fix \
-          rc50_survival_audit_fix \
-          rc51_server_quiet_logging \
-          rc51_localization_hotfix
-          do
+          for s in rc7_compile_fix rc12_fix rc13_fix rc13_finalize rc14_fix rc15_fix rc16_fix rc16_persist_fix rc16_terminal_visual_final rc17_fix rc18_fix rc19_fix rc20_fix rc21_fix rc22_fix rc24_fix rc24_followup_fix rc24_job_buffer_fix rc24_facade_fix rc26_fix rc27_followup rc28_fix rc32_followup rc33_followup rc34_followup rc35_followup rc36_followup rc36_asset_size_fix rc37_followup rc37_speed_fix rc37_iron_furnaces_factory_fix rc37_manual_crafting_perf_fix rc37_animated_texture_verify_fix rc38_followup rc39_followup rc40_ironfurnaces_native_fix rc41_factory_and_lang_fix rc43_furnace_split_fix rc44_furnace_compat_fix rc45_ironfurnaces_native_fix rc46_ironfurnaces_capability_fix rc47_autocraft_diag rc48_cancel_detach_fix rc49_cleanup_busy_release_fix rc50_survival_audit_fix rc51_server_quiet_logging rc51_localization_hotfix; do
             python3 ".github/scripts/$s.py"
           done
 
@@ -116,7 +60,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           python3 .github/scripts/rc52_connected_fronts_code.py
           python3 .github/scripts/rc52_safety_hardening.py
           python3 .github/scripts/rc52_4_cell_sync_fix.py
@@ -129,19 +72,12 @@ jobs:
           python3 .github/scripts/rc52_11_compile_fix.py
           python3 .github/scripts/rc52_11_extra_core_fixes.py
           python3 .github/scripts/rc52_11_durability_sync.py
-
-          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 \
-            > /tmp/rc52_15_targeted_fixes.py
+          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 > /tmp/rc52_15_targeted_fixes.py
           python3 /tmp/rc52_15_targeted_fixes.py
-
-          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 \
-            > /tmp/rc52_16_three_final_fixes.py
+          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 > /tmp/rc52_16_three_final_fixes.py
           python3 /tmp/rc52_16_three_final_fixes.py
-
-          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 \
-            > /tmp/rc52_17_facade_durability_fix.py
+          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 > /tmp/rc52_17_facade_durability_fix.py
           python3 /tmp/rc52_17_facade_durability_fix.py
-
           python3 .github/scripts/rc52_17_compile_fix.py
           python3 .github/scripts/rc52_18_four_fixes.py
           python3 .github/scripts/rc52_19_three_regression_fixes.py
@@ -150,38 +86,52 @@ jobs:
           python3 .github/scripts/rc52_19_curios_slot_texture_fix.py
           python3 .github/scripts/rc52_19_foreign_energy_compat.py
 
+      - name: Overlay confirmed reference assets
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          REF="reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar"
+          if [ ! -f "$REF" ]; then
+            echo "ERROR: confirmed reference JAR missing: $REF"
+            echo "Refusing to build a JAR without the confirmed texture/resource set."
+            exit 1
+          fi
+          rm -rf /tmp/xsxlabs-reference
+          mkdir -p /tmp/xsxlabs-reference
+          unzip -q "$REF" 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
+          rm -rf project/src/main/resources/assets/obsidiannetwork
+          cp -a /tmp/xsxlabs-reference/assets/obsidiannetwork project/src/main/resources/assets/
+          test "$(find project/src/main/resources/assets/obsidiannetwork -type f | wc -l)" -ge 544
+          test -f project/src/main/resources/assets/obsidiannetwork/textures/block/ns_screen_storage.png
+          test -f project/src/main/resources/assets/obsidiannetwork/textures/block/controller_core_active.png
+          test -f project/src/main/resources/assets/obsidiannetwork/textures/slot/network_terminal.png
+          echo "Confirmed reference assets restored."
+
       - name: Build mod
         working-directory: source/project
         shell: bash
         run: |
           set -o pipefail
-          gradle --no-daemon --no-configuration-cache clean build --stacktrace \
-            2>&1 | tee ../build-log.txt
+          gradle --no-daemon --no-configuration-cache clean build --stacktrace 2>&1 | tee ../build-log.txt
 
       - name: Find and verify JAR
         id: jar
         shell: bash
         run: |
           set -euo pipefail
-
-          JAR=$(find source/project/build/libs \
-            -maxdepth 1 \
-            -type f \
-            -name '*.jar' \
-            ! -name '*sources*' \
-            ! -name '*javadoc*' \
-            | head -1)
-
-          test -n "$JAR"
-
-          echo "Built JAR: $JAR"
-
-          unzip -t "$JAR"
-
-          echo "path=$JAR" >> "$GITHUB_OUTPUT"
-          echo "name=$(basename "$JAR")" >> "$GITHUB_OUTPUT"
-
-          sha256sum "$JAR" > "$JAR.sha256"
+          BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
+          test -n "$BUILT"
+          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.75.0-rc52.19.jar"
+          if [ "$BUILT" != "$OUT" ]; then mv "$BUILT" "$OUT"; fi
+          unzip -t "$OUT"
+          COUNT=$(unzip -Z1 "$OUT" | grep '^assets/obsidiannetwork/' | grep -v '/$' | wc -l)
+          test "$COUNT" -ge 544
+          unzip -Z1 "$OUT" | grep -qx 'assets/obsidiannetwork/textures/block/ns_screen_storage.png'
+          echo "Built JAR: $OUT ($COUNT mod assets)"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"
+          sha256sum "$OUT" > "$OUT.sha256"
 
       - name: Checkout private build archive
         uses: actions/checkout@v6
@@ -198,23 +148,13 @@ jobs:
           JAR_NAME: ${{ steps.jar.outputs.name }}
         run: |
           set -euo pipefail
-
           mkdir -p builds/jars
-
           cp "$JAR" "builds/jars/$JAR_NAME"
           cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-
           cd builds
-
           git config user.name "xSxLabs Build Bot"
           git config user.email "actions@github.com"
-
           git add jars/
-
-          if git diff --cached --quiet; then
-            echo "Build already exists."
-            exit 0
-          fi
-
+          if git diff --cached --quiet; then echo "Build already exists."; exit 0; fi
           git commit -m "Network Storage build ${{ github.run_number }} - $JAR_NAME"
           git push
