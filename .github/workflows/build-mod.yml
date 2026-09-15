@@ -2,6 +2,9 @@ name: Build xSxLabs Network Storage
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/BUILD_TRIGGER'
 
 permissions:
   contents: write
