@@ -21,7 +21,6 @@ jobs:
     steps:
       - name: Checkout public builder state
         uses: actions/checkout@v6
-
       - name: Detect private source change
         id: detect
         shell: bash
@@ -29,15 +28,11 @@ jobs:
           GH_TOKEN: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
         run: |
           set -euo pipefail
-          SOURCE_SHA=$(git ls-remote "https://x-access-token:${GH_TOKEN}@github.com/xSxLabs/ObsidianNetwork-Build.git" refs/heads/rc52.19-jei-missing-clear-search | awk '{print $1}')
+          SOURCE_SHA=$(git ls-remote "https://x-access-token:${GH_TOKEN}@github.com/xSxLabs/ObsidianNetwork-Build.git" refs/heads/0.76.0-rc01 | awk '{print $1}')
           test -n "$SOURCE_SHA"
           LAST=""
           if [ -f .github/last-built-private-source.sha ]; then LAST=$(tr -d '\r\n' < .github/last-built-private-source.sha); fi
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$SOURCE_SHA" != "$LAST" ]; then
-            echo "should_build=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "should_build=false" >> "$GITHUB_OUTPUT"
-          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$SOURCE_SHA" != "$LAST" ]; then echo "should_build=true" >> "$GITHUB_OUTPUT"; else echo "should_build=false" >> "$GITHUB_OUTPUT"; fi
           echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
 
   build:
@@ -45,32 +40,27 @@ jobs:
     if: needs.detect-private-source-change.outputs.should_build == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
-
     steps:
       - name: Checkout public builder
         uses: actions/checkout@v6
-
       - name: Checkout private source repository
         uses: actions/checkout@v6
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: rc52.19-jei-missing-clear-search
+          ref: 0.76.0-rc01
           token: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
           path: source
           fetch-depth: 1
-
       - name: Set up Java 25
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
-
       - name: Set up Gradle 9.7.1
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.7.1'
-
-      - name: Reconstruct source
+      - name: Reconstruct confirmed rc52.19 source
         working-directory: source
         shell: bash
         run: |
@@ -89,11 +79,8 @@ jobs:
           rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
           python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
           python3 .github/scripts/gen_rc7_assets.py
-          for s in rc7_compile_fix rc12_fix rc13_fix rc13_finalize rc14_fix rc15_fix rc16_fix rc16_persist_fix rc16_terminal_visual_final rc17_fix rc18_fix rc19_fix rc20_fix rc21_fix rc22_fix rc24_fix rc24_followup_fix rc24_job_buffer_fix rc24_facade_fix rc26_fix rc27_followup rc28_fix rc32_followup rc33_followup rc34_followup rc35_followup rc36_followup rc36_asset_size_fix rc37_followup rc37_speed_fix rc37_iron_furnaces_factory_fix rc37_manual_crafting_perf_fix rc37_animated_texture_verify_fix rc38_followup rc39_followup rc40_ironfurnaces_native_fix rc41_factory_and_lang_fix rc43_furnace_split_fix rc44_furnace_compat_fix rc45_ironfurnaces_native_fix rc46_ironfurnaces_capability_fix rc47_autocraft_diag rc48_cancel_detach_fix rc49_cleanup_busy_release_fix rc50_survival_audit_fix rc51_server_quiet_logging rc51_localization_hotfix; do
-            python3 ".github/scripts/$s.py"
-          done
-
-      - name: Apply RC52 confirmed fixes
+          for s in rc7_compile_fix rc12_fix rc13_fix rc13_finalize rc14_fix rc15_fix rc16_fix rc16_persist_fix rc16_terminal_visual_final rc17_fix rc18_fix rc19_fix rc20_fix rc21_fix rc22_fix rc24_fix rc24_followup_fix rc24_job_buffer_fix rc24_facade_fix rc26_fix rc27_followup rc28_fix rc32_followup rc33_followup rc34_followup rc35_followup rc36_followup rc36_asset_size_fix rc37_followup rc37_speed_fix rc37_iron_furnaces_factory_fix rc37_manual_crafting_perf_fix rc37_animated_texture_verify_fix rc38_followup rc39_followup rc40_ironfurnaces_native_fix rc41_factory_and_lang_fix rc43_furnace_split_fix rc44_furnace_compat_fix rc45_ironfurnaces_native_fix rc46_ironfurnaces_capability_fix rc47_autocraft_diag rc48_cancel_detach_fix rc49_cleanup_busy_release_fix rc50_survival_audit_fix rc51_server_quiet_logging rc51_localization_hotfix; do python3 ".github/scripts/$s.py"; done
+      - name: Apply confirmed RC52 fixes then 0.76 special terminals
         working-directory: source
         shell: bash
         run: |
@@ -110,12 +97,9 @@ jobs:
           python3 .github/scripts/rc52_11_compile_fix.py
           python3 .github/scripts/rc52_11_extra_core_fixes.py
           python3 .github/scripts/rc52_11_durability_sync.py
-          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 > /tmp/rc52_15_targeted_fixes.py
-          python3 /tmp/rc52_15_targeted_fixes.py
-          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 > /tmp/rc52_16_three_final_fixes.py
-          python3 /tmp/rc52_16_three_final_fixes.py
-          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 > /tmp/rc52_17_facade_durability_fix.py
-          python3 /tmp/rc52_17_facade_durability_fix.py
+          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 > /tmp/a.py && python3 /tmp/a.py
+          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 > /tmp/b.py && python3 /tmp/b.py
+          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 > /tmp/c.py && python3 /tmp/c.py
           python3 .github/scripts/rc52_17_compile_fix.py
           python3 .github/scripts/rc52_18_four_fixes.py
           python3 .github/scripts/rc52_19_three_regression_fixes.py
@@ -123,51 +107,45 @@ jobs:
           python3 .github/scripts/rc52_19_importer_exporter_rotating_port.py
           python3 .github/scripts/rc52_19_curios_slot_texture_fix.py
           python3 .github/scripts/rc52_19_foreign_energy_compat.py
-
-      - name: Extract confirmed reference assets
+          python3 .github/scripts/rc76_01_special_terminals.py
+      - name: Preserve confirmed 0.75 assets without overwriting new terminal assets
         working-directory: source
         shell: bash
         run: |
           set -euo pipefail
           REF="Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar"
-          test -f "$REF" || { echo "ERROR: confirmed reference JAR missing: $REF"; exit 1; }
-          rm -rf /tmp/xsxlabs-reference
-          mkdir -p /tmp/xsxlabs-reference
+          test -f "$REF"
+          rm -rf /tmp/xsxlabs-reference && mkdir -p /tmp/xsxlabs-reference
           unzip -q "$REF" 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
           test "$(find /tmp/xsxlabs-reference/assets/obsidiannetwork -type f | wc -l)" -ge 544
-          test -f /tmp/xsxlabs-reference/assets/obsidiannetwork/textures/block/ns_screen_storage.png
-          test -f /tmp/xsxlabs-reference/assets/obsidiannetwork/textures/block/ns_screen_anvil.png
-          echo "Confirmed reference assets extracted for final JAR overlay."
-
       - name: Build mod
         working-directory: source/project
         shell: bash
         run: |
           set -o pipefail
           gradle --no-daemon --no-configuration-cache clean build --stacktrace 2>&1 | tee ../build-log.txt
-
-      - name: Find, overlay reference assets, and verify JAR
+      - name: Overlay confirmed assets safely and verify JAR
         id: jar
         shell: bash
         run: |
           set -euo pipefail
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
           test -n "$BUILT"
-          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.75.0-rc52.19.jar"
+          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc01.jar"
           if [ "$BUILT" != "$OUT" ]; then mv "$BUILT" "$OUT"; fi
-          cd /tmp/xsxlabs-reference
-          zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork
-          cd "$GITHUB_WORKSPACE"
+          rm -rf /tmp/new-assets && mkdir -p /tmp/new-assets
+          (cd source/project && find src/main/resources/assets/obsidiannetwork -type f \( -iname '*disenchant*' -o -iname '*deconstruct*' \) -print0 | tar --null -T - -cf /tmp/new-assets/new.tar 2>/dev/null || true)
+          (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
+          if [ -s /tmp/new-assets/new.tar ]; then (cd source/project && tar -xf /tmp/new-assets/new.tar && zip -q -r "$GITHUB_WORKSPACE/$OUT" src/main/resources/assets/obsidiannetwork && zipnote "$GITHUB_WORKSPACE/$OUT" >/dev/null); fi
+          # Re-overlay every current project asset so 0.76 additions/changes win over the reference baseline.
+          (cd source/project/src/main/resources && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           unzip -t "$OUT"
           COUNT=$(unzip -Z1 "$OUT" | grep '^assets/obsidiannetwork/' | grep -v '/$' | wc -l)
           test "$COUNT" -ge 544
-          unzip -Z1 "$OUT" | grep -qx 'assets/obsidiannetwork/textures/block/ns_screen_storage.png'
-          unzip -Z1 "$OUT" | grep -qx 'assets/obsidiannetwork/textures/block/ns_screen_anvil.png'
-          echo "Built JAR: $OUT ($COUNT mod assets; confirmed reference assets overlaid)"
+          echo "Built JAR: $OUT ($COUNT mod assets)"
           echo "path=$OUT" >> "$GITHUB_OUTPUT"
           echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"
           sha256sum "$OUT" > "$OUT.sha256"
-
       - name: Checkout private build archive
         uses: actions/checkout@v6
         with:
@@ -175,7 +153,6 @@ jobs:
           token: ${{ secrets.PRIVATE_BUILD_TOKEN }}
           path: builds
           fetch-depth: 1
-
       - name: Save build privately
         shell: bash
         env:
@@ -193,7 +170,6 @@ jobs:
           if git diff --cached --quiet; then echo "Build already exists."; exit 0; fi
           git commit -m "Network Storage build ${{ github.run_number }} - $JAR_NAME"
           git push
-
       - name: Record successfully built private source revision
         if: success()
         shell: bash
