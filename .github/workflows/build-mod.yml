@@ -82,19 +82,19 @@ jobs:
         run: |
           rm -rf /tmp/xsxlabs-assets-before; mkdir -p /tmp/xsxlabs-assets-before
           find src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
-      - name: Apply 0.76 rc26 fixes and hard precheck
+      - name: Apply 0.76 rc27 fixes and hard precheck
         working-directory: source
         run: python3 .github/scripts/rc76_01_special_terminals.py
-      - name: Force rc26 metadata
+      - name: Force rc27 metadata
         working-directory: source/project
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
           for p in Path('src/main/resources').rglob('neoforge.mods.toml'):
-            s=p.read_text();s=re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc26"',s);p.write_text(s)
+            s=p.read_text();s=re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc27"',s);p.write_text(s)
           gp=Path('gradle.properties')
-          if gp.exists(): gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc26',gp.read_text()))
+          if gp.exists(): gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc27',gp.read_text()))
           PY
       - name: Stage only 0.76 asset changes
         working-directory: source/project
@@ -124,21 +124,23 @@ jobs:
         run: |
           set -euo pipefail
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
-          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc26.jar"
+          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc27.jar"
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
           zip -dq "$OUT" assets/obsidiannetwork/models/block/brewing_terminal.json || true
           unzip -t "$OUT"
-          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc26"'
-          unzip -Z1 "$OUT" | grep -q '^assets/obsidiannetwork/textures/block/brewing_terminal.png$'
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc27"'
           for f in auto_brewer.json auto_brewer_connected.json; do
-            unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'obsidiannetwork:block/brewing_terminal'
-            unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'minecraft:item/glass_bottle'
+            unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'obsidiannetwork:block/obsidian_metal'
+            ! unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'minecraft:item/glass_bottle'
           done
-          unzip -p "$OUT" assets/obsidiannetwork/models/item/brewing_terminal.json | grep -q 'obsidiannetwork:block/auto_brewer'
+          unzip -p "$OUT" assets/obsidiannetwork/items/brewing_terminal.json | grep -q 'minecraft:composite'
+          unzip -p "$OUT" assets/obsidiannetwork/models/item/auto_brewer_bottle.json | grep -q 'minecraft:item/glass_bottle'
           unzip -p "$OUT" assets/obsidiannetwork/lang/en_us.json | grep -q '"block.obsidiannetwork.brewing_terminal"[[:space:]]*:[[:space:]]*"Auto Brewer"'
           ! unzip -p "$OUT" assets/obsidiannetwork/lang/en_us.json | grep -q 'Wireless Crafting Terminal'
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.AutoBrewerBottleRenderer > /tmp/brewrenderer.txt
+          grep -q 'Items.GLASS_BOTTLE' /tmp/brewrenderer.txt; grep -q 'updateForTopItem' /tmp/brewrenderer.txt; grep -q 'ItemStackRenderState.submit' /tmp/brewrenderer.txt
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.BrewingTerminalMenu > /tmp/brewmenu.txt
           ! grep -q 'clickMenuButton\|SELECT_INPUT\|SELECT_INGREDIENT\|brewFromNetwork' /tmp/brewmenu.txt
           grep -q 'SimpleContainer' /tmp/brewmenu.txt
@@ -150,7 +152,9 @@ jobs:
           grep -q 'rc25StableCells' /tmp/terminal.txt
           grep -q 'rc25FrozenOrder' /tmp/terminal.txt
           grep -q 'glfwGetKey' /tmp/terminal.txt
-          grep -q 'setValue' /tmp/terminal.txt
+          grep -q 'JeiSearchBridge.setText' /tmp/terminal.txt
+          ! grep -Fq 'if(!jei.isEmpty()&&searchBox.getValue().isEmpty())' source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
+          grep -Fq 'RC27_RESET_SEARCH_AFTER_JEI_INIT' source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
           echo "path=$OUT" >> "$GITHUB_OUTPUT"; echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"; sha256sum "$OUT" > "$OUT.sha256"
       - name: Upload finished JAR for ChatGPT
         uses: actions/upload-artifact@v4
@@ -162,4 +166,4 @@ jobs:
         env: {JAR: '${{ steps.jar.outputs.path }}', JAR_NAME: '${{ steps.jar.outputs.name }}'}
         run: |
           mkdir -p builds/jars; cp "$JAR" "builds/jars/$JAR_NAME"; cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc26 - $JAR_NAME" && git push)
+          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc27 - $JAR_NAME" && git push)
