@@ -1,0 +1,84 @@
+name: RC41 Source Diagnostic
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/RC41_DIAG_TRIGGER']
+permissions: {contents: read}
+concurrency: {group: xsxlabs-rc41-source-diagnostic, cancel-in-progress: true}
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with: {repository: xSxLabs/ObsidianNetwork-Build, ref: rc41-runtime-fixes, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
+      - name: Reconstruct exact production source chain and apply RC41
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir project
+          cat payload/compile-src.part* | base64 -d | tar -xJ -C project
+          cat payload/rc4-resources.part* | base64 -d | tar -xJ -C project
+          cat payload/rc6-overlay.part* | base64 -d | tar -xJ -C project
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java');p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
+          PY
+          python3 .github/scripts/gen_rc6_assets.py
+          cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
+          rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
+          python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python3 .github/scripts/gen_rc7_assets.py
+          for s in rc7_compile_fix rc12_fix rc13_fix rc13_finalize rc14_fix rc15_fix rc16_fix rc16_persist_fix rc16_terminal_visual_final rc17_fix rc18_fix rc19_fix rc20_fix rc21_fix rc22_fix rc24_fix rc24_followup_fix rc24_job_buffer_fix rc24_facade_fix rc26_fix rc27_followup rc28_fix rc32_followup rc33_followup rc34_followup rc35_followup rc36_followup rc36_asset_size_fix rc37_followup rc37_speed_fix rc37_iron_furnaces_factory_fix rc37_manual_crafting_perf_fix rc37_animated_texture_verify_fix rc38_followup rc39_followup rc40_ironfurnaces_native_fix rc41_factory_and_lang_fix rc43_furnace_split_fix rc44_furnace_compat_fix rc45_ironfurnaces_native_fix rc46_ironfurnaces_capability_fix rc47_autocraft_diag rc48_cancel_detach_fix rc49_cleanup_busy_release_fix rc50_survival_audit_fix rc51_server_quiet_logging rc51_localization_hotfix; do python3 ".github/scripts/$s.py"; done
+          for s in rc52_connected_fronts_code rc52_safety_hardening rc52_4_cell_sync_fix rc52_6_critical_hotfix rc52_7_five_fixes rc52_7_compile_fix rc52_8_jei_network_fix rc52_9_jei_plus_network_fix rc52_11_five_fixes rc52_11_compile_fix rc52_11_extra_core_fixes rc52_11_durability_sync; do python3 ".github/scripts/$s.py"; done
+          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 >/tmp/a.py; python3 /tmp/a.py
+          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 >/tmp/b.py; python3 /tmp/b.py
+          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 >/tmp/c.py; python3 /tmp/c.py
+          for s in rc52_17_compile_fix rc52_18_four_fixes rc52_19_three_regression_fixes rc52_19_jei_missing_clear_search rc52_19_importer_exporter_rotating_port rc52_19_curios_slot_texture_fix rc52_19_foreign_energy_compat; do python3 ".github/scripts/$s.py"; done
+          set +e
+          python3 .github/scripts/rc76_01_special_terminals.py
+          echo $? >/tmp/rc41-wrapper-status
+          set -e
+      - name: Print final transformed ownership and topology anchors
+        if: always()
+        working-directory: source
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          J=Path('project/src/main/java')
+          def one(n):
+            p=next(J.rglob(n),None)
+            if not p: raise SystemExit('missing '+n)
+            return p
+          def methods(path,names):
+            s=path.read_text(); print('\n===== '+str(path)+' =====')
+            for name in names:
+              for m in re.finditer(r'(?m)^.*\\b'+re.escape(name)+r'\\s*\\([^;]*\\)\\s*\\{',s):
+                b=s.find('{',m.start()); d=0
+                for e in range(b,len(s)):
+                  if s[e]=='{': d+=1
+                  elif s[e]=='}':
+                    d-=1
+                    if d==0:
+                      print('\n--- '+name+' ---\n'+s[m.start():e+1]); break
+                break
+          methods(one('MinecraftAutocraftingService.java'),['request','ensure','canProvide','craftInstant','brewInstant','queueCrafting','queueProcessing','reserveAvailable','consumeBuffered','startOne','startVanillaFurnace','cancel','save','load'])
+          methods(one('WorldTopologyBridge.java'),['refreshConnectedVisuals','rebuild','tick','onLoad','onUnload','runtimeForNode'])
+          methods(one('StorageTerminalBlock.java'),['StorageTerminalBlock','createBlockStateDefinition','getStateForPlacement','onPlace','onRemove'])
+          methods(one('TemplateCreatorMenu.java'),['currentTemplate','rebuildPreview','patternType'])
+      - name: Print final call sites
+        if: always()
+        working-directory: source
+        shell: bash
+        run: |
+          echo "wrapper status: $(cat /tmp/rc41-wrapper-status 2>/dev/null || echo missing)"
+          grep -RFn 'refreshConnectedVisuals(' project/src/main/java || true
+          grep -RFn 'runtime.storage().extract' project/src/main/java/dev/obsidiannetwork || true
+          grep -RFn 'runtime.storage().insert' project/src/main/java/dev/obsidiannetwork || true
+          grep -RFn 'rc41PlanPools\|rc41RequestPlanOwners\|rc41PlanTargets' project/src/main/java/dev/obsidiannetwork || true
+          grep -RFn 'processingRequests.remove\|craftJobs.remove\|it.remove()' project/src/main/java/dev/obsidiannetwork || true
+          grep -RFn 'BREWING_TERMINAL' project/src/main/java/dev/obsidiannetwork || true
+          grep -RFn 'CONNECTED' project/src/main/java/dev/obsidiannetwork/block/StorageTerminalBlock.java || true
