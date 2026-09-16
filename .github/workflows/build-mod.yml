@@ -82,19 +82,19 @@ jobs:
         run: |
           rm -rf /tmp/xsxlabs-assets-before; mkdir -p /tmp/xsxlabs-assets-before
           find src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
-      - name: Apply 0.76 rc23 fixes
+      - name: Apply 0.76 rc24 fixes
         working-directory: source
         run: python3 .github/scripts/rc76_01_special_terminals.py
-      - name: Force rc23 metadata
+      - name: Force rc24 metadata
         working-directory: source/project
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
           for p in Path('src/main/resources').rglob('neoforge.mods.toml'):
-            s=p.read_text();s=re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc23"',s);p.write_text(s)
+            s=p.read_text();s=re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc24"',s);p.write_text(s)
           gp=Path('gradle.properties')
-          if gp.exists(): gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc23',gp.read_text()))
+          if gp.exists(): gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc24',gp.read_text()))
           PY
       - name: Stage only 0.76 asset changes
         working-directory: source/project
@@ -124,16 +124,19 @@ jobs:
         run: |
           set -euo pipefail
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
-          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc23.jar"
+          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc24.jar"
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
-          # Keep brewing_terminal.png: the old chassis model really references it. rc22 deleted it and caused the magenta/black runtime model.
+          # The exact RC12 chassis references brewing_terminal.png. It MUST stay in the final JAR.
           zip -dq "$OUT" assets/obsidiannetwork/models/block/brewing_terminal.json || true
           unzip -t "$OUT"
-          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc23"'
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc24"'
           unzip -Z1 "$OUT" | grep -q '^assets/obsidiannetwork/textures/block/brewing_terminal.png$'
-          for f in auto_brewer.json auto_brewer_connected.json; do unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'obsidiannetwork:block/brewing_terminal'; ! unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'minecraft:item/glass_bottle'; done
+          for f in auto_brewer.json auto_brewer_connected.json; do
+            unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'obsidiannetwork:block/brewing_terminal'
+            unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'minecraft:item/glass_bottle'
+          done
           unzip -p "$OUT" assets/obsidiannetwork/models/item/brewing_terminal.json | grep -q 'obsidiannetwork:block/auto_brewer'
           unzip -p "$OUT" assets/obsidiannetwork/lang/en_us.json | grep -q '"block.obsidiannetwork.brewing_terminal"[[:space:]]*:[[:space:]]*"Auto Brewer"'
           ! unzip -p "$OUT" assets/obsidiannetwork/lang/en_us.json | grep -q 'Wireless Crafting Terminal'
@@ -142,6 +145,7 @@ jobs:
           grep -q 'SimpleContainer' /tmp/brewmenu.txt
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.BrewingTerminalScreen > /tmp/brewscreen.txt
           grep -q 'Current potion' /tmp/brewscreen.txt
+          grep -q 'getSlot' /tmp/brewscreen.txt
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.TemplateCreatorScreen > /tmp/template.txt
           for x in CRAFTING_TABLE FURNACE STONECUTTER BREWING_STAND; do grep -q "$x" /tmp/template.txt; done
           ! grep -R -q 'Kosten\|Leere Bücher\|Leere Buecher' source/project/src/main/java source/project/src/main/resources/assets/obsidiannetwork/lang
@@ -156,4 +160,4 @@ jobs:
         env: {JAR: '${{ steps.jar.outputs.path }}', JAR_NAME: '${{ steps.jar.outputs.name }}'}
         run: |
           mkdir -p builds/jars; cp "$JAR" "builds/jars/$JAR_NAME"; cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc23 - $JAR_NAME" && git push)
+          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc24 - $JAR_NAME" && git push)
