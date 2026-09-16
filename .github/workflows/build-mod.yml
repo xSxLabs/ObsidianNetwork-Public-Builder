@@ -82,19 +82,19 @@ jobs:
         run: |
           rm -rf /tmp/xsxlabs-assets-before; mkdir -p /tmp/xsxlabs-assets-before
           find src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
-      - name: Apply 0.76 rc15 fixes
+      - name: Apply 0.76 rc16 fixes
         working-directory: source
         run: python3 .github/scripts/rc76_01_special_terminals.py
-      - name: Force rc15 metadata
+      - name: Force rc16 metadata
         working-directory: source/project
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
           for p in Path('src/main/resources').rglob('neoforge.mods.toml'):
-            s=p.read_text();s=re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc15"',s);p.write_text(s)
+            s=p.read_text();s=re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc16"',s);p.write_text(s)
           gp=Path('gradle.properties')
-          if gp.exists(): gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc15',gp.read_text()))
+          if gp.exists(): gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc16',gp.read_text()))
           PY
       - name: Stage only 0.76 asset changes
         working-directory: source/project
@@ -124,13 +124,13 @@ jobs:
         run: |
           set -euo pipefail
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
-          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc15.jar"
+          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc16.jar"
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
           unzip -t "$OUT"
           test $(unzip -Z1 "$OUT" | grep '^assets/obsidiannetwork/' | grep -v '/$' | wc -l) -ge 544
-          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc15"'
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc16"'
           unzip -Z1 "$OUT" | grep -q '^data/curios/tags/items/network_terminal.json$'
           echo "path=$OUT" >> "$GITHUB_OUTPUT"; echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"; sha256sum "$OUT" > "$OUT.sha256"
       - name: Upload finished JAR for ChatGPT
@@ -143,4 +143,4 @@ jobs:
         env: {JAR: '${{ steps.jar.outputs.path }}', JAR_NAME: '${{ steps.jar.outputs.name }}'}
         run: |
           mkdir -p builds/jars; cp "$JAR" "builds/jars/$JAR_NAME"; cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc15 - $JAR_NAME" && git push)
+          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc16 - $JAR_NAME" && git push)
