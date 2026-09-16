@@ -21,24 +21,17 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: 0.76.0-rc11
+          ref: 0.76.0-rc12
           token: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
           path: source
           fetch-depth: 1
-      - name: Capture private source revision
-        id: source
-        shell: bash
-        run: |
-          set -euo pipefail
-          SOURCE_SHA=$(git -C source rev-parse HEAD)
-          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
       - name: Set up Java 25
         uses: actions/setup-java@v5
         with: {distribution: temurin, java-version: '25'}
       - name: Set up Gradle 9.7.1
         uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '9.7.1'}
-      - name: Reconstruct confirmed rc52.19 source
+      - name: Reconstruct confirmed baseline
         working-directory: source
         shell: bash
         run: |
@@ -89,9 +82,20 @@ jobs:
         run: |
           rm -rf /tmp/xsxlabs-assets-before; mkdir -p /tmp/xsxlabs-assets-before
           find src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
-      - name: Apply 0.76 rc11 special terminals and brewing
+      - name: Apply 0.76 rc12 fixes
         working-directory: source
         run: python3 .github/scripts/rc76_01_special_terminals.py
+      - name: Force rc12 metadata
+        working-directory: source/project
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          for p in Path('src/main/resources').rglob('neoforge.mods.toml'):
+            s=p.read_text();s=re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc12"',s);p.write_text(s)
+          gp=Path('gradle.properties')
+          if gp.exists(): gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc12',gp.read_text()))
+          PY
       - name: Stage only 0.76 asset changes
         working-directory: source/project
         run: |
@@ -120,13 +124,14 @@ jobs:
         run: |
           set -euo pipefail
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
-          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc11.jar"
+          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc12.jar"
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
           unzip -t "$OUT"
           test $(unzip -Z1 "$OUT" | grep '^assets/obsidiannetwork/' | grep -v '/$' | wc -l) -ge 544
-          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc11"'
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc12"'
+          unzip -Z1 "$OUT" | grep -q '^data/curios/tags/items/network_terminal.json$'
           echo "path=$OUT" >> "$GITHUB_OUTPUT"; echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"; sha256sum "$OUT" > "$OUT.sha256"
       - name: Upload finished JAR for ChatGPT
         uses: actions/upload-artifact@v4
@@ -138,4 +143,4 @@ jobs:
         env: {JAR: '${{ steps.jar.outputs.path }}', JAR_NAME: '${{ steps.jar.outputs.name }}'}
         run: |
           mkdir -p builds/jars; cp "$JAR" "builds/jars/$JAR_NAME"; cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc11 - $JAR_NAME" && git push)
+          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc12 - $JAR_NAME" && git push)
