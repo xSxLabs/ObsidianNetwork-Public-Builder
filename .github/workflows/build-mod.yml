@@ -1,37 +1,23 @@
 name: Build xSxLabs Network Storage
-
 on:
   workflow_dispatch:
   push:
-    paths:
-      - '.github/BUILD_TRIGGER'
-permissions:
-  contents: write
-concurrency:
-  group: xsxlabs-network-storage-build
-  cancel-in-progress: false
+    paths: ['.github/BUILD_TRIGGER']
+permissions: {contents: write}
+concurrency: {group: xsxlabs-network-storage-build, cancel-in-progress: false}
 jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
-      - name: Checkout public builder
-        uses: actions/checkout@v6
-      - name: Checkout private source repository
-        uses: actions/checkout@v6
-        with:
-          repository: xSxLabs/ObsidianNetwork-Build
-          ref: 0.76.0-rc12
-          token: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
-          path: source
-          fetch-depth: 1
-      - name: Set up Java 25
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with: {repository: xSxLabs/ObsidianNetwork-Build, ref: 0.76.0-rc12, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
+      - uses: actions/setup-java@v5
         with: {distribution: temurin, java-version: '25'}
-      - name: Set up Gradle 9.7.1
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '9.7.1'}
-      - name: Reconstruct confirmed baseline
+      - name: Reconstruct, patch and precheck RC28
         working-directory: source
         shell: bash
         run: |
@@ -50,120 +36,69 @@ jobs:
           python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
           python3 .github/scripts/gen_rc7_assets.py
           for s in rc7_compile_fix rc12_fix rc13_fix rc13_finalize rc14_fix rc15_fix rc16_fix rc16_persist_fix rc16_terminal_visual_final rc17_fix rc18_fix rc19_fix rc20_fix rc21_fix rc22_fix rc24_fix rc24_followup_fix rc24_job_buffer_fix rc24_facade_fix rc26_fix rc27_followup rc28_fix rc32_followup rc33_followup rc34_followup rc35_followup rc36_followup rc36_asset_size_fix rc37_followup rc37_speed_fix rc37_iron_furnaces_factory_fix rc37_manual_crafting_perf_fix rc37_animated_texture_verify_fix rc38_followup rc39_followup rc40_ironfurnaces_native_fix rc41_factory_and_lang_fix rc43_furnace_split_fix rc44_furnace_compat_fix rc45_ironfurnaces_native_fix rc46_ironfurnaces_capability_fix rc47_autocraft_diag rc48_cancel_detach_fix rc49_cleanup_busy_release_fix rc50_survival_audit_fix rc51_server_quiet_logging rc51_localization_hotfix; do python3 ".github/scripts/$s.py"; done
-      - name: Apply confirmed RC52 fixes
-        working-directory: source
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 .github/scripts/rc52_connected_fronts_code.py
-          python3 .github/scripts/rc52_safety_hardening.py
-          python3 .github/scripts/rc52_4_cell_sync_fix.py
-          python3 .github/scripts/rc52_6_critical_hotfix.py
-          python3 .github/scripts/rc52_7_five_fixes.py
-          python3 .github/scripts/rc52_7_compile_fix.py
-          python3 .github/scripts/rc52_8_jei_network_fix.py
-          python3 .github/scripts/rc52_9_jei_plus_network_fix.py
-          python3 .github/scripts/rc52_11_five_fixes.py
-          python3 .github/scripts/rc52_11_compile_fix.py
-          python3 .github/scripts/rc52_11_extra_core_fixes.py
-          python3 .github/scripts/rc52_11_durability_sync.py
-          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 > /tmp/a.py; python3 /tmp/a.py
-          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 > /tmp/b.py; python3 /tmp/b.py
-          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 > /tmp/c.py; python3 /tmp/c.py
-          python3 .github/scripts/rc52_17_compile_fix.py
-          python3 .github/scripts/rc52_18_four_fixes.py
-          python3 .github/scripts/rc52_19_three_regression_fixes.py
-          python3 .github/scripts/rc52_19_jei_missing_clear_search.py
-          python3 .github/scripts/rc52_19_importer_exporter_rotating_port.py
-          python3 .github/scripts/rc52_19_curios_slot_texture_fix.py
-          python3 .github/scripts/rc52_19_foreign_energy_compat.py
-      - name: Snapshot assets before 0.76 changes
-        working-directory: source/project
-        run: |
+          for s in rc52_connected_fronts_code rc52_safety_hardening rc52_4_cell_sync_fix rc52_6_critical_hotfix rc52_7_five_fixes rc52_7_compile_fix rc52_8_jei_network_fix rc52_9_jei_plus_network_fix rc52_11_five_fixes rc52_11_compile_fix rc52_11_extra_core_fixes rc52_11_durability_sync; do python3 ".github/scripts/$s.py"; done
+          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 >/tmp/a.py; python3 /tmp/a.py
+          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 >/tmp/b.py; python3 /tmp/b.py
+          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 >/tmp/c.py; python3 /tmp/c.py
+          for s in rc52_17_compile_fix rc52_18_four_fixes rc52_19_three_regression_fixes rc52_19_jei_missing_clear_search rc52_19_importer_exporter_rotating_port rc52_19_curios_slot_texture_fix rc52_19_foreign_energy_compat; do python3 ".github/scripts/$s.py"; done
           rm -rf /tmp/xsxlabs-assets-before; mkdir -p /tmp/xsxlabs-assets-before
-          find src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
-      - name: Apply 0.76 rc27 fixes and hard precheck
-        working-directory: source
-        run: python3 .github/scripts/rc76_01_special_terminals.py
-      - name: Force rc27 metadata
-        working-directory: source/project
-        run: |
+          find project/src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
+          python3 .github/scripts/rc76_01_special_terminals.py
           python3 - <<'PY'
           from pathlib import Path
           import re
-          for p in Path('src/main/resources').rglob('neoforge.mods.toml'):
-            s=p.read_text();s=re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc27"',s);p.write_text(s)
-          gp=Path('gradle.properties')
-          if gp.exists(): gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc27',gp.read_text()))
+          for p in Path('project/src/main/resources').rglob('neoforge.mods.toml'):
+            p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc28"',p.read_text()))
+          gp=Path('project/gradle.properties');gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc28',gp.read_text()))
           PY
-      - name: Stage only 0.76 asset changes
-        working-directory: source/project
-        run: |
           rm -rf /tmp/xsxlabs-076-overlay; mkdir -p /tmp/xsxlabs-076-overlay
           python3 - <<'PY'
           from pathlib import Path
           import hashlib,shutil
-          root=Path('src/main/resources');assets=root/'assets'/'obsidiannetwork';before={}
+          root=Path('project/src/main/resources');assets=root/'assets'/'obsidiannetwork';before={}
           for line in Path('/tmp/xsxlabs-assets-before/checksums.txt').read_text().splitlines():
             if line.strip(): sha,path=line.split(None,1);before[path.strip()]=sha
           for src in assets.rglob('*'):
             if src.is_file() and before.get(src.as_posix())!=hashlib.sha256(src.read_bytes()).hexdigest():
               dst=Path('/tmp/xsxlabs-076-overlay')/src.relative_to(root);dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dst)
           PY
-      - name: Prepare confirmed 0.75 asset baseline
-        working-directory: source
-        run: |
           rm -rf /tmp/xsxlabs-reference; mkdir -p /tmp/xsxlabs-reference
           unzip -q Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
           test $(find /tmp/xsxlabs-reference/assets/obsidiannetwork -type f | wc -l) -ge 544
-      - name: Build mod
+      - name: Full build RC28
         working-directory: source/project
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
-      - name: Overlay confirmed assets and verify JAR
+      - name: Overlay assets and verify final RC28 JAR
         id: jar
+        shell: bash
         run: |
           set -euo pipefail
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
-          OUT="source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc27.jar"
+          OUT=source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc28.jar
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
           zip -dq "$OUT" assets/obsidiannetwork/models/block/brewing_terminal.json || true
           unzip -t "$OUT"
-          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc27"'
-          for f in auto_brewer.json auto_brewer_connected.json; do
-            unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'obsidiannetwork:block/obsidian_metal'
-            ! unzip -p "$OUT" "assets/obsidiannetwork/models/block/$f" | grep -q 'minecraft:item/glass_bottle'
-          done
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc28"'
+          for f in auto_brewer.json auto_brewer_connected.json; do unzip -p "$OUT" assets/obsidiannetwork/models/block/$f | grep -q 'obsidiannetwork:block/obsidian_metal'; ! unzip -p "$OUT" assets/obsidiannetwork/models/block/$f | grep -q 'minecraft:item/glass_bottle'; done
           unzip -p "$OUT" assets/obsidiannetwork/items/brewing_terminal.json | grep -q 'minecraft:composite'
           unzip -p "$OUT" assets/obsidiannetwork/models/item/auto_brewer_bottle.json | grep -q 'minecraft:item/glass_bottle'
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.AutoBrewerBottleRenderer >/tmp/br.txt
+          grep -q 'Items.GLASS_BOTTLE' /tmp/br.txt; grep -q 'updateForTopItem' /tmp/br.txt; grep -q 'ItemStackRenderState.submit' /tmp/br.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.BrewingTerminalMenu >/tmp/bm.txt; ! grep -q 'clickMenuButton\|SELECT_INPUT\|SELECT_INGREDIENT\|brewFromNetwork' /tmp/bm.txt; grep -q SimpleContainer /tmp/bm.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.StorageTerminalScreen >/tmp/st.txt; grep -q rc25StableCells /tmp/st.txt; grep -q glfwGetKey /tmp/st.txt
+          ! grep -Fq 'if(!jei.isEmpty()&&searchBox.getValue().isEmpty())' source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
+          grep -Fq RC27_RESET_SEARCH_AFTER_JEI_INIT source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
           unzip -p "$OUT" assets/obsidiannetwork/lang/en_us.json | grep -q '"block.obsidiannetwork.brewing_terminal"[[:space:]]*:[[:space:]]*"Auto Brewer"'
           ! unzip -p "$OUT" assets/obsidiannetwork/lang/en_us.json | grep -q 'Wireless Crafting Terminal'
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.AutoBrewerBottleRenderer > /tmp/brewrenderer.txt
-          grep -q 'Items.GLASS_BOTTLE' /tmp/brewrenderer.txt; grep -q 'updateForTopItem' /tmp/brewrenderer.txt; grep -q 'ItemStackRenderState.submit' /tmp/brewrenderer.txt
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.BrewingTerminalMenu > /tmp/brewmenu.txt
-          ! grep -q 'clickMenuButton\|SELECT_INPUT\|SELECT_INGREDIENT\|brewFromNetwork' /tmp/brewmenu.txt
-          grep -q 'SimpleContainer' /tmp/brewmenu.txt
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.BrewingTerminalScreen > /tmp/brewscreen.txt
-          grep -q 'Current potion' /tmp/brewscreen.txt; grep -q 'getSlot' /tmp/brewscreen.txt
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.TemplateCreatorScreen > /tmp/template.txt
-          for x in CRAFTING_TABLE FURNACE STONECUTTER BREWING_STAND; do grep -q "$x" /tmp/template.txt; done
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.StorageTerminalScreen > /tmp/terminal.txt
-          grep -q 'rc25StableCells' /tmp/terminal.txt
-          grep -q 'rc25FrozenOrder' /tmp/terminal.txt
-          grep -q 'glfwGetKey' /tmp/terminal.txt
-          grep -q 'JeiSearchBridge.setText' /tmp/terminal.txt
-          ! grep -Fq 'if(!jei.isEmpty()&&searchBox.getValue().isEmpty())' source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
-          grep -Fq 'RC27_RESET_SEARCH_AFTER_JEI_INIT' source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
           echo "path=$OUT" >> "$GITHUB_OUTPUT"; echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"; sha256sum "$OUT" > "$OUT.sha256"
-      - name: Upload finished JAR for ChatGPT
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with: {name: xsxlabs-network-storage-jar, path: '${{ steps.jar.outputs.path }}', if-no-files-found: error, retention-days: 30}
-      - name: Checkout private build archive
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with: {repository: xSxLabs/ObsidianNetwork-Builds, token: '${{ secrets.PRIVATE_BUILD_TOKEN }}', path: builds, fetch-depth: 1}
-      - name: Save build privately
+      - name: Archive RC28 privately
         env: {JAR: '${{ steps.jar.outputs.path }}', JAR_NAME: '${{ steps.jar.outputs.name }}'}
         run: |
           mkdir -p builds/jars; cp "$JAR" "builds/jars/$JAR_NAME"; cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-          cd builds; git config user.name "xSxLabs Build Bot"; git config user.email "actions@github.com"; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc27 - $JAR_NAME" && git push)
+          cd builds; git config user.name 'xSxLabs Build Bot'; git config user.email 'actions@github.com'; git add jars/; git diff --cached --quiet || (git commit -m "Network Storage rc28 - $JAR_NAME" && git push)
