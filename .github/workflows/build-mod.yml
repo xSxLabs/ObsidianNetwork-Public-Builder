@@ -17,7 +17,7 @@ jobs:
         with: {distribution: temurin, java-version: '25'}
       - uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '9.7.1'}
-      - name: Reconstruct, patch and precheck RC37
+      - name: Reconstruct and precheck RC38
         working-directory: source
         shell: bash
         run: |
@@ -47,15 +47,14 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import re
-          for p in Path('project/src/main/resources').rglob('neoforge.mods.toml'):p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc37"',p.read_text()))
-          gp=Path('project/gradle.properties');gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc37',gp.read_text()))
-          # RC37 source-level behavioral gates.
-          tm=next(Path('project/src/main/java').rglob('TemplateCreatorMenu.java')).read_text();ts=next(Path('project/src/main/java').rglob('TemplateCreatorScreen.java')).read_text();ac=next(Path('project/src/main/java').rglob('MinecraftAutocraftingService.java')).read_text();wb=next(Path('project/src/main/java').rglob('WorldTopologyBridge.java')).read_text()
-          assert 'rc37ManualTemplate' in tm and 'rc36ManualTemplate()' not in tm and 'preview.setItem(0,net.minecraft.world.item.ItemStack.EMPTY)' in tm
-          assert 'menu.patternTypeValue()==0' in ts
-          assert 'RC37_ATOMIC_FULL_REQUEST_RESERVATION' in ac and 'if(got!=missing)' in ac and 'atomic reservation rollback failed' in ac
-          assert 'Math.min(missing,runtime.storage().index().amount(b.descriptor().key()))' not in ac
-          assert 'RC37_REFRESH_AUTO_BREWER_CONNECTED' in wb and 'manager.graph().component(root)' in wb
+          for p in Path('project/src/main/resources').rglob('neoforge.mods.toml'):p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc38"',p.read_text()))
+          gp=Path('project/gradle.properties');gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc38',gp.read_text()))
+          tm=next(Path('project/src/main/java').rglob('TemplateCreatorMenu.java')).read_text();wb=next(Path('project/src/main/java').rglob('WorldTopologyBridge.java')).read_text();ac=next(Path('project/src/main/java').rglob('MinecraftAutocraftingService.java')).read_text()
+          assert 'backing.getItem(10)' in tm and 'isActive(){return patternType()==0;}' in tm
+          assert 'type==1' in tm and 'Kind.STONECUTTING' in tm and 'type==2' in tm and 'Kind.SMELTING' in tm and 'type==3' in tm and 'Kind.BREWING' in tm
+          assert 'if(patternType()!=0)return rc37ManualTemplate()' not in tm and 'if(patternType()==3)return rc32BrewingTemplate()' not in tm
+          assert 'connectedNodes.addAll(s.manager.graph().component(root))' in wb and 'Block.UPDATE_ALL_IMMEDIATE' in wb and 'RC37_REFRESH_AUTO_BREWER_CONNECTED' not in wb
+          assert 'RC37_ATOMIC_FULL_REQUEST_RESERVATION' in ac
           assert 'RC27_RESET_SEARCH_AFTER_JEI_INIT' in next(Path('project/src/main/java').rglob('StorageTerminalScreen.java')).read_text()
           PY
           rm -rf /tmp/xsxlabs-076-overlay; mkdir -p /tmp/xsxlabs-076-overlay
@@ -71,37 +70,37 @@ jobs:
           PY
           rm -rf /tmp/xsxlabs-reference; mkdir -p /tmp/xsxlabs-reference
           unzip -q Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
-      - name: Full build RC37
+      - name: Full build RC38
         working-directory: source/project
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
-      - name: Overlay assets and verify final RC37 JAR
+      - name: Overlay assets and verify final RC38 JAR
         id: jar
         shell: bash
         run: |
           set -euo pipefail
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
-          OUT=source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc37.jar
+          OUT=source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc38.jar
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
           zip -dq "$OUT" assets/obsidiannetwork/models/block/brewing_terminal.json || true
           unzip -t "$OUT"
-          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc37"'
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc38"'
           for f in auto_brewer.json auto_brewer_connected.json; do test $(unzip -p "$OUT" assets/obsidiannetwork/models/block/$f | grep -c '"from"') -eq 5; done
-          unzip -p "$OUT" assets/obsidiannetwork/models/block/auto_brewer_connected.json | grep -q '"light_emission": 15'
           BS=$(unzip -p "$OUT" assets/obsidiannetwork/blockstates/brewing_terminal.json); test $(printf '%s' "$BS" | grep -c 'auto_brewer_connected') -eq 4
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.TemplateCreatorMenu >/tmp/tm.txt; grep -q rc37ManualTemplate /tmp/tm.txt
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.platform.MinecraftAutocraftingService >/tmp/ac.txt; grep -q reserveAvailable /tmp/ac.txt; grep -q restoreBuffer /tmp/ac.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.TemplateCreatorMenu >/tmp/tm.txt
+          grep -q 'bipush        10' /tmp/tm.txt; grep -q 'AutocraftTemplate\$Kind.STONECUTTING' /tmp/tm.txt; grep -q 'AutocraftTemplate\$Kind.SMELTING' /tmp/tm.txt; grep -q 'AutocraftTemplate\$Kind.BREWING' /tmp/tm.txt
+          javap -classpath "$OUT" -c -p 'dev.obsidiannetwork.menu.TemplateCreatorMenu$2' >/tmp/previewslot.txt; grep -q 'isActive' /tmp/previewslot.txt; grep -q 'patternType' /tmp/previewslot.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.network.WorldTopologyBridge >/tmp/wb.txt; grep -q 'UPDATE_ALL_IMMEDIATE\|iconst_3' /tmp/wb.txt; grep -q 'NetworkGraph.component' /tmp/wb.txt
           grep -Fq RC37_ATOMIC_FULL_REQUEST_RESERVATION source/project/src/main/java/dev/obsidiannetwork/platform/MinecraftAutocraftingService.java
-          grep -Fq RC37_REFRESH_AUTO_BREWER_CONNECTED source/project/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
           grep -Fq RC27_RESET_SEARCH_AFTER_JEI_INIT source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
           echo "path=$OUT" >> "$GITHUB_OUTPUT";echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT";sha256sum "$OUT" > "$OUT.sha256"
       - uses: actions/upload-artifact@v4
         with: {name: xsxlabs-network-storage-jar, path: '${{ steps.jar.outputs.path }}', if-no-files-found: error, retention-days: 30}
       - uses: actions/checkout@v6
         with: {repository: xSxLabs/ObsidianNetwork-Builds, token: '${{ secrets.PRIVATE_BUILD_TOKEN }}', path: builds, fetch-depth: 1}
-      - name: Archive RC37 privately
+      - name: Archive RC38 privately
         env: {JAR: '${{ steps.jar.outputs.path }}', JAR_NAME: '${{ steps.jar.outputs.name }}'}
         run: |
           mkdir -p builds/jars;cp "$JAR" "builds/jars/$JAR_NAME";cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-          cd builds;git config user.name 'xSxLabs Build Bot';git config user.email 'actions@github.com';git add jars/;git diff --cached --quiet || (git commit -m "Network Storage rc37 - $JAR_NAME" && git push)
+          cd builds;git config user.name 'xSxLabs Build Bot';git config user.email 'actions@github.com';git add jars/;git diff --cached --quiet || (git commit -m "Network Storage rc38 - $JAR_NAME" && git push)
