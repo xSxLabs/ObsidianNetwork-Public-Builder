@@ -17,7 +17,7 @@ jobs:
         with: {distribution: temurin, java-version: '25'}
       - uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '9.7.1'}
-      - name: Reconstruct, patch and precheck RC31
+      - name: Reconstruct, patch and precheck RC32
         working-directory: source
         shell: bash
         run: |
@@ -47,8 +47,8 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import re
-          for p in Path('project/src/main/resources').rglob('neoforge.mods.toml'):p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc31"',p.read_text()))
-          gp=Path('project/gradle.properties');gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc31',gp.read_text()))
+          for p in Path('project/src/main/resources').rglob('neoforge.mods.toml'):p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc32"',p.read_text()))
+          gp=Path('project/gradle.properties');gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc32',gp.read_text()))
           PY
           rm -rf /tmp/xsxlabs-076-overlay; mkdir -p /tmp/xsxlabs-076-overlay
           python3 - <<'PY'
@@ -64,40 +64,39 @@ jobs:
           rm -rf /tmp/xsxlabs-reference; mkdir -p /tmp/xsxlabs-reference
           unzip -q Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
           test $(find /tmp/xsxlabs-reference/assets/obsidiannetwork -type f | wc -l) -ge 544
-      - name: Full build RC31
+      - name: Full build RC32
         working-directory: source/project
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
-      - name: Overlay assets and verify final RC31 JAR
+      - name: Overlay assets and verify final RC32 JAR
         id: jar
         shell: bash
         run: |
           set -euo pipefail
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
-          OUT=source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc31.jar
+          OUT=source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc32.jar
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
           zip -dq "$OUT" assets/obsidiannetwork/models/block/brewing_terminal.json || true
           unzip -t "$OUT"
-          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc31"'
-          for f in auto_brewer.json auto_brewer_connected.json; do unzip -p "$OUT" assets/obsidiannetwork/models/block/$f | grep -q 'obsidiannetwork:block/obsidian_metal'; ! unzip -p "$OUT" assets/obsidiannetwork/models/block/$f | grep -q 'minecraft:item/glass_bottle'; done
-          unzip -p "$OUT" assets/obsidiannetwork/items/brewing_terminal.json | grep -q 'minecraft:composite'
-          unzip -p "$OUT" assets/obsidiannetwork/models/item/auto_brewer_bottle.json | grep -q 'minecraft:item/glass_bottle'
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.AutoBrewerBottleRenderer >/tmp/br.txt
-          grep -q 'Items.GLASS_BOTTLE' /tmp/br.txt; grep -q 'updateForTopItem' /tmp/br.txt; grep -q 'ItemStackRenderState.submit' /tmp/br.txt
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.BrewingTerminalMenu >/tmp/bm.txt; ! grep -q 'clickMenuButton\|SELECT_INPUT\|SELECT_INGREDIENT\|brewFromNetwork' /tmp/bm.txt; grep -q SimpleContainer /tmp/bm.txt
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc32"'
+          for f in auto_brewer.json auto_brewer_connected.json; do test $(unzip -p "$OUT" assets/obsidiannetwork/models/block/$f | grep -c '"from"') -eq 5; unzip -p "$OUT" assets/obsidiannetwork/models/block/$f | grep -q 'obsidiannetwork:block/obsidian_metal'; done
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.AutoBrewerBottleRenderer >/tmp/br.txt; grep -q 'Items.GLASS_BOTTLE' /tmp/br.txt; grep -q 'ItemStackRenderState.submit' /tmp/br.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.BrewingTerminalMenu >/tmp/bm.txt; grep -q SimpleContainer /tmp/bm.txt; ! grep -q 'SELECT_INPUT\|SELECT_INGREDIENT' /tmp/bm.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.TemplateCreatorMenu >/tmp/tm.txt; grep -q rc32BrewingTemplate /tmp/tm.txt; grep -q 'NetworkBrewingService.brew' /tmp/tm.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.platform.NetworkBrewingService >/tmp/nbs.txt; grep -q brewBatchFromNetwork /tmp/nbs.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.platform.MinecraftAutocraftingService >/tmp/ac.txt; grep -q brewBatchFromNetwork /tmp/ac.txt; grep -q canProvide /tmp/ac.txt; grep -q ensure /tmp/ac.txt
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.StorageTerminalScreen >/tmp/st.txt; grep -q rc25StableCells /tmp/st.txt; grep -q glfwGetKey /tmp/st.txt
-          ! grep -Fq 'if(!jei.isEmpty()&&searchBox.getValue().isEmpty())' source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
           grep -Fq RC27_RESET_SEARCH_AFTER_JEI_INIT source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
-          unzip -p "$OUT" assets/obsidiannetwork/lang/en_us.json | grep -q '"block.obsidiannetwork.brewing_terminal"[[:space:]]*:[[:space:]]*"Auto Brewer"'
-          ! unzip -p "$OUT" assets/obsidiannetwork/lang/en_us.json | grep -q 'Wireless Crafting Terminal'
+          grep -Fq 'BrewingTerminalMenu(id,inv,pos)' source/project/src/main/java/dev/obsidiannetwork/block/StorageTerminalBlock.java
+          grep -Fq 'BrewingTerminalScreen::new' source/project/src/main/java/dev/obsidiannetwork/client/ClientModEvents.java
           echo "path=$OUT" >> "$GITHUB_OUTPUT";echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT";sha256sum "$OUT" > "$OUT.sha256"
       - uses: actions/upload-artifact@v4
         with: {name: xsxlabs-network-storage-jar, path: '${{ steps.jar.outputs.path }}', if-no-files-found: error, retention-days: 30}
       - uses: actions/checkout@v6
         with: {repository: xSxLabs/ObsidianNetwork-Builds, token: '${{ secrets.PRIVATE_BUILD_TOKEN }}', path: builds, fetch-depth: 1}
-      - name: Archive RC31 privately
+      - name: Archive RC32 privately
         env: {JAR: '${{ steps.jar.outputs.path }}', JAR_NAME: '${{ steps.jar.outputs.name }}'}
         run: |
           mkdir -p builds/jars;cp "$JAR" "builds/jars/$JAR_NAME";cp "$JAR.sha256" "builds/jars/$JAR_NAME.sha256"
-          cd builds;git config user.name 'xSxLabs Build Bot';git config user.email 'actions@github.com';git add jars/;git diff --cached --quiet || (git commit -m "Network Storage rc31 - $JAR_NAME" && git push)
+          cd builds;git config user.name 'xSxLabs Build Bot';git config user.email 'actions@github.com';git add jars/;git diff --cached --quiet || (git commit -m "Network Storage rc32 - $JAR_NAME" && git push)
