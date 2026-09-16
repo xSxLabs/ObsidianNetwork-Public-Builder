@@ -83,7 +83,7 @@ jobs:
           unzip -p "$OUT" assets/obsidiannetwork/models/block/auto_brewer_connected.json | grep -q '"light_emission": 15'
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.BrewingTerminalScreen >/tmp/bs.txt; grep -q rc34Panel /tmp/bs.txt
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.TemplateCreatorMenu >/tmp/tm.txt; grep -q rc32BrewingTemplate /tmp/tm.txt
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.platform.MinecraftAutocraftingService >/tmp/ac.txt; grep -q rc34Reserved /tmp/ac.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.platform.MinecraftAutocraftingService >/tmp/ac.txt; grep -q 'BufferedInput' /tmp/ac.txt; grep -q 'extract' /tmp/ac.txt
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.platform.NetworkBrewingService >/tmp/nbs.txt; grep -q autoBrewerCount /tmp/nbs.txt
           grep -Fq RC27_RESET_SEARCH_AFTER_JEI_INIT source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
           echo "path=$OUT" >> "$GITHUB_OUTPUT";echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT";sha256sum "$OUT" > "$OUT.sha256"
