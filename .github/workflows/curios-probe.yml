@@ -1,0 +1,15 @@
+name: Probe RC10.1 Curios Basis
+on:
+  push:
+    paths: ['.github/workflows/curios-probe.yml']
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with: {repository: xSxLabs/ObsidianNetwork-Build, ref: rc10.1-hotfix, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
+      - name: Inspect Curios-only RC12 payload members
+        working-directory: source
+        run: python3 .github/scripts/rc10_1_curios_probe.py
