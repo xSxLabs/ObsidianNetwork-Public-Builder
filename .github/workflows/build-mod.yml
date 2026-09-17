@@ -52,7 +52,6 @@ jobs:
           new_gate="if 'screenModel.cellAtVisibleIndex(' in out or 'RC10_1_SHIFT_STABLE_SLOT_IDENTITY' not in out or 'rc10_1StableCells(' not in out: raise SystemExit('RC10.1 Shift-lock routing missing')"
           if old_gate not in s: raise SystemExit('RC10.1 builder shift-lock gate anchor missing')
           s=s.replace(old_gate,new_gate,1)
-          # RC10 Cell has no craftable() component. Preserve the original Cell objects and only freeze their order.
           s=s.replace("out.add(new dev.obsidiannetwork.core.TerminalScreenModel.Cell(i++,c.key(),c.amount(),c.craftable()));","out.add(c);")
           start=s.index("# 4) Stonecutting preview only.")
           end=s.index("# 5) Energy Cell capacities.")
@@ -66,7 +65,6 @@ jobs:
           from pathlib import Path
           import re
           root=Path('project')
-          # NeoForge 1.21.1 recipe API returns Optional<RecipeHolder<CraftingRecipe>> here.
           menu=next((root/'src/main/java').rglob('StorageTerminalMenu.java'))
           m=menu.read_text()
           old='Optional<RecipeHolder<? extends CraftingRecipe>> match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);'
@@ -107,4 +105,4 @@ jobs:
           sha256sum "$OUT" > "$OUT.sha256"
           echo "path=$OUT" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
-        with: {name: xsxlabs-network-storage-rc10.1-checkpoint, path: '${{ steps.jar.outputs.path }}', if-no-files-found: error, retention-days: 30}
+        with: {name: xsxlabs-network-storage-rc10.1-jar, path: '${{ steps.jar.outputs.path }}', if-no-files-found: error, retention-days: 30}
