@@ -1,0 +1,131 @@
+name: Build xSxLabs Network Storage RC42
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/RC42_BUILD_TRIGGER'
+permissions:
+  contents: read
+concurrency:
+  group: xsxlabs-network-storage-rc42
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: rc42-rc10-rebuild
+          token: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
+          path: source
+          fetch-depth: 1
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '25'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '9.7.1'}
+      - name: Reconstruct RC10 production base
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir project
+          cat payload/compile-src.part* | base64 -d | tar -xJ -C project
+          cat payload/rc4-resources.part* | base64 -d | tar -xJ -C project
+          cat payload/rc6-overlay.part* | base64 -d | tar -xJ -C project
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java')
+          p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
+          PY
+          python3 .github/scripts/gen_rc6_assets.py
+          cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
+          rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
+          python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python3 .github/scripts/gen_rc7_assets.py
+          for s in rc7_compile_fix rc12_fix rc13_fix rc13_finalize rc14_fix rc15_fix rc16_fix rc16_persist_fix rc16_terminal_visual_final rc17_fix rc18_fix rc19_fix rc20_fix rc21_fix rc22_fix rc24_fix rc24_followup_fix rc24_job_buffer_fix rc24_facade_fix rc26_fix rc27_followup rc28_fix rc32_followup rc33_followup rc34_followup rc35_followup rc36_followup rc36_asset_size_fix rc37_followup rc37_speed_fix rc37_iron_furnaces_factory_fix rc37_manual_crafting_perf_fix rc37_animated_texture_verify_fix rc38_followup rc39_followup rc40_ironfurnaces_native_fix rc41_factory_and_lang_fix rc43_furnace_split_fix rc44_furnace_compat_fix rc45_ironfurnaces_native_fix rc46_ironfurnaces_capability_fix rc47_autocraft_diag rc48_cancel_detach_fix rc49_cleanup_busy_release_fix rc50_survival_audit_fix rc51_server_quiet_logging rc51_localization_hotfix; do python3 ".github/scripts/$s.py"; done
+          for s in rc52_connected_fronts_code rc52_safety_hardening rc52_4_cell_sync_fix rc52_6_critical_hotfix rc52_7_five_fixes rc52_7_compile_fix rc52_8_jei_network_fix rc52_9_jei_plus_network_fix rc52_11_five_fixes rc52_11_compile_fix rc52_11_extra_core_fixes rc52_11_durability_sync; do python3 ".github/scripts/$s.py"; done
+          base64 -d .github/scripts/rc52_15_targeted_fixes.py.b64 >/tmp/a.py; python3 /tmp/a.py
+          base64 -d .github/scripts/rc52_16_three_final_fixes.py.b64 >/tmp/b.py; python3 /tmp/b.py
+          base64 -d .github/scripts/rc52_17_facade_durability_fix.py.b64 >/tmp/c.py; python3 /tmp/c.py
+          for s in rc52_17_compile_fix rc52_18_four_fixes rc52_19_three_regression_fixes rc52_19_jei_missing_clear_search rc52_19_importer_exporter_rotating_port rc52_19_curios_slot_texture_fix rc52_19_foreign_energy_compat; do python3 ".github/scripts/$s.py"; done
+          rm -rf /tmp/xsxlabs-assets-before; mkdir -p /tmp/xsxlabs-assets-before
+          find project/src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
+          python3 .github/scripts/rc76_01_special_terminals.py
+          python3 .github/scripts/rc76_10_terminal_transfer_fix.py
+      - name: Apply RC42 targeted port
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/rc42_port_runtime_fixes.py
+          python3 .github/scripts/rc42_port_preplan_normalize.py
+          python3 .github/scripts/rc42_port_brew_impl_compat.py
+          python3 .github/scripts/rc42_port_whole_plan_impl.py
+          python3 .github/scripts/rc42_port_machine_accounting.py
+          python3 .github/scripts/rc42_port_followup_runtime_fixes.py
+          python3 .github/scripts/rc42_port_compile_compat.py
+          python3 .github/scripts/rc42_final_runtime.py
+          python3 .github/scripts/rc42_port_whole_plan_reservation.py
+          python3 .github/scripts/rc42_port_ownership_executor_gate.py
+      - name: Stage RC42 assets and prepare baseline
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/xsxlabs-076-overlay; mkdir -p /tmp/xsxlabs-076-overlay
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,shutil
+          root=Path('project/src/main/resources'); assets=root/'assets'/'obsidiannetwork'; before={}
+          for line in Path('/tmp/xsxlabs-assets-before/checksums.txt').read_text().splitlines():
+            if line.strip(): sha,path=line.split(None,1);before[path.strip()]=sha
+          for src in assets.rglob('*'):
+            if src.is_file() and before.get(src.as_posix())!=hashlib.sha256(src.read_bytes()).hexdigest():
+              dst=Path('/tmp/xsxlabs-076-overlay')/src.relative_to(root);dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dst)
+          PY
+          rm -rf /tmp/xsxlabs-reference; mkdir -p /tmp/xsxlabs-reference
+          unzip -q Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
+      - name: Compile and test RC42
+        working-directory: source/project
+        run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
+      - name: Overlay and verify final RC42 JAR
+        id: jar
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
+          OUT=source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc42.jar
+          [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
+          (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
+          if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
+          zip -dq "$OUT" assets/obsidiannetwork/models/block/brewing_terminal.json || true
+          unzip -t "$OUT"
+          unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc42"'
+          ITEM=$(unzip -p "$OUT" assets/obsidiannetwork/items/brewing_terminal.json | tr '[:upper:]' '[:lower:]'); ! printf '%s' "$ITEM" | grep -q bottle
+          BS=$(unzip -p "$OUT" assets/obsidiannetwork/blockstates/brewing_terminal.json)
+          test $(printf '%s' "$BS" | grep -c 'auto_brewer_connected') -eq 4
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.TemplateCreatorMenu >/tmp/template.txt
+          grep -q 'AutocraftTemplate\$Kind.BREWING' /tmp/template.txt
+          grep -q 'ON-RC42-DIAG.*TEMPLATE' /tmp/template.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.network.WorldTopologyBridge >/tmp/topology.txt
+          grep -q 'Block.UPDATE_ALL_IMMEDIATE' /tmp/topology.txt
+          grep -q 'ON-RC42-DIAG.*BREWER' /tmp/topology.txt
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.platform.MinecraftAutocraftingService >/tmp/craft.txt
+          grep -q 'ON-RC42-DIAG.*CRAFT' /tmp/craft.txt
+          ! grep -A120 'brewInstant' /tmp/craft.txt | grep -q 'NetworkBrewingService'
+          grep -Fq RC27_RESET_SEARCH_AFTER_JEI_INIT source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
+          grep -Fq crossDimensional source/project/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"
+          sha256sum "$OUT" | tee "$OUT.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xsxlabs-network-storage-rc42
+          path: |
+            ${{ steps.jar.outputs.path }}
+            ${{ steps.jar.outputs.path }}.sha256
+          if-no-files-found: error
+          retention-days: 30
