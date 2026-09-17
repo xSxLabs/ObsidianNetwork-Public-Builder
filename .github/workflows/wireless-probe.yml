@@ -1,0 +1,38 @@
+name: Probe RC10.1 Wireless Port
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/WIRELESS_TRIGGER']
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with: {repository: xSxLabs/ObsidianNetwork-Build, ref: rc10.1-hotfix, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
+      - name: Reconstruct RC12 reference and report wireless delta
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir project
+          cat payload/compile-src.part* | base64 -d | tar -xJ -C project
+          cat payload/rc4-resources.part* | base64 -d | tar -xJ -C project
+          cat payload/rc6-overlay.part* | base64 -d | tar -xJ -C project
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java')
+          p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
+          PY
+          python3 .github/scripts/gen_rc6_assets.py
+          cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
+          python3 .github/scripts/rc10_fix.py
+          cp -a project rc10base
+          cat .github/scripts/rc11_overlay.part* | base64 -d | tar -xJ -C project
+          python3 .github/scripts/rc11_fix.py
+          python3 .github/scripts/rc12_fix.py
+          echo '=== WIRELESS FILES AFTER RC12 ==='
+          find project -type f \( -iname '*wireless*' -o -iname '*antenna*' \) -print | sort
+          echo '=== WIRELESS REFERENCES ==='
+          grep -RInE 'Wireless|wireless|Antenna|antenna' project/src/main/java/dev/obsidiannetwork | head -400 || true
