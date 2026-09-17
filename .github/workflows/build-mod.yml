@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v6
         with: {repository: xSxLabs/ObsidianNetwork-Build, ref: rc10.1-hotfix, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
       - uses: actions/setup-java@v5
-        with: {distribution: temurin, java-version: '25'}
+        with: {distribution: temurin, java-version: '21'}
       - uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '9.7.1'}
       - name: Reconstruct isolated RC10.1
@@ -36,14 +36,22 @@ jobs:
           rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
           python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
           python3 .github/scripts/gen_rc7_assets.py
-          # Historical RC7 generator helper targets an older source shape and is not
-          # part of the surviving RC10 reconstruction chain.
           python3 .github/scripts/rc7_cable_model_fix.py
           python3 .github/scripts/rc7_controller_asset_fix.py
           python3 .github/scripts/gen_rc7_item_assets.py
-          # rc9_fix.py / rc9_polish_fix.py are not present in the RC10 source branch;
-          # rc10_fix.py is the surviving historical RC10 reconstruction entry point.
           python3 .github/scripts/rc10_fix.py
+          # The RC10 screen's init override is not guaranteed to retain the historical
+          # protected modifier. Make only that anchor visibility-agnostic before applying
+          # the RC10.1 hotfix; behavior and scope remain unchanged.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('.github/scripts/rc10_1_hotfix.py')
+          s=p.read_text()
+          old="s=SCREEN.read_text(); sig='protected void init()';i=s.find(sig)"
+          new="s=SCREEN.read_text(); m=re.search(r'\\bvoid\\s+init\\s*\\(\\s*\\)',s);i=m.start() if m else -1"
+          if old not in s: raise SystemExit('RC10.1 builder compatibility anchor missing')
+          p.write_text(s.replace(old,new,1))
+          PY
           python3 .github/scripts/rc10_1_hotfix.py
           python3 - <<'PY'
           from pathlib import Path
