@@ -79,7 +79,9 @@ jobs:
           test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401 || { echo 'FINAL DIAG JSON-count regression'; exit 1; }
           jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json' || { echo 'FINAL DIAG Fix13 Curios slot tag missing'; exit 1; }
           grep -Fq 'GLFW.GLFW_KEY_N' work/src/main/java/dev/obsidiannetwork/client/ClientKeyBindings.java || { echo 'FINAL DIAG Fix14 default hotkey regressed'; exit 1; }
-          grep -Fq 'CuriosTerminalCompat.findTerminal(player)' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG Fix16 Curios hotkey lookup regressed'; exit 1; }
+          grep -Fq 'player.getInventory().getNonEquipmentItems()' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG Fix16 inventory hotkey lookup regressed'; exit 1; }
+          grep -Fq 'WirelessCraftingTerminalItem.open(player, stack)' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG Fix16 terminal open path regressed'; exit 1; }
+          grep -Fq 'openEquipped' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG Fix16 Curios fallback regressed'; exit 1; }
           grep -Fq 'TypedEntityData' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FINAL DIAG Fix15 TypedEntityData lookup regressed'; exit 1; }
           grep -Fq 'getLongOr("energy", 0L)' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FINAL DIAG Fix15 stored energy lookup regressed'; exit 1; }
           ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos' || { echo 'FINAL DIAG build/diagnostic material leaked into mod jar'; exit 1; }
