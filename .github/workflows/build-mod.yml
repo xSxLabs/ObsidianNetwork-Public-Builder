@@ -52,10 +52,12 @@ jobs:
           new_gate="if 'screenModel.cellAtVisibleIndex(' in out or 'RC10_1_SHIFT_STABLE_SLOT_IDENTITY' not in out or 'rc10_1StableCells(' not in out: raise SystemExit('RC10.1 Shift-lock routing missing')"
           if old_gate not in s: raise SystemExit('RC10.1 builder shift-lock gate anchor missing')
           s=s.replace(old_gate,new_gate,1)
+          # RC10 Cell has no craftable() component. Preserve the original Cell objects and only freeze their order.
+          s=s.replace("out.add(new dev.obsidiannetwork.core.TerminalScreenModel.Cell(i++,c.key(),c.amount(),c.craftable()));","out.add(c);")
           start=s.index("# 4) Stonecutting preview only.")
           end=s.index("# 5) Energy Cell capacities.")
           s=s[:start]+"# 4) Stonecutting preview is not present in the isolated RC10 reconstructed source.\nprint('RC10.1 PASS 4: Stonecutting preview patch not applicable to isolated RC10 source')\n\n"+s[end:]
-          energy="""# 5) Energy Cell capacities for actual isolated RC10 EnergyCellTier.\nEC=ROOT/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java'\ne=EC.read_text()\nwanted={'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}\nfor name,cap in wanted.items():\n pattern=rf'(?m)^(\\s*{name}\\s*\\(\\s*)(\\d[\\d_]*)(L?)(\\s*,)'\n e2,n=re.subn(pattern,lambda m:m.group(1)+f'{cap:_}'+m.group(3)+m.group(4),e,count=1)\n if n!=1:raise SystemExit('RC10.1 energy tier anchor missing '+name)\n e=e2\nEC.write_text(e)\nST=ROOT/'src/main/java/dev/obsidiannetwork/core/CoreSelfTest.java'\nif ST.exists():ST.write_text(ST.read_text().replace('b.capacity()==1_000_000_000L, \\"ultimate energy capacity\\"','b.capacity()==16_000_000L, \\"ultimate energy capacity\\"'))\nfor name,cap in wanted.items():\n if not re.search(rf'(?m)^\\s*{name}\\s*\\(\\s*{cap:_}L?\\s*,',e):raise SystemExit('RC10.1 energy tier gate missing '+name)\nprint('RC10.1 PASS 5: Energy Cell capacities = 1M / 2M / 4M / 8M / 16M FE')\n"""
+          energy="""# 5) Energy Cell capacities for actual isolated RC10 EnergyCellTier.\nEC=ROOT/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java'\ne=EC.read_text()\nwanted={'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}\nfor name,cap in wanted.items():\n pattern=rf'(?m)^(\\s*{name}\\s*\\(\\s*)(\\d[\\d_]*)(L?)(\\s*,)'\n e2,n=re.subn(pattern,lambda m:m.group(1)+f'{cap:_}'+m.group(3)+m.group(4),e,count=1)\n if n!=1:raise SystemExit('RC10.1 energy tier anchor missing '+name)\n e=e2\nEC.write_text(e)\nfor name,cap in wanted.items():\n if not re.search(rf'(?m)^\\s*{name}\\s*\\(\\s*{cap:_}L?\\s*,',e):raise SystemExit('RC10.1 energy tier gate missing '+name)\nprint('RC10.1 PASS 5: Energy Cell capacities = 1M / 2M / 4M / 8M / 16M FE')\n"""
           s=s[:end]+energy
           p.write_text(s)
           PY
@@ -64,6 +66,13 @@ jobs:
           from pathlib import Path
           import re
           root=Path('project')
+          # NeoForge 1.21.1 recipe API returns Optional<RecipeHolder<CraftingRecipe>> here.
+          menu=next((root/'src/main/java').rglob('StorageTerminalMenu.java'))
+          m=menu.read_text()
+          old='Optional<RecipeHolder<? extends CraftingRecipe>> match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);'
+          new='Optional<RecipeHolder<CraftingRecipe>> match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);'
+          if old not in m: raise SystemExit('RC10.1 crafting recipe generic anchor missing')
+          menu.write_text(m.replace(old,new,1))
           gp=root/'gradle.properties'
           gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc10.1',gp.read_text()))
           for p in (root/'src/main/resources').rglob('neoforge.mods.toml'):
@@ -74,7 +83,7 @@ jobs:
           tr=next((root/'src/main/java').rglob('TransferNodeMenu.java')).read_text()
           assert 'quickMoveUpgrade(original, slots.get(0))' in tr and 'quickMoveUpgrade(original, slots.get(1))' in tr
           screen=next((root/'src/main/java').rglob('StorageTerminalScreen.java')).read_text()
-          assert 'RC10_1_SHIFT_STABLE_SLOT_IDENTITY' in screen and 'RC10_1_CLEAR_SEARCH_ON_OPEN' in screen
+          assert 'RC10_1_SHIFT_STABLE_SLOT_IDENTITY' in screen and 'RC10_1_CLEAR_SEARCH_ON_OPEN' in screen and '.craftable()' not in screen
           ec=(root/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java').read_text()
           for name,cap in {'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}.items(): assert re.search(rf'(?m)^\s*{name}\s*\(\s*{cap:_}L?\s*,',ec)
           print('RC10.1 isolation/source gates PASS')
