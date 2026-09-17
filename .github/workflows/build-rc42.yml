@@ -54,7 +54,6 @@ jobs:
           rm -rf /tmp/xsxlabs-assets-before; mkdir -p /tmp/xsxlabs-assets-before
           find project/src/main/resources/assets/obsidiannetwork -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/xsxlabs-assets-before/checksums.txt
           python3 .github/scripts/rc76_01_special_terminals.py
-          python3 .github/scripts/rc76_10_terminal_transfer_fix.py
       - name: Apply RC42 targeted port
         working-directory: source
         shell: bash
