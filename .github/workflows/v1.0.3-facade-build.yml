@@ -20,7 +20,7 @@ jobs:
         with: {distribution: temurin, java-version: '25'}
       - uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '9.7.1'}
-      - name: Reconstruct v1.0.2 stable and apply Fix18 facade restoration
+      - name: Reconstruct stable baseline and apply Fix18 then Fix19
         run: |
           set -euo pipefail
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
@@ -36,7 +36,10 @@ jobs:
           python3 private/reconstruction/apply-baseline-fixes.py
           for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py"; done
           python3 private/fixes/apply-fix-18-facade-render-state.py
-          grep -Fq 'BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTick, cameraPos, crumblingOverlay);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java || { echo 'FIX18 DIAG source restoration missing'; grep -n -C 5 'extractRenderState\|CableFacadeRenderState' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java || true; exit 1; }
+          python3 private/fixes/apply-fix-19-facade-lighting.py
+          grep -Fq 'BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTick, cameraPos, crumblingOverlay);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java || { echo 'FIX18 DIAG missing'; exit 1; }
+          echo '=== FIX19 RENDERER SOURCE DIAG ==='
+          grep -n -C 8 'extractRenderState\|getLightColor\|facadeModel.update\|blockResolver.update' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java || true
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
           plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
@@ -60,22 +63,21 @@ jobs:
           tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
           EOF
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
-      - name: Fix18 bytecode and no-regression gates
+      - name: Fix18 Fix19 bytecode and no-regression gates
         run: |
           set -euo pipefail
           OUT=$(find work/build/libs -type f -name 'xSxLabs-Network-Storage-1.0.3.jar' -print -quit)
           test -n "$OUT"; unzip -t "$OUT" >/dev/null
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.CableFacadeRenderer > /tmp/facade.bytecode
-          grep -Fq 'InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState' /tmp/facade.bytecode || { echo 'FIX18 DIAG Masterkey interface-default extractRenderState call absent from compiled bytecode'; cat /tmp/facade.bytecode; exit 1; }
-          jar tf "$OUT" | sort -u >/tmp/out
-          jar tf private/xSxLabs-Network-Storage-0.76.0-rc10.jar | sort -u >/tmp/master
+          grep -Fq 'InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState' /tmp/facade.bytecode || { echo 'FIX18 DIAG missing interface default call'; cat /tmp/facade.bytecode; exit 1; }
+          echo '=== FIX19 BYTECODE DIAG ==='; grep -n -C 8 'getLightColor\|relative' /tmp/facade.bytecode || true
+          jar tf "$OUT" | sort -u >/tmp/out; jar tf private/xSxLabs-Network-Storage-0.76.0-rc10.jar | sort -u >/tmp/master
           for p in assets/obsidiannetwork/ data/obsidiannetwork/; do awk -v p="$p" 'index($0,p)==1' /tmp/master >/tmp/master.res; awk -v p="$p" 'index($0,p)==1' /tmp/out >/tmp/out.res; comm -23 /tmp/master.res /tmp/out.res >/tmp/missing; test ! -s /tmp/missing || { echo "missing resources under $p"; cat /tmp/missing; exit 1; }; done
           test "$(jar tf "$OUT" | grep -c '^dev/obsidiannetwork/.*\.class$')" -ge 314
           test "$(jar tf "$OUT" | grep -c '^assets/obsidiannetwork/.*\.png$')" -ge 263
           test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401
           jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json'
           ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos'
-          echo 'v1.0.3 FIX18 PASS: Masterkey facade base render-state extraction restored'
           sha256sum "$OUT" | tee work/v1.0.3-test.sha256
           cp "$OUT" work/xSxLabs-Network-Storage-v1.0.3-TEST.jar
       - name: Upload v1.0.3 test jar
