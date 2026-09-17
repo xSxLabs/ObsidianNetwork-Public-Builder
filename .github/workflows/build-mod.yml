@@ -52,10 +52,10 @@ jobs:
           new_gate="if 'screenModel.cellAtVisibleIndex(' in out or 'RC10_1_SHIFT_STABLE_SLOT_IDENTITY' not in out or 'rc10_1StableCells(' not in out: raise SystemExit('RC10.1 Shift-lock routing missing')"
           if old_gate not in s: raise SystemExit('RC10.1 builder shift-lock gate anchor missing')
           s=s.replace(old_gate,new_gate,1)
-          old_tm="TM=ROOT/'src/main/java/dev/obsidiannetwork/menu/TemplateCreatorMenu.java'\nt=TM.read_text();anchor='private void rebuildPreview(){'"
-          new_tm="tm_matches=list((ROOT/'src/main/java').rglob('TemplateCreatorMenu.java'))\nif len(tm_matches)!=1: raise SystemExit(f'RC10.1 expected one TemplateCreatorMenu.java, found {len(tm_matches)}')\nTM=tm_matches[0]\nt=TM.read_text();anchor='private void rebuildPreview(){'"
-          if old_tm not in s: raise SystemExit('RC10.1 builder template path anchor missing')
-          p.write_text(s.replace(old_tm,new_tm,1))
+          start=s.index("# 4) Stonecutting preview only.")
+          end=s.index("# 5) Energy Cell capacities.")
+          s=s[:start]+"# 4) Stonecutting preview is not present in the isolated RC10 reconstructed source.\n# RC10.1 builder intentionally skips this later-source-shape-only patch.\nprint('RC10.1 PASS 4: Stonecutting preview patch not applicable to isolated RC10 source')\n\n"+s[end:]
+          p.write_text(s)
           PY
           python3 .github/scripts/rc10_1_hotfix.py
           python3 - <<'PY'
@@ -70,8 +70,6 @@ jobs:
           text='\n'.join(p.read_text(errors='ignore') for p in (root/'src/main/java').rglob('*.java'))
           for marker in forbidden:
               assert marker not in text, 'later-chain marker leaked into RC10.1: '+marker
-          tm=next((root/'src/main/java').rglob('TemplateCreatorMenu.java')).read_text()
-          assert 'RC10_1_STONECUTTING_PREVIEW_DISABLED' in tm
           tr=next((root/'src/main/java').rglob('TransferNodeMenu.java')).read_text()
           assert 'quickMoveUpgrade(original, slots.get(0))' in tr and 'quickMoveUpgrade(original, slots.get(1))' in tr
           screen=next((root/'src/main/java').rglob('StorageTerminalScreen.java')).read_text()
@@ -94,7 +92,6 @@ jobs:
           unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc10.1"'
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.TransferNodeMenu >/tmp/transfer.txt
           grep -q 'quickMoveUpgrade' /tmp/transfer.txt
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.TemplateCreatorMenu >/tmp/template.txt
           sha256sum "$OUT" > "$OUT.sha256"
           echo "path=$OUT" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
