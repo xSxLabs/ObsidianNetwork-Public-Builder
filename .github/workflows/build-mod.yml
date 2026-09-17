@@ -36,7 +36,8 @@ jobs:
           rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
           python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
           python3 .github/scripts/gen_rc7_assets.py
-          python3 .github/scripts/rc7_generator_compile_fix.py
+          # rc7_generator_compile_fix.py targets an older RC7 generator source shape;
+          # the rc7-code overlay used by this isolated reconstruction already differs.
           python3 .github/scripts/rc7_cable_model_fix.py
           python3 .github/scripts/rc7_controller_asset_fix.py
           python3 .github/scripts/gen_rc7_item_assets.py
