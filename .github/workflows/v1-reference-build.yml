@@ -43,6 +43,7 @@ jobs:
           rm -f work/src/main/resources/META-INF/MANIFEST.MF
           V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/reconstruction/apply-baseline-fixes.py
           V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/fixes/apply-fix-01-energy-cell-persistence.py
+          V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/fixes/apply-fix-02-solar-atomic-transfer.py
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
           plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
@@ -80,16 +81,16 @@ jobs:
           tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
           EOF
           echo "java=$(find work/src/main/java -name '*.java' | wc -l) resources=$(find work/src/main/resources -type f | wc -l)"
-      - name: Compile fix 01
+      - name: Compile fixes 01-02
         working-directory: work
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
-      - name: Fix 01 no-regression inventory
+      - name: No-regression inventory and fix verification
         shell: bash
         run: |
           set -euo pipefail
           OUT=$(find work/build/libs -type f -name '*.jar' ! -name '*sources*' | head -1); test -n "$OUT"
           unzip -t "$OUT" >/dev/null
-          for p in dev/obsidiannetwork/block/EnergyCellBlock.class dev/obsidiannetwork/block/SolarGeneratorBlock.class dev/obsidiannetwork/block/AutocrafterBlock.class dev/obsidiannetwork/block/CraftingMonitorBlock.class dev/obsidiannetwork/block/TemplateManagerBlock.class dev/obsidiannetwork/client/ClientKeyBindings.class dev/obsidiannetwork/network/OpenCurioTerminalPayload.class; do unzip -l "$OUT" "$p" | grep -q "$p"; done
+          for p in dev/obsidiannetwork/block/EnergyCellBlock.class dev/obsidiannetwork/block/SolarGeneratorBlock.class dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.class dev/obsidiannetwork/block/AutocrafterBlock.class dev/obsidiannetwork/block/CraftingMonitorBlock.class dev/obsidiannetwork/block/TemplateManagerBlock.class dev/obsidiannetwork/client/ClientKeyBindings.class dev/obsidiannetwork/network/OpenCurioTerminalPayload.class; do unzip -l "$OUT" "$p" | grep -q "$p"; done
           MASTER=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           for prefix in assets/obsidiannetwork/ data/obsidiannetwork/; do
             jar tf "$MASTER" | grep "^$prefix" | sort > /tmp/master.list
@@ -98,5 +99,13 @@ jobs:
             test ! -s /tmp/missing || { echo "Missing resources under $prefix"; cat /tmp/missing; exit 1; }
           done
           javap -classpath "$OUT" -c dev.obsidiannetwork.block.EnergyCellBlock | grep -q 'BLOCK_ENTITY_DATA'
-          echo "FIX 01 PASS: $OUT"
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.blockentity.SolarGeneratorBlockEntity > /tmp/solar.javap
+          grep -q 'addCloseCallback' /tmp/solar.javap
+          python3 - <<'PY'
+          s=open('/tmp/solar.javap').read()
+          extract=s.find('EnergyBuffer.extract')
+          commit=s.find('Transaction.commit')
+          assert extract >= 0 and commit >= 0 and extract < commit, 'solar source extraction must occur before commit'
+          PY
+          echo "FIXES 01-02 PASS: $OUT"
           sha256sum "$OUT"
