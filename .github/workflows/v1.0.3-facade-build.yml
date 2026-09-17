@@ -79,7 +79,7 @@ jobs:
           test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401
           jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json'
           ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos'
-          echo 'v1.0.3 FIX18+FIX19 PASS'
+          echo 'v1.0.3 FIX18+FIX19 PASS - rotation decoded'
           sha256sum "$OUT" | tee work/v1.0.3-test.sha256
           cp "$OUT" work/xSxLabs-Network-Storage-v1.0.3-TEST.jar
       - name: Upload v1.0.3 test jar
