@@ -1,4 +1,4 @@
-name: Probe RC10.1 Wireless Port
+name: Probe Pure RC10 Wireless Port
 on:
   workflow_dispatch:
   push:
@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
         with: {repository: xSxLabs/ObsidianNetwork-Build, ref: rc10.1-hotfix, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
-      - name: Extract exact wireless conflict context
+      - name: Dump pure RC10 wireless conflicts
         working-directory: source
         shell: bash
         run: |
@@ -33,19 +33,16 @@ jobs:
           python3 .github/scripts/rc7_controller_asset_fix.py
           python3 .github/scripts/gen_rc7_item_assets.py
           python3 .github/scripts/rc10_fix.py
-          python3 .github/scripts/rc11_fix.py
-          python3 .github/scripts/rc12_fix.py
           python3 - <<'PY'
           from pathlib import Path
           import base64,lzma,subprocess
-          raw=''.join(Path(f'.github/scripts/rc13_wireless.part{i:02d}').read_text() for i in range(2))
-          patch=lzma.decompress(base64.b64decode(raw))
-          r=subprocess.run(['patch','-p1','--forward','--batch'],cwd='project',input=patch)
-          print('patch_rc',r.returncode)
-          for rel in ['src/main/java/dev/obsidiannetwork/block/ThinNetworkCableBlock.java','src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java','src/main/java/dev/obsidiannetwork/registry/ModBlockEntities.java']:
-              p=Path('project')/rel
-              print('\n===== FILE',rel,'=====')
+          raw=''.join(Path(f'.github/scripts/rc13_wireless.part{i:02d}').read_text() for i in range(2)); patch=lzma.decompress(base64.b64decode(raw))
+          r=subprocess.run(['patch','-p1','--forward','--batch'],cwd='project',input=patch); print('patch_rc',r.returncode)
+          rels=['src/main/java/dev/obsidiannetwork/ObsidianNetwork.java','src/main/java/dev/obsidiannetwork/block/ThinNetworkCableBlock.java','src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java','src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java','src/main/java/dev/obsidiannetwork/registry/ModBlockEntities.java']
+          for rel in rels:
+              p=Path('project')/rel; print('\n===== FILE',rel,'=====')
               for i,line in enumerate(p.read_text().splitlines(),1): print(f'{i:04d}: {line}')
               rej=Path(str(p)+'.rej')
               if rej.exists(): print('\n===== REJECT =====\n'+rej.read_text())
+          raise SystemExit('intentional pure RC10 context probe')
           PY
