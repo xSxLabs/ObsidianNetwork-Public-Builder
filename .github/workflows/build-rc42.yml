@@ -108,10 +108,10 @@ jobs:
           OUT=source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc42.jar
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
-          zip -dq "$OUT" assets/obsidiannetwork/models/block/brewing_terminal.json || true
           unzip -t "$OUT"
           unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc42"'
           ITEM=$(unzip -p "$OUT" assets/obsidiannetwork/items/brewing_terminal.json | tr '[:upper:]' '[:lower:]'); ! printf '%s' "$ITEM" | grep -q bottle
+          HELD=$(unzip -p "$OUT" assets/obsidiannetwork/models/item/brewing_terminal.json | tr '[:upper:]' '[:lower:]'); printf '%s' "$HELD" | grep -q 'block/auto_brewer'; ! printf '%s' "$HELD" | grep -q bottle
           BS=$(unzip -p "$OUT" assets/obsidiannetwork/blockstates/brewing_terminal.json)
           test $(printf '%s' "$BS" | grep -c 'auto_brewer_connected') -eq 4
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.TemplateCreatorMenu >/tmp/template.txt
