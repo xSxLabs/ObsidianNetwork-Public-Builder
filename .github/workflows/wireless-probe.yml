@@ -11,25 +11,21 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
         with: {repository: xSxLabs/ObsidianNetwork-Build, ref: rc10.1-hotfix, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
-      - name: Decode RC13 wireless layer
+      - name: Inspect raw RC13 wireless payload
         working-directory: source
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import base64,lzma,re
-          parts=[Path(f'.github/scripts/rc13_wireless.part{i:02d}').read_text() for i in range(2)]
-          patch=lzma.decompress(base64.b64decode(''.join(parts))).decode()
-          print('=== RC13 WIRELESS PATCH FILES ===')
-          files=[]
-          for m in re.finditer(r'^\+\+\+ b/(.+)$',patch,re.M):
-              if m.group(1) not in files: files.append(m.group(1))
-          print('\n'.join(files))
-          print('=== RC13 WIRELESS JAVA HUNKS ===')
-          keep=False
-          for line in patch.splitlines():
-              if line.startswith('diff --git '):
-                  keep=any(x in line for x in ('Wireless','StorageTerminalMenu','WorldTopologyBridge','ServerTerminalPayloadHandler','ObsidianNetwork.java'))
-              if keep: print(line)
+          import base64,lzma
+          raw=''.join(Path(f'.github/scripts/rc13_wireless.part{i:02d}').read_text() for i in range(2))
+          data=lzma.decompress(base64.b64decode(raw))
+          print('bytes=',len(data),'prefix=',repr(data[:120]))
+          text=data.decode('utf-8','replace')
+          print('=== FIRST 300 LINES ===')
+          for i,line in enumerate(text.splitlines()[:300],1): print(f'{i:04d}: {line}')
+          print('=== STRUCTURE TOKENS ===')
+          for token in ('diff --git','--- ','+++ ','*** Begin Patch','*** Update File','*** Add File','Wireless','wireless','Antenna','antenna'):
+              print(token, text.count(token))
           PY
