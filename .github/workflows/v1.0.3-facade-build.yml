@@ -1,0 +1,89 @@
+name: v1.0.3 Facade Regression Build
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/v1.0.3-facade-build.yml']
+permissions: {contents: read}
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: v1.0.3-work
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '9.7.1'}
+      - name: Reconstruct v1.0.2 stable and apply Fix18 facade restoration
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          test "$(stat -c%s "$JAR")" = 1121869
+          test "$(sha256sum "$JAR"|cut -d' ' -f1)" = b98030bce849f5f947eb9c72f94d6ac94880117d672a549040586f03c36f8287
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar "$JAR" work/decompiled
+          cp -a work/decompiled/dev work/src/main/java/
+          MASTER="$GITHUB_WORKSPACE/$JAR"; (cd work/src/main/resources && jar xf "$MASTER")
+          find work/src/main/resources -name '*.class' -delete; rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources"
+          python3 private/reconstruction/apply-baseline-fixes.py
+          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py"; done
+          python3 private/fixes/apply-fix-18-facade-render-state.py
+          grep -Fq 'BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTick, cameraPos, crumblingOverlay);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java || { echo 'FIX18 DIAG source restoration missing'; exit 1; }
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0.3
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version=mod_version; group=mod_group_id; base { archivesName='xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
+          tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
+          EOF
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+      - name: Fix18 bytecode and no-regression gates
+        run: |
+          set -euo pipefail
+          OUT=$(find work/build/libs -type f -name 'xSxLabs-Network-Storage-1.0.3.jar' -print -quit)
+          test -n "$OUT"; unzip -t "$OUT" >/dev/null
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.CableFacadeRenderer > /tmp/facade.bytecode
+          grep -Fq 'InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState' /tmp/facade.bytecode || { echo 'FIX18 DIAG Masterkey interface-default extractRenderState call absent from compiled bytecode'; cat /tmp/facade.bytecode; exit 1; }
+          jar tf "$OUT" | sort -u >/tmp/out
+          jar tf private/xSxLabs-Network-Storage-0.76.0-rc10.jar | sort -u >/tmp/master
+          for p in assets/obsidiannetwork/ data/obsidiannetwork/; do awk -v p="$p" 'index($0,p)==1' /tmp/master >/tmp/master.res; awk -v p="$p" 'index($0,p)==1' /tmp/out >/tmp/out.res; comm -23 /tmp/master.res /tmp/out.res >/tmp/missing; test ! -s /tmp/missing || { echo "missing resources under $p"; cat /tmp/missing; exit 1; }; done
+          test "$(jar tf "$OUT" | grep -c '^dev/obsidiannetwork/.*\.class$')" -ge 314
+          test "$(jar tf "$OUT" | grep -c '^assets/obsidiannetwork/.*\.png$')" -ge 263
+          test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401
+          jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json'
+          ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos'
+          echo 'v1.0.3 FIX18 PASS: Masterkey facade base render-state extraction restored'
+          sha256sum "$OUT" | tee work/v1.0.3-test.sha256
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.3-TEST.jar
+      - name: Upload v1.0.3 test jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: xSxLabs-Network-Storage-v1.0.3-TEST
+          path: |
+            work/xSxLabs-Network-Storage-v1.0.3-TEST.jar
+            work/v1.0.3-test.sha256
+          if-no-files-found: error
+          retention-days: 30
