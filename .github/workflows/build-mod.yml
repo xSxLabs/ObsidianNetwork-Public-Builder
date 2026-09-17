@@ -40,17 +40,22 @@ jobs:
           python3 .github/scripts/rc7_controller_asset_fix.py
           python3 .github/scripts/gen_rc7_item_assets.py
           python3 .github/scripts/rc10_fix.py
-          # The RC10 screen's init override is not guaranteed to retain the historical
-          # protected modifier. Make only that anchor visibility-agnostic before applying
-          # the RC10.1 hotfix; behavior and scope remain unchanged.
+          # Adapt only brittle validation/anchor assumptions in the RC10.1 patch to the
+          # surviving RC10 source shape. The actual Shift-lock and search behavior stays intact.
           python3 - <<'PY'
           from pathlib import Path
           p=Path('.github/scripts/rc10_1_hotfix.py')
           s=p.read_text()
           old="s=SCREEN.read_text(); sig='protected void init()';i=s.find(sig)"
           new="s=SCREEN.read_text(); m=re.search(r'\\bvoid\\s+init\\s*\\(\\s*\\)',s);i=m.start() if m else -1"
-          if old not in s: raise SystemExit('RC10.1 builder compatibility anchor missing')
-          p.write_text(s.replace(old,new,1))
+          if old not in s: raise SystemExit('RC10.1 builder init compatibility anchor missing')
+          s=s.replace(old,new,1)
+          # The generated helper deliberately contains one live visibleCells() call which is
+          # immediately routed through rc10_1StableCells(). Accept that exact helper shape.
+          old_gate="if 'screenModel.visibleCells()' in out: raise SystemExit('RC10.1 Shift-lock live lookup survived')"
+          new_gate="if out.count('screenModel.visibleCells()') != 1 or 'rc10_1StableCells(screenModel.visibleCells())' not in out: raise SystemExit('RC10.1 Shift-lock unexpected live lookup shape')"
+          if old_gate not in s: raise SystemExit('RC10.1 builder shift-lock gate anchor missing')
+          p.write_text(s.replace(old_gate,new_gate,1))
           PY
           python3 .github/scripts/rc10_1_hotfix.py
           python3 - <<'PY'
