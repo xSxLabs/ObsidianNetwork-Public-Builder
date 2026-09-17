@@ -77,6 +77,10 @@ jobs:
           path: |
             source/project/src/main/java/dev/obsidiannetwork/platform/MinecraftAutocraftingService.java
             source/project/src/main/java/dev/obsidiannetwork/menu/TemplateCreatorMenu.java
+            source/project/src/main/java/dev/obsidiannetwork/client/TemplateCreatorScreen.java
+            source/project/src/main/java/dev/obsidiannetwork/blockentity/TemplateCreatorBlockEntity.java
+            source/project/src/main/java/dev/obsidiannetwork/block/StorageTerminalBlock.java
+            source/project/src/main/java/dev/obsidiannetwork/block/HorizontalMachineBlock.java
             source/project/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
           if-no-files-found: error
           retention-days: 7
