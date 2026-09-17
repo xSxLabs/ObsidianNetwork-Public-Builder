@@ -9,7 +9,21 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
-        with: {repository: xSxLabs/ObsidianNetwork-Build, ref: rc10.1-hotfix, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
-      - name: Inspect Curios-only RC12 payload members
-        working-directory: source
-        run: python3 .github/scripts/rc10_1_curios_probe.py
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: rc41-runtime-fixes
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: historical
+          fetch-depth: 0
+      - name: Locate Curios and hotkey source origin
+        working-directory: historical
+        run: |
+          set +e
+          echo '=== PLAIN SCRIPT MATCHES ==='
+          grep -RIlE 'CuriosTerminalCompat|CurioTerminalOpenHandler|OpenCurioTerminalPayload|ClientKeyBindings' .github/scripts | sort
+          echo '=== FIRST HISTORY COMMITS TOUCHING TERMS ==='
+          git log --all --reverse -S'CuriosTerminalCompat' --format='%H %s' -- .github/scripts | head -20
+          git log --all --reverse -S'OpenCurioTerminalPayload' --format='%H %s' -- .github/scripts | head -20
+          echo '=== CONTENT AROUND MATCHES ==='
+          grep -RInE 'CuriosTerminalCompat|CurioTerminalOpenHandler|OpenCurioTerminalPayload|ClientKeyBindings' .github/scripts --include='*.py' | head -200
+          exit 1
