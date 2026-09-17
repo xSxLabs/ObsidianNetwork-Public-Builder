@@ -55,27 +55,8 @@ jobs:
           start=s.index("# 4) Stonecutting preview only.")
           end=s.index("# 5) Energy Cell capacities.")
           s=s[:start]+"# 4) Stonecutting preview is not present in the isolated RC10 reconstructed source.\nprint('RC10.1 PASS 4: Stonecutting preview patch not applicable to isolated RC10 source')\n\n"+s[end:]
-          # RC10 uses BASIC/IMPROVED/ADVANCED/ELITE/ULTIMATE in core/EnergyCellTier.java.
-          # Patch only the first constructor argument (capacity); leave transfer rates untouched.
-          s=s[:end]+'''# 5) Energy Cell capacities for the actual isolated RC10 tier shape.
-EC=ROOT/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java'
-e=EC.read_text()
-wanted={'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}
-for name,cap in wanted.items():
- pattern=rf'(?m)^(\\s*{name}\\s*\\(\\s*)(\\d[\\d_]*)(L?)(\\s*,)'
- e2,n=re.subn(pattern,lambda m:m.group(1)+f'{cap:_}'+m.group(3)+m.group(4),e,count=1)
- if n!=1: raise SystemExit('RC10.1 energy tier anchor missing: '+name)
- e=e2
-EC.write_text(e)
-for name,cap in wanted.items():
- if not re.search(rf'(?m)^\\s*{name}\\s*\\(\\s*{cap:_}L?\\s*,',e): raise SystemExit('RC10.1 energy tier gate missing: '+name)
-# Keep the built-in RC10 self-test aligned with the changed ULTIMATE capacity when present.
-ST=ROOT/'src/main/java/dev/obsidiannetwork/core/CoreSelfTest.java'
-if ST.exists():
- t=ST.read_text().replace('b.capacity()==1_000_000_000L, "ultimate energy capacity"','b.capacity()==16_000_000L, "ultimate energy capacity"')
- ST.write_text(t)
-print('RC10.1 PASS 5: Energy Cell capacities = 1M / 2M / 4M / 8M / 16M FE')
-'''
+          energy="""# 5) Energy Cell capacities for actual isolated RC10 EnergyCellTier.\nEC=ROOT/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java'\ne=EC.read_text()\nwanted={'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}\nfor name,cap in wanted.items():\n pattern=rf'(?m)^(\\s*{name}\\s*\\(\\s*)(\\d[\\d_]*)(L?)(\\s*,)'\n e2,n=re.subn(pattern,lambda m:m.group(1)+f'{cap:_}'+m.group(3)+m.group(4),e,count=1)\n if n!=1:raise SystemExit('RC10.1 energy tier anchor missing '+name)\n e=e2\nEC.write_text(e)\nST=ROOT/'src/main/java/dev/obsidiannetwork/core/CoreSelfTest.java'\nif ST.exists():ST.write_text(ST.read_text().replace('b.capacity()==1_000_000_000L, \\"ultimate energy capacity\\"','b.capacity()==16_000_000L, \\"ultimate energy capacity\\"'))\nfor name,cap in wanted.items():\n if not re.search(rf'(?m)^\\s*{name}\\s*\\(\\s*{cap:_}L?\\s*,',e):raise SystemExit('RC10.1 energy tier gate missing '+name)\nprint('RC10.1 PASS 5: Energy Cell capacities = 1M / 2M / 4M / 8M / 16M FE')\n"""
+          s=s[:end]+energy
           p.write_text(s)
           PY
           python3 .github/scripts/rc10_1_hotfix.py
@@ -89,15 +70,13 @@ print('RC10.1 PASS 5: Energy Cell capacities = 1M / 2M / 4M / 8M / 16M FE')
               p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc10.1"',p.read_text()))
           forbidden=('RC41_WHOLE_PLAN_RESERVATION','RC27_RESET_SEARCH_AFTER_JEI_INIT','AUTO_BREWER','rc52_')
           text='\n'.join(p.read_text(errors='ignore') for p in (root/'src/main/java').rglob('*.java'))
-          for marker in forbidden:
-              assert marker not in text, 'later-chain marker leaked into RC10.1: '+marker
+          for marker in forbidden: assert marker not in text, 'later-chain marker leaked into RC10.1: '+marker
           tr=next((root/'src/main/java').rglob('TransferNodeMenu.java')).read_text()
           assert 'quickMoveUpgrade(original, slots.get(0))' in tr and 'quickMoveUpgrade(original, slots.get(1))' in tr
           screen=next((root/'src/main/java').rglob('StorageTerminalScreen.java')).read_text()
           assert 'RC10_1_SHIFT_STABLE_SLOT_IDENTITY' in screen and 'RC10_1_CLEAR_SEARCH_ON_OPEN' in screen
           ec=(root/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java').read_text()
-          for name,cap in {'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}.items():
-              assert re.search(rf'(?m)^\s*{name}\s*\(\s*{cap:_}L?\s*,',ec), 'energy capacity gate failed: '+name
+          for name,cap in {'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}.items(): assert re.search(rf'(?m)^\s*{name}\s*\(\s*{cap:_}L?\s*,',ec)
           print('RC10.1 isolation/source gates PASS')
           PY
       - name: Compile RC10.1 checkpoint
