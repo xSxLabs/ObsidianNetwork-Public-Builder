@@ -51,7 +51,11 @@ jobs:
           old_gate="if 'screenModel.cellAtVisibleIndex(' in out or out.count('screenModel.visibleCells()')!=1: raise SystemExit('RC10.1 Shift-lock live lookup survived')"
           new_gate="if 'screenModel.cellAtVisibleIndex(' in out or 'RC10_1_SHIFT_STABLE_SLOT_IDENTITY' not in out or 'rc10_1StableCells(' not in out: raise SystemExit('RC10.1 Shift-lock routing missing')"
           if old_gate not in s: raise SystemExit('RC10.1 builder shift-lock gate anchor missing')
-          p.write_text(s.replace(old_gate,new_gate,1))
+          s=s.replace(old_gate,new_gate,1)
+          old_tm="TM=ROOT/'src/main/java/dev/obsidiannetwork/menu/TemplateCreatorMenu.java'\nt=TM.read_text();anchor='private void rebuildPreview(){'"
+          new_tm="tm_matches=list((ROOT/'src/main/java').rglob('TemplateCreatorMenu.java'))\nif len(tm_matches)!=1: raise SystemExit(f'RC10.1 expected one TemplateCreatorMenu.java, found {len(tm_matches)}')\nTM=tm_matches[0]\nt=TM.read_text();anchor='private void rebuildPreview(){'"
+          if old_tm not in s: raise SystemExit('RC10.1 builder template path anchor missing')
+          p.write_text(s.replace(old_tm,new_tm,1))
           PY
           python3 .github/scripts/rc10_1_hotfix.py
           python3 - <<'PY'
