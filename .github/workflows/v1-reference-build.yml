@@ -99,14 +99,18 @@ jobs:
             test ! -s /tmp/missing || { echo "Missing resources under $prefix"; cat /tmp/missing; exit 1; }
           done
           javap -classpath "$OUT" -c dev.obsidiannetwork.block.EnergyCellBlock | grep -q 'BLOCK_ENTITY_DATA'
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.blockentity.SolarGeneratorBlockEntity > /tmp/solar.javap
-          grep -q 'addCloseCallback' /tmp/solar.javap
-          grep -q 'SnapshotJournal' /tmp/solar.javap
+          SOLAR=work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java
+          grep -q 'SnapshotJournal' "$SOLAR"
+          grep -q 'journal.updateSnapshots(tx)' "$SOLAR"
           python3 - <<'PY'
-          s=open('/tmp/solar.javap').read()
-          journal=s.find('SnapshotJournal')
-          commit=s.find('Transaction.commit')
-          assert journal >= 0 and commit >= 0 and journal < commit, 'solar transactional journal must be installed before commit'
+          from pathlib import Path
+          s=Path('work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java').read_text()
+          j=s.find('journal.updateSnapshots(tx)')
+          e=s.find('be.energy.extract(accepted)')
+          c=s.find('tx.commit()', j)
+          assert j >= 0 and e >= 0 and c >= 0 and j < e < c, 'solar journal/extract/commit ordering invalid'
           PY
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.blockentity.SolarGeneratorBlockEntity > /tmp/solar.javap
+          grep -q 'Transaction.commit' /tmp/solar.javap
           echo "FIXES 01-02 PASS: $OUT"
           sha256sum "$OUT"
