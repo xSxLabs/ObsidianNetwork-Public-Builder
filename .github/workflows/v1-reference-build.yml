@@ -101,11 +101,12 @@ jobs:
           javap -classpath "$OUT" -c dev.obsidiannetwork.block.EnergyCellBlock | grep -q 'BLOCK_ENTITY_DATA'
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.blockentity.SolarGeneratorBlockEntity > /tmp/solar.javap
           grep -q 'addCloseCallback' /tmp/solar.javap
+          grep -q 'SnapshotJournal' /tmp/solar.javap
           python3 - <<'PY'
           s=open('/tmp/solar.javap').read()
-          extract=s.find('EnergyBuffer.extract')
+          journal=s.find('SnapshotJournal')
           commit=s.find('Transaction.commit')
-          assert extract >= 0 and commit >= 0 and extract < commit, 'solar source extraction must occur before commit'
+          assert journal >= 0 and commit >= 0 and journal < commit, 'solar transactional journal must be installed before commit'
           PY
           echo "FIXES 01-02 PASS: $OUT"
           sha256sum "$OUT"
