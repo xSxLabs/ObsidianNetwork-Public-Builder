@@ -36,13 +36,13 @@ jobs:
           rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
           python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
           python3 .github/scripts/gen_rc7_assets.py
-          # rc7_generator_compile_fix.py targets an older RC7 generator source shape;
-          # the rc7-code overlay used by this isolated reconstruction already differs.
+          # Historical RC7 generator helper targets an older source shape and is not
+          # part of the surviving RC10 reconstruction chain.
           python3 .github/scripts/rc7_cable_model_fix.py
           python3 .github/scripts/rc7_controller_asset_fix.py
           python3 .github/scripts/gen_rc7_item_assets.py
-          python3 .github/scripts/rc9_fix.py
-          python3 .github/scripts/rc9_polish_fix.py
+          # rc9_fix.py / rc9_polish_fix.py are not present in the RC10 source branch;
+          # rc10_fix.py is the surviving historical RC10 reconstruction entry point.
           python3 .github/scripts/rc10_fix.py
           python3 .github/scripts/rc10_1_hotfix.py
           python3 - <<'PY'
@@ -53,7 +53,6 @@ jobs:
           gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc10.1',gp.read_text()))
           for p in (root/'src/main/resources').rglob('neoforge.mods.toml'):
               p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc10.1"',p.read_text()))
-          # Explicit isolation gates: RC10.1 must not silently absorb later feature chains.
           forbidden=('RC41_WHOLE_PLAN_RESERVATION','RC27_RESET_SEARCH_AFTER_JEI_INIT','AUTO_BREWER','rc52_')
           text='\n'.join(p.read_text(errors='ignore') for p in (root/'src/main/java').rglob('*.java'))
           for marker in forbidden:
