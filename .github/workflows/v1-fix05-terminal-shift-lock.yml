@@ -1,0 +1,124 @@
+name: v1 Fix 05 Terminal Shift Lock
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/v1-fix05-terminal-shift-lock.yml']
+permissions: {contents: read}
+concurrency: {group: xsxlabs-v1-fix05, cancel-in-progress: false}
+jobs:
+  compile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: v1.0-work
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+          fetch-depth: 1
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '9.7.1'}
+      - name: Verify immutable master
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          test "$(stat -c%s "$JAR")" = 1121869
+          test "$(sha256sum "$JAR" | cut -d' ' -f1)" = b98030bce849f5f947eb9c72f94d6ac94880117d672a549040586f03c36f8287
+      - name: Reconstruct and apply fixes 01-05
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar private/xSxLabs-Network-Storage-0.76.0-rc10.jar work/decompiled
+          cp -a work/decompiled/dev work/src/main/java/
+          MASTER="$GITHUB_WORKSPACE/private/xSxLabs-Network-Storage-0.76.0-rc10.jar"
+          (cd work/src/main/resources && jar xf "$MASTER")
+          find work/src/main/resources -type f -name '*.class' -delete
+          rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java"
+          python3 private/reconstruction/apply-baseline-fixes.py
+          python3 private/fixes/apply-fix-01-energy-cell-persistence.py
+          python3 private/fixes/apply-fix-02-solar-atomic-transfer.py
+          python3 private/fixes/apply-fix-03-wireless-open-refund.py
+          python3 private/fixes/apply-fix-04-wireless-infinity-chunkload.py
+          python3 private/fixes/apply-fix-05-terminal-shift-lock.py
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version = mod_version
+          group = mod_group_id
+          base { archivesName = 'xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+          repositories { maven { url = 'https://maven.blamejared.com' }; maven { url = 'https://maven.theillusivec4.top/' } }
+          neoForge { version = project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0-beta.2+26.1.2:api' }
+          tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+          EOF
+      - name: Compile fix 05
+        working-directory: work
+        run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
+      - name: Diagnose fix 05 and no regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=$(find work/build/libs -type f -name '*.jar' ! -name '*sources*' -print -quit)
+          test -n "$OUT"
+          unzip -t "$OUT" >/dev/null
+          jar tf "$OUT" | sort > /tmp/out.list
+          MASTER=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          jar tf "$MASTER" | sort > /tmp/master.list
+          for p in dev/obsidiannetwork/client/StorageTerminalScreen.class dev/obsidiannetwork/core/TerminalScreenModel.class dev/obsidiannetwork/block/EnergyCellBlock.class dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.class dev/obsidiannetwork/blockentity/WirelessAntennaBlockEntity.class dev/obsidiannetwork/item/WirelessCraftingTerminalItem.class dev/obsidiannetwork/block/AutocrafterBlock.class; do
+            grep -Fqx "$p" /tmp/out.list || { echo "FIX05 DIAG missing class: $p"; exit 1; }
+          done
+          for prefix in assets/obsidiannetwork/ data/obsidiannetwork/; do
+            awk -v p="$prefix" 'index($0,p)==1' /tmp/master.list > /tmp/m1
+            awk -v p="$prefix" 'index($0,p)==1' /tmp/out.list > /tmp/m2
+            comm -23 /tmp/m1 /tmp/m2 > /tmp/missing
+            if test -s /tmp/missing; then echo "FIX05 DIAG missing resources under $prefix"; cat /tmp/missing; exit 1; fi
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          m=Path('work/src/main/java/dev/obsidiannetwork/core/TerminalScreenModel.java').read_text()
+          s=Path('work/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java').read_text()
+          checks={
+            'frozen list field':'private List<TerminalQuery.Entry> frozenFiltered = List.of();' in m,
+            'freeze method':'public void freezeLayout()' in m and 'this.frozenFiltered = List.copyOf(this.filtered());' in m,
+            'frozen filtered return':'if (this.layoutFrozen)' in m and 'return this.frozenFiltered;' in m,
+            'unfreeze method':'public void unfreezeLayout()' in m,
+            'shift polling':'boolean shiftDown = hasShiftDown();' in s,
+            'screen freezes':'this.screenModel.freezeLayout();' in s,
+            'screen unfreezes':'this.screenModel.unfreezeLayout();' in s,
+          }
+          bad=[k for k,v in checks.items() if not v]
+          if bad:
+              print('FIX05 DIAG failed:', bad)
+              print('--- model freeze lines ---')
+              print('\n'.join(x for x in m.splitlines() if 'Frozen' in x or 'frozen' in x or 'freezeLayout' in x or 'unfreezeLayout' in x))
+              print('--- screen shift lock lines ---')
+              print('\n'.join(x for x in s.splitlines() if 'shiftLayout' in x or 'freezeLayout' in x or 'shiftDown' in x))
+              raise SystemExit(1)
+          PY
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.core.TerminalScreenModel > /tmp/model.javap
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.StorageTerminalScreen > /tmp/screen.javap
+          grep -Fq 'freezeLayout' /tmp/screen.javap || { echo 'FIX05 DIAG freezeLayout absent in screen bytecode'; exit 1; }
+          grep -Fq 'frozenFiltered' /tmp/model.javap || { echo 'FIX05 DIAG frozenFiltered absent in model bytecode'; exit 1; }
+          echo "FIX 05 PASS: $OUT"
+          sha256sum "$OUT"
