@@ -1,0 +1,75 @@
+name: v1 Fix 11 Compile
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/v1-fix11-build.yml']
+permissions: {contents: read}
+jobs:
+  compile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: v1.0-work
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '9.7.1'}
+      - name: Reconstruct apply 01-11 and compile
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          test "$(stat -c%s "$JAR")" = 1121869
+          test "$(sha256sum "$JAR"|cut -d' ' -f1)" = b98030bce849f5f947eb9c72f94d6ac94880117d672a549040586f03c36f8287
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar "$JAR" work/decompiled
+          cp -a work/decompiled/dev work/src/main/java/
+          MASTER="$GITHUB_WORKSPACE/$JAR"; (cd work/src/main/resources && jar xf "$MASTER")
+          find work/src/main/resources -name '*.class' -delete; rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java"
+          python3 private/reconstruction/apply-baseline-fixes.py
+          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction; do python3 "private/fixes/apply-fix-$n.py"; done
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version=mod_version; group=mod_group_id; base { archivesName='xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
+          EOF
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+      - name: Diagnose Fix 11 and no regression
+        run: |
+          set -euo pipefail
+          OUT=$(find work/build/libs -name '*.jar' ! -name '*sources*' -print -quit); unzip -t "$OUT" >/dev/null
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('work/src/main/java/dev/obsidiannetwork/blockentity/WirelessAntennaBlockEntity.java').read_text()
+          a=s[s.index('public ItemStack removeUpgrade'):s.index('public boolean setUpgrade')]
+          b=s[s.index('public boolean setUpgrade'):s.index('private int value')]
+          checks={'remove exact check':'extracted != 1' in a,'single replacement transaction':'Transaction tx = Transaction.openRoot()' in b,'old exact removal':'removed != 1' in b,'new exact insert':'inserted != 1' in b,'commit after both':'tx.commit()' in b,'old remove-then-restore path gone':'this.removeUpgrade(slot)' not in b}
+          bad=[k for k,v in checks.items() if not v]
+          if bad: print('FIX11 DIAG failed',bad); raise SystemExit(1)
+          PY
+          jar tf "$OUT"|sort >/tmp/o; jar tf private/xSxLabs-Network-Storage-0.76.0-rc10.jar|sort >/tmp/m
+          for p in assets/obsidiannetwork/ data/obsidiannetwork/; do awk -v p="$p" 'index($0,p)==1' /tmp/m >/tmp/a; awk -v p="$p" 'index($0,p)==1' /tmp/o >/tmp/b; comm -23 /tmp/a /tmp/b >/tmp/x; test ! -s /tmp/x || { cat /tmp/x; exit 1; }; done
+          echo 'FIX 11 PASS'; sha256sum "$OUT"
