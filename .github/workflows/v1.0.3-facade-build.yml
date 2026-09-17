@@ -38,7 +38,7 @@ jobs:
           python3 private/fixes/apply-fix-18-facade-render-state.py
           python3 private/fixes/apply-fix-19-facade-lighting.py
           grep -Fq 'BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTick, cameraPos, crumblingOverlay);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
-          grep -Fq 'BlockPos facadeLightPos = pos.relative(Direction.from2DDataValue(state.rotation));' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'BlockPos facadeLightPos = pos.relative(net.minecraft.core.Direction.from2DDataValue(state.rotation));' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           echo '=== FIX19 LIGHT SOURCE ==='; grep -n -C 5 'facadeLightPos\|getBrightness\|lightCoords' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
@@ -79,7 +79,7 @@ jobs:
           test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401
           jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json'
           ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos'
-          echo 'v1.0.3 FIX18+FIX19 PASS - rotation decoded'
+          echo 'v1.0.3 FIX18+FIX19 PASS - qualified rotation decoded'
           sha256sum "$OUT" | tee work/v1.0.3-test.sha256
           cp "$OUT" work/xSxLabs-Network-Storage-v1.0.3-TEST.jar
       - name: Upload v1.0.3 test jar
