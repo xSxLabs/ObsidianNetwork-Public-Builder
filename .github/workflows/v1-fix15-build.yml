@@ -1,0 +1,61 @@
+name: v1 Fix 15 Compile
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/v1-fix15-build.yml']
+permissions: {contents: read}
+jobs:
+  compile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {repository: xSxLabs/ObsidianNetwork-Build, ref: v1.0-work, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: private}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '9.7.1'}
+      - name: Reconstruct apply 01-15 and compile
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          test "$(stat -c%s "$JAR")" = 1121869
+          test "$(sha256sum "$JAR"|cut -d' ' -f1)" = b98030bce849f5f947eb9c72f94d6ac94880117d672a549040586f03c36f8287
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar "$JAR" work/decompiled
+          cp -a work/decompiled/dev work/src/main/java/
+          MASTER="$GITHUB_WORKSPACE/$JAR"; (cd work/src/main/resources && jar xf "$MASTER")
+          find work/src/main/resources -name '*.class' -delete; rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources"
+          python3 private/reconstruction/apply-baseline-fixes.py
+          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip; do python3 "private/fixes/apply-fix-$n.py"; done
+          printf "%s\n" "pluginManagement { repositories { gradlePluginPortal() } }" "plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }" > work/settings.gradle
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0.1
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version=mod_version; group=mod_group_id; base { archivesName='xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
+          EOF
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+      - name: Diagnose Fix 15 and prior fixes
+        run: |
+          set -euo pipefail
+          OUT=$(find work/build/libs -name '*.jar' ! -name '*sources*' -print -quit); unzip -t "$OUT" >/dev/null
+          grep -Fq 'BlockItem.getBlockEntityData(stack)' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FIX15 DIAG: persisted BE data lookup absent'; exit 1; }
+          grep -Fq 'getLongOr("energy", 0L)' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FIX15 DIAG: stored energy lookup absent'; exit 1; }
+          grep -Fq 'GLFW.GLFW_KEY_N' work/src/main/java/dev/obsidiannetwork/client/ClientKeyBindings.java || { echo 'FIX15 DIAG: Fix14 regressed'; exit 1; }
+          jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json' || { echo 'FIX15 DIAG: Fix13 regressed'; exit 1; }
+          echo 'FIX 15 PASS'; sha256sum "$OUT"
