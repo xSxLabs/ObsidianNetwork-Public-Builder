@@ -11,21 +11,47 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
         with: {repository: xSxLabs/ObsidianNetwork-Build, ref: rc10.1-hotfix, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
-      - name: Inspect raw RC13 wireless payload
+      - name: Reconstruct RC10 and test RC13 wireless patch
         working-directory: source
         shell: bash
         run: |
           set -euo pipefail
+          mkdir project
+          cat payload/compile-src.part* | base64 -d | tar -xJ -C project
+          cat payload/rc4-resources.part* | base64 -d | tar -xJ -C project
+          cat payload/rc6-overlay.part* | base64 -d | tar -xJ -C project
           python3 - <<'PY'
           from pathlib import Path
-          import base64,lzma
-          raw=''.join(Path(f'.github/scripts/rc13_wireless.part{i:02d}').read_text() for i in range(2))
-          data=lzma.decompress(base64.b64decode(raw))
-          print('bytes=',len(data),'prefix=',repr(data[:120]))
-          text=data.decode('utf-8','replace')
-          print('=== FIRST 300 LINES ===')
-          for i,line in enumerate(text.splitlines()[:300],1): print(f'{i:04d}: {line}')
-          print('=== STRUCTURE TOKENS ===')
-          for token in ('diff --git','--- ','+++ ','*** Begin Patch','*** Update File','*** Add File','Wireless','wireless','Antenna','antenna'):
-              print(token, text.count(token))
+          p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java'); p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
           PY
+          python3 .github/scripts/gen_rc6_assets.py
+          cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
+          rm -f project/src/main/resources/data/obsidiannetwork/recipe/storage_terminal.json
+          python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python3 .github/scripts/gen_rc7_assets.py
+          python3 .github/scripts/rc7_cable_model_fix.py
+          python3 .github/scripts/rc7_controller_asset_fix.py
+          python3 .github/scripts/gen_rc7_item_assets.py
+          python3 .github/scripts/rc10_fix.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64,lzma,re
+          raw=''.join(Path(f'.github/scripts/rc13_wireless.part{i:02d}').read_text() for i in range(2))
+          text=lzma.decompress(base64.b64decode(raw)).decode()
+          # Rewrite GNU diff roots so patch -p1 targets project/. Keep every RC13 wireless hunk;
+          # failures reveal exactly which RC11/12 context must be adapted for RC10.
+          text=text.replace('rc13stage2/','a/').replace('rc13work/','b/')
+          Path('/tmp/wireless.patch').write_text(text)
+          print('files:', *re.findall(r'^\+\+\+ b/(\S+)',text,re.M), sep='\n')
+          PY
+          cd project
+          set +e
+          patch --dry-run -p1 < /tmp/wireless.patch | tee /tmp/patch.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "patch_rc=$rc"
+          if [ "$rc" -ne 0 ]; then
+            echo '=== RC10 incompatible hunks ==='
+            cat /tmp/patch.log
+            exit 1
+          fi
