@@ -63,8 +63,8 @@ jobs:
           python3 .github/scripts/rc42_port_preplan_normalize.py
           python3 .github/scripts/rc42_port_brew_impl_compat.py
           python3 .github/scripts/rc42_port_whole_plan_impl.py
-          python3 .github/scripts/rc42_port_machine_accounting.py
           python3 .github/scripts/rc42_port_followup_runtime_fixes.py
+          python3 .github/scripts/rc42_port_machine_accounting.py
           python3 .github/scripts/rc42_port_compile_compat.py
           python3 .github/scripts/rc42_final_runtime.py
           python3 .github/scripts/rc42_port_whole_plan_reservation.py
