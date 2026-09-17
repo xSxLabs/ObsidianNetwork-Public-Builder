@@ -1,0 +1,101 @@
+name: v1 Fix 06 Compile
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/v1-fix06-build.yml']
+permissions: {contents: read}
+concurrency: {group: xsxlabs-v1-fix06, cancel-in-progress: false}
+jobs:
+  compile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: v1.0-work
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+          fetch-depth: 1
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '9.7.1'}
+      - name: Verify immutable master
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          test "$(stat -c%s "$JAR")" = 1121869
+          test "$(sha256sum "$JAR" | cut -d' ' -f1)" = b98030bce849f5f947eb9c72f94d6ac94880117d672a549040586f03c36f8287
+      - name: Reconstruct and apply fixes 01-06
+        run: |
+          set -euo pipefail
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar private/xSxLabs-Network-Storage-0.76.0-rc10.jar work/decompiled
+          cp -a work/decompiled/dev work/src/main/java/
+          MASTER="$GITHUB_WORKSPACE/private/xSxLabs-Network-Storage-0.76.0-rc10.jar"
+          (cd work/src/main/resources && jar xf "$MASTER")
+          find work/src/main/resources -type f -name '*.class' -delete
+          rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java"
+          python3 private/reconstruction/apply-baseline-fixes.py
+          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset; do python3 "private/fixes/apply-fix-$n.py"; done
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version=mod_version; group=mod_group_id
+          base { archivesName='xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0-beta.2+26.1.2:api' }
+          tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
+          EOF
+      - name: Compile fixes 01-06
+        working-directory: work
+        run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
+      - name: Diagnose and no-regression verify Fix 06
+        run: |
+          set -euo pipefail
+          OUT=$(find work/build/libs -type f -name '*.jar' ! -name '*sources*' -print -quit)
+          unzip -t "$OUT" >/dev/null
+          jar tf "$OUT" | sort >/tmp/out
+          jar tf private/xSxLabs-Network-Storage-0.76.0-rc10.jar | sort >/tmp/master
+          for prefix in assets/obsidiannetwork/ data/obsidiannetwork/; do awk -v p="$prefix" 'index($0,p)==1' /tmp/master >/tmp/m; awk -v p="$prefix" 'index($0,p)==1' /tmp/out >/tmp/o; comm -23 /tmp/m /tmp/o >/tmp/missing; test ! -s /tmp/missing || { echo "Missing resources $prefix"; cat /tmp/missing; exit 1; }; done
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('work/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java').read_text()
+          init=s[s.index('protected void init()'):s.index('private void onTerminalSearchChanged')]
+          checks={
+            'terminal coordinator cleared on open':'this.coordinator.setSearch("");' in init,
+            'search box cleared on open':'this.searchBox.setValue("");' in init,
+            'JEI sync state cleared on open':'this.lastSyncedJeiSearch = "";' in init,
+            'JEI text cleared on open':'JeiSearchBridge.setText("");' in init,
+            'old JEI import removed':'String jei = JeiSearchBridge.getText();' not in init,
+            'Fix05 retained':'shiftLayoutLocked' in s and 'freezeLayout()' in s,
+          }
+          bad=[k for k,v in checks.items() if not v]
+          if bad:
+            print('FIX06 DIAG failed:',bad)
+            print('--- init() ---'); print(init)
+            raise SystemExit(1)
+          PY
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.StorageTerminalScreen >/tmp/screen.javap
+          grep -Fq 'JeiSearchBridge.setText' /tmp/screen.javap || { echo 'FIX06 DIAG: JEI clear absent in bytecode'; exit 1; }
+          grep -Fq 'TerminalUiCoordinator.setSearch' /tmp/screen.javap || { echo 'FIX06 DIAG: terminal clear absent in bytecode'; exit 1; }
+          echo "FIXES 01-06 PASS: $OUT"
+          sha256sum "$OUT"
