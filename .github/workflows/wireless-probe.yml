@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
         with: {repository: xSxLabs/ObsidianNetwork-Build, ref: rc10.1-hotfix, token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}', path: source, fetch-depth: 1}
-      - name: Reconstruct RC10 and test RC13 wireless patch
+      - name: Reconstruct through RC12 and apply wireless only
         working-directory: source
         shell: bash
         run: |
@@ -33,25 +33,16 @@ jobs:
           python3 .github/scripts/rc7_controller_asset_fix.py
           python3 .github/scripts/gen_rc7_item_assets.py
           python3 .github/scripts/rc10_fix.py
+          python3 .github/scripts/rc11_fix.py
+          python3 .github/scripts/rc12_fix.py
           python3 - <<'PY'
           from pathlib import Path
-          import base64,lzma,re
+          import base64,lzma,subprocess
           raw=''.join(Path(f'.github/scripts/rc13_wireless.part{i:02d}').read_text() for i in range(2))
-          text=lzma.decompress(base64.b64decode(raw)).decode()
-          # Rewrite GNU diff roots so patch -p1 targets project/. Keep every RC13 wireless hunk;
-          # failures reveal exactly which RC11/12 context must be adapted for RC10.
-          text=text.replace('rc13stage2/','a/').replace('rc13work/','b/')
-          Path('/tmp/wireless.patch').write_text(text)
-          print('files:', *re.findall(r'^\+\+\+ b/(\S+)',text,re.M), sep='\n')
+          patch=lzma.decompress(base64.b64decode(raw))
+          subprocess.run(['patch','-p1','--forward','--batch'],cwd='project',input=patch,check=True)
+          for rel in ['src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java','src/main/java/dev/obsidiannetwork/block/StorageTerminalBlock.java','src/main/java/dev/obsidiannetwork/block/WirelessAntennaBlock.java','src/main/java/dev/obsidiannetwork/item/WirelessCraftingTerminalItem.java','src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java']:
+              p=Path('project')/rel; s=p.read_text(); s=s.replace('import net.minecraft.resources.ResourceLocation;','import net.minecraft.resources.Identifier;').replace('ResourceLocation.parse(','Identifier.parse(').replace('.dimension().location()','.dimension().identifier()').replace('sp.getServer()','sp.level().getServer()').replace('player.getServer()','player.level().getServer()').replace('.displayClientMessage(','.sendSystemMessage(').replace('),true);','));'); p.write_text(s)
+          print('WIRELESS_ONLY_APPLIED')
           PY
-          cd project
-          set +e
-          patch --dry-run -p1 < /tmp/wireless.patch | tee /tmp/patch.log
-          rc=${PIPESTATUS[0]}
-          set -e
-          echo "patch_rc=$rc"
-          if [ "$rc" -ne 0 ]; then
-            echo '=== RC10 incompatible hunks ==='
-            cat /tmp/patch.log
-            exit 1
-          fi
+          grep -R -n -E 'findWirelessAccess|WirelessAccess|runtimeForAccessory|terminalForRuntime|openTerminal\(|stillValid\(' project/src/main/java/dev/obsidiannetwork/{network,item,menu} | head -240
