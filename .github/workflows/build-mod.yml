@@ -47,6 +47,7 @@ jobs:
           s=s.replace("out.add(new dev.obsidiannetwork.core.TerminalScreenModel.Cell(i++,c.key(),c.amount(),c.craftable()));","out.add(c);")
           start=s.index("# 4) Stonecutting preview only.");end=s.index("# 5) Energy Cell capacities.")
           s=s[:start]+"# 4) Stonecutting preview not present in isolated RC10.\nprint('RC10.1 PASS 4 skipped')\n\n"+s[end:]
+          end=s.index("# 5) Energy Cell capacities.")
           energy="""# 5) exact RC10 energy tiers\nEC=ROOT/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java'\ne=EC.read_text();wanted={'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}\nfor name,cap in wanted.items():\n pattern=rf'(?m)^(\\s*{name}\\s*\\(\\s*)(\\d[\\d_]*)(L?)(\\s*,)';e,n=re.subn(pattern,lambda m:m.group(1)+f'{cap:_}'+m.group(3)+m.group(4),e,count=1)\n if n!=1:raise SystemExit('energy anchor '+name)\nEC.write_text(e)\nprint('RC10.1 PASS 5 energy')\n"""
           s=s[:end]+energy;p.write_text(s)
           PY
