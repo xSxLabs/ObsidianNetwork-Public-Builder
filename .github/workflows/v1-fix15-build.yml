@@ -54,7 +54,8 @@ jobs:
         run: |
           set -euo pipefail
           OUT=$(find work/build/libs -name '*.jar' ! -name '*sources*' -print -quit); unzip -t "$OUT" >/dev/null
-          grep -Fq 'BlockItem.getBlockEntityData(stack)' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FIX15 DIAG: persisted BE data lookup absent'; exit 1; }
+          grep -Fq 'DataComponents.BLOCK_ENTITY_DATA' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FIX15 DIAG: TypedEntityData component lookup absent'; exit 1; }
+          grep -Fq 'copyTagWithoutId()' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FIX15 DIAG: TypedEntityData NBT copy absent'; exit 1; }
           grep -Fq 'getLongOr("energy", 0L)' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FIX15 DIAG: stored energy lookup absent'; exit 1; }
           grep -Fq 'GLFW.GLFW_KEY_N' work/src/main/java/dev/obsidiannetwork/client/ClientKeyBindings.java || { echo 'FIX15 DIAG: Fix14 regressed'; exit 1; }
           jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json' || { echo 'FIX15 DIAG: Fix13 regressed'; exit 1; }
