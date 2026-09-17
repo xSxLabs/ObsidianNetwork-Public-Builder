@@ -37,7 +37,8 @@ jobs:
           curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
           java -jar work/vineflower.jar private/xSxLabs-Network-Storage-0.76.0-rc10.jar work/decompiled
           cp -a work/decompiled/dev work/src/main/java/
-          (cd work/src/main/resources && jar xf ../../../private/xSxLabs-Network-Storage-0.76.0-rc10.jar)
+          MASTER="$GITHUB_WORKSPACE/private/xSxLabs-Network-Storage-0.76.0-rc10.jar"
+          (cd work/src/main/resources && jar xf "$MASTER")
           find work/src/main/resources -type f -name '*.class' -delete
           rm -f work/src/main/resources/META-INF/MANIFEST.MF
           cat > work/settings.gradle <<'EOF'
