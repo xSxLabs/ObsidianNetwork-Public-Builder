@@ -1,0 +1,76 @@
+name: v1 Master Decompile
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/V1_MASTER_TRIGGER','.github/workflows/v1-master-decompile.yml']
+permissions: {contents: read}
+concurrency: {group: xsxlabs-v1-master-decompile, cancel-in-progress: false}
+jobs:
+  decompile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: v1.0-original-jar
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+          fetch-depth: 1
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - name: Verify immutable master key
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          test -s "$JAR"
+          test "$(stat -c%s "$JAR")" = 1121869
+          ACTUAL=$(sha256sum "$JAR" | cut -d' ' -f1)
+          EXPECTED=b98030bce849f5f947eb9c72f94d6ac94880117d672a549040586f03c36f8287
+          echo "master_sha256=$ACTUAL"
+          test "$ACTUAL" = "$EXPECTED"
+          mkdir -p work/original work/decompiled work/resources
+          cp "$JAR" work/original/master.jar
+          jar tf "$JAR" | sort > work/original/master.files
+      - name: Download Vineflower
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 4 --retry-delay 2 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          test -s work/vineflower.jar
+      - name: Decompile master
+        shell: bash
+        run: |
+          set -euo pipefail
+          java -jar work/vineflower.jar work/original/master.jar work/decompiled
+      - name: Extract byte-identical resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd work/resources
+          jar xf ../original/master.jar
+          find . -type f -name '*.class' -delete
+          rm -f META-INF/MANIFEST.MF
+          find . -type f -print0 | sort -z | xargs -0 sha256sum > ../original/resource-sha256.txt
+      - name: Inventory and no-regression gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          F=work/original/master.files
+          for p in dev/obsidiannetwork/block/EnergyCellBlock.class dev/obsidiannetwork/block/SolarGeneratorBlock.class dev/obsidiannetwork/block/EnergyCableBlock.class dev/obsidiannetwork/block/AutocrafterBlock.class dev/obsidiannetwork/block/CraftingMonitorBlock.class dev/obsidiannetwork/block/TemplateManagerBlock.class dev/obsidiannetwork/client/ClientKeyBindings.class dev/obsidiannetwork/network/OpenCurioTerminalPayload.class; do grep -Fxq "$p" "$F"; done
+          grep -q '^assets/obsidiannetwork/' "$F"
+          grep -q '^data/obsidiannetwork/' "$F"
+          CLASS_COUNT=$(grep -c '\.class$' "$F" || true)
+          JAVA_COUNT=$(find work/decompiled -type f -name '*.java' | wc -l)
+          PNG_COUNT=$(grep -c '\.png$' "$F" || true)
+          JSON_COUNT=$(grep -c '\.json$' "$F" || true)
+          printf 'classes=%s\ndecompiled_java=%s\npng=%s\njson=%s\n' "$CLASS_COUNT" "$JAVA_COUNT" "$PNG_COUNT" "$JSON_COUNT" | tee work/original/inventory.txt
+          test "$CLASS_COUNT" -gt 100; test "$JAVA_COUNT" -gt 100; test "$PNG_COUNT" -gt 100; test "$JSON_COUNT" -gt 100
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xsxlabs-v1-master-decompiled
+          path: work/
+          if-no-files-found: error
+          retention-days: 30
