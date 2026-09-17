@@ -41,44 +41,36 @@ jobs:
           python3 .github/scripts/rc76_01_special_terminals.py
           echo $? >/tmp/rc41-wrapper-status
           set -e
-      - name: Print final transformed ownership and topology anchors
+      - name: Print final transformed ownership methods
         if: always()
         working-directory: source
         shell: python
         run: |
           from pathlib import Path
           import re
-          J=Path('project/src/main/java')
-          def one(n):
-            p=next(J.rglob(n),None)
-            if not p: raise SystemExit('missing '+n)
-            return p
-          def methods(path,names):
-            s=path.read_text(); print('\n===== '+str(path)+' =====')
-            for name in names:
-              for m in re.finditer(r'(?m)^.*\\b'+re.escape(name)+r'\\s*\\([^;]*\\)\\s*\\{',s):
-                b=s.find('{',m.start()); d=0
-                for e in range(b,len(s)):
-                  if s[e]=='{': d+=1
-                  elif s[e]=='}':
-                    d-=1
-                    if d==0:
-                      print('\n--- '+name+' ---\n'+s[m.start():e+1]); break
-                break
-          methods(one('MinecraftAutocraftingService.java'),['request','ensure','canProvide','craftInstant','brewInstant','queueCrafting','queueProcessing','reserveAvailable','consumeBuffered','startOne','startVanillaFurnace','cancel','save','load'])
-          methods(one('WorldTopologyBridge.java'),['refreshConnectedVisuals','rebuild','tick','onLoad','onUnload','runtimeForNode'])
-          methods(one('StorageTerminalBlock.java'),['StorageTerminalBlock','createBlockStateDefinition','getStateForPlacement','onPlace','onRemove'])
-          methods(one('TemplateCreatorMenu.java'),['currentTemplate','rebuildPreview','patternType'])
+          p=next(Path('project/src/main/java').rglob('MinecraftAutocraftingService.java'))
+          s=p.read_text()
+          for name in ['request','ensure','craftInstant','brewInstant','queueCrafting','queueProcessing','reserveAvailable','consumeBuffered','startOne','startVanillaFurnace','cancel','save','load']:
+            hits=list(re.finditer(r'\b'+re.escape(name)+r'\s*\(',s))
+            hit=next((h for h in hits if s.rfind(';',max(0,h.start()-200),h.start()) < s.rfind('}',max(0,h.start()-200),h.start()) or any(k in s[max(0,h.start()-120):h.start()] for k in ['public ','private ','protected '])),None)
+            if not hit: print('\n--- '+name+' NOT FOUND ---'); continue
+            start=max(s.rfind('}',0,hit.start())+1,s.rfind(';',0,hit.start())+1)
+            b=s.find('{',hit.end()); d=0
+            if b<0: print('\n--- '+name+' NO BODY ---'); continue
+            for e in range(b,len(s)):
+              if s[e]=='{': d+=1
+              elif s[e]=='}':
+                d-=1
+                if d==0:
+                  print('\n--- '+name+' ---\n'+s[start:e+1].strip()); break
       - name: Print final call sites
         if: always()
         working-directory: source
         shell: bash
         run: |
           echo "wrapper status: $(cat /tmp/rc41-wrapper-status 2>/dev/null || echo missing)"
-          grep -RFn 'refreshConnectedVisuals(' project/src/main/java || true
-          grep -RFn 'runtime.storage().extract' project/src/main/java/dev/obsidiannetwork || true
-          grep -RFn 'runtime.storage().insert' project/src/main/java/dev/obsidiannetwork || true
-          grep -RFn 'rc41PlanPools\|rc41RequestPlanOwners\|rc41PlanTargets' project/src/main/java/dev/obsidiannetwork || true
-          grep -RFn 'processingRequests.remove\|craftJobs.remove\|it.remove()' project/src/main/java/dev/obsidiannetwork || true
-          grep -RFn 'BREWING_TERMINAL' project/src/main/java/dev/obsidiannetwork || true
+          grep -RFn 'runtime.storage().extract' project/src/main/java/dev/obsidiannetwork/platform/MinecraftAutocraftingService.java || true
+          grep -RFn 'runtime.storage().insert' project/src/main/java/dev/obsidiannetwork/platform/MinecraftAutocraftingService.java || true
+          grep -RFn 'rc41PlanPools\|rc41RequestPlanOwners\|rc41PlanTargets' project/src/main/java/dev/obsidiannetwork/platform/MinecraftAutocraftingService.java || true
+          grep -RFn 'refreshConnectedVisuals(' project/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java || true
           grep -RFn 'CONNECTED' project/src/main/java/dev/obsidiannetwork/block/StorageTerminalBlock.java || true
