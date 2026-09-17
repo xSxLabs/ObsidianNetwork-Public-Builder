@@ -42,6 +42,7 @@ jobs:
           find work/src/main/resources -type f -name '*.class' -delete
           rm -f work/src/main/resources/META-INF/MANIFEST.MF
           V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/reconstruction/apply-baseline-fixes.py
+          V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/fixes/apply-fix-01-energy-cell-persistence.py
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
           plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
@@ -79,10 +80,10 @@ jobs:
           tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
           EOF
           echo "java=$(find work/src/main/java -name '*.java' | wc -l) resources=$(find work/src/main/resources -type f | wc -l)"
-      - name: Compile reconstructed baseline
+      - name: Compile fix 01
         working-directory: work
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
-      - name: Baseline no-regression inventory
+      - name: Fix 01 no-regression inventory
         shell: bash
         run: |
           set -euo pipefail
@@ -96,5 +97,6 @@ jobs:
             comm -23 /tmp/master.list /tmp/built.list > /tmp/missing
             test ! -s /tmp/missing || { echo "Missing resources under $prefix"; cat /tmp/missing; exit 1; }
           done
-          echo "REFERENCE COMPILE PASS: $OUT"
+          javap -classpath "$OUT" -c dev.obsidiannetwork.block.EnergyCellBlock | grep -q 'BLOCK_ENTITY_DATA'
+          echo "FIX 01 PASS: $OUT"
           sha256sum "$OUT"
