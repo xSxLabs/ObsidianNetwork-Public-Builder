@@ -115,7 +115,8 @@ jobs:
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.platform.MinecraftAutocraftingService >/tmp/craft.txt
           grep -q 'ON-RC42-DIAG.*CRAFT' /tmp/craft.txt
           ! grep -A120 'brewInstant' /tmp/craft.txt | grep -q 'NetworkBrewingService'
-          grep -Fq RC27_RESET_SEARCH_AFTER_JEI_INIT source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
+          grep -Fq 'searchBox.setValue(\"\")' source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
+          grep -Fq 'coordinator.setSearch(\"\")' source/project/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java
           grep -Fq crossDimensional source/project/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
           echo "path=$OUT" >> "$GITHUB_OUTPUT"
           echo "name=$(basename "$OUT")" >> "$GITHUB_OUTPUT"
