@@ -1,4 +1,4 @@
-name: v1.0.1 Final Test Build
+name: v1.0.2 Final Test Build
 on:
   workflow_dispatch:
   push:
@@ -20,7 +20,7 @@ jobs:
         with: {distribution: temurin, java-version: '25'}
       - uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '9.7.1'}
-      - name: Reconstruct immutable master and apply verified fixes 01-16
+      - name: Reconstruct immutable master and apply verified fixes 01-17
         run: |
           set -euo pipefail
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
@@ -34,7 +34,7 @@ jobs:
           find work/src/main/resources -name '*.class' -delete; rm -f work/src/main/resources/META-INF/MANIFEST.MF
           export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources"
           python3 private/reconstruction/apply-baseline-fixes.py
-          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios; do python3 "private/fixes/apply-fix-$n.py"; done
+          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py"; done
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
           plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
@@ -45,7 +45,7 @@ jobs:
           minecraft_version=26.1.2
           neo_version=26.1.2.106
           mod_id=obsidiannetwork
-          mod_version=1.0.1
+          mod_version=1.0.2
           mod_group_id=dev.obsidiannetwork
           EOF
           cat > work/build.gradle <<'EOF'
@@ -61,7 +61,7 @@ jobs:
       - name: Final master no-regression and integrity gates
         run: |
           set -euo pipefail
-          OUT=$(find work/build/libs -type f -name 'xSxLabs-Network-Storage-1.0.1.jar' -print -quit)
+          OUT=$(find work/build/libs -type f -name 'xSxLabs-Network-Storage-1.0.2.jar' -print -quit)
           test -n "$OUT"; unzip -t "$OUT" >/dev/null
           jar tf "$OUT" | sort -u >/tmp/out
           jar tf private/xSxLabs-Network-Storage-0.76.0-rc10.jar | sort -u >/tmp/master
@@ -78,22 +78,22 @@ jobs:
           test "$(jar tf "$OUT" | grep -c '^assets/obsidiannetwork/.*\.png$')" -ge 263 || { echo 'FINAL DIAG PNG-count regression'; exit 1; }
           test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401 || { echo 'FINAL DIAG JSON-count regression'; exit 1; }
           jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json' || { echo 'FINAL DIAG Fix13 Curios slot tag missing'; exit 1; }
-          grep -Fq 'GLFW.GLFW_KEY_N' work/src/main/java/dev/obsidiannetwork/client/ClientKeyBindings.java || { echo 'FINAL DIAG Fix14 default hotkey regressed'; exit 1; }
-          grep -Fq 'player.getInventory().getNonEquipmentItems()' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG Fix16 inventory hotkey lookup regressed'; exit 1; }
-          grep -Fq 'WirelessCraftingTerminalItem.open(player, stack)' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG Fix16 terminal open path regressed'; exit 1; }
-          grep -Fq 'openEquipped' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG Fix16 Curios fallback regressed'; exit 1; }
+          grep -Fq 'GLFW.GLFW_KEY_N' work/src/main/java/dev/obsidiannetwork/client/ClientKeyBindings.java || { echo 'FINAL DIAG default hotkey regressed'; exit 1; }
+          grep -Fq 'player.getInventory().getNonEquipmentItems()' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG inventory hotkey lookup regressed'; exit 1; }
+          grep -Fq 'opened = WirelessCraftingTerminalItem.open(player, stack)' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG Fix17 success-driven inventory opener missing'; exit 1; }
+          grep -Fq 'openEquipped' work/src/main/java/dev/obsidiannetwork/network/CurioTerminalOpenHandler.java || { echo 'FINAL DIAG Curios fallback regressed'; exit 1; }
           grep -Fq 'TypedEntityData' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FINAL DIAG Fix15 TypedEntityData lookup regressed'; exit 1; }
           grep -Fq 'getLongOr("energy", 0L)' work/src/main/java/dev/obsidiannetwork/item/TechInfoBlockItem.java || { echo 'FINAL DIAG Fix15 stored energy lookup regressed'; exit 1; }
           ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos' || { echo 'FINAL DIAG build/diagnostic material leaked into mod jar'; exit 1; }
-          echo 'FINAL v1.0.1 TEST JAR PASS FIX01-16'
-          sha256sum "$OUT" | tee work/v1.0.1-test.sha256
-          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.1-TEST.jar
-      - name: Upload v1.0.1 test jar
+          echo 'FINAL v1.0.2 TEST JAR PASS FIX01-17'
+          sha256sum "$OUT" | tee work/v1.0.2-test.sha256
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.2-TEST.jar
+      - name: Upload v1.0.2 test jar
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.1-TEST
+          name: xSxLabs-Network-Storage-v1.0.2-TEST
           path: |
-            work/xSxLabs-Network-Storage-v1.0.1-TEST.jar
-            work/v1.0.1-test.sha256
+            work/xSxLabs-Network-Storage-v1.0.2-TEST.jar
+            work/v1.0.2-test.sha256
           if-no-files-found: error
           retention-days: 30
