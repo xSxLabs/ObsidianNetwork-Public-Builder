@@ -69,6 +69,17 @@ jobs:
           python3 .github/scripts/rc42_final_runtime.py
           python3 .github/scripts/rc42_port_whole_plan_reservation.py
           python3 .github/scripts/rc42_port_ownership_executor_gate.py
+      - name: Capture reconstructed source for diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc42-reconstructed-source
+          path: |
+            source/project/src/main/java/dev/obsidiannetwork/platform/MinecraftAutocraftingService.java
+            source/project/src/main/java/dev/obsidiannetwork/menu/TemplateCreatorMenu.java
+            source/project/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
+          if-no-files-found: error
+          retention-days: 7
       - name: Stage RC42 assets and prepare baseline
         working-directory: source
         shell: bash
@@ -85,8 +96,6 @@ jobs:
             if src.is_file() and before.get(src.as_posix())!=hashlib.sha256(src.read_bytes()).hexdigest():
               dst=Path('/tmp/xsxlabs-076-overlay')/src.relative_to(root);dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dst)
           PY
-          rm -rf /tmp/xsxlabs-reference; mkdir -p /tmp/xsxlabs-reference
-          unzip -q Reference/xSxLabs-Network-Storage-0.75.0-rc52.19-reference.jar 'assets/obsidiannetwork/*' -d /tmp/xsxlabs-reference
       - name: Compile and test RC42
         working-directory: source/project
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
@@ -98,7 +107,6 @@ jobs:
           BUILT=$(find source/project/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
           OUT=source/project/build/libs/xSxLabs-Network-Storage-0.76.0-rc42.jar
           [ "$BUILT" = "$OUT" ] || mv "$BUILT" "$OUT"
-          (cd /tmp/xsxlabs-reference && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork)
           if [ -d /tmp/xsxlabs-076-overlay/assets/obsidiannetwork ]; then (cd /tmp/xsxlabs-076-overlay && zip -q -r "$GITHUB_WORKSPACE/$OUT" assets/obsidiannetwork); fi
           zip -dq "$OUT" assets/obsidiannetwork/models/block/brewing_terminal.json || true
           unzip -t "$OUT"
