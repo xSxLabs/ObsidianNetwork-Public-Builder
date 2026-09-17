@@ -41,6 +41,7 @@ jobs:
           (cd work/src/main/resources && jar xf "$MASTER")
           find work/src/main/resources -type f -name '*.class' -delete
           rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/reconstruction/apply-baseline-fixes.py
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
           plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
@@ -78,7 +79,7 @@ jobs:
           tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
           EOF
           echo "java=$(find work/src/main/java -name '*.java' | wc -l) resources=$(find work/src/main/resources -type f | wc -l)"
-      - name: Compile untouched decompile baseline
+      - name: Compile reconstructed baseline
         working-directory: work
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
       - name: Baseline no-regression inventory
