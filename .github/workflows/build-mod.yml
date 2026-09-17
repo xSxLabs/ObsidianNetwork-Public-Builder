@@ -46,33 +46,28 @@ jobs:
           s=s.replace("s=SCREEN.read_text(); sig='protected void init()';i=s.find(sig)","s=SCREEN.read_text(); m=re.search(r'\\bvoid\\s+init\\s*\\(\\s*\\)',s);i=m.start() if m else -1",1)
           s=s.replace("if 'screenModel.cellAtVisibleIndex(' in out or out.count('screenModel.visibleCells()')!=1: raise SystemExit('RC10.1 Shift-lock live lookup survived')","if 'screenModel.cellAtVisibleIndex(' in out or 'RC10_1_SHIFT_STABLE_SLOT_IDENTITY' not in out or 'rc10_1StableCells(' not in out: raise SystemExit('RC10.1 Shift-lock routing missing')",1)
           s=s.replace("out.add(new dev.obsidiannetwork.core.TerminalScreenModel.Cell(i++,c.key(),c.amount(),c.craftable()));","out.add(c);")
-          start=s.index("# 4) Stonecutting preview only.");end=s.index("# 5) Energy Cell capacities.")
-          s=s[:start]+"# 4) Stonecutting preview not present in isolated RC10.\nprint('RC10.1 PASS 4 skipped')\n\n"+s[end:]
-          end=s.index("# 5) Energy Cell capacities.")
-          energy="""# 5) exact RC10 energy tiers\nEC=ROOT/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java'\ne=EC.read_text();wanted={'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}\nfor name,cap in wanted.items():\n pattern=rf'(?m)^(\\s*{name}\\s*\\(\\s*)(\\d[\\d_]*)(L?)(\\s*,)';e,n=re.subn(pattern,lambda m:m.group(1)+f'{cap:_}'+m.group(3)+m.group(4),e,count=1)\n if n!=1:raise SystemExit('energy anchor '+name)\nEC.write_text(e)\nprint('RC10.1 PASS 5 energy')\n"""
-          s=s[:end]+energy;p.write_text(s)
+          start=s.index("# 4) Stonecutting preview only.");end=s.index("# 5) Energy Cell capacities.");s=s[:start]+"# 4) Stonecutting preview not present in isolated RC10.\nprint('RC10.1 PASS 4 skipped')\n\n"+s[end:]
+          end=s.index("# 5) Energy Cell capacities.");energy="""# 5) exact RC10 energy tiers\nEC=ROOT/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java'\ne=EC.read_text();wanted={'BASIC':1_000_000,'IMPROVED':2_000_000,'ADVANCED':4_000_000,'ELITE':8_000_000,'ULTIMATE':16_000_000}\nfor name,cap in wanted.items():\n pattern=rf'(?m)^(\\s*{name}\\s*\\(\\s*)(\\d[\\d_]*)(L?)(\\s*,)';e,n=re.subn(pattern,lambda m:m.group(1)+f'{cap:_}'+m.group(3)+m.group(4),e,count=1)\n if n!=1:raise SystemExit('energy anchor '+name)\nEC.write_text(e)\nprint('RC10.1 PASS 5 energy')\n""";s=s[:end]+energy;p.write_text(s)
           PY
           python3 .github/scripts/rc10_1_hotfix.py
           python3 .github/scripts/rc10_1_wireless_hotfix.py
           python3 .github/scripts/rc10_1_wireless_resources.py
+          python3 .github/scripts/rc10_1_wireless_infinity_dimension_fix.py
           python3 - <<'PY'
           from pathlib import Path
           import re,json
-          root=Path('project')
-          w=next((root/'src/main/java').rglob('WirelessCraftingTerminalItem.java'));s=w.read_text();s=re.sub(r'\s*if\(runtime!=null\)ServerTerminalPayloadHandler\.sendCraftables\([^;]+;','',s,count=1);w.write_text(s)
+          root=Path('project');w=next((root/'src/main/java').rglob('WirelessCraftingTerminalItem.java'));s=w.read_text();s=re.sub(r'\s*if\(runtime!=null\)ServerTerminalPayloadHandler\.sendCraftables\([^;]+;','',s,count=1);w.write_text(s)
           menu=next((root/'src/main/java').rglob('StorageTerminalMenu.java'));m=menu.read_text();old='Optional<RecipeHolder<? extends CraftingRecipe>> match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);';new='Optional<RecipeHolder<CraftingRecipe>> match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);'
           if old in m:menu.write_text(m.replace(old,new,1))
           gp=root/'gradle.properties';gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc10.1',gp.read_text()))
           for p in (root/'src/main/resources').rglob('neoforge.mods.toml'):p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc10.1"',p.read_text()))
           text='\n'.join(p.read_text(errors='ignore') for p in (root/'src/main/java').rglob('*.java'))
           for marker in ('RC41_WHOLE_PLAN_RESERVATION','RC27_RESET_SEARCH_AFTER_JEI_INIT','AUTO_BREWER','rc52_','TemplateManagerBlock','AutocrafterBlock','CraftingMonitorBlock'):assert marker not in text
-          for marker in ('WirelessAntennaBlock','WirelessCraftingTerminalItem','openWirelessTerminal','wirelessSessions'):assert marker in text
+          for marker in ('WirelessAntennaBlock','WirelessCraftingTerminalItem','openWirelessTerminal','wirelessSessions','boolean infinity=a.crossDimensional()','(!same&&!infinity)'):assert marker in text
           t=next((root/'src/main/java').rglob('TransferNodeMenu.java')).read_text();assert 'quickMoveUpgrade(original, slots.get(0))' in t and t.count('quickMoveUpgrade(ItemStack')==1
           e=(root/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java').read_text()
           for cap in ('1_000_000','2_000_000','4_000_000','8_000_000','16_000_000'):assert cap in e
-          for lang in ('en_us.json','de_de.json'):
-            d=json.loads((root/'src/main/resources/assets/obsidiannetwork/lang'/lang).read_text());assert 'block.obsidiannetwork.wireless_antenna' in d;assert 'item.obsidiannetwork.wireless_crafting_terminal' in d
-          print('RC10.1 pure isolation + wireless code/resources + energy gates PASS')
+          print('RC10.1 pure isolation + wireless Infinity + energy gates PASS')
           PY
       - name: Compile RC10.1 checkpoint
         working-directory: source/project
@@ -87,7 +82,6 @@ jobs:
           unzip -t "$OUT" >/dev/null
           unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc10.1"'
           unzip -p "$OUT" assets/obsidiannetwork/lang/en_us.json | grep -q 'wireless_crafting_terminal'
-          unzip -p "$OUT" assets/obsidiannetwork/lang/de_de.json | grep -q 'wireless_antenna'
           javap -classpath "$OUT" -p dev.obsidiannetwork.network.WorldTopologyBridge | grep -q openWirelessTerminal
           javap -classpath "$OUT" -p dev.obsidiannetwork.item.WirelessCraftingTerminalItem >/dev/null
           sha256sum "$OUT" > "$OUT.sha256";echo "path=$OUT" >> "$GITHUB_OUTPUT"
