@@ -27,12 +27,16 @@ jobs:
           PY
           python3 .github/scripts/gen_rc6_assets.py
           cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
+          python3 -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python3 .github/scripts/gen_rc7_assets.py
+          python3 .github/scripts/rc7_cable_model_fix.py
+          python3 .github/scripts/rc7_controller_asset_fix.py
+          python3 .github/scripts/gen_rc7_item_assets.py
           python3 .github/scripts/rc10_fix.py
           cp -a project rc10base
-          cat .github/scripts/rc11_overlay.part* | base64 -d | tar -xJ -C project
           python3 .github/scripts/rc11_fix.py
           python3 .github/scripts/rc12_fix.py
           echo '=== WIRELESS FILES AFTER RC12 ==='
           find project -type f \( -iname '*wireless*' -o -iname '*antenna*' \) -print | sort
           echo '=== WIRELESS REFERENCES ==='
-          grep -RInE 'Wireless|wireless|Antenna|antenna' project/src/main/java/dev/obsidiannetwork | head -400 || true
+          grep -RInE 'Wireless|wireless|Antenna|antenna' project/src/main/java/dev/obsidiannetwork | head -500 || true
