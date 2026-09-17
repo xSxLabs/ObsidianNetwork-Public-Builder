@@ -88,27 +88,58 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          OUT=$(find work/build/libs -type f -name '*.jar' ! -name '*sources*' | head -1); test -n "$OUT"
+          OUT=$(find work/build/libs -type f -name '*.jar' ! -name '*sources*' -print -quit)
+          test -n "$OUT"
           unzip -t "$OUT" >/dev/null
-          for p in dev/obsidiannetwork/block/EnergyCellBlock.class dev/obsidiannetwork/block/SolarGeneratorBlock.class dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.class dev/obsidiannetwork/block/AutocrafterBlock.class dev/obsidiannetwork/block/CraftingMonitorBlock.class dev/obsidiannetwork/block/TemplateManagerBlock.class dev/obsidiannetwork/client/ClientKeyBindings.class dev/obsidiannetwork/network/OpenCurioTerminalPayload.class; do unzip -l "$OUT" "$p" | grep -q "$p"; done
+          jar tf "$OUT" | sort > /tmp/out-all.list
           MASTER=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
-          for prefix in assets/obsidiannetwork/ data/obsidiannetwork/; do
-            jar tf "$MASTER" | grep "^$prefix" | sort > /tmp/master.list
-            jar tf "$OUT" | grep "^$prefix" | sort > /tmp/built.list
-            comm -23 /tmp/master.list /tmp/built.list > /tmp/missing
-            test ! -s /tmp/missing || { echo "Missing resources under $prefix"; cat /tmp/missing; exit 1; }
+          jar tf "$MASTER" | sort > /tmp/master-all.list
+
+          for p in \
+            dev/obsidiannetwork/block/EnergyCellBlock.class \
+            dev/obsidiannetwork/block/SolarGeneratorBlock.class \
+            dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.class \
+            dev/obsidiannetwork/block/AutocrafterBlock.class \
+            dev/obsidiannetwork/block/CraftingMonitorBlock.class \
+            dev/obsidiannetwork/block/TemplateManagerBlock.class \
+            dev/obsidiannetwork/client/ClientKeyBindings.class \
+            dev/obsidiannetwork/network/OpenCurioTerminalPayload.class; do
+            if ! grep -Fqx "$p" /tmp/out-all.list; then
+              echo "Missing required class: $p"
+              exit 1
+            fi
           done
-          javap -classpath "$OUT" -c dev.obsidiannetwork.block.EnergyCellBlock | grep -q 'BLOCK_ENTITY_DATA'
+
+          for prefix in assets/obsidiannetwork/ data/obsidiannetwork/; do
+            awk -v p="$prefix" 'index($0,p)==1' /tmp/master-all.list > /tmp/master-prefix.list
+            awk -v p="$prefix" 'index($0,p)==1' /tmp/out-all.list > /tmp/built-prefix.list
+            comm -23 /tmp/master-prefix.list /tmp/built-prefix.list > /tmp/missing
+            if test -s /tmp/missing; then
+              echo "Missing resources under $prefix"
+              cat /tmp/missing
+              exit 1
+            fi
+          done
+
+          javap -classpath "$OUT" -c dev.obsidiannetwork.block.EnergyCellBlock > /tmp/energycell.javap
+          if ! grep -Fq 'BLOCK_ENTITY_DATA' /tmp/energycell.javap; then
+            echo 'Fix 01 verification failed: BLOCK_ENTITY_DATA not present'
+            exit 1
+          fi
+
           SOLAR=work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java
-          grep -q 'SnapshotJournal' "$SOLAR"
-          grep -q 'journal.updateSnapshots(tx)' "$SOLAR"
+          grep -Fq 'SnapshotJournal' "$SOLAR" || { echo 'Fix 02 verification failed: SnapshotJournal missing'; exit 1; }
+          grep -Fq 'journal.updateSnapshots(tx)' "$SOLAR" || { echo 'Fix 02 verification failed: updateSnapshots missing'; exit 1; }
           python3 - <<'PY'
           from pathlib import Path
           s=Path('work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java').read_text()
           j=s.find('journal.updateSnapshots(tx)')
           e=s.find('be.energy.extract(accepted)')
           c=s.find('tx.commit()', j)
-          assert j >= 0 and e >= 0 and c >= 0 and j < e < c, 'solar journal/extract/commit ordering invalid'
+          assert j >= 0, 'solar SnapshotJournal update missing'
+          assert e >= 0, 'solar source extraction missing'
+          assert c >= 0, 'solar transaction commit missing'
+          assert j < e < c, f'solar journal/extract/commit ordering invalid: journal={j} extract={e} commit={c}'
           PY
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.blockentity.SolarGeneratorBlockEntity > /tmp/solar.javap
           test -s /tmp/solar.javap
