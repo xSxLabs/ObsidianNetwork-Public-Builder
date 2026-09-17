@@ -1,0 +1,98 @@
+name: v1 Reference Compile
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/V1_REFERENCE_TRIGGER','.github/workflows/v1-reference-build.yml']
+permissions: {contents: read}
+concurrency: {group: xsxlabs-v1-reference, cancel-in-progress: false}
+jobs:
+  compile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: v1.0-work
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+          fetch-depth: 1
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '9.7.1'}
+      - name: Verify immutable master
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          test "$(stat -c%s "$JAR")" = 1121869
+          test "$(sha256sum "$JAR" | cut -d' ' -f1)" = b98030bce849f5f947eb9c72f94d6ac94880117d672a549040586f03c36f8287
+      - name: Reconstruct source from master only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar private/xSxLabs-Network-Storage-0.76.0-rc10.jar work/decompiled
+          cp -a work/decompiled/dev work/src/main/java/
+          (cd work/src/main/resources && jar xf ../../../private/xSxLabs-Network-Storage-0.76.0-rc10.jar)
+          find work/src/main/resources -type f -name '*.class' -delete
+          rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins {
+            id 'java-library'
+            id 'net.neoforged.moddev' version '2.0.147'
+          }
+          version = mod_version
+          group = mod_group_id
+          base { archivesName = 'xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+          repositories {
+            maven { url = 'https://maven.blamejared.com' }
+            maven { url = 'https://maven.theillusivec4.top/' }
+          }
+          neoForge {
+            version = project.neo_version
+            mods { obsidiannetwork { sourceSet(sourceSets.main) } }
+          }
+          dependencies {
+            compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'
+            compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0-beta.2+26.1.2:api'
+          }
+          tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+          EOF
+          echo "java=$(find work/src/main/java -name '*.java' | wc -l) resources=$(find work/src/main/resources -type f | wc -l)"
+      - name: Compile untouched decompile baseline
+        working-directory: work
+        run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
+      - name: Baseline no-regression inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=$(find work/build/libs -type f -name '*.jar' ! -name '*sources*' | head -1); test -n "$OUT"
+          unzip -t "$OUT" >/dev/null
+          for p in dev/obsidiannetwork/block/EnergyCellBlock.class dev/obsidiannetwork/block/SolarGeneratorBlock.class dev/obsidiannetwork/block/AutocrafterBlock.class dev/obsidiannetwork/block/CraftingMonitorBlock.class dev/obsidiannetwork/block/TemplateManagerBlock.class dev/obsidiannetwork/client/ClientKeyBindings.class dev/obsidiannetwork/network/OpenCurioTerminalPayload.class; do unzip -l "$OUT" "$p" | grep -q "$p"; done
+          MASTER=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          for prefix in assets/obsidiannetwork/ data/obsidiannetwork/; do
+            jar tf "$MASTER" | grep "^$prefix" | sort > /tmp/master.list
+            jar tf "$OUT" | grep "^$prefix" | sort > /tmp/built.list
+            comm -23 /tmp/master.list /tmp/built.list > /tmp/missing
+            test ! -s /tmp/missing || { echo "Missing resources under $prefix"; cat /tmp/missing; exit 1; }
+          done
+          echo "REFERENCE COMPILE PASS: $OUT"
+          sha256sum "$OUT"
