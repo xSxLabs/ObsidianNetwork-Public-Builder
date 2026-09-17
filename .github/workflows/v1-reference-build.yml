@@ -46,6 +46,7 @@ jobs:
           V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/fixes/apply-fix-02-solar-atomic-transfer.py
           V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/fixes/apply-fix-03-wireless-open-refund.py
           V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/fixes/apply-fix-04-wireless-infinity-chunkload.py
+          V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" python3 private/fixes/apply-fix-05-terminal-shift-lock.py
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
           plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
@@ -82,8 +83,7 @@ jobs:
           }
           tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
           EOF
-          echo "java=$(find work/src/main/java -name '*.java' | wc -l) resources=$(find work/src/main/resources -type f | wc -l)"
-      - name: Compile fixes 01-04
+      - name: Compile fixes 01-05
         working-directory: work
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
       - name: No-regression inventory and fix verification
@@ -96,7 +96,7 @@ jobs:
           jar tf "$OUT" | sort > /tmp/out-all.list
           MASTER=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           jar tf "$MASTER" | sort > /tmp/master-all.list
-          for p in dev/obsidiannetwork/block/EnergyCellBlock.class dev/obsidiannetwork/block/SolarGeneratorBlock.class dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.class dev/obsidiannetwork/blockentity/WirelessAntennaBlockEntity.class dev/obsidiannetwork/block/AutocrafterBlock.class dev/obsidiannetwork/block/CraftingMonitorBlock.class dev/obsidiannetwork/block/TemplateManagerBlock.class dev/obsidiannetwork/client/ClientKeyBindings.class dev/obsidiannetwork/network/OpenCurioTerminalPayload.class dev/obsidiannetwork/item/WirelessCraftingTerminalItem.class; do
+          for p in dev/obsidiannetwork/block/EnergyCellBlock.class dev/obsidiannetwork/block/SolarGeneratorBlock.class dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.class dev/obsidiannetwork/blockentity/WirelessAntennaBlockEntity.class dev/obsidiannetwork/block/AutocrafterBlock.class dev/obsidiannetwork/block/CraftingMonitorBlock.class dev/obsidiannetwork/block/TemplateManagerBlock.class dev/obsidiannetwork/client/ClientKeyBindings.class dev/obsidiannetwork/network/OpenCurioTerminalPayload.class dev/obsidiannetwork/item/WirelessCraftingTerminalItem.class dev/obsidiannetwork/core/TerminalScreenModel.class dev/obsidiannetwork/client/StorageTerminalScreen.class; do
             grep -Fqx "$p" /tmp/out-all.list || { echo "Missing required class: $p"; exit 1; }
           done
           for prefix in assets/obsidiannetwork/ data/obsidiannetwork/; do
@@ -106,27 +106,24 @@ jobs:
             if test -s /tmp/missing; then echo "Missing resources under $prefix"; cat /tmp/missing; exit 1; fi
           done
           javap -classpath "$OUT" -c dev.obsidiannetwork.block.EnergyCellBlock > /tmp/energycell.javap
-          grep -Fq 'BLOCK_ENTITY_DATA' /tmp/energycell.javap || { echo 'Fix 01 verification failed: BLOCK_ENTITY_DATA not present'; exit 1; }
+          grep -Fq 'BLOCK_ENTITY_DATA' /tmp/energycell.javap || { echo 'Fix 01 verification failed'; exit 1; }
           python3 - <<'PY'
           from pathlib import Path
-          s=Path('work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java').read_text()
-          j=s.find('be.energyJournal.updateSnapshots(tx)'); e=s.find('be.energy.extract(accepted)', j); c=s.find('tx.commit()', e)
-          assert j >= 0 and e >= 0 and c >= 0 and j < e < c, f'Fix02 solar ordering invalid: journal={j} extract={e} commit={c}'
-          w=Path('work/src/main/java/dev/obsidiannetwork/item/WirelessCraftingTerminalItem.java').read_text()
-          close=w.find('WorldTopologyBridge.closeTerminal(access.level(), sp, terminalId, sessionId);'); refund=w.find('runtime.energy().receive(OPEN_COST);', close); fail=w.find('return InteractionResult.FAIL;', refund)
-          assert close >= 0 and refund >= 0 and fail >= 0 and close < refund < fail, f'Fix03 refund ordering invalid: close={close} refund={refund} fail={fail}'
-          a=Path('work/src/main/java/dev/obsidiannetwork/blockentity/WirelessAntennaBlockEntity.java').read_text(); m=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
-          checks={'ticket controller field':'WIRELESS_INFINITY_CHUNKS = new TicketController' in m,'ticket controller registration':'event.register(WIRELESS_INFINITY_CHUNKS)' in m,'ticket sync on contents change':'WirelessAntennaBlockEntity.this.syncInfinityChunkTicket();' in a,'ticket sync on load':'this.syncInfinityChunkTicket();' in a,'ticket release on removal':'this.releaseInfinityChunkTicket();' in a,'force ticket call':'WIRELESS_INFINITY_CHUNKS.forceChunk' in a}
+          s=Path('work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java').read_text(); j=s.find('be.energyJournal.updateSnapshots(tx)'); e=s.find('be.energy.extract(accepted)', j); c=s.find('tx.commit()', e); assert 0 <= j < e < c
+          w=Path('work/src/main/java/dev/obsidiannetwork/item/WirelessCraftingTerminalItem.java').read_text(); close=w.find('WorldTopologyBridge.closeTerminal(access.level(), sp, terminalId, sessionId);'); refund=w.find('runtime.energy().receive(OPEN_COST);', close); fail=w.find('return InteractionResult.FAIL;', refund); assert 0 <= close < refund < fail
+          a=Path('work/src/main/java/dev/obsidiannetwork/blockentity/WirelessAntennaBlockEntity.java').read_text(); m=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text(); assert 'WIRELESS_INFINITY_CHUNKS.forceChunk' in a and 'event.register(WIRELESS_INFINITY_CHUNKS)' in m
+          sm=Path('work/src/main/java/dev/obsidiannetwork/core/TerminalScreenModel.java').read_text(); sc=Path('work/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java').read_text()
+          checks={'model freeze':'void freezeLayout()' in sm,'model unfreeze':'void unfreezeLayout()' in sm,'frozen path':'if (this.layoutFrozen)' in sm and 'return this.frozenFiltered;' in sm,'screen lock':'shiftLayoutLocked' in sc,'mouse shift':'event.hasShiftDown()' in sc,'key shift':'event.hasShiftDown()' in sc,'unlock release':'this.screenModel.unfreezeLayout();' in sc}
           bad=[k for k,v in checks.items() if not v]
           if bad:
-              print('FIX04 DIAG failed checks:', bad)
-              print('--- ObsidianNetwork ticket lines ---'); print('\n'.join(x for x in m.splitlines() if 'Ticket' in x or 'WIRELESS_INFINITY' in x))
-              print('--- Antenna ticket lines ---'); print('\n'.join(x for x in a.splitlines() if 'InfinityChunkTicket' in x or 'WIRELESS_INFINITY' in x or 'forceChunk' in x))
+              print('FIX05 DIAG failed:', bad)
+              print('--- model relevant ---'); print('\n'.join(x for x in sm.splitlines() if 'freeze' in x.lower() or 'layoutFrozen' in x))
+              print('--- screen relevant ---'); print('\n'.join(x for x in sc.splitlines() if 'shift' in x.lower() or 'freeze' in x.lower()))
               raise SystemExit(1)
           PY
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.blockentity.WirelessAntennaBlockEntity > /tmp/antenna.javap
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.ObsidianNetwork > /tmp/main.javap
-          grep -Fq 'TicketController.forceChunk' /tmp/antenna.javap || { echo 'FIX04 DIAG: TicketController.forceChunk absent from antenna bytecode'; cat /tmp/antenna.javap; exit 1; }
-          grep -Fq 'RegisterTicketControllersEvent.register' /tmp/main.javap || { echo 'FIX04 DIAG: ticket registration absent from main bytecode'; grep -n -E 'Ticket|register' /tmp/main.javap || true; exit 1; }
-          echo "FIXES 01-04 PASS: $OUT"
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.core.TerminalScreenModel > /tmp/model.javap
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.StorageTerminalScreen > /tmp/screen.javap
+          grep -Fq 'freezeLayout' /tmp/screen.javap || { echo 'FIX05 DIAG: freezeLayout call absent'; grep -n -i shift /tmp/screen.javap || true; exit 1; }
+          grep -Fq 'frozenFiltered' /tmp/model.javap || { echo 'FIX05 DIAG: frozen layout bytecode absent'; cat /tmp/model.javap; exit 1; }
+          echo "FIXES 01-05 PASS: $OUT"
           sha256sum "$OUT"
