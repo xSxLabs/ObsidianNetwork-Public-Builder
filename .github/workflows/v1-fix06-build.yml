@@ -62,10 +62,10 @@ jobs:
           java.toolchain.languageVersion=JavaLanguageVersion.of(25)
           repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
           neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
-          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0-beta.2+26.1.2:api' }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
           tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
           EOF
-      - name: Compile fixes 01-06
+      - name: Compile fixes 01-06 against Curios 15.0.0 final
         working-directory: work
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
       - name: Diagnose and no-regression verify Fix 06
@@ -97,5 +97,5 @@ jobs:
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.StorageTerminalScreen >/tmp/screen.javap
           grep -Fq 'JeiSearchBridge.setText' /tmp/screen.javap || { echo 'FIX06 DIAG: JEI clear absent in bytecode'; exit 1; }
           grep -Fq 'TerminalUiCoordinator.setSearch' /tmp/screen.javap || { echo 'FIX06 DIAG: terminal clear absent in bytecode'; exit 1; }
-          echo "FIXES 01-06 PASS: $OUT"
+          echo "FIXES 01-06 + CURIOS 15.0.0 FINAL PASS: $OUT"
           sha256sum "$OUT"
