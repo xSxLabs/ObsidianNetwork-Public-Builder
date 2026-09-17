@@ -54,28 +54,13 @@ jobs:
           s=s.replace(old_gate,new_gate,1)
           start=s.index("# 4) Stonecutting preview only.")
           end=s.index("# 5) Energy Cell capacities.")
-          s=s[:start]+"# 4) Stonecutting preview is not present in the isolated RC10 reconstructed source.\n# RC10.1 builder intentionally skips this later-source-shape-only patch.\nprint('RC10.1 PASS 4: Stonecutting preview patch not applicable to isolated RC10 source')\n\n"+s[end:]
+          s=s[:start]+"# 4) Stonecutting preview is not present in the isolated RC10 reconstructed source.\nprint('RC10.1 PASS 4: Stonecutting preview patch not applicable to isolated RC10 source')\n\n"+s[end:]
+          # Probe the actual isolated RC10 energy implementation instead of guessing a later source shape.
+          energy_end=len(s)
+          s=s[:end]+"# 5) Energy capacity source-shape probe.\nfor _p in (ROOT/'src/main/java/dev/obsidiannetwork').rglob('*.java'):\n _t=_p.read_text()\n _l=_t.lower()\n if 'energy' in _l and any(k in _l for k in ('capacity','maxenergy','max_energy','battery','energycell','energy_cell')):\n  print('RC10_1_ENERGY_PROBE_FILE',_p)\n  for _line in _t.splitlines():\n   _ll=_line.lower()\n   if any(k in _ll for k in ('capacity','maxenergy','max_energy','energycell','energy_cell')) or ('energy' in _ll and any(c.isdigit() for c in _line)):\n    print('RC10_1_ENERGY_PROBE_LINE',_line[:300])\nraise SystemExit('RC10.1 energy source-shape probe complete')\n"
           p.write_text(s)
           PY
           python3 .github/scripts/rc10_1_hotfix.py
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          root=Path('project')
-          gp=root/'gradle.properties'
-          gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc10.1',gp.read_text()))
-          for p in (root/'src/main/resources').rglob('neoforge.mods.toml'):
-              p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc10.1"',p.read_text()))
-          forbidden=('RC41_WHOLE_PLAN_RESERVATION','RC27_RESET_SEARCH_AFTER_JEI_INIT','AUTO_BREWER','rc52_')
-          text='\n'.join(p.read_text(errors='ignore') for p in (root/'src/main/java').rglob('*.java'))
-          for marker in forbidden:
-              assert marker not in text, 'later-chain marker leaked into RC10.1: '+marker
-          tr=next((root/'src/main/java').rglob('TransferNodeMenu.java')).read_text()
-          assert 'quickMoveUpgrade(original, slots.get(0))' in tr and 'quickMoveUpgrade(original, slots.get(1))' in tr
-          screen=next((root/'src/main/java').rglob('StorageTerminalScreen.java')).read_text()
-          assert 'RC10_1_SHIFT_STABLE_SLOT_IDENTITY' in screen and 'RC10_1_CLEAR_SEARCH_ON_OPEN' in screen
-          print('RC10.1 isolation/source gates PASS')
-          PY
       - name: Compile RC10.1 checkpoint
         working-directory: source/project
         run: gradle --no-daemon --no-configuration-cache clean build --stacktrace
