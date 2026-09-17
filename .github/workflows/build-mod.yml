@@ -53,8 +53,21 @@ jobs:
           PY
           python3 .github/scripts/rc10_1_hotfix.py
           python3 .github/scripts/rc10_1_wireless_hotfix.py
-          # RC11/12 are only compatibility context. Replay RC10.1 directly; rc10_fix itself is not idempotent on RC12.
-          python3 .github/scripts/rc10_1_hotfix.py
+          # RC11/12 overwrite TransferNodeMenu. Restore only the RC10.1 conservation helper directly on the new source shape.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('project/src/main/java/dev/obsidiannetwork/menu/TransferNodeMenu.java');s=p.read_text()
+          if 'quickMoveUpgrade(original, slots.get(0))' not in s:
+              s,n=re.subn(r'moveItemStackTo\(original,\s*0,\s*1,\s*false\)', 'quickMoveUpgrade(original, slots.get(0))', s, count=1)
+              if n!=1: raise SystemExit('post-wireless transfer quick-move call anchor missing')
+          if 'private boolean quickMoveUpgrade(' not in s:
+              anchor='    @Override\n    public boolean stillValid(Player player)'
+              helper='''    private boolean quickMoveUpgrade(ItemStack source, Slot target) {\n        if (source.isEmpty() || !target.mayPlace(source)) return false;\n        ItemStack existing=target.getItem(); int limit=Math.min(target.getMaxStackSize(source),source.getMaxStackSize());\n        if(existing.isEmpty()){int moved=Math.min(limit,source.getCount());target.set(source.copyWithCount(moved));source.shrink(moved);target.setChanged();return moved>0;}\n        if(!ItemStack.isSameItemSameComponents(existing,source))return false; int room=limit-existing.getCount();if(room<=0)return false;\n        int moved=Math.min(room,source.getCount());existing.grow(moved);source.shrink(moved);target.setChanged();return moved>0;\n    }\n\n'''
+              if anchor not in s: raise SystemExit('post-wireless transfer helper anchor missing')
+              s=s.replace(anchor,helper+anchor,1)
+          p.write_text(s)
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import re
