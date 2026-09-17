@@ -53,6 +53,9 @@ jobs:
           PY
           python3 .github/scripts/rc10_1_hotfix.py
           python3 .github/scripts/rc10_1_wireless_hotfix.py
+          # RC11/12 are used only as wireless source-shape compatibility. Reapply RC10/RC10.1 behavioral fixes afterwards.
+          python3 .github/scripts/rc10_fix.py
+          python3 .github/scripts/rc10_1_hotfix.py
           python3 - <<'PY'
           from pathlib import Path
           import re
