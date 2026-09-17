@@ -38,7 +38,7 @@ jobs:
           python3 private/fixes/apply-fix-18-facade-render-state.py
           python3 private/fixes/apply-fix-19-facade-lighting.py
           grep -Fq 'BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTick, cameraPos, crumblingOverlay);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
-          grep -Fq 'BlockPos facadeLightPos = pos.relative(state.rotation);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'BlockPos facadeLightPos = pos.relative(Direction.from2DDataValue(state.rotation));' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           echo '=== FIX19 LIGHT SOURCE ==='; grep -n -C 5 'facadeLightPos\|getBrightness\|lightCoords' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
