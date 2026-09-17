@@ -28,7 +28,8 @@ jobs:
           cat payload/rc6-overlay.part* | base64 -d | tar -xJ -C project
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java');p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
+          p=Path('project/src/main/java/dev/obsidiannetwork/client/ClientPayloadEvents.java')
+          p.write_text(p.read_text().replace(', bus = EventBusSubscriber.Bus.MOD',''))
           PY
           python3 .github/scripts/gen_rc6_assets.py
           cat payload/rc7-code.part* | base64 -d | tar -xJ -C project
@@ -56,30 +57,25 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import re
-          p=Path('project/src/main/java/dev/obsidiannetwork/menu/TransferNodeMenu.java');s=p.read_text()
-          if 'quickMoveUpgrade(original, slots.get(0))' not in s:
-              s,n=re.subn(r'moveItemStackTo\(original,\s*0,\s*1,\s*false\)', 'quickMoveUpgrade(original, slots.get(0))', s, count=1)
-              if n!=1: raise SystemExit('post-wireless transfer quick-move call anchor missing')
-          if 'private boolean quickMoveUpgrade(' not in s:
-              helper='''\n    private boolean quickMoveUpgrade(ItemStack source, Slot target) {\n        if (source.isEmpty() || !target.mayPlace(source)) return false;\n        ItemStack existing=target.getItem(); int limit=Math.min(target.getMaxStackSize(source),source.getMaxStackSize());\n        if(existing.isEmpty()){int moved=Math.min(limit,source.getCount());target.set(source.copyWithCount(moved));source.shrink(moved);target.setChanged();return moved>0;}\n        if(!ItemStack.isSameItemSameComponents(existing,source))return false; int room=limit-existing.getCount();if(room<=0)return false;\n        int moved=Math.min(room,source.getCount());existing.grow(moved);source.shrink(moved);target.setChanged();return moved>0;\n    }\n'''
-              i=s.rfind('}')
-              if i<0: raise SystemExit('post-wireless transfer class close missing')
-              s=s[:i]+helper+s[i:]
-          p.write_text(s)
-          PY
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          root=Path('project');menu=next((root/'src/main/java').rglob('StorageTerminalMenu.java'));m=menu.read_text()
-          old='Optional<RecipeHolder<? extends CraftingRecipe>> match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);';new='Optional<RecipeHolder<CraftingRecipe>> match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);'
-          if old in m:menu.write_text(m.replace(old,new,1))
+          root=Path('project')
+          # RC10 has no historical sendCraftables helper; opening the session already supplies the normal terminal snapshot path.
+          w=next((root/'src/main/java').rglob('WirelessCraftingTerminalItem.java'));s=w.read_text()
+          s=re.sub(r'\s*if\(runtime!=null\)ServerTerminalPayloadHandler\.sendCraftables\([^;]+;','',s,count=1)
+          w.write_text(s)
+          menu=next((root/'src/main/java').rglob('StorageTerminalMenu.java'));m=menu.read_text()
+          old='Optional<RecipeHolder<? extends CraftingRecipe>> match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);'
+          new='Optional<RecipeHolder<CraftingRecipe>> match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);'
+          if old in m: menu.write_text(m.replace(old,new,1))
           gp=root/'gradle.properties';gp.write_text(re.sub(r'(?m)^mod_version=.*$','mod_version=0.76.0-rc10.1',gp.read_text()))
-          for p in (root/'src/main/resources').rglob('neoforge.mods.toml'):p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc10.1"',p.read_text()))
+          for p in (root/'src/main/resources').rglob('neoforge.mods.toml'): p.write_text(re.sub(r'(?m)^version\s*=\s*"[^"]+"','version="0.76.0-rc10.1"',p.read_text()))
           text='\n'.join(p.read_text(errors='ignore') for p in (root/'src/main/java').rglob('*.java'))
-          for marker in ('RC41_WHOLE_PLAN_RESERVATION','RC27_RESET_SEARCH_AFTER_JEI_INIT','AUTO_BREWER','rc52_'):assert marker not in text
-          for marker in ('WirelessAntennaBlock','WirelessCraftingTerminalItem','openWirelessTerminal','wirelessSessions'):assert marker in text
-          assert 'quickMoveUpgrade(original, slots.get(0))' in next((root/'src/main/java').rglob('TransferNodeMenu.java')).read_text()
-          print('RC10.1 isolation + wireless gates PASS')
+          for marker in ('RC41_WHOLE_PLAN_RESERVATION','RC27_RESET_SEARCH_AFTER_JEI_INIT','AUTO_BREWER','rc52_','TemplateManagerBlock','AutocrafterBlock','CraftingMonitorBlock'): assert marker not in text
+          for marker in ('WirelessAntennaBlock','WirelessCraftingTerminalItem','openWirelessTerminal','wirelessSessions'): assert marker in text
+          t=next((root/'src/main/java').rglob('TransferNodeMenu.java')).read_text()
+          assert 'quickMoveUpgrade(original, slots.get(0))' in t and t.count('quickMoveUpgrade(ItemStack') == 1
+          e=(root/'src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java').read_text()
+          for cap in ('1_000_000','2_000_000','4_000_000','8_000_000','16_000_000'): assert cap in e
+          print('RC10.1 pure isolation + wireless + energy gates PASS')
           PY
       - name: Compile RC10.1 checkpoint
         working-directory: source/project
@@ -95,6 +91,7 @@ jobs:
           unzip -p "$OUT" META-INF/neoforge.mods.toml | grep -q 'version="0.76.0-rc10.1"'
           javap -classpath "$OUT" -p dev.obsidiannetwork.network.WorldTopologyBridge | grep -q openWirelessTerminal
           javap -classpath "$OUT" -p dev.obsidiannetwork.item.WirelessCraftingTerminalItem >/dev/null
-          sha256sum "$OUT" > "$OUT.sha256";echo "path=$OUT" >> "$GITHUB_OUTPUT"
+          sha256sum "$OUT" > "$OUT.sha256"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with: {name: xsxlabs-network-storage-rc10.1-jar, path: '${{ steps.jar.outputs.path }}', if-no-files-found: error, retention-days: 30}
