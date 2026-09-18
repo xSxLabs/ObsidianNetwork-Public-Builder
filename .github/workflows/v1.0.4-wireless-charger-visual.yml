@@ -111,7 +111,11 @@ jobs:
           import json
           bs=json.load(open('/tmp/charger.blockstate.json'))
           m=json.load(open('/tmp/charger.model.json'))
-          assert bs == {"variants":{"":{"model":"obsidiannetwork:block/wireless_charger"}}}, bs
+          assert set(bs["variants"]) == {"facing=north","facing=east","facing=south","facing=west"}, bs
+          assert bs["variants"]["facing=north"]["model"] == "obsidiannetwork:block/wireless_charger"
+          assert bs["variants"]["facing=east"]["y"] == 90
+          assert bs["variants"]["facing=south"]["y"] == 180
+          assert bs["variants"]["facing=west"]["y"] == 270
           assert m["textures"]["main"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
           assert m["textures"]["particle"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
           assert len(m["elements"]) > 100
@@ -136,4 +140,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 tooltip fix build 46
+# trigger v1.0.4 charger facing build 47
