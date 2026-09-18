@@ -49,6 +49,10 @@ jobs:
           python3 private/diagnostics/find-v104-terminal-energy-hooks.py
           python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py
           python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py
+          echo '=== FUNCTION2 MENU TICK HOOK DIAGNOSTIC ==='
+          grep -R -n -E 'broadcastChanges|stillValid|removed|tick|ServerPlayer|StorageTerminalMenu' work/src/main/java/dev/obsidiannetwork/menu work/src/main/java/dev/obsidiannetwork/network | head -250
+          sed -n '1,280p' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          exit 33
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -135,4 +139,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 function2 groundwork compile build 11
+# trigger v1.0.4 function2 tick-hook diagnostic build 12
