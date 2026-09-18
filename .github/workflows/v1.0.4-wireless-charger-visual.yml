@@ -101,6 +101,18 @@ jobs:
           jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/blockstates/wireless_charger.json'
           jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/models/block/wireless_charger.json'
           jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/textures/block/wireless_charger.png'
+          unzip -p "$OUT" assets/obsidiannetwork/blockstates/wireless_charger.json > /tmp/charger.blockstate.json
+          unzip -p "$OUT" assets/obsidiannetwork/models/block/wireless_charger.json > /tmp/charger.model.json
+          python3 - <<'PY'
+          import json
+          bs=json.load(open('/tmp/charger.blockstate.json'))
+          m=json.load(open('/tmp/charger.model.json'))
+          assert bs == {"variants":{"":{"model":"obsidiannetwork:block/wireless_charger"}}}, bs
+          assert m["textures"]["main"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
+          assert m["textures"]["particle"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
+          assert len(m["elements"]) > 100
+          print("V104 RESOURCE BINDING PASS", len(m["elements"]), "elements")
+          PY
           javap -classpath "$OUT" -p dev.obsidiannetwork.ObsidianNetwork >/tmp/v104.registry
           grep -Fq 'WIRELESS_CHARGER' /tmp/v104.registry
           echo 'v1.0.4 VISUAL PASS - Wireless Charger visual-only block present; baseline gates preserved'
@@ -120,4 +132,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger explicit blockstate binding build 26
+# trigger NeoForge 26.1 material binding build 27
