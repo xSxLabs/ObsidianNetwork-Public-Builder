@@ -40,6 +40,10 @@ jobs:
           python3 private/fixes/apply-fix-20-facade-vertical-lighting.py
           python3 private/diagnostics/find-storage-cell-capacities.py
           python3 private/diagnostics/find-fix22-terminal-text.py
+          python3 private/fixes/apply-fix-22-terminal-english-labels.py
+          grep -Fq '"Cost: "' work/src/main/java/dev/obsidiannetwork/client/DeconstructionTerminalScreen.java
+          grep -Fq '"Empty Books: "' work/src/main/java/dev/obsidiannetwork/client/DisenchantingTerminalScreen.java
+          ! grep -R -E '"(Kosten|Leere Bücher): ' work/src/main/java/dev/obsidiannetwork/client/{DeconstructionTerminalScreen.java,DisenchantingTerminalScreen.java}
           grep -Fq 'BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTick, cameraPos, crumblingOverlay);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           grep -Fq 'BlockPos facadeLightPos = pos.relative(net.minecraft.core.Direction.from2DDataValue(state.rotation));' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           grep -Fq 'state.lightCoords = safeBlockLight << 4 | safeSkyLight << 20;' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
