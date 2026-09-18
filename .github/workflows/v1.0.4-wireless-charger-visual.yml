@@ -140,4 +140,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 post-fix clean build 66
+# trigger v1.0.4 charger regression build 67
