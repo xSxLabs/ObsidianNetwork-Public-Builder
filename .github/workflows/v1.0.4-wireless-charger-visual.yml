@@ -47,9 +47,7 @@ jobs:
           python3 private/fixes/apply-fix-22-terminal-english-labels.py
           python3 private/v1.0.4/apply-wireless-charger-visual.py
           python3 private/diagnostics/find-v104-terminal-energy-hooks.py
-          sed -n '1,180p' work/src/main/java/dev/obsidiannetwork/item/WirelessCraftingTerminalItem.java
-          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/registry/ModDataComponents.java
-          exit 32
+          python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -136,4 +134,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 function1 source diagnostic build 9
+# trigger v1.0.4 function1 compile build 10
