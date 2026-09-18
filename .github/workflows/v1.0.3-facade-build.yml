@@ -53,9 +53,11 @@ jobs:
           grep -Fq '"Empty Books: "' work/src/main/java/dev/obsidiannetwork/client/DisenchantingTerminalScreen.java
           ! grep -R -E '"(Kosten|Leere Bücher): ' work/src/main/java/dev/obsidiannetwork/client/{DeconstructionTerminalScreen.java,DisenchantingTerminalScreen.java}
           grep -Fq 'BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTick, cameraPos, crumblingOverlay);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
-          grep -Fq 'BlockPos facadeLightPos = pos.relative(net.minecraft.core.Direction.from2DDataValue(state.rotation));' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          ! grep -Fq 'Direction.from2DDataValue(state.rotation)' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'getBrightness(LightLayer.BLOCK, pos)' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'getBrightness(LightLayer.SKY, pos)' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           grep -Fq 'state.lightCoords = safeBlockLight << 4 | safeSkyLight << 20;' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
-          echo '=== FIX19 LIGHT SOURCE ==='; grep -n -C 5 'facadeLightPos\|getBrightness\|lightCoords' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          echo '=== FIX23 LIGHT SOURCE ==='; grep -n -C 5 'getBrightness\|lightCoords' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
           plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
@@ -86,7 +88,7 @@ jobs:
           test -n "$OUT"; unzip -t "$OUT" >/dev/null
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.CableFacadeRenderer > /tmp/facade.bytecode
           grep -Fq 'InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState' /tmp/facade.bytecode
-          grep -Fq 'BlockPos.relative' /tmp/facade.bytecode || { echo 'FIX19 DIAG neighbor position absent'; cat /tmp/facade.bytecode; exit 1; }
+          ! grep -Fq 'Direction.from2DDataValue' /tmp/facade.bytecode || { echo 'FIX23 DIAG invalid rotation-to-direction mapping remains'; cat /tmp/facade.bytecode; exit 1; }
           grep -Fq 'Level.getBrightness' /tmp/facade.bytecode || { echo 'FIX19 DIAG brightness sampling absent'; cat /tmp/facade.bytecode; exit 1; }
           jar tf "$OUT" | sort -u >/tmp/out; jar tf private/xSxLabs-Network-Storage-0.76.0-rc10.jar | sort -u >/tmp/master
           for p in assets/obsidiannetwork/ data/obsidiannetwork/; do awk -v p="$p" 'index($0,p)==1' /tmp/master >/tmp/master.res; awk -v p="$p" 'index($0,p)==1' /tmp/out >/tmp/out.res; comm -23 /tmp/master.res /tmp/out.res >/tmp/missing; test ! -s /tmp/missing || { echo "missing resources under $p"; cat /tmp/missing; exit 1; }; done
