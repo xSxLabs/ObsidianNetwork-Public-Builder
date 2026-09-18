@@ -39,8 +39,14 @@ jobs:
           python3 private/fixes/apply-fix-19-facade-lighting.py
           python3 private/fixes/apply-fix-20-facade-vertical-lighting.py
           python3 private/diagnostics/find-storage-cell-capacities.py
+          python3 private/fixes/apply-fix-21-energy-cell-capacities.py
           python3 private/diagnostics/find-fix22-terminal-text.py
           python3 private/fixes/apply-fix-22-terminal-english-labels.py
+          grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
+          grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
+          grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
+          grep -Fq 'ELITE(8000000L, 200000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
+          grep -Fq 'ULTIMATE(16000000L, 500000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq '"Cost: "' work/src/main/java/dev/obsidiannetwork/client/DeconstructionTerminalScreen.java
           grep -Fq '"Empty Books: "' work/src/main/java/dev/obsidiannetwork/client/DisenchantingTerminalScreen.java
           ! grep -R -E '"(Kosten|Leere Bücher): ' work/src/main/java/dev/obsidiannetwork/client/{DeconstructionTerminalScreen.java,DisenchantingTerminalScreen.java}
