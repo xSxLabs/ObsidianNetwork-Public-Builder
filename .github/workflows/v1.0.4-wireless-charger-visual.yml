@@ -120,4 +120,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger visual model-fix build 25
+# trigger explicit blockstate binding build 26
