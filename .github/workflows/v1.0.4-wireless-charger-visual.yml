@@ -44,7 +44,8 @@ jobs:
           python3 private/diagnostics/find-fix23-facade-rotation.py
           python3 private/diagnostics/find-fix24-facade-world-ao-api.py
           python3 private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py
-          python3 private/fixes/apply-fix-22-terminal-english-labels.py\n          python3 private/v1.0.4/apply-wireless-charger-visual.py
+          python3 private/fixes/apply-fix-22-terminal-english-labels.py
+          python3 private/v1.0.4/apply-wireless-charger-visual.py
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
