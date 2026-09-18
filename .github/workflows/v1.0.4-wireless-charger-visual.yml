@@ -50,11 +50,10 @@ jobs:
           python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py
           python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py
           python3 private/v1.0.4/apply-function-03-wireless-charger.py
-          echo '=== FUNCTION4 CHUNKLOAD/CURIOS/MENU DIAGNOSTIC ==='
-          grep -R -n -E 'WIRELESS_INFINITY_CHUNKS|forceChunk|WorldTopologyBridge|crossDimensional|CuriosTerminalCompat|StorageTerminalMenu' work/src/main/java/dev/obsidiannetwork | head -350
-          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessAntennaBlockEntity.java
-          sed -n '1,180p' work/src/main/java/dev/obsidiannetwork/compat/CuriosTerminalCompat.java
-          exit 39
+          echo '=== F4 MENU EXACT SOURCE ==='
+          sed -n '1,180p' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          sed -n '55,115p' work/src/main/java/dev/obsidiannetwork/item/WirelessCraftingTerminalItem.java
+          exit 40
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -141,4 +140,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 function4 diagnostic build 23
+# trigger v1.0.4 function4 menu diagnostic build 24
