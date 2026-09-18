@@ -121,13 +121,13 @@ jobs:
           grep -Fq 'WIRELESS_CHARGER' /tmp/v104.registry
           echo 'v1.0.4 VISUAL PASS - Wireless Charger visual-only block present; baseline gates preserved'
           sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
-          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-VISUAL-TEST.jar
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST.jar
       - name: Upload v1.0.3 test jar
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.4-VISUAL-TEST
+          name: xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST
           path: |
-            work/xSxLabs-Network-Storage-v1.0.4-VISUAL-TEST.jar
+            work/xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST.jar
             work/v1.0.4-visual-test.sha256
           if-no-files-found: error
           retention-days: 30
@@ -136,4 +136,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 rapid craft ContainerInput build 44
+# trigger v1.0.4 clean combined build 45
