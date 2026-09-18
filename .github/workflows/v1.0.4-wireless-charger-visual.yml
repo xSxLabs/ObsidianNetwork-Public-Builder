@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 104
+name: v1.0.4 Wireless Charger Visual Build # build 105
 on:
   workflow_dispatch:
   push:
