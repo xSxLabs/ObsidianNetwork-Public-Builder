@@ -50,10 +50,13 @@ jobs:
           python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py
           python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py
           python3 private/v1.0.4/apply-function-03-wireless-charger.py
-          echo '=== F4 STILLVALID/OPEN EXACT ==='
-          grep -n -A70 -B10 'boolean stillValid' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
-          sed -n '55,120p' work/src/main/java/dev/obsidiannetwork/item/WirelessCraftingTerminalItem.java
-          exit 41
+          echo '=== REFERENCE PATTERNS: EXACT ITEM ID + MENU DATA ==='
+          grep -R -n -E 'UUID|randomUUID|CUSTOM_DATA|readUtf|writeUtf|SimpleMenuProvider|openMenu' work/src/main/java/dev/obsidiannetwork | head -450
+          echo '=== FULL WIRELESS OPEN ==='
+          sed -n '45,125p' work/src/main/java/dev/obsidiannetwork/item/WirelessCraftingTerminalItem.java
+          echo '=== CURIOS API USAGE ==='
+          grep -R -n -E 'CuriosApi|getCuriosInventory|findFirstCurio' work/src/main/java/dev/obsidiannetwork
+          exit 42
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -140,4 +143,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 function4 exact drain diagnostic build 25
+# trigger v1.0.4 reference-pattern diagnostic build 26
