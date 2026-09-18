@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 95
+name: v1.0.4 Wireless Charger Visual Build # build 96
 on:
   workflow_dispatch:
   push:
@@ -50,12 +50,7 @@ jobs:
           python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py
           python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py
           python3 private/v1.0.4/apply-function-03-wireless-charger.py
-          echo '=== TOPOLOGY SOURCE TRACE ==='
-          grep -n -A130 -B20 'discoverLoadedNetworkFrom' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
-          echo '=== NETWORK CABLE ==='
-          sed -n '1,260p' work/src/main/java/dev/obsidiannetwork/block/NetworkCableBlock.java
-          echo '=== TOPOLOGY EVENTS ==='
-          sed -n '1,260p' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyEvents.java
+          python3 private/v1.0.4/apply-function-06-direct-block-adjacency.py
           python3 private/v1.0.4/apply-fix-storage-cell-upgrade-content.py
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
