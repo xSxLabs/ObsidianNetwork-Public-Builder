@@ -50,7 +50,6 @@ jobs:
           python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py
           python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py
           python3 private/v1.0.4/apply-function-03-wireless-charger.py
-          python3 private/diagnostics/find-v104-charger-energy-path.py
           python3 private/v1.0.4/apply-fix-storage-cell-upgrade-content.py
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -142,4 +141,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 charger energy path build 72
+# trigger v1.0.4 charger 1m buffer build 73
