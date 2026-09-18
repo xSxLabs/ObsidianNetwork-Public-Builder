@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 94
+name: v1.0.4 Wireless Charger Visual Build # build 95
 on:
   workflow_dispatch:
   push:
@@ -51,7 +51,7 @@ jobs:
           python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py
           python3 private/v1.0.4/apply-function-03-wireless-charger.py
           echo '=== TOPOLOGY SOURCE TRACE ==='
-          sed -n '1,360p' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
+          grep -n -A130 -B20 'discoverLoadedNetworkFrom' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
           echo '=== NETWORK CABLE ==='
           sed -n '1,260p' work/src/main/java/dev/obsidiannetwork/block/NetworkCableBlock.java
           echo '=== TOPOLOGY EVENTS ==='
