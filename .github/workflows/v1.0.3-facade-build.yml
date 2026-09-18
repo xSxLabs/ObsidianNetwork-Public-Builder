@@ -96,3 +96,5 @@ jobs:
           retention-days: 30
 
 # Fix21 exact tier diagnostic refresh
+
+# Fix21 EnergyCellTier diagnostic
