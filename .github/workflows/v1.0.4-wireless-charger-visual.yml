@@ -118,3 +118,5 @@ jobs:
 # Fix21 exact tier diagnostic refresh
 
 # Fix21 EnergyCellTier diagnostic
+
+# trigger visual test build 22
