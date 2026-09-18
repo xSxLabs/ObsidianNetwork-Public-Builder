@@ -2,7 +2,7 @@ name: v1.0.4 Wireless Charger Visual Build
 on:
   workflow_dispatch:
   push:
-    paths: ['.github/workflows/v1.0.4-wireless-charger-visual.yml']
+    paths: ['.github/workflows/v1.0.3-facade-build.yml']
 permissions: {contents: read}
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
         with: {distribution: temurin, java-version: '25'}
       - uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '9.7.1'}
-      - name: Reconstruct v1.0.3 final baseline and diagnose registries
+      - name: Reconstruct stable baseline and apply Fix18 then Fix19
         run: |
           set -euo pipefail
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
@@ -35,12 +35,86 @@ jobs:
           export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources"
           python3 private/reconstruction/apply-baseline-fixes.py
           for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py"; done
-          for n in 18-facade-render-state 19-facade-lighting 20-facade-vertical-lighting 21-energy-cell-capacities 25-facade-symmetric-neighbor-light 22-terminal-english-labels; do python3 "private/fixes/apply-fix-$n.py"; done
-          echo '=== REGISTRY FILES ==='
-          grep -R -n -E 'DeferredRegister|registerBlock|WIRELESS_ANTENNA|wireless_antenna' work/src/main/java/dev/obsidiannetwork | head -250
-          echo '=== CREATIVE TAB ==='
-          grep -R -n -E 'CreativeModeTab|BuildCreativeModeTabContentsEvent|accept\(' work/src/main/java/dev/obsidiannetwork | head -180
-          echo '=== WIRELESS ANTENNA RESOURCES ==='
-          find work/src/main/resources/assets/obsidiannetwork -type f | grep -E 'wireless.*antenna|antenna.*wireless' | sort
-          echo 'V104 DIAGNOSTIC COMPLETE - intentional stop before first asset fix'
-          exit 23
+          python3 private/fixes/apply-fix-18-facade-render-state.py
+          python3 private/fixes/apply-fix-19-facade-lighting.py
+          python3 private/fixes/apply-fix-20-facade-vertical-lighting.py
+          python3 private/diagnostics/find-storage-cell-capacities.py
+          python3 private/fixes/apply-fix-21-energy-cell-capacities.py
+          python3 private/diagnostics/find-fix22-terminal-text.py
+          python3 private/diagnostics/find-fix23-facade-rotation.py
+          python3 private/diagnostics/find-fix24-facade-world-ao-api.py
+          python3 private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py
+          python3 private/fixes/apply-fix-22-terminal-english-labels.py\n          python3 private/v1.0.4/apply-wireless-charger-visual.py
+          grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
+          grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
+          grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
+          grep -Fq 'ELITE(8000000L, 200000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
+          grep -Fq 'ULTIMATE(16000000L, 500000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
+          grep -Fq '"Cost: "' work/src/main/java/dev/obsidiannetwork/client/DeconstructionTerminalScreen.java
+          grep -Fq '"Empty Books: "' work/src/main/java/dev/obsidiannetwork/client/DisenchantingTerminalScreen.java
+          ! grep -R -E '"(Kosten|Leere Bücher): ' work/src/main/java/dev/obsidiannetwork/client/{DeconstructionTerminalScreen.java,DisenchantingTerminalScreen.java}
+          grep -Fq 'BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTick, cameraPos, crumblingOverlay);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'state.lightCoords = safeBlockLight << 4 | safeSkyLight << 20;' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values())' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'BlockPos lightPos = pos.relative(direction);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          ! grep -Fq 'Direction.from2DDataValue(state.rotation)' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          echo '=== FACADE LIGHT/AO DIAG ==='; grep -n -C 12 'lightPos\|getBrightness\|blockResolver.update\|facadeModel.submit' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0.4
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version=mod_version; group=mod_group_id; base { archivesName='xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
+          tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
+          EOF
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+      - name: Fix18 Fix19 bytecode and no-regression gates
+        run: |
+          set -euo pipefail
+          OUT=$(find work/build/libs -type f -name 'xSxLabs-Network-Storage-1.0.4.jar' -print -quit)
+          test -n "$OUT"; unzip -t "$OUT" >/dev/null
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.CableFacadeRenderer > /tmp/facade.bytecode
+          grep -Fq 'InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState' /tmp/facade.bytecode
+          grep -Fq 'Level.getBrightness' /tmp/facade.bytecode || { echo 'FIX19 DIAG brightness sampling absent'; cat /tmp/facade.bytecode; exit 1; }
+          jar tf "$OUT" | sort -u >/tmp/out; jar tf private/xSxLabs-Network-Storage-0.76.0-rc10.jar | sort -u >/tmp/master
+          for p in assets/obsidiannetwork/ data/obsidiannetwork/; do awk -v p="$p" 'index($0,p)==1' /tmp/master >/tmp/master.res; awk -v p="$p" 'index($0,p)==1' /tmp/out >/tmp/out.res; comm -23 /tmp/master.res /tmp/out.res >/tmp/missing; test ! -s /tmp/missing || { echo "missing resources under $p"; cat /tmp/missing; exit 1; }; done
+          test "$(jar tf "$OUT" | grep -c '^dev/obsidiannetwork/.*\.class$')" -ge 314
+          test "$(jar tf "$OUT" | grep -c '^assets/obsidiannetwork/.*\.png$')" -ge 263
+          test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401
+          jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json'
+          ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/blockstates/wireless_charger.json'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/models/block/wireless_charger.json'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/textures/block/wireless_charger.png'
+          javap -classpath "$OUT" -p dev.obsidiannetwork.ObsidianNetwork >/tmp/v104.registry
+          grep -Fq 'WIRELESS_CHARGER' /tmp/v104.registry
+          echo 'v1.0.4 VISUAL PASS - Wireless Charger visual-only block present; baseline gates preserved'
+          sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-VISUAL-TEST.jar
+      - name: Upload v1.0.3 test jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: xSxLabs-Network-Storage-v1.0.4-VISUAL-TEST
+          path: |
+            work/xSxLabs-Network-Storage-v1.0.4-VISUAL-TEST.jar
+            work/v1.0.4-visual-test.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+# Fix21 exact tier diagnostic refresh
+
+# Fix21 EnergyCellTier diagnostic
