@@ -50,11 +50,6 @@ jobs:
           python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py
           python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py
           python3 private/v1.0.4/apply-function-03-wireless-charger.py
-          echo '=== GUI EXACT REFERENCES ==='
-          sed -n '1,260p' work/src/main/java/dev/obsidiannetwork/menu/EnergyCellMenu.java
-          sed -n '1,260p' work/src/main/java/dev/obsidiannetwork/client/EnergyCellScreen.java
-          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/block/EnergyCellBlock.java
-          sed -n '1,180p' work/src/main/java/dev/obsidiannetwork/client/ClientModEvents.java
           python3 private/v1.0.4/apply-fix-storage-cell-upgrade-content.py
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
