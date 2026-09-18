@@ -43,6 +43,7 @@ jobs:
           python3 private/diagnostics/find-fix22-terminal-text.py
           python3 private/diagnostics/find-fix23-facade-rotation.py
           python3 private/diagnostics/find-fix24-facade-world-ao-api.py
+          python3 private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py
           python3 private/fixes/apply-fix-22-terminal-english-labels.py
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -54,7 +55,10 @@ jobs:
           ! grep -R -E '"(Kosten|Leere Bücher): ' work/src/main/java/dev/obsidiannetwork/client/{DeconstructionTerminalScreen.java,DisenchantingTerminalScreen.java}
           grep -Fq 'BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTick, cameraPos, crumblingOverlay);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           grep -Fq 'state.lightCoords = safeBlockLight << 4 | safeSkyLight << 20;' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
-          echo '=== FACADE LIGHT/AO DIAG ==='; grep -n -C 8 'facadeLightPos\|getBrightness\|blockResolver.update\|facadeModel.submit' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values())' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'BlockPos lightPos = pos.relative(direction);' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          ! grep -Fq 'Direction.from2DDataValue(state.rotation)' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          echo '=== FACADE LIGHT/AO DIAG ==='; grep -n -C 12 'lightPos\|getBrightness\|blockResolver.update\|facadeModel.submit' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           cat > work/settings.gradle <<'EOF'
           pluginManagement { repositories { gradlePluginPortal() } }
           plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
@@ -93,7 +97,7 @@ jobs:
           test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401
           jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json'
           ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos'
-          echo 'v1.0.3 FIX18+FIX19 PASS - vertical lighting normalized'
+          echo 'v1.0.3 FIX25 PASS - symmetric six-neighbor facade lighting; no directional rotation probe'
           sha256sum "$OUT" | tee work/v1.0.3-test.sha256
           cp "$OUT" work/xSxLabs-Network-Storage-v1.0.3-TEST.jar
       - name: Upload v1.0.3 test jar
