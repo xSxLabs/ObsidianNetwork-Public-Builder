@@ -2,7 +2,7 @@ name: v1.0.4 Wireless Charger Visual Build
 on:
   workflow_dispatch:
   push:
-    paths: ['.github/workflows/v1.0.3-facade-build.yml']
+    paths: ['.github/workflows/v1.0.4-wireless-charger-visual.yml']
 permissions: {contents: read}
 jobs:
   build:
