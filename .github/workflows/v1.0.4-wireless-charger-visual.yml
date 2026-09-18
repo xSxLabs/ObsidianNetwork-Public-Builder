@@ -49,12 +49,12 @@ jobs:
           python3 private/diagnostics/find-v104-terminal-energy-hooks.py
           python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py
           python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py
-          echo '=== FUNCTION3 EXACT API DIAGNOSTIC ==='
-          sed -n '1,280p' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
-          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/registry/ModCapabilities.java
-          sed -n '1,140p' work/src/main/java/dev/obsidiannetwork/block/EnergyCableBlock.java
-          grep -R -n -E 'getTicker|createTickerHelper|Capabilities.Energy.BLOCK|getCapability' work/src/main/java/dev/obsidiannetwork | head -250
-          exit 37
+          echo '=== F3 TARGETED SOURCE ==='
+          sed -n '1,180p' work/src/main/java/dev/obsidiannetwork/registry/ModBlockEntities.java
+          sed -n '1,130p' work/src/main/java/dev/obsidiannetwork/block/WirelessAntennaBlock.java
+          sed -n '320,390p' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          sed -n '1,120p' work/src/main/java/dev/obsidiannetwork/registry/ModDataComponents.java
+          exit 38
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -141,4 +141,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 function3 exact api diagnostic build 17
+# trigger v1.0.4 function3 targeted source build 18
