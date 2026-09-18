@@ -47,6 +47,7 @@ jobs:
           python3 private/fixes/apply-fix-22-terminal-english-labels.py
           python3 private/v1.0.4/apply-wireless-charger-visual.py
           python3 private/diagnostics/find-v104-terminal-energy-hooks.py
+          python3 private/diagnostics/find-v104-disk-upgrade.py
           python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py
           python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py
           python3 private/v1.0.4/apply-function-03-wireless-charger.py
@@ -140,4 +141,4 @@ jobs:
 
 # Fix21 EnergyCellTier diagnostic
 
-# trigger v1.0.4 charger regression build 67
+# trigger v1.0.4 disk upgrade trace build 68
