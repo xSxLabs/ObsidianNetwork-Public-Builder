@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 136 density + click fix
+name: v1.0.4 Wireless Charger Visual Build # build 137 legacy drive migration
 on:
   workflow_dispatch:
   push:
@@ -72,6 +72,8 @@ jobs:
           grep -Fq 'minecraft:netherite_block' work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_1m.json
           grep -Fq 'MAX_TYPES = 128' work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java
           grep -Fq 'SLOTS = 16' work/src/main/java/dev/obsidiannetwork/core/StorageDriveRuntime.java
+          ! grep -Pzo 'checkSlot\\(int slot\\).*?slot\\s*>=\\s*8.*?drive slot' work/src/main/java/dev/obsidiannetwork/core/StorageDriveRuntime.java
+          ! grep -Eq '(slot|i)[[:space:]]*(<|>=)[[:space:]]*8' work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java
           grep -Fq 'CELL_SLOTS = 16' work/src/main/java/dev/obsidiannetwork/menu/DriveMenu.java
           grep -Fq 'ContainerInput.PICKUP && button == 0' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -144,7 +146,7 @@ jobs:
           ! jar tf "$OUT" | grep -Eq '^data/obsidiannetwork/recipe/storage_cell_(2m|4m)\.json$'
           jar tf "$OUT" | grep -Fxq 'data/obsidiannetwork/loot_table/blocks/wireless_charger.json'
           sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
-          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST.jar
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B137.jar
       - name: Upload v1.0.4 combined test jar
         uses: actions/upload-artifact@v4
         with:
