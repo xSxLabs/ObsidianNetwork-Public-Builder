@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 147 final 128-type fix
+name: v1.0.4 Storage Drive 16-Slot Crash Fix # build 149
 on:
   workflow_dispatch:
   push:
@@ -55,6 +55,8 @@ jobs:
           python3 private/v1.0.4/apply-function-08-filter54-scroll.py
           python3 private/v1.0.4/apply-fix-storage-cell-upgrade-content.py
           python3 private/v1.0.4/apply-function-09-storage-density.py
+          python3 private/v1.0.4/apply-fix-storage-drive-16slot-visual-clamp.py
+          grep -Fq 'Math.min(occupied, 8)' work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java
           for r in 1k 4k 16k 64k 256k 512k 1m; do
             grep -Fq '"type": "minecraft:crafting_shapeless"' "work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_$r.json"
           done
@@ -151,13 +153,13 @@ jobs:
           ! jar tf "$OUT" | grep -Eq '^data/obsidiannetwork/recipe/storage_cell_(2m|4m)\.json$'
           jar tf "$OUT" | grep -Fxq 'data/obsidiannetwork/loot_table/blocks/wireless_charger.json'
           sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
-          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B147.jar
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-FIX-STORAGE-DRIVE-16SLOT-CRASH-B149.jar
       - name: Upload v1.0.4 combined test jar
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B147
+          name: xSxLabs-Network-Storage-v1.0.4-FIX-STORAGE-DRIVE-16SLOT-CRASH-B149
           path: |
-            work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B147.jar
+            work/xSxLabs-Network-Storage-v1.0.4-FIX-STORAGE-DRIVE-16SLOT-CRASH-B149.jar
             work/v1.0.4-visual-test.sha256
           if-no-files-found: error
           retention-days: 30
