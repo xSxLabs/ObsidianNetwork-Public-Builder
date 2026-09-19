@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 143 verified migration
+name: v1.0.4 Wireless Charger Visual Build # build 144 strict runtime migration
 on:
   workflow_dispatch:
   push:
@@ -119,8 +119,10 @@ jobs:
           OUT=$(find work/build/libs -type f -name 'xSxLabs-Network-Storage-1.0.4.jar' -print -quit)
           test -n "$OUT"; unzip -t "$OUT" >/dev/null
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.core.StorageCellStore > /tmp/storagecell.bytecode
-          test "$(grep -c 'bipush[[:space:]]*128' /tmp/storagecell.bytecode)" -ge 3 || test "$(grep -c 'sipush[[:space:]]*128' /tmp/storagecell.bytecode)" -ge 3
-          ! grep -q 'bipush[[:space:]]*64' /tmp/storagecell.bytecode
+          grep -n '128' /tmp/storagecell.bytecode || true
+          grep -n '64' /tmp/storagecell.bytecode || true
+          test "$(grep -Ec '(bipush|sipush)[[:space:]]+128' /tmp/storagecell.bytecode)" -eq 3
+          test "$(grep -Ec 'bipush[[:space:]]+64' /tmp/storagecell.bytecode)" -eq 0
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.StorageTerminalMenu > /tmp/terminal.bytecode
           grep -Fq 'ContainerInput.PICKUP_ALL' /tmp/terminal.bytecode
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.ObsidianNetwork > /tmp/main.bytecode
@@ -149,13 +151,13 @@ jobs:
           ! jar tf "$OUT" | grep -Eq '^data/obsidiannetwork/recipe/storage_cell_(2m|4m)\.json$'
           jar tf "$OUT" | grep -Fxq 'data/obsidiannetwork/loot_table/blocks/wireless_charger.json'
           sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
-          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B143.jar
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B144.jar
       - name: Upload v1.0.4 combined test jar
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B143
+          name: xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B144
           path: |
-            work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B143.jar
+            work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B144.jar
             work/v1.0.4-visual-test.sha256
           if-no-files-found: error
           retention-days: 30
