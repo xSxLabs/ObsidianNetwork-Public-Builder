@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 141 lossless migration retry
+name: v1.0.4 Wireless Charger Visual Build # build 142 verified runtime limits
 on:
   workflow_dispatch:
   push:
@@ -71,6 +71,9 @@ jobs:
           grep -Fq 'while (crafted + firstResult.getCount() <= stackLimit)' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           grep -Fq 'minecraft:netherite_block' work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_1m.json
           grep -Fq 'MAX_TYPES = 128' work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.core.StorageCellStore > /tmp/storagecell.bytecode
+          test "$(grep -c 'bipush[[:space:]]*128' /tmp/storagecell.bytecode)" -ge 3 || test "$(grep -c 'sipush[[:space:]]*128' /tmp/storagecell.bytecode)" -ge 3
+          ! grep -q 'bipush[[:space:]]*64' /tmp/storagecell.bytecode
           grep -Fq 'SLOTS = 16' work/src/main/java/dev/obsidiannetwork/core/StorageDriveRuntime.java
           ! grep -Pzo 'checkSlot\\(int slot\\).*?slot\\s*>=\\s*8.*?drive slot' work/src/main/java/dev/obsidiannetwork/core/StorageDriveRuntime.java
           ! grep -Eq '(slot|i)[[:space:]]*(<|>=)[[:space:]]*8' work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java
@@ -146,13 +149,13 @@ jobs:
           ! jar tf "$OUT" | grep -Eq '^data/obsidiannetwork/recipe/storage_cell_(2m|4m)\.json$'
           jar tf "$OUT" | grep -Fxq 'data/obsidiannetwork/loot_table/blocks/wireless_charger.json'
           sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
-          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B141.jar
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B142.jar
       - name: Upload v1.0.4 combined test jar
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B141
+          name: xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B142
           path: |
-            work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B141.jar
+            work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B142.jar
             work/v1.0.4-visual-test.sha256
           if-no-files-found: error
           retention-days: 30
