@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B193
+name: v1.0.5 System Migrator B194
 on:
   workflow_dispatch:
   push:
@@ -88,9 +88,9 @@ jobs:
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B193
+      - name: Upload B194
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.5-SYSTEM-MIGRATOR-B193
+          name: xSxLabs-Network-Storage-v1.0.5-SYSTEM-MIGRATOR-B194
           path: dist/*.jar
           if-no-files-found: error
