@@ -1,4 +1,4 @@
-name: v1.0.6 B235 Leather Deconstruction
+name: v1.0.6 B236 Recovery
 on:
   workflow_dispatch:
   push:
@@ -119,9 +119,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B235
+      - name: Upload B236
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.6-B235
+          name: xSxLabs-Network-Storage-v1.0.6-B236
           path: dist/*.jar
           if-no-files-found: error
