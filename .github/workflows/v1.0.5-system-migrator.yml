@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B183
+name: v1.0.5 System Migrator B184
 on:
   workflow_dispatch:
   push:
@@ -80,6 +80,7 @@ jobs:
           python3 private/v1.0.5/diagnose-system-migrator-control-api.py
           python3 private/v1.0.5/diagnose-system-migrator-descriptor-api.py
           python3 private/v1.0.5/diagnose-system-migrator-codec-ctor.py
+          python3 private/v1.0.5/diagnose-system-migrator-key-api.py
           python3 private/v1.0.5/diagnose-rs321-exact-api.py
           python3 private/v1.0.5/diagnose-rs321-transfer-signatures.py
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
