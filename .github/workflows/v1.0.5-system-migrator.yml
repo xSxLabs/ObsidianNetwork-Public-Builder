@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B170
+name: v1.0.5 System Migrator B171
 on:
   workflow_dispatch:
   push:
@@ -50,3 +50,4 @@ jobs:
           python3 private/v1.0.5/diagnose-system-migrator-block-codec.py
           python3 private/v1.0.5/diagnose-system-migrator-control-api.py
           python3 private/v1.0.5/diagnose-system-migrator-descriptor-api.py
+          python3 private/v1.0.5/diagnose-system-migrator-codec-ctor.py
