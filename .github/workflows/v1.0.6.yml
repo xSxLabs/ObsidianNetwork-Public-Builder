@@ -1,4 +1,4 @@
-name: v1.0.6 B246 Clean Recovery
+name: v1.0.6 B247 Restore Green B242 Workflow
 on:
   workflow_dispatch:
   push:
@@ -56,6 +56,13 @@ jobs:
           for p in private/fixes/apply-fix-18-facade-render-state.py private/fixes/apply-fix-19-facade-lighting.py private/fixes/apply-fix-20-facade-vertical-lighting.py private/fixes/apply-fix-21-energy-cell-capacities.py private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py private/fixes/apply-fix-22-terminal-english-labels.py private/v1.0.4/apply-wireless-charger-visual.py private/v1.0.4/apply-function-01-terminal-energy-storage.py private/v1.0.4/apply-function-02-terminal-active-consumption.py private/v1.0.4/apply-function-03-wireless-charger.py private/v1.0.4/apply-function-06-direct-block-adjacency.py private/v1.0.4/apply-function-07-pickaxe-mining.py private/v1.0.4/apply-function-08-filter54-scroll.py private/v1.0.4/apply-fix-storage-cell-upgrade-content.py private/v1.0.4/apply-function-09-storage-density.py private/v1.0.4/apply-fix-storage-drive-16slot-visual-clamp.py; do python3 "$p"; done
           python3 private/v1.0.5/apply-function-01-system-migrator.py
           python3 private/v1.0.6/apply-v106-features.py
+          # Keep generated diagnostics private and make them retrievable independently of Actions logs.
+          mkdir -p work/libs
+          curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
+          for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
+          mkdir -p work/rs-src
+          for j in work/libs/*-3.2.1-sources.jar; do (cd work/rs-src && jar xf "../libs/$(basename "$j")"); done
+          export RS_SOURCE_ROOT="$GITHUB_WORKSPACE/work/rs-src"
           python3 private/v1.0.5/apply-system-migrator-rs-dependency.py
           python3 - <<'PY'
           from pathlib import Path
@@ -112,9 +119,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B246
+      - name: Upload B247
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.6-B246
+          name: xSxLabs-Network-Storage-v1.0.6-B247
           path: dist/*.jar
           if-no-files-found: error
