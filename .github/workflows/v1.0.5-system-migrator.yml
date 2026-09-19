@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B171
+name: v1.0.5 System Migrator B172
 on:
   workflow_dispatch:
   push:
@@ -33,6 +33,7 @@ jobs:
           for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py"; done
           for p in private/fixes/apply-fix-18-facade-render-state.py private/fixes/apply-fix-19-facade-lighting.py private/fixes/apply-fix-20-facade-vertical-lighting.py private/fixes/apply-fix-21-energy-cell-capacities.py private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py private/fixes/apply-fix-22-terminal-english-labels.py private/v1.0.4/apply-wireless-charger-visual.py private/v1.0.4/apply-function-01-terminal-energy-storage.py private/v1.0.4/apply-function-02-terminal-active-consumption.py private/v1.0.4/apply-function-03-wireless-charger.py private/v1.0.4/apply-function-06-direct-block-adjacency.py private/v1.0.4/apply-function-07-pickaxe-mining.py private/v1.0.4/apply-function-08-filter54-scroll.py private/v1.0.4/apply-fix-storage-cell-upgrade-content.py private/v1.0.4/apply-function-09-storage-density.py private/v1.0.4/apply-fix-storage-drive-16slot-visual-clamp.py; do python3 "$p"; done
           python3 private/v1.0.5/apply-function-01-system-migrator.py
+          python3 private/v1.0.5/apply-system-migrator-rs-dependency.py
           python3 - <<'PY'
           from pathlib import Path
           n=Path("private/v1.0.5/SYSTEM_MIGRATOR_RS32_API_NOTES.md").read_text()
