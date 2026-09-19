@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B179
+name: v1.0.5 System Migrator B180
 on:
   workflow_dispatch:
   push:
@@ -57,6 +57,10 @@ jobs:
           python3 private/v1.0.5/apply-function-01-system-migrator.py
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
+          curl -fL --retry 4 -o work/libs/refinedstorage-3.2.1-sources.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-3.2.1-sources.jar
+          mkdir -p work/rs-src
+          (cd work/rs-src && jar xf ../libs/refinedstorage-3.2.1-sources.jar)
+          export RS_SOURCE_ROOT="$GITHUB_WORKSPACE/work/rs-src"
           python3 private/v1.0.5/apply-system-migrator-rs-dependency.py
           python3 - <<'PY'
           from pathlib import Path
@@ -76,4 +80,5 @@ jobs:
           python3 private/v1.0.5/diagnose-system-migrator-control-api.py
           python3 private/v1.0.5/diagnose-system-migrator-descriptor-api.py
           python3 private/v1.0.5/diagnose-system-migrator-codec-ctor.py
+          python3 private/v1.0.5/diagnose-rs321-exact-api.py
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
