@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 134 standalone-cell gates + AE2 result authority
+name: v1.0.4 Wireless Charger Visual Build # build 135 expensive cells + shift stack craft
 on:
   workflow_dispatch:
   push:
@@ -67,6 +67,8 @@ jobs:
           ! grep -R -E 'obsidiannetwork:storage_cell_(1k|4k|16k|64k|256k|512k|1m)' work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_{4k,16k,64k,256k,512k,1m}.json
           grep -Fq 'public boolean mayPickup(Player player)' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           grep -Fq 'ContainerInput.QUICK_MOVE' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          grep -Fq 'while (crafted + firstResult.getCount() <= stackLimit)' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          grep -Fq 'minecraft:netherite_block' work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_1m.json
           grep -Fq 'ContainerInput.PICKUP && button == 0' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
