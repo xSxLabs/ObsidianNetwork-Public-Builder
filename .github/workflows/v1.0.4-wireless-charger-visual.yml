@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 145 final migration verification
+name: v1.0.4 Wireless Charger Visual Build # build 146 corrected migration gate
 on:
   workflow_dispatch:
   push:
@@ -151,13 +151,13 @@ jobs:
           ! jar tf "$OUT" | grep -Eq '^data/obsidiannetwork/recipe/storage_cell_(2m|4m)\.json$'
           jar tf "$OUT" | grep -Fxq 'data/obsidiannetwork/loot_table/blocks/wireless_charger.json'
           sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
-          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B145.jar
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B146.jar
       - name: Upload v1.0.4 combined test jar
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B145
+          name: xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B146
           path: |
-            work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B145.jar
+            work/xSxLabs-Network-Storage-v1.0.4-FIX-16CELL-MIGRATION-128TYPES-SHIFTCRAFT-B146.jar
             work/v1.0.4-visual-test.sha256
           if-no-files-found: error
           retention-days: 30
