@@ -1,0 +1,53 @@
+name: System-Migrator Precheck B148
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/v1.0.5-system-migrator-precheck.yml']
+permissions: {contents: read}
+jobs:
+  precheck:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: v1.0.5-work
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - name: Reconstruct v1.0.4 baseline and run System-Migrator precheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          test "$(stat -c%s "$JAR")" = 1121869
+          test "$(sha256sum "$JAR"|cut -d' ' -f1)" = b98030bce849f5f947eb9c72f94d6ac94880117d672a549040586f03c36f8287
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar "$JAR" work/decompiled >/dev/null
+          cp -a work/decompiled/dev work/src/main/java/
+          MASTER="$GITHUB_WORKSPACE/$JAR"; (cd work/src/main/resources && jar xf "$MASTER")
+          find work/src/main/resources -name '*.class' -delete; rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources"
+          python3 private/reconstruction/apply-baseline-fixes.py
+          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py" >/dev/null; done
+          python3 private/fixes/apply-fix-18-facade-render-state.py >/dev/null
+          python3 private/fixes/apply-fix-19-facade-lighting.py >/dev/null
+          python3 private/fixes/apply-fix-20-facade-vertical-lighting.py >/dev/null
+          python3 private/fixes/apply-fix-21-energy-cell-capacities.py >/dev/null
+          python3 private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py >/dev/null
+          python3 private/fixes/apply-fix-22-terminal-english-labels.py >/dev/null
+          python3 private/v1.0.4/apply-wireless-charger-visual.py >/dev/null
+          python3 private/v1.0.4/apply-function-01-terminal-energy-storage.py >/dev/null
+          python3 private/v1.0.4/apply-function-02-terminal-active-consumption.py >/dev/null
+          python3 private/v1.0.4/apply-function-03-wireless-charger.py >/dev/null
+          python3 private/v1.0.4/apply-function-06-direct-block-adjacency.py >/dev/null
+          python3 private/v1.0.4/apply-function-07-pickaxe-mining.py >/dev/null
+          python3 private/v1.0.4/apply-function-08-filter54-scroll.py >/dev/null
+          python3 private/v1.0.4/apply-fix-storage-cell-upgrade-content.py >/dev/null
+          python3 private/v1.0.4/apply-function-09-storage-density.py >/dev/null
+          python3 private/v1.0.5/apply-function-01-system-migrator.py
+          echo 'SYSTEM-MIGRATOR PRECHECK B148 PASS'
