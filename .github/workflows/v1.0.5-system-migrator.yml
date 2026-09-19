@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B199
+name: v1.0.5 System Migrator B200
 on:
   workflow_dispatch:
   push:
@@ -99,9 +99,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B199
+      - name: Upload B200
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.5-SYSTEM-MIGRATOR-B199
+          name: xSxLabs-Network-Storage-v1.0.5-SYSTEM-MIGRATOR-B200
           path: dist/*.jar
           if-no-files-found: error
