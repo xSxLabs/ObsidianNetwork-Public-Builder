@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 131 storage visibility robust
+name: v1.0.4 Wireless Charger Visual Build # build 132 regex escape repair
 on:
   workflow_dispatch:
   push:
