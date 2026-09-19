@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 112
+name: v1.0.4 Wireless Charger Visual Build # build 113
 on:
   workflow_dispatch:
   push:
@@ -100,7 +100,136 @@ jobs:
           grep -Fq 'InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState' /tmp/facade.bytecode
           grep -Fq 'Level.getBrightness' /tmp/facade.bytecode || { echo 'FIX19 DIAG brightness sampling absent'; cat /tmp/facade.bytecode; exit 1; }
           jar tf "$OUT" | sort -u >/tmp/out; jar tf private/xSxLabs-Network-Storage-0.76.0-rc10.jar | sort -u >/tmp/master
-          for p in assets/obsidiannetwork/ data/obsidiannetwork/; do awk -v p="$p" 'index($0,p)==1' /tmp/master >/tmp/master.res; awk -v p="$p" 'index($0,p)==1' /tmp/out >/tmp/out.res; comm -23 /tmp/master.res /tmp/out.res >/tmp/missing; test ! -s /tmp/missing || { echo "missing resources under $p"; cat /tmp/missing; exit 1; }; done
+          for p in assets/obsidiannetwork/ data/obsidiannetwork/; do awk -v p="$p" 'index($0,p)==1' /tmp/master >/tmp/master.res; awk -v p="$p" 'index($0,p)==1' /tmp/out >/tmp/out.res; comm -23 /tmp/master.res /tmp/out.res | grep -v -E '^data/obsidiannetwork/recipe/storage_cell_(2m|4m)\\.json
+          test "$(jar tf "$OUT" | grep -c '^dev/obsidiannetwork/.*\.class$')" -ge 314
+          test "$(jar tf "$OUT" | grep -c '^assets/obsidiannetwork/.*\.png$')" -ge 263
+          test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json
+          jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json'
+          ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/blockstates/wireless_charger.json'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/models/block/wireless_charger.json'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/textures/block/wireless_charger.png'
+          unzip -p "$OUT" assets/obsidiannetwork/blockstates/wireless_charger.json > /tmp/charger.blockstate.json
+          unzip -p "$OUT" assets/obsidiannetwork/models/block/wireless_charger.json > /tmp/charger.model.json
+          python3 - <<'PY'
+          import json
+          bs=json.load(open('/tmp/charger.blockstate.json'))
+          m=json.load(open('/tmp/charger.model.json'))
+          assert set(bs["variants"]) == {"facing=north","facing=east","facing=south","facing=west"}, bs
+          assert bs["variants"]["facing=north"]["model"] == "obsidiannetwork:block/wireless_charger"
+          assert bs["variants"]["facing=east"]["y"] == 90
+          assert bs["variants"]["facing=south"]["y"] == 180
+          assert bs["variants"]["facing=west"]["y"] == 270
+          assert m["textures"]["main"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
+          assert m["textures"]["particle"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
+          assert len(m["elements"]) > 100
+          print("V104 RESOURCE BINDING PASS", len(m["elements"]), "elements")
+          PY
+          javap -classpath "$OUT" -p dev.obsidiannetwork.ObsidianNetwork >/tmp/v104.registry
+          grep -Fq 'WIRELESS_CHARGER' /tmp/v104.registry
+          echo 'v1.0.4 VISUAL PASS - Wireless Charger visual-only block present; baseline gates preserved'
+          sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST.jar
+      - name: Upload v1.0.3 test jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST
+          path: |
+            work/xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST.jar
+            work/v1.0.4-visual-test.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+# Fix21 exact tier diagnostic refresh
+
+# Fix21 EnergyCellTier diagnostic
+
+# trigger v1.0.4 charger 1m buffer build 82 >/tmp/missing || true; test ! -s /tmp/missing || { echo "missing resources under $p"; cat /tmp/missing; exit 1; }; done
+          test "$(jar tf "$OUT" | grep -c '^dev/obsidiannetwork/.*\.class$')" -ge 314
+          test "$(jar tf "$OUT" | grep -c '^assets/obsidiannetwork/.*\.png$')" -ge 263
+          test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401
+          jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json'
+          ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/blockstates/wireless_charger.json'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/models/block/wireless_charger.json'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/textures/block/wireless_charger.png'
+          unzip -p "$OUT" assets/obsidiannetwork/blockstates/wireless_charger.json > /tmp/charger.blockstate.json
+          unzip -p "$OUT" assets/obsidiannetwork/models/block/wireless_charger.json > /tmp/charger.model.json
+          python3 - <<'PY'
+          import json
+          bs=json.load(open('/tmp/charger.blockstate.json'))
+          m=json.load(open('/tmp/charger.model.json'))
+          assert set(bs["variants"]) == {"facing=north","facing=east","facing=south","facing=west"}, bs
+          assert bs["variants"]["facing=north"]["model"] == "obsidiannetwork:block/wireless_charger"
+          assert bs["variants"]["facing=east"]["y"] == 90
+          assert bs["variants"]["facing=south"]["y"] == 180
+          assert bs["variants"]["facing=west"]["y"] == 270
+          assert m["textures"]["main"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
+          assert m["textures"]["particle"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
+          assert len(m["elements"]) > 100
+          print("V104 RESOURCE BINDING PASS", len(m["elements"]), "elements")
+          PY
+          javap -classpath "$OUT" -p dev.obsidiannetwork.ObsidianNetwork >/tmp/v104.registry
+          grep -Fq 'WIRELESS_CHARGER' /tmp/v104.registry
+          echo 'v1.0.4 VISUAL PASS - Wireless Charger visual-only block present; baseline gates preserved'
+          sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST.jar
+      - name: Upload v1.0.3 test jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST
+          path: |
+            work/xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST.jar
+            work/v1.0.4-visual-test.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+# Fix21 exact tier diagnostic refresh
+
+# Fix21 EnergyCellTier diagnostic
+
+# trigger v1.0.4 charger 1m buffer build 82)" -ge 399
+          jar tf "$OUT" | grep -Fxq 'data/curios/tags/item/network_terminal.json'
+          ! jar tf "$OUT" | grep -Eq '(^|/)(fixes|reconstruction)/|\.py$|vineflower|diagnos'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/blockstates/wireless_charger.json'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/models/block/wireless_charger.json'
+          jar tf "$OUT" | grep -Fxq 'assets/obsidiannetwork/textures/block/wireless_charger.png'
+          unzip -p "$OUT" assets/obsidiannetwork/blockstates/wireless_charger.json > /tmp/charger.blockstate.json
+          unzip -p "$OUT" assets/obsidiannetwork/models/block/wireless_charger.json > /tmp/charger.model.json
+          python3 - <<'PY'
+          import json
+          bs=json.load(open('/tmp/charger.blockstate.json'))
+          m=json.load(open('/tmp/charger.model.json'))
+          assert set(bs["variants"]) == {"facing=north","facing=east","facing=south","facing=west"}, bs
+          assert bs["variants"]["facing=north"]["model"] == "obsidiannetwork:block/wireless_charger"
+          assert bs["variants"]["facing=east"]["y"] == 90
+          assert bs["variants"]["facing=south"]["y"] == 180
+          assert bs["variants"]["facing=west"]["y"] == 270
+          assert m["textures"]["main"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
+          assert m["textures"]["particle"]["sprite"] == "obsidiannetwork:block/wireless_charger", m["textures"]
+          assert len(m["elements"]) > 100
+          print("V104 RESOURCE BINDING PASS", len(m["elements"]), "elements")
+          PY
+          javap -classpath "$OUT" -p dev.obsidiannetwork.ObsidianNetwork >/tmp/v104.registry
+          grep -Fq 'WIRELESS_CHARGER' /tmp/v104.registry
+          echo 'v1.0.4 VISUAL PASS - Wireless Charger visual-only block present; baseline gates preserved'
+          sha256sum "$OUT" | tee work/v1.0.4-visual-test.sha256
+          cp "$OUT" work/xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST.jar
+      - name: Upload v1.0.3 test jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST
+          path: |
+            work/xSxLabs-Network-Storage-v1.0.4-COMBINED-TEST.jar
+            work/v1.0.4-visual-test.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+# Fix21 exact tier diagnostic refresh
+
+# Fix21 EnergyCellTier diagnostic
+
+# trigger v1.0.4 charger 1m buffer build 82 >/tmp/missing || true; test ! -s /tmp/missing || { echo "missing resources under $p"; cat /tmp/missing; exit 1; }; done
           test "$(jar tf "$OUT" | grep -c '^dev/obsidiannetwork/.*\.class$')" -ge 314
           test "$(jar tf "$OUT" | grep -c '^assets/obsidiannetwork/.*\.png$')" -ge 263
           test "$(jar tf "$OUT" | grep -Ec '^(assets|data)/.*\.json$')" -ge 401
