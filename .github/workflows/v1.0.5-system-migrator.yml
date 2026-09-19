@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B201
+name: v1.0.5 System Migrator B202
 on:
   workflow_dispatch:
   push:
@@ -85,7 +85,7 @@ jobs:
           python3 private/v1.0.5/diagnose-system-migrator-key-api.py
           python3 private/v1.0.5/diagnose-rs321-exact-api.py
           python3 private/v1.0.5/diagnose-rs321-transfer-signatures.py
-          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+          # Final resource normalization after every private patch, immediately before packaging.\n          python3 - <<'PY'\n          from pathlib import Path\n          import json\n          p=Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json')\n          raw=p.read_text(); dec=json.JSONDecoder(); data={}; pos=0\n          while pos < len(raw):\n              while pos < len(raw) and raw[pos].isspace(): pos+=1\n              if pos>=len(raw): break\n              obj,pos=dec.raw_decode(raw,pos)\n              if isinstance(obj,dict): data.update(obj)\n          data['block.obsidiannetwork.system_migrator']='System Migrator'\n          data['itemGroup.obsidiannetwork']='xSxLabs Network Storage'\n          data['tooltip.obsidiannetwork.system_migrator']='Migrates items from Refined Storage to xSxLabs Network Storage'\n          p.write_text(json.dumps(data,indent=2,ensure_ascii=False)+'\\n')\n          json.loads(p.read_text())\n          print('FINAL LANG NORMALIZATION PASS')\n          PY\n          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           python3 - <<'PY'
           import json,zipfile,glob
           jar=glob.glob('work/build/libs/*.jar')[0]
@@ -99,9 +99,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B201
+      - name: Upload B202
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.5-SYSTEM-MIGRATOR-B201
+          name: xSxLabs-Network-Storage-v1.0.5-SYSTEM-MIGRATOR-B202
           path: dist/*.jar
           if-no-files-found: error
