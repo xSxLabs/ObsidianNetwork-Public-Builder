@@ -1,4 +1,4 @@
-name: v1.0.6 Feature Batch B224
+name: v1.0.6 Feature Batch B225
 on:
   workflow_dispatch:
   push:
@@ -118,9 +118,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B224
+      - name: Upload B225
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.6-B224
+          name: xSxLabs-Network-Storage-v1.0.6-B225
           path: dist/*.jar
           if-no-files-found: error
