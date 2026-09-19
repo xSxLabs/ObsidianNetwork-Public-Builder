@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B175
+name: v1.0.5 System Migrator B176
 on:
   workflow_dispatch:
   push:
@@ -28,12 +28,28 @@ jobs:
           cp -a work/decompiled/dev work/src/main/java/
           MASTER="$GITHUB_WORKSPACE/$JAR"; (cd work/src/main/resources && jar xf "$MASTER")
           find work/src/main/resources -name '*.class' -delete; rm -f work/src/main/resources/META-INF/MANIFEST.MF
-          cp private/build.gradle work/build.gradle
-          cp private/gradle.properties work/gradle.properties
-          cp private/settings.gradle work/settings.gradle
-          cp private/gradlew work/gradlew
-          cp -a private/gradle work/gradle
-          chmod +x work/gradlew
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0.5
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version=mod_version; group=mod_group_id; base { archivesName='xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
+          tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
+          EOF
           export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources" V1_PROJECT_ROOT="$GITHUB_WORKSPACE/work"
           python3 private/reconstruction/apply-baseline-fixes.py
           for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py"; done
@@ -58,4 +74,4 @@ jobs:
           python3 private/v1.0.5/diagnose-system-migrator-control-api.py
           python3 private/v1.0.5/diagnose-system-migrator-descriptor-api.py
           python3 private/v1.0.5/diagnose-system-migrator-codec-ctor.py
-          ./work/gradlew -p work compileJava --no-daemon
+          (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
