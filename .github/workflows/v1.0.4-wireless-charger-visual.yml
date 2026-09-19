@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 127 recipe diagnostic
+name: v1.0.4 Wireless Charger Visual Build # build 128 storage master + rapid craft
 on:
   workflow_dispatch:
   push:
@@ -53,13 +53,15 @@ jobs:
           python3 private/v1.0.4/apply-function-06-direct-block-adjacency.py
           python3 private/v1.0.4/apply-function-07-pickaxe-mining.py
           python3 private/v1.0.4/apply-function-08-filter54-scroll.py
-          echo "=== MASTER STORAGE CELL RECIPES ==="
-          for r in 1k 4k 16k 64k 256k 512k 1m 2m 4m; do
-            echo "--- storage_cell_$r.json ---"
-            unzip -p "$MASTER" "data/obsidiannetwork/recipe/storage_cell_$r.json" || true
-            echo
-          done
           python3 private/v1.0.4/apply-fix-storage-cell-upgrade-content.py
+          for r in 1k 4k 16k 64k 256k 512k 1m; do
+            grep -Fq '"type": "minecraft:crafting_shapeless"' "work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_$r.json"
+          done
+          test ! -e work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_2m.json
+          test ! -e work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_4m.json
+          grep -Fq 'ContainerInput.PICKUP_ALL' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          ! grep -Fq 'lastManualResultClickTick' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          grep -Fq 'class StorageCellCraftingEvents' work/src/main/java/dev/obsidiannetwork/StorageCellCraftingEvents.java
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -102,6 +104,11 @@ jobs:
           set -euo pipefail
           OUT=$(find work/build/libs -type f -name 'xSxLabs-Network-Storage-1.0.4.jar' -print -quit)
           test -n "$OUT"; unzip -t "$OUT" >/dev/null
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.StorageTerminalMenu > /tmp/terminal.bytecode
+          grep -Fq 'ContainerInput.PICKUP_ALL' /tmp/terminal.bytecode
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.StorageCellCraftingEvents > /tmp/storageevents.bytecode
+          grep -Fq 'StorageCellItem.readStore' /tmp/storageevents.bytecode
+          grep -Fq 'StorageCellItem.writeStore' /tmp/storageevents.bytecode
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.CableFacadeRenderer > /tmp/facade.bytecode
           grep -Fq 'InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState' /tmp/facade.bytecode
           grep -Fq 'Level.getBrightness' /tmp/facade.bytecode
