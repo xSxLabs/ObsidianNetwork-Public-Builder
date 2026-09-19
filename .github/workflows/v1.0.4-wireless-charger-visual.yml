@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 133 final standalone cells + AE2 result authority regex escape repair
+name: v1.0.4 Wireless Charger Visual Build # build 134 standalone-cell gates + AE2 result authority
 on:
   workflow_dispatch:
   push:
@@ -63,7 +63,11 @@ jobs:
           ! grep -Fq 'lastManualResultClickTick' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           ! grep -Fq 'output.accept(STORAGE_CELL_2M.get())' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           ! grep -Fq 'output.accept(STORAGE_CELL_4M.get())' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
-          grep -Fq 'class StorageCellCraftingEvents' work/src/main/java/dev/obsidiannetwork/StorageCellCraftingEvents.java
+          test ! -e work/src/main/java/dev/obsidiannetwork/StorageCellCraftingEvents.java
+          ! grep -R -E 'obsidiannetwork:storage_cell_(1k|4k|16k|64k|256k|512k|1m)' work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_{4k,16k,64k,256k,512k,1m}.json
+          grep -Fq 'public boolean mayPickup(Player player)' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          grep -Fq 'ContainerInput.QUICK_MOVE' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          grep -Fq 'ContainerInput.PICKUP && button == 0' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'ADVANCED(4000000L, 75000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -111,9 +115,10 @@ jobs:
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.ObsidianNetwork > /tmp/main.bytecode
           ! grep -A700 'lambda.*CreativeModeTab' /tmp/main.bytecode | grep -q 'STORAGE_CELL_2M'
           ! grep -A700 'lambda.*CreativeModeTab' /tmp/main.bytecode | grep -q 'STORAGE_CELL_4M'
-          javap -classpath "$OUT" -c -p dev.obsidiannetwork.StorageCellCraftingEvents > /tmp/storageevents.bytecode
-          grep -Fq 'StorageCellItem.readStore' /tmp/storageevents.bytecode
-          grep -Fq 'StorageCellItem.writeStore' /tmp/storageevents.bytecode
+          javap -classpath "$OUT" -c -p 'dev.obsidiannetwork.menu.StorageTerminalMenu$NetworkResultSlot' > /tmp/resultslot.bytecode
+          grep -Fq 'mayPickup' /tmp/resultslot.bytecode
+          grep -A6 'mayPickup' /tmp/resultslot.bytecode | grep -Fq 'iconst_0'
+          ! jar tf "$OUT" | grep -Fq 'dev/obsidiannetwork/StorageCellCraftingEvents.class'
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.client.render.CableFacadeRenderer > /tmp/facade.bytecode
           grep -Fq 'InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState' /tmp/facade.bytecode
           grep -Fq 'Level.getBrightness' /tmp/facade.bytecode
