@@ -57,7 +57,6 @@ jobs:
           python3 private/v1.0.5/apply-function-01-system-migrator.py
           python3 private/v1.0.6/apply-v106-features.py
           # Keep generated diagnostics private and make them retrievable independently of Actions logs.
-          (cd private && git config user.name "xsxlabs-ci" && git config user.email "ci@xsxlabs.invalid" && git add v1.0.6/generated-deconstruction-diagnostic.txt && (git diff --cached --quiet || (git commit -m "CI: B232 deconstruction diagnostic" && git push origin HEAD:v1.0.6-work)))
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
           for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
