@@ -2,7 +2,7 @@ name: v1.0.6 Feature Batch B220
 on:
   workflow_dispatch:
   push:
-    paths: ['.github/workflows/v1.0.5-system-migrator.yml']
+    paths: ['.github/workflows/v1.0.6.yml']
 permissions: {contents: read}
 jobs:
   inspect:
