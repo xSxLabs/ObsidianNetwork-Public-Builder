@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B156
+name: v1.0.5 System Migrator B157
 on:
   workflow_dispatch:
   push:
@@ -36,7 +36,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           n=Path("private/v1.0.5/SYSTEM_MIGRATOR_RS32_API_NOTES.md").read_text()
-          required=["Action.SIMULATE","Action.EXECUTE","previewInsertExact","compensate difference back into SAME RS root storage","fail closed"]
+          required=["Action.SIMULATE","Action.EXECUTE","previewInsertExact","compensate difference back into SAME RS root storage with","fail closed"]
           assert all(x in n for x in required), "zero-item-loss contract incomplete"
           print("ZERO-ITEM-LOSS CONTRACT PASS")
           PY
