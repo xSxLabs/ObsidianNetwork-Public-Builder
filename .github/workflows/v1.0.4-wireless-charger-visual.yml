@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 129 final storage visibility + rapid craft
+name: v1.0.4 Wireless Charger Visual Build # build 130 storage visibility retry
 on:
   workflow_dispatch:
   push:
