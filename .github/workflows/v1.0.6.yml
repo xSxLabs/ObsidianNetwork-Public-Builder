@@ -1,4 +1,4 @@
-name: v1.0.6 B264 Green Baseline Restore
+name: v1.0.6 B265 Green Baseline Restore
 on:
   workflow_dispatch:
   push:
@@ -114,15 +114,16 @@ jobs:
               lang=json.loads(z.read('assets/obsidiannetwork/lang/en_us.json'))
               assert lang['block.obsidiannetwork.system_migrator']=='System Migrator'
               assert lang['itemGroup.obsidiannetwork']=='xSxLabs Network Storage'
+              assert lang['tooltip.obsidiannetwork.cell_types']=='%s of 128 types occupied'
               assert 'dev/obsidiannetwork/compat/refinedstorage/SystemMigratorRsBridge.class' in z.namelist()
               assert 'data/obsidiannetwork/recipe/system_migrator.json' in z.namelist()
           print('FINAL JAR MIGRATOR RESOURCE/BRIDGE CHECK PASS')
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B264
+      - name: Upload B265
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.6-B264
+          name: xSxLabs-Network-Storage-v1.0.6-B265
           path: dist/*.jar
           if-no-files-found: error
