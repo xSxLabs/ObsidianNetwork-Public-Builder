@@ -1,4 +1,4 @@
-name: v1.0.4 Wireless Charger Visual Build # build 128 storage master + rapid craft
+name: v1.0.4 Wireless Charger Visual Build # build 129 final storage visibility + rapid craft
 on:
   workflow_dispatch:
   push:
@@ -61,6 +61,8 @@ jobs:
           test ! -e work/src/main/resources/data/obsidiannetwork/recipe/storage_cell_4m.json
           grep -Fq 'ContainerInput.PICKUP_ALL' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           ! grep -Fq 'lastManualResultClickTick' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          ! grep -Fq 'output.accept(STORAGE_CELL_2M.get())' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          ! grep -Fq 'output.accept(STORAGE_CELL_4M.get())' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           grep -Fq 'class StorageCellCraftingEvents' work/src/main/java/dev/obsidiannetwork/StorageCellCraftingEvents.java
           grep -Fq 'BASIC(1000000L, 10000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
           grep -Fq 'IMPROVED(2000000L, 25000L)' work/src/main/java/dev/obsidiannetwork/core/EnergyCellTier.java
@@ -106,6 +108,9 @@ jobs:
           test -n "$OUT"; unzip -t "$OUT" >/dev/null
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.menu.StorageTerminalMenu > /tmp/terminal.bytecode
           grep -Fq 'ContainerInput.PICKUP_ALL' /tmp/terminal.bytecode
+          javap -classpath "$OUT" -c -p dev.obsidiannetwork.ObsidianNetwork > /tmp/main.bytecode
+          ! grep -A700 'lambda.*CreativeModeTab' /tmp/main.bytecode | grep -q 'STORAGE_CELL_2M'
+          ! grep -A700 'lambda.*CreativeModeTab' /tmp/main.bytecode | grep -q 'STORAGE_CELL_4M'
           javap -classpath "$OUT" -c -p dev.obsidiannetwork.StorageCellCraftingEvents > /tmp/storageevents.bytecode
           grep -Fq 'StorageCellItem.readStore' /tmp/storageevents.bytecode
           grep -Fq 'StorageCellItem.writeStore' /tmp/storageevents.bytecode
