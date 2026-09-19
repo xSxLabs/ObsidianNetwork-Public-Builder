@@ -1,4 +1,4 @@
-name: v1.0.6 B240 Recovery
+name: v1.0.6 B241 Drive Tooltip Resource
 on:
   workflow_dispatch:
   push:
@@ -101,27 +101,34 @@ jobs:
           data['block.obsidiannetwork.system_migrator']='System Migrator'
           data['itemGroup.obsidiannetwork']='xSxLabs Network Storage'
           data['tooltip.obsidiannetwork.system_migrator']='Migrates items from Refined Storage to xSxLabs Network Storage'
+          # Preserve v1.0.6 display-only capacity corrections through final normalization.
+          for k,v in list(data.items()):
+              if isinstance(v,str):
+                  data[k]=v.replace('%s of 64 types occupied','%s of 128 types occupied')
+                  import re
+                  data[k]=re.sub(r'(?i)8(\\s*cells?)',r'16\\1',data[k])
           p.write_text(json.dumps(data,indent=2,ensure_ascii=False)+chr(10))
           json.loads(p.read_text())
           print('FINAL LANG NORMALIZATION PASS')
           PY
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           python3 - <<'PY'
-          import json,zipfile,glob
+          import json,zipfile,glob,re
           jar=glob.glob('work/build/libs/*.jar')[0]
           with zipfile.ZipFile(jar) as z:
               lang=json.loads(z.read('assets/obsidiannetwork/lang/en_us.json'))
               assert lang['block.obsidiannetwork.system_migrator']=='System Migrator'
               assert lang['itemGroup.obsidiannetwork']=='xSxLabs Network Storage'
+              assert not any(isinstance(v,str) and re.search(r'(?i)8\\s*cells?',v) for v in lang.values()), '8-cell tooltip survived packaging'
               assert 'dev/obsidiannetwork/compat/refinedstorage/SystemMigratorRsBridge.class' in z.namelist()
               assert 'data/obsidiannetwork/recipe/system_migrator.json' in z.namelist()
           print('FINAL JAR MIGRATOR RESOURCE/BRIDGE CHECK PASS')
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B240
+      - name: Upload B241
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.6-B240
+          name: xSxLabs-Network-Storage-v1.0.6-B241
           path: dist/*.jar
           if-no-files-found: error
