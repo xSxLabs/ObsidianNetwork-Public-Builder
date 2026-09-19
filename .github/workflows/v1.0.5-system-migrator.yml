@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B164
+name: v1.0.5 System Migrator B165
 on:
   workflow_dispatch:
   push:
@@ -47,3 +47,4 @@ jobs:
           python3 private/v1.0.5/diagnose-system-migrator-registration-shapes.py
           python3 private/v1.0.5/diagnose-system-migrator-minimal-imports.py
           python3 private/v1.0.5/diagnose-system-migrator-method-shapes.py
+          python3 private/v1.0.5/diagnose-system-migrator-block-codec.py
