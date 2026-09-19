@@ -1,4 +1,4 @@
-name: v1.0.6 Feature Batch B228
+name: v1.0.6 Leather Diagnostic B228
 on:
   workflow_dispatch:
   push:
