@@ -18,7 +18,7 @@ jobs:
           path: private
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
-      - name: Reconstruct v1.0.4 baseline and run System-Migrator precheck
+      - name: Reconstruct v1.0.4 baseline and run System-Migrator precheck B148
         shell: bash
         run: |
           set -euo pipefail
