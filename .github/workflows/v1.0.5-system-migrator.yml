@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B162
+name: v1.0.5 System Migrator B163
 on:
   workflow_dispatch:
   push:
@@ -45,3 +45,4 @@ jobs:
           python3 private/v1.0.5/diagnose-system-migrator-signatures.py
           python3 private/v1.0.5/diagnose-system-migrator-topology-anchors.py
           python3 private/v1.0.5/diagnose-system-migrator-registration-shapes.py
+          python3 private/v1.0.5/diagnose-system-migrator-minimal-imports.py
