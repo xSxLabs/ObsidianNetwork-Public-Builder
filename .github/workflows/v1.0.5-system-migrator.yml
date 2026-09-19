@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B154
+name: v1.0.5 System Migrator B155
 on:
   workflow_dispatch:
   push:
@@ -35,3 +35,4 @@ jobs:
           python3 private/v1.0.5/apply-function-01-system-migrator.py
           python3 private/v1.0.5/diagnose-system-migrator-importer.py
           python3 private/v1.0.5/diagnose-system-migrator-core.py
+          python3 private/v1.0.5/diagnose-system-migrator-signatures.py
