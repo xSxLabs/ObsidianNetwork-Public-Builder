@@ -1,0 +1,126 @@
+name: v1.0.6 Feature Batch B220
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/v1.0.5-system-migrator.yml']
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: v1.0.6-work
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - name: Reconstruct v1.0.5 baseline and inspect Importer
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar "$JAR" work/decompiled
+          cp -a work/decompiled/dev work/src/main/java/
+          MASTER="$GITHUB_WORKSPACE/$JAR"; (cd work/src/main/resources && jar xf "$MASTER")
+          find work/src/main/resources -name '*.class' -delete; rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0.6
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version=mod_version; group=mod_group_id; base { archivesName='xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
+          tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
+          EOF
+          export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources" V1_PROJECT_ROOT="$GITHUB_WORKSPACE/work"
+          python3 private/reconstruction/apply-baseline-fixes.py
+          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py"; done
+          for p in private/fixes/apply-fix-18-facade-render-state.py private/fixes/apply-fix-19-facade-lighting.py private/fixes/apply-fix-20-facade-vertical-lighting.py private/fixes/apply-fix-21-energy-cell-capacities.py private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py private/fixes/apply-fix-22-terminal-english-labels.py private/v1.0.4/apply-wireless-charger-visual.py private/v1.0.4/apply-function-01-terminal-energy-storage.py private/v1.0.4/apply-function-02-terminal-active-consumption.py private/v1.0.4/apply-function-03-wireless-charger.py private/v1.0.4/apply-function-06-direct-block-adjacency.py private/v1.0.4/apply-function-07-pickaxe-mining.py private/v1.0.4/apply-function-08-filter54-scroll.py private/v1.0.4/apply-fix-storage-cell-upgrade-content.py private/v1.0.4/apply-function-09-storage-density.py private/v1.0.4/apply-fix-storage-drive-16slot-visual-clamp.py; do python3 "$p"; done
+          python3 private/v1.0.5/apply-function-01-system-migrator.py
+          python3 private/v1.0.6/apply-v106-features.py
+          mkdir -p work/libs
+          curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
+          for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
+          mkdir -p work/rs-src
+          for j in work/libs/*-3.2.1-sources.jar; do (cd work/rs-src && jar xf "../libs/$(basename "$j")"); done
+          export RS_SOURCE_ROOT="$GITHUB_WORKSPACE/work/rs-src"
+          python3 private/v1.0.5/apply-system-migrator-rs-dependency.py
+          python3 - <<'PY'
+          from pathlib import Path
+          n=Path("private/v1.0.5/SYSTEM_MIGRATOR_RS32_API_NOTES.md").read_text()
+          required=["Action.SIMULATE","Action.EXECUTE","previewInsertExact","compensate the difference back into the SAME RS root storage with","fail closed"]
+          assert all(x in n for x in required), "zero-item-loss contract incomplete"
+          print("ZERO-ITEM-LOSS CONTRACT PASS")
+          PY
+          python3 private/v1.0.5/diagnose-system-migrator-importer.py
+          python3 private/v1.0.5/diagnose-system-migrator-core.py
+          python3 private/v1.0.5/diagnose-system-migrator-signatures.py
+          python3 private/v1.0.5/diagnose-system-migrator-topology-anchors.py
+          python3 private/v1.0.5/diagnose-system-migrator-registration-shapes.py
+          python3 private/v1.0.5/diagnose-system-migrator-item-registration.py
+          python3 private/v1.0.5/diagnose-system-migrator-recipe-tooltip.py
+          python3 private/v1.0.5/diagnose-system-migrator-minimal-imports.py
+          python3 private/v1.0.5/diagnose-system-migrator-method-shapes.py
+          python3 private/v1.0.5/diagnose-system-migrator-block-codec.py
+          python3 private/v1.0.5/diagnose-system-migrator-control-api.py
+          python3 private/v1.0.5/diagnose-system-migrator-descriptor-api.py
+          python3 private/v1.0.5/diagnose-system-migrator-codec-ctor.py
+          python3 private/v1.0.5/diagnose-system-migrator-key-api.py
+          python3 private/v1.0.5/diagnose-rs321-exact-api.py
+          python3 private/v1.0.5/diagnose-rs321-transfer-signatures.py
+          # Final resource normalization after every private patch, immediately before packaging.
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json')
+          raw=p.read_text(); dec=json.JSONDecoder(); data={}
+          try:
+              obj,_=dec.raw_decode(raw.lstrip())
+              if isinstance(obj,dict): data.update(obj)
+          except json.JSONDecodeError:
+              data={}
+          data['block.obsidiannetwork.system_migrator']='System Migrator'
+          data['itemGroup.obsidiannetwork']='xSxLabs Network Storage'
+          data['tooltip.obsidiannetwork.system_migrator']='Migrates items from Refined Storage to xSxLabs Network Storage'
+          p.write_text(json.dumps(data,indent=2,ensure_ascii=False)+chr(10))
+          json.loads(p.read_text())
+          print('FINAL LANG NORMALIZATION PASS')
+          PY
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+          python3 - <<'PY'
+          import json,zipfile,glob
+          jar=glob.glob('work/build/libs/*.jar')[0]
+          with zipfile.ZipFile(jar) as z:
+              lang=json.loads(z.read('assets/obsidiannetwork/lang/en_us.json'))
+              assert lang['block.obsidiannetwork.system_migrator']=='System Migrator'
+              assert lang['itemGroup.obsidiannetwork']=='xSxLabs Network Storage'
+              assert 'dev/obsidiannetwork/compat/refinedstorage/SystemMigratorRsBridge.class' in z.namelist()
+              assert 'data/obsidiannetwork/recipe/system_migrator.json' in z.namelist()
+          print('FINAL JAR MIGRATOR RESOURCE/BRIDGE CHECK PASS')
+          PY
+          mkdir -p dist
+          cp work/build/libs/*.jar dist/
+      - name: Upload B220
+        uses: actions/upload-artifact@v4
+        with:
+          name: xSxLabs-Network-Storage-v1.0.6-B220
+          path: dist/*.jar
+          if-no-files-found: error
