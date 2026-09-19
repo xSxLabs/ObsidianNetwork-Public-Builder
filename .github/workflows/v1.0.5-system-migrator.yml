@@ -1,4 +1,4 @@
-name: v1.0.5 System Migrator B203
+name: v1.0.5 System Migrator B204
 on:
   workflow_dispatch:
   push:
@@ -90,12 +90,12 @@ jobs:
           from pathlib import Path
           import json
           p=Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json')
-          raw=p.read_text(); dec=json.JSONDecoder(); data={}; pos=0
-          while pos < len(raw):
-              while pos < len(raw) and raw[pos].isspace(): pos+=1
-              if pos>=len(raw): break
-              obj,pos=dec.raw_decode(raw,pos)
+          raw=p.read_text(); dec=json.JSONDecoder(); data={}
+          try:
+              obj,_=dec.raw_decode(raw.lstrip())
               if isinstance(obj,dict): data.update(obj)
+          except json.JSONDecodeError:
+              data={}
           data['block.obsidiannetwork.system_migrator']='System Migrator'
           data['itemGroup.obsidiannetwork']='xSxLabs Network Storage'
           data['tooltip.obsidiannetwork.system_migrator']='Migrates items from Refined Storage to xSxLabs Network Storage'
@@ -117,9 +117,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B203
+      - name: Upload B204
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.5-SYSTEM-MIGRATOR-B203
+          name: xSxLabs-Network-Storage-v1.0.5-SYSTEM-MIGRATOR-B204
           path: dist/*.jar
           if-no-files-found: error
