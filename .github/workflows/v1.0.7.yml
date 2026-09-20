@@ -1,4 +1,4 @@
-name: v1.0.7 B289 Item Cable Glass Fix
+name: v1.0.7 B290 Item Cable Glass Fix
 on:
   workflow_dispatch:
   push:
@@ -124,9 +124,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B289
+      - name: Upload B290
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B289
+          name: xSxLabs-Network-Storage-v1.0.7-B290
           path: dist/*.jar
           if-no-files-found: error
