@@ -1,4 +1,4 @@
-name: v1.0.6 B275 Green Baseline Restore
+name: v1.0.6 B276 Green Baseline Restore
 on:
   workflow_dispatch:
   push:
@@ -60,7 +60,7 @@ jobs:
           from pathlib import Path
           p=Path('work/src/main/java/dev/obsidiannetwork/client/StorageTerminalScreen.java')
           L=p.read_text().splitlines()
-          for a,b in [(105,132),(210,232),(330,390),(520,620)]:
+          for a,b in [(105,132),(210,232),(330,390),(430,520),(520,620)]:
            print('V106 UI RANGE',a,b)
            for i in range(a-1,min(b,len(L))): print(f'{i+1}: {L[i][:260]}')
           PY
@@ -146,9 +146,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B275
+      - name: Upload B276
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.6-B275
+          name: xSxLabs-Network-Storage-v1.0.6-B276
           path: dist/*.jar
           if-no-files-found: error
