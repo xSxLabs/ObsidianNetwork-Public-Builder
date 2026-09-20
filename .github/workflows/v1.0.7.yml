@@ -1,4 +1,4 @@
-name: v1.0.7 B286 Visual Item Cable Prototype
+name: v1.0.7 B287 Item Cable Dark Glass Visual
 on:
   workflow_dispatch:
   push:
@@ -60,6 +60,7 @@ jobs:
           python3 private/v1.0.7/diagnose-item-cable-registration.py
           python3 private/v1.0.7/diagnose-item-cable-anchors-b285.py
           python3 private/v1.0.7/apply-item-cable-visual.py
+          python3 private/v1.0.7/apply-item-cable-dark-glass.py
           # Keep generated diagnostics private and make them retrievable independently of Actions logs.
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -126,9 +127,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B286
+      - name: Upload B287
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B286
+          name: xSxLabs-Network-Storage-v1.0.7-B287
           path: dist/*.jar
           if-no-files-found: error
