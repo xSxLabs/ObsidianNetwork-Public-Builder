@@ -1,4 +1,4 @@
-name: v1.0.7 B324 Tool Cell Safety
+name: v1.0.7 B325 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -120,14 +120,19 @@ jobs:
               assert lang['tooltip.obsidiannetwork.cell_types']=='%s of 128 types occupied'
               assert 'dev/obsidiannetwork/compat/refinedstorage/SystemMigratorRsBridge.class' in z.namelist()
               assert 'data/obsidiannetwork/recipe/system_migrator.json' in z.namelist()
+              for size in ('4k','16k','64k'):
+                  model=json.loads(z.read(f'assets/obsidiannetwork/models/item/tool_cell_{size}.json'))
+                  assert model == json.loads(z.read(f'assets/obsidiannetwork/models/item/storage_cell_{size}.json'))
+                  assert f'assets/obsidiannetwork/textures/item/tool_cell_{size}.png' in z.namelist()
+              print('FINAL TOOL CELL MODEL/TEXTURE CHECK PASS')
           print('FINAL JAR MIGRATOR RESOURCE/BRIDGE CHECK PASS')
           print('FINAL CELL TOOLTIP 128 PASS')
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B324
+      - name: Upload B325
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B324
+          name: xSxLabs-Network-Storage-v1.0.7-B325
           path: dist/*.jar
           if-no-files-found: error
