@@ -1,4 +1,4 @@
-name: v1.0.7 B340 Tool Cell Safety
+name: v1.0.7 B341 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -57,6 +57,20 @@ jobs:
           python3 private/v1.0.5/apply-function-01-system-migrator.py
           python3 private/v1.0.6/apply-v106-features.py
           python3 private/v1.0.7/apply-tool-cells.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import os,re
+          root=Path(os.environ["V1_SOURCE_ROOT"])
+          for rel in ["dev/obsidiannetwork/item/StorageCellItem.java","dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java"]:
+              src=(root/rel).read_text()
+              print("PRIVATE_DIAG", rel)
+              for name in ["readStore","writeStore","rebuildRuntimeFromInventory","materializeSlot"]:
+                  i=src.find(name)
+                  if i>=0:
+                      # Signatures + compact structural tokens only; do not dump source.
+                      w=src[max(0,i-180):i+2200]
+                      print(name, "EMPTY=",w.count("ItemStack.EMPTY"), "SET=",w.count("stacks.set("), "READ=",w.count("readStore("), "WRITE=",w.count("writeStore("), "STATE=",w.count("CellItemState"), "CONTENTS=",w.count("CellContents"))
+          PY
           python3 private/v1.0.7/apply-tool-cell-safety.py
           python3 private/v1.0.7/apply-jei-alternatives.py
           # Keep generated diagnostics private and make them retrievable independently of Actions logs.
@@ -143,9 +157,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B340
+      - name: Upload B341
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B340
+          name: xSxLabs-Network-Storage-v1.0.7-B341
           path: dist/*.jar
           if-no-files-found: error
