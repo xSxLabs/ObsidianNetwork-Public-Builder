@@ -1,4 +1,4 @@
-name: v1.0.7 B322 Tool Cell Data Loss Guard
+name: v1.0.7 B323 Tool Cell Data Loss Guard
 on:
   workflow_dispatch:
   push:
@@ -125,9 +125,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B322
+      - name: Upload B323
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B322
+          name: xSxLabs-Network-Storage-v1.0.7-B323
           path: dist/*.jar
           if-no-files-found: error
