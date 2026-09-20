@@ -1,4 +1,4 @@
-name: v1.0.6 B272 Green Baseline Restore
+name: v1.0.6 B273 Green Baseline Restore
 on:
   workflow_dispatch:
   push:
@@ -138,9 +138,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B272
+      - name: Upload B273
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.6-B272
+          name: xSxLabs-Network-Storage-v1.0.6-B273
           path: dist/*.jar
           if-no-files-found: error
