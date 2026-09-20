@@ -1,4 +1,4 @@
-name: v1.0.7 B303 Tool Cell Routing Fix
+name: v1.0.7 B304 Tool Cell Separation
 on:
   workflow_dispatch:
   push:
@@ -123,9 +123,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B303
+      - name: Upload B304
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B303
+          name: xSxLabs-Network-Storage-v1.0.7-B304
           path: dist/*.jar
           if-no-files-found: error
