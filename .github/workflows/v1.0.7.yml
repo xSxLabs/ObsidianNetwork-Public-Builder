@@ -1,4 +1,4 @@
-name: v1.0.7 B336 Tool Cell Safety
+name: v1.0.7 B337 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -128,18 +128,18 @@ jobs:
                   assert f'assets/obsidiannetwork/textures/item/tool_cell_{size}.png' in z.namelist()
               print('FINAL TOOL CELL MODEL/TEXTURE CHECK PASS')
           print('FINAL JAR MIGRATOR RESOURCE/BRIDGE CHECK PASS')
-          # Bytecode-level source contract: runtime mirror absence may not delete an installed cell.
-              drive_src=open('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read()
-              ms=drive_src[drive_src.find('private void materializeSlot'):][:2200]
-              assert 'stacks.set(slot, ItemStack.EMPTY)' not in ms
-              print('FINAL DRIVE CELL LOSS GUARD PASS')
-              print('FINAL CELL TOOLTIP 128 PASS')
+          # Source contract: runtime mirror absence may not delete an installed cell.
+          drive_src=open('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read()
+          ms=drive_src[drive_src.find('private void materializeSlot'):][:2200]
+          assert 'stacks.set(slot, ItemStack.EMPTY)' not in ms
+          print('FINAL DRIVE CELL LOSS GUARD PASS')
+          print('FINAL CELL TOOLTIP 128 PASS')
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B336
+      - name: Upload B337
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B336
+          name: xSxLabs-Network-Storage-v1.0.7-B337
           path: dist/*.jar
           if-no-files-found: error
