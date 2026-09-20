@@ -1,4 +1,4 @@
-name: v1.0.7 B325 Tool Cell Safety
+name: v1.0.7 B326 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -130,9 +130,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B325
+      - name: Upload B326
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B325
+          name: xSxLabs-Network-Storage-v1.0.7-B326
           path: dist/*.jar
           if-no-files-found: error
