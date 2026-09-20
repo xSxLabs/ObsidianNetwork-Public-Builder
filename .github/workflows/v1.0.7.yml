@@ -1,4 +1,4 @@
-name: v1.0.7 B305 Tool Cell Assets
+name: v1.0.7 B306 Tool Cell Recipes
 on:
   workflow_dispatch:
   push:
@@ -123,9 +123,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B305
+      - name: Upload B306
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B305
+          name: xSxLabs-Network-Storage-v1.0.7-B306
           path: dist/*.jar
           if-no-files-found: error
