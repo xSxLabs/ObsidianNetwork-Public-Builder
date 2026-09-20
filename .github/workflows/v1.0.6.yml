@@ -1,4 +1,4 @@
-name: v1.0.6 B271 Green Baseline Restore
+name: v1.0.6 B272 Green Baseline Restore
 on:
   workflow_dispatch:
   push:
@@ -70,7 +70,7 @@ jobs:
            if not p.exists(): continue
            lines=p.read_text().splitlines()
            for i,line in enumerate(lines,1):
-            if any(t.lower() in line.lower() for t in terms):\n             lo=max(0,i-3); hi=min(len(lines),i+5)\n             print(' | '.join(f'{j+1}:{lines[j].strip()[:180]}' for j in range(lo,hi)))
+            if any(t.lower() in line.lower() for t in terms): print(f'{i}: {line.strip()[:260]}')
           PY
           # Keep generated diagnostics private and make them retrievable independently of Actions logs.
           mkdir -p work/libs
@@ -138,9 +138,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B271
+      - name: Upload B272
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.6-B271
+          name: xSxLabs-Network-Storage-v1.0.6-B272
           path: dist/*.jar
           if-no-files-found: error
