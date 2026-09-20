@@ -1,4 +1,4 @@
-name: v1.0.7 B287 Item Cable Dark Glass Visual
+name: v1.0.7 B288 Item Cable Dark Glass Visual
 on:
   workflow_dispatch:
   push:
@@ -127,9 +127,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B287
+      - name: Upload B288
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B287
+          name: xSxLabs-Network-Storage-v1.0.7-B288
           path: dist/*.jar
           if-no-files-found: error
