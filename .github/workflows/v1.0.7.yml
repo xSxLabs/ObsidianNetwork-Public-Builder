@@ -1,4 +1,4 @@
-name: v1.0.7 B315 Tool Cell Final Validation
+name: v1.0.7 B316 Tool Cell Final Validation Fix
 on:
   workflow_dispatch:
   push:
@@ -124,9 +124,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B315
+      - name: Upload B316
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B315
+          name: xSxLabs-Network-Storage-v1.0.7-B316
           path: dist/*.jar
           if-no-files-found: error
