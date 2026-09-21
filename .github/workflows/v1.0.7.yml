@@ -1,4 +1,4 @@
-name: v1.0.7 B375 Tool Cell Safety
+name: v1.0.7 B376 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -189,11 +189,32 @@ jobs:
           print('FINAL TOOL CELL PERSISTENCE CONTRACT PASS')
           print('FINAL CELL TOOLTIP 128 PASS')
           PY
+          # B376: inspect the ACTUAL packaged bytecode. This catches source assertions
+          # that compile but are not on the runtime path.
+          JAR="$(ls work/build/libs/*.jar | head -1)"
+          javap -classpath "$JAR" -c -p dev.obsidiannetwork.core.StorageCellStore > /tmp/store.bytecode
+          javap -classpath "$JAR" -c -p dev.obsidiannetwork.core.StorageNetwork > /tmp/network.bytecode
+          javap -classpath "$JAR" -c -p dev.obsidiannetwork.item.ToolCellItem > /tmp/toolitem.bytecode
+          grep -q 'acceptsKey' /tmp/store.bytecode
+          grep -q 'isToolCell' /tmp/network.bytecode
+          grep -q 'CellKind.TOOL' /tmp/toolitem.bytecode || grep -q 'TOOL' /tmp/toolitem.bytecode
+          python3 - <<'PY'
+          from pathlib import Path
+          st=Path('/tmp/store.bytecode').read_text()
+          nw=Path('/tmp/network.bytecode').read_text()
+          ti=Path('/tmp/toolitem.bytecode').read_text()
+          assert 'acceptsKey' in st, 'packaged store does not invoke acceptance predicate'
+          assert 'DataComponents.TOOL' in st or 'TOOL' in st, 'packaged tool detector missing'
+          assert 'DataComponents.EQUIPPABLE' in st or 'EQUIPPABLE' in st, 'packaged armor detector missing'
+          assert 'isToolCell' in nw, 'packaged network lacks Tool-first routing'
+          assert 'CellKind.TOOL' in ti or 'TOOL' in ti, 'packaged ToolCellItem lacks TOOL kind'
+          print('B376 PACKAGED BYTECODE ROUTING CONTRACT PASS')
+          PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B375
+      - name: Upload B376
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B375
+          name: xSxLabs-Network-Storage-v1.0.7-B376
           path: dist/*.jar
           if-no-files-found: error
