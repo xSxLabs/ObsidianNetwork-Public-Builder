@@ -1,4 +1,4 @@
-name: v1.0.7 B358 Tool Cell Safety
+name: v1.0.7 B359 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -56,7 +56,45 @@ jobs:
           for p in private/fixes/apply-fix-18-facade-render-state.py private/fixes/apply-fix-19-facade-lighting.py private/fixes/apply-fix-20-facade-vertical-lighting.py private/fixes/apply-fix-21-energy-cell-capacities.py private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py private/fixes/apply-fix-22-terminal-english-labels.py private/v1.0.4/apply-wireless-charger-visual.py private/v1.0.4/apply-function-01-terminal-energy-storage.py private/v1.0.4/apply-function-02-terminal-active-consumption.py private/v1.0.4/apply-function-03-wireless-charger.py private/v1.0.4/apply-function-06-direct-block-adjacency.py private/v1.0.4/apply-function-07-pickaxe-mining.py private/v1.0.4/apply-function-08-filter54-scroll.py private/v1.0.4/apply-fix-storage-cell-upgrade-content.py private/v1.0.4/apply-function-09-storage-density.py private/v1.0.4/apply-fix-storage-drive-16slot-visual-clamp.py; do python3 "$p"; done
           python3 private/v1.0.5/apply-function-01-system-migrator.py
           python3 private/v1.0.6/apply-v106-features.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          roots=[Path('work/src/main/java'),Path('work/src/main/resources')]
+          out={}
+          for root in roots:
+              for p in root.rglob('*'):
+                  if p.is_file(): out[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+          Path('/tmp/b281-v106-manifest.json').write_text(json.dumps(out,sort_keys=True))
+          print('B281/V106 REGRESSION SNAPSHOT PASS')
+          PY
           python3 private/v1.0.7/apply-tool-cells.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          before=json.loads(Path('/tmp/b281-v106-manifest.json').read_text())
+          roots=[Path('work/src/main/java'),Path('work/src/main/resources')]
+          after={}
+          for root in roots:
+              for p in root.rglob('*'):
+                  if p.is_file(): after[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+          changed={p for p in set(before)|set(after) if before.get(p)!=after.get(p)}
+          allowed={
+            'work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java',
+            'work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java',
+            'work/src/main/java/dev/obsidiannetwork/item/ToolCellItem.java',
+            'work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java',
+            'work/src/main/resources/assets/obsidiannetwork/lang/en_us.json',
+          }
+          for size in ('4k','16k','64k'):
+              allowed.add(f'work/src/main/resources/assets/obsidiannetwork/models/item/tool_cell_{size}.json')
+              allowed.add(f'work/src/main/resources/assets/obsidiannetwork/items/tool_cell_{size}.json')
+              allowed.add(f'work/src/main/resources/data/obsidiannetwork/recipe/tool_cell_{size}.json')
+          unexpected=changed-allowed
+          missing={'work/src/main/java/dev/obsidiannetwork/item/ToolCellItem.java','work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java'}-changed
+          assert not unexpected, 'v1.0.7 touched files outside explicit Tool Cell allowlist'
+          assert not missing, 'required Tool Cell changes missing'
+          print('B281/V106 ALLOWLIST REGRESSION PASS')
+          PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
           for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
@@ -134,15 +172,16 @@ jobs:
           assert 'writeStore(' not in tool_src
           assert 'readStore(' not in tool_src
           assert 'cellKind()' in tool_src and 'CellKind.TOOL' in tool_src
+          assert 'showTypeLimitInTooltip() { return false; }' in tool_src
           print('FINAL DRIVE CELL IMMUTABILITY GUARD PASS')
           print('FINAL TOOL CELL PERSISTENCE CONTRACT PASS')
           print('FINAL CELL TOOLTIP 128 PASS')
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B358
+      - name: Upload B359
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B358
+          name: xSxLabs-Network-Storage-v1.0.7-B359
           path: dist/*.jar
           if-no-files-found: error
