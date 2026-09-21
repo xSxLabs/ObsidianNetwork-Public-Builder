@@ -1,4 +1,4 @@
-name: v1.0.7 B343 Tool Cell Safety
+name: v1.0.7 B344 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -69,7 +69,7 @@ jobs:
                   if i>=0:
                       # Signatures + compact structural tokens only; do not dump source.
                       w=src[max(0,i-180):i+2200]
-                      print(name, "EMPTY=",w.count("ItemStack.EMPTY"), "SET=",w.count("stacks.set("), "READ=",w.count("readStore("), "WRITE=",w.count("writeStore("), "STATE=",w.count("CellItemState"), "CONTENTS=",w.count("CellContents"))
+                      print(name, "EMPTY=",w.count("ItemStack.EMPTY"), "SET=",w.count("stacks.set("), "READ=",w.count("readStore("), "WRITE=",w.count("writeStore("), "STATE=",w.count("CellItemState"), "CONTENTS=",w.count("CellContents"), "NULL=",w.count("== null"), "COPY=",w.count(".copy()"), "SAMEITEM=",w.count("isSameItem"), "CATCH=",w.count("catch ("))
           PY
           python3 private/v1.0.7/apply-tool-cell-safety.py
           python3 private/v1.0.7/apply-jei-alternatives.py
@@ -157,9 +157,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B343
+      - name: Upload B344
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B343
+          name: xSxLabs-Network-Storage-v1.0.7-B344
           path: dist/*.jar
           if-no-files-found: error
