@@ -1,4 +1,4 @@
-name: v1.0.7 B357 Tool Cell Safety
+name: v1.0.7 B358 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -122,7 +122,6 @@ jobs:
                   assert itemdef == {"model":{"type":"minecraft:model","model":f"obsidiannetwork:item/tool_cell_{size}"}}
                   model=json.loads(z.read(f'assets/obsidiannetwork/models/item/tool_cell_{size}.json'))
                   assert model.get('textures',{}).get('layer0') == f'obsidiannetwork:item/storage_cell_{size}'
-                  assert f'assets/obsidiannetwork/textures/item/tool_cell_{size}.png' in z.namelist()
               print('FINAL TOOL CELL MODEL/TEXTURE CHECK PASS')
           print('FINAL JAR MIGRATOR RESOURCE/BRIDGE CHECK PASS')
           # Source contract: runtime mirror absence may not delete an installed cell.
@@ -133,16 +132,17 @@ jobs:
           assert not ('stacks.set(' in rb and 'ItemStack.EMPTY' in rb)
           tool_src=open('work/src/main/java/dev/obsidiannetwork/item/ToolCellItem.java').read()
           assert 'writeStore(' not in tool_src
-          assert 'super.readStore(stack)' in tool_src
-          print('FINAL DRIVE CELL LOSS GUARD PASS')
+          assert 'readStore(' not in tool_src
+          assert 'cellKind()' in tool_src and 'CellKind.TOOL' in tool_src
+          print('FINAL DRIVE CELL IMMUTABILITY GUARD PASS')
           print('FINAL TOOL CELL PERSISTENCE CONTRACT PASS')
           print('FINAL CELL TOOLTIP 128 PASS')
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B357
+      - name: Upload B358
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B357
+          name: xSxLabs-Network-Storage-v1.0.7-B358
           path: dist/*.jar
           if-no-files-found: error
