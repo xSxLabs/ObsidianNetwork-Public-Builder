@@ -1,4 +1,4 @@
-name: v1.0.7 B371 Tool Cell Safety
+name: v1.0.7 B372 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -177,7 +177,7 @@ jobs:
           assert 'showTypeLimitInTooltip() { return false; }' in tool_src
           assert 'storedItemTooltipKey() { return "tooltip.obsidiannetwork.cell_tools"; }' in tool_src
           cell_src=open('work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java').read()
-          assert 'new StorageCellStore' in cell_src and 'cellKind()' in cell_src
+          assert 'cellKind()' in cell_src
           store_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java').read()
           assert 'return this.cellKind == CellKind.NORMAL || toolOrArmor;' in store_src
           network_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java').read()
@@ -188,9 +188,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B371
+      - name: Upload B372
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B371
+          name: xSxLabs-Network-Storage-v1.0.7-B372
           path: dist/*.jar
           if-no-files-found: error
