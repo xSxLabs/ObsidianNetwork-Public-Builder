@@ -1,4 +1,4 @@
-name: v1.0.7 B352 Tool Cell Safety
+name: v1.0.7 B353 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -71,7 +71,7 @@ jobs:
                       w=src[max(0,i-180):i+2200]
                       print(name, "EMPTY=",w.count("ItemStack.EMPTY"), "SET=",w.count("stacks.set("), "READ=",w.count("readStore("), "WRITE=",w.count("writeStore("), "STATE=",w.count("CellItemState"), "CONTENTS=",w.count("CellContents"), "NULL=",w.count("== null"), "COPY=",w.count(".copy()"), "SAMEITEM=",w.count("isSameItem"), "CATCH=",w.count("catch ("))
                       if name=="materializeSlot":
-                          print("MAT_ARGS", "STACKVAR=", ("writeStore(" in w), "GETSLOT=", "get(slot)" in w, "STACKSGET=", "stacks.get" in w, "RUNTIME=", "runtime" in w, "CELLITEM=", "cellItem" in w, "WRITER_DOT=", bool(re.search(r"\\w+\\.writeStore",w)), "WRITER_CAST=", "StorageCellItem" in w, "COMMA_AFTER_GET=", bool(re.search(r"stacks\\.get\\([^)]*\\)\\s*,",w)))\n                          p=w.find("writeStore("); pre=w[max(0,p-120):p] if p>=0 else ""; print("MAT_RECV_FACTS", "DOTPOS=", pre.rfind("."), "CASTPOS=", pre.rfind("StorageCellItem"), "INSTANCEOF=", "instanceof StorageCellItem" in pre, "PAREN=", pre.count("("), pre.count(")"))
+                          print("MAT_ARGS", "STACKVAR=", ("writeStore(" in w), "GETSLOT=", "get(slot)" in w, "STACKSGET=", "stacks.get" in w, "RUNTIME=", "runtime" in w, "CELLITEM=", "cellItem" in w, "WRITER_DOT=", bool(re.search(r"\\w+\\.writeStore",w)), "WRITER_CAST=", "StorageCellItem" in w, "COMMA_AFTER_GET=", bool(re.search(r"stacks\\.get\\([^)]*\\)\\s*,",w)))\n                          p=w.find("writeStore(")\n                          pre=w[max(0,p-120):p] if p>=0 else ""\n                          print("MAT_RECV_FACTS", "DOTPOS=", pre.rfind("."), "CASTPOS=", pre.rfind("StorageCellItem"), "INSTANCEOF=", "instanceof StorageCellItem" in pre, "PAREN=", pre.count("("), pre.count(")"))
           PY
           python3 private/v1.0.7/apply-tool-cell-safety.py
           python3 private/v1.0.7/apply-jei-alternatives.py
@@ -159,9 +159,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B352
+      - name: Upload B353
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B352
+          name: xSxLabs-Network-Storage-v1.0.7-B353
           path: dist/*.jar
           if-no-files-found: error
