@@ -1,4 +1,4 @@
-name: v1.0.7 B355 Tool Cell Safety
+name: v1.0.7 B356 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -57,28 +57,6 @@ jobs:
           python3 private/v1.0.5/apply-function-01-system-migrator.py
           python3 private/v1.0.6/apply-v106-features.py
           python3 private/v1.0.7/apply-tool-cells.py
-          python3 - <<'PY'
-          from pathlib import Path
-          import os,re
-          root=Path(os.environ["V1_SOURCE_ROOT"])
-          for rel in ["dev/obsidiannetwork/item/StorageCellItem.java","dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java"]:
-              src=(root/rel).read_text()
-              print("PRIVATE_DIAG", rel)
-              for name in ["readStore","writeStore","rebuildRuntimeFromInventory","materializeSlot"]:
-                  i=src.find(name)
-                  if i>=0:
-                      # Signatures + compact structural tokens only; do not dump source.
-                      w=src[max(0,i-180):i+2200]
-                      print(name, "EMPTY=",w.count("ItemStack.EMPTY"), "SET=",w.count("stacks.set("), "READ=",w.count("readStore("), "WRITE=",w.count("writeStore("), "STATE=",w.count("CellItemState"), "CONTENTS=",w.count("CellContents"), "NULL=",w.count("== null"), "COPY=",w.count(".copy()"), "SAMEITEM=",w.count("isSameItem"), "CATCH=",w.count("catch ("))
-                      if name=="materializeSlot":
-                          print("MAT_ARGS", "STACKVAR=", ("writeStore(" in w), "GETSLOT=", "get(slot)" in w, "STACKSGET=", "stacks.get" in w, "RUNTIME=", "runtime" in w, "CELLITEM=", "cellItem" in w, "WRITER_DOT=", bool(re.search(r"\\w+\\.writeStore",w)), "WRITER_CAST=", "StorageCellItem" in w, "COMMA_AFTER_GET=", bool(re.search(r"stacks\\.get\\([^)]*\\)\\s*,",w)))
-                          p=w.find("writeStore(")
-                          pre=w[max(0,p-120):p] if p>=0 else ""
-                          print("MAT_RECV_FACTS", "DOTPOS=", pre.rfind("."), "CASTPOS=", pre.rfind("StorageCellItem"), "INSTANCEOF=", "instanceof StorageCellItem" in pre, "PAREN=", pre.count("("), pre.count(")"))
-          PY
-          python3 private/v1.0.7/apply-tool-cell-safety.py
-          python3 private/v1.0.7/apply-jei-alternatives.py
-          # Keep generated diagnostics private and make them retrievable independently of Actions logs.
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
           for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
@@ -162,9 +140,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B355
+      - name: Upload B356
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B355
+          name: xSxLabs-Network-Storage-v1.0.7-B356
           path: dist/*.jar
           if-no-files-found: error
