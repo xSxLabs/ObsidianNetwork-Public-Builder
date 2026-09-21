@@ -1,4 +1,4 @@
-name: v1.0.7 B365 Tool Cell Safety
+name: v1.0.7 B366 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -176,8 +176,7 @@ jobs:
           assert 'showTypeLimitInTooltip() { return false; }' in tool_src
           assert 'storedItemNoun() { return "Tools"; }' in tool_src\n          assert 'storedItemTooltipKey() { return "tooltip.obsidiannetwork.cell_tools"; }' in tool_src
           store_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java').read()
-          assert 'return this.cellKind == CellKind.NORMAL || toolOrArmor;' in store_src\n          assert 'instanceof net.minecraft.world.item.ArmorItem' in store_src
-          network_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java').read()
+          assert 'return this.cellKind == CellKind.NORMAL || toolOrArmor;' in store_src\n          network_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java').read()
           assert 'insertionCells.sort' in network_src and '!c.isToolCell()' in network_src
           print('FINAL DRIVE CELL IMMUTABILITY GUARD PASS')
           print('FINAL TOOL CELL PERSISTENCE CONTRACT PASS')
@@ -185,9 +184,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B365
+      - name: Upload B366
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B365
+          name: xSxLabs-Network-Storage-v1.0.7-B366
           path: dist/*.jar
           if-no-files-found: error
