@@ -1,4 +1,4 @@
-name: v1.0.7 B367 Tool Cell Safety
+name: v1.0.7 B368 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -177,7 +177,8 @@ jobs:
           assert 'storedItemNoun() { return "Tools"; }' in tool_src
           assert 'storedItemTooltipKey() { return "tooltip.obsidiannetwork.cell_tools"; }' in tool_src
           store_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java').read()
-          assert 'return this.cellKind == CellKind.NORMAL || toolOrArmor;' in store_src\n          network_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java').read()
+          assert 'return this.cellKind == CellKind.NORMAL || toolOrArmor;' in store_src
+          network_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java').read()
           assert 'insertionCells.sort' in network_src and '!c.isToolCell()' in network_src
           print('FINAL DRIVE CELL IMMUTABILITY GUARD PASS')
           print('FINAL TOOL CELL PERSISTENCE CONTRACT PASS')
@@ -185,9 +186,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B367
+      - name: Upload B368
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B367
+          name: xSxLabs-Network-Storage-v1.0.7-B368
           path: dist/*.jar
           if-no-files-found: error
