@@ -1,4 +1,4 @@
-name: v1.0.7 B368 Tool Cell Safety
+name: v1.0.7 B369 Tool Cell Safety
 on:
   workflow_dispatch:
   push:
@@ -154,6 +154,7 @@ jobs:
               assert lang['block.obsidiannetwork.system_migrator']=='System Migrator'
               assert lang['itemGroup.obsidiannetwork']=='xSxLabs Network Storage'
               assert lang['tooltip.obsidiannetwork.cell_types']=='%s of 128 types occupied'
+              assert lang['tooltip.obsidiannetwork.cell_tools']=='Tools: %s / %s'
               assert 'dev/obsidiannetwork/compat/refinedstorage/SystemMigratorRsBridge.class' in z.namelist()
               assert 'data/obsidiannetwork/recipe/system_migrator.json' in z.namelist()
               for size in ('4k','16k','64k'):
@@ -174,8 +175,10 @@ jobs:
           assert 'readStore(' not in tool_src
           assert 'cellKind()' in tool_src and 'CellKind.TOOL' in tool_src
           assert 'showTypeLimitInTooltip() { return false; }' in tool_src
-          assert 'storedItemNoun() { return "Tools"; }' in tool_src
           assert 'storedItemTooltipKey() { return "tooltip.obsidiannetwork.cell_tools"; }' in tool_src
+          cell_src=open('work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java').read()
+          rs=cell_src[cell_src.find('readStore('):][:5000]
+          assert 'new StorageCellStore' in rs and 'cellKind()' in rs
           store_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java').read()
           assert 'return this.cellKind == CellKind.NORMAL || toolOrArmor;' in store_src
           network_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java').read()
@@ -186,9 +189,9 @@ jobs:
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B368
+      - name: Upload B369
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B368
+          name: xSxLabs-Network-Storage-v1.0.7-B369
           path: dist/*.jar
           if-no-files-found: error
