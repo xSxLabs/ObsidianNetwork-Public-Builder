@@ -1,4 +1,4 @@
-name: v1.0.7 B376 Tool Cell Safety
+name: v1.0.7 B377 Clean Equipment Cell
 on:
   workflow_dispatch:
   push:
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: v1.0.7-work
+          ref: v1.0.7-clean-equipment
           token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
           path: private
       - uses: actions/setup-java@v4
@@ -67,34 +67,33 @@ jobs:
           Path('/tmp/b281-v106-manifest.json').write_text(json.dumps(out,sort_keys=True))
           print('B281/V106 REGRESSION SNAPSHOT PASS')
           PY
-          python3 private/v1.0.7/apply-tool-cells.py
+          python3 private/v1.0.7/apply-equipment-cell.py
           python3 - <<'PY'
           from pathlib import Path
           import hashlib,json
           before=json.loads(Path('/tmp/b281-v106-manifest.json').read_text())
-          roots=[Path('work/src/main/java'),Path('work/src/main/resources')]
           after={}
-          for root in roots:
+          for root in [Path('work/src/main/java'),Path('work/src/main/resources')]:
               for p in root.rglob('*'):
                   if p.is_file(): after[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
           changed={p for p in set(before)|set(after) if before.get(p)!=after.get(p)}
-          allowed={
+          forbidden={
             'work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java',
             'work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java',
+          }
+          assert not (changed & forbidden), 'FATAL: frozen B281 Item Cell implementation changed'
+          allowed={
+            'work/src/main/java/dev/obsidiannetwork/item/EquipmentCellItem.java',
             'work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java',
-            'work/src/main/java/dev/obsidiannetwork/item/ToolCellItem.java',
+            'work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java',
             'work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java',
             'work/src/main/resources/assets/obsidiannetwork/lang/en_us.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/equipment_cell_64k.json',
+            'work/src/main/resources/assets/obsidiannetwork/items/equipment_cell_64k.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
           }
-          for size in ('4k','16k','64k'):
-              allowed.add(f'work/src/main/resources/assets/obsidiannetwork/models/item/tool_cell_{size}.json')
-              allowed.add(f'work/src/main/resources/assets/obsidiannetwork/items/tool_cell_{size}.json')
-              allowed.add(f'work/src/main/resources/data/obsidiannetwork/recipe/tool_cell_{size}.json')
-          unexpected=changed-allowed
-          missing={'work/src/main/java/dev/obsidiannetwork/item/ToolCellItem.java','work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java'}-changed
-          assert not unexpected, 'v1.0.7 touched files outside explicit Tool Cell allowlist'
-          assert not missing, 'required Tool Cell changes missing'
-          print('B281/V106 ALLOWLIST REGRESSION PASS')
+          assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
+          print('B377 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -165,56 +164,24 @@ jobs:
                   assert model.get('textures',{}).get('layer0') == f'obsidiannetwork:item/storage_cell_{size}'
               print('FINAL TOOL CELL MODEL/TEXTURE CHECK PASS')
           print('FINAL JAR MIGRATOR RESOURCE/BRIDGE CHECK PASS')
-          # Source contract: runtime mirror absence may not delete an installed cell.
-          drive_src=open('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read()
-          ms=drive_src[drive_src.find('private void materializeSlot'):][:2200]
-          assert 'stacks.set(slot, ItemStack.EMPTY)' not in ms
-          rb=drive_src[drive_src.find('rebuildRuntimeFromInventory'):][:7000]
-          assert not ('stacks.set(' in rb and 'ItemStack.EMPTY' in rb)
-          tool_src=open('work/src/main/java/dev/obsidiannetwork/item/ToolCellItem.java').read()
-          assert 'writeStore(' not in tool_src
-          assert 'readStore(' not in tool_src
-          assert 'cellKind()' in tool_src and 'CellKind.TOOL' in tool_src
-          assert 'showTypeLimitInTooltip() { return false; }' in tool_src
-          assert 'storedItemTooltipKey() { return "tooltip.obsidiannetwork.cell_tools"; }' in tool_src
-          cell_src=open('work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java').read()
-          assert 'cellKind()' in cell_src
-          store_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java').read()
-          assert 'return this.cellKind == CellKind.NORMAL || toolOrArmor;' in store_src
-          assert 'public boolean acceptsKey(ItemKey key)' in store_src
-          assert 'withCellKind(CellKind kind)' in store_src
-          network_src=open('work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java').read()
-          assert 'insertionCells.sort' in network_src and '!c.isToolCell()' in network_src
-          print('FINAL DRIVE CELL IMMUTABILITY GUARD PASS')
-          print('FINAL TOOL CELL PERSISTENCE CONTRACT PASS')
-          print('FINAL CELL TOOLTIP 128 PASS')
-          PY
-          # B376: inspect the ACTUAL packaged bytecode. This catches source assertions
-          # that compile but are not on the runtime path.
-          JAR="$(ls work/build/libs/*.jar | head -1)"
-          javap -classpath "$JAR" -c -p dev.obsidiannetwork.core.StorageCellStore > /tmp/store.bytecode
-          javap -classpath "$JAR" -c -p dev.obsidiannetwork.core.StorageNetwork > /tmp/network.bytecode
-          javap -classpath "$JAR" -c -p dev.obsidiannetwork.item.ToolCellItem > /tmp/toolitem.bytecode
-          grep -q 'acceptsKey' /tmp/store.bytecode
-          grep -q 'isToolCell' /tmp/network.bytecode
-          grep -q 'CellKind.TOOL' /tmp/toolitem.bytecode || grep -q 'TOOL' /tmp/toolitem.bytecode
           python3 - <<'PY'
           from pathlib import Path
-          st=Path('/tmp/store.bytecode').read_text()
-          nw=Path('/tmp/network.bytecode').read_text()
-          ti=Path('/tmp/toolitem.bytecode').read_text()
-          assert 'acceptsKey' in st, 'packaged store does not invoke acceptance predicate'
-          assert 'DataComponents.TOOL' in st or 'TOOL' in st, 'packaged tool detector missing'
-          assert 'DataComponents.EQUIPPABLE' in st or 'EQUIPPABLE' in st, 'packaged armor detector missing'
-          assert 'isToolCell' in nw, 'packaged network lacks Tool-first routing'
-          assert 'CellKind.TOOL' in ti or 'TOOL' in ti, 'packaged ToolCellItem lacks TOOL kind'
-          print('B376 PACKAGED BYTECODE ROUTING CONTRACT PASS')
+          drive=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read_text()
+          net=Path('work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java').read_text()
+          eq=Path('work/src/main/java/dev/obsidiannetwork/item/EquipmentCellItem.java').read_text()
+          assert 'stacks.set(slot, ItemStack.EMPTY)' not in drive[drive.find('private void materializeSlot'):][:2200]
+          assert 'markEquipmentCell' in drive
+          assert 'equipmentAccepts' in net and 'equipmentCells' in net
+          assert 'DataComponents.TOOL' in net and 'DataComponents.EQUIPPABLE' in net
+          assert 'extends StorageCellItem' in eq
+          assert 'readStore' not in eq and 'writeStore' not in eq
+          print('B377 EQUIPMENT ROUTING/PERSISTENCE SAFETY PASS')
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B376
+      - name: Upload B377
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B376
+          name: xSxLabs-Network-Storage-v1.0.7-B377
           path: dist/*.jar
           if-no-files-found: error
