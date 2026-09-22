@@ -86,6 +86,8 @@ jobs:
             'work/src/main/java/dev/obsidiannetwork/item/EquipmentCellItem.java',
             'work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java',
             'work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EquipmentEligibility.java',
+            'work/src/main/java/dev/obsidiannetwork/platform/MinecraftItemStackCodec.java',
             'work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java',
             'work/src/main/resources/assets/obsidiannetwork/lang/en_us.json',
             'work/src/main/resources/assets/obsidiannetwork/models/item/equipment_cell_64k.json',
