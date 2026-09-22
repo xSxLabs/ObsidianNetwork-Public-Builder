@@ -1,4 +1,4 @@
-name: v1.0.7 B392 Clean Equipment Cell
+name: v1.0.7 B393 Clean Equipment Cell
 on:
   workflow_dispatch:
   push:
@@ -93,7 +93,7 @@ jobs:
             'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
           }
           assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
-          print('B392 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          print('B393 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -175,13 +175,13 @@ jobs:
           assert 'DataComponents.TOOL' in net and 'DataComponents.EQUIPPABLE' in net
           assert 'extends StorageCellItem' in eq
           assert 'super.readStore(stack)' in eq and 'writeStore' not in eq
-          print('B392 EQUIPMENT ROUTING/PERSISTENCE SAFETY PASS')
+          print('B393 EQUIPMENT ROUTING/PERSISTENCE SAFETY PASS')
           PY
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B392
+      - name: Upload B393
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B392
+          name: xSxLabs-Network-Storage-v1.0.7-B393
           path: dist/*.jar
           if-no-files-found: error
