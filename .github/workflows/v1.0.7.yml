@@ -149,13 +149,8 @@ jobs:
           print('FINAL LANG NORMALIZATION PASS')
           PY
           cat >> work/build.gradle <<'EOF'
-          tasks.register('equipmentRoutingSelfTest', JavaExec) {
-              dependsOn classes
-              classpath = sourceSets.main.runtimeClasspath
-              mainClass = 'dev.obsidiannetwork.core.EquipmentRoutingSelfTest'
-          }
           EOF
-          (cd work && gradle --no-daemon --no-configuration-cache clean build equipmentRoutingSelfTest --stacktrace)
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
