@@ -1,4 +1,4 @@
-name: v1.0.7 B415 Clean Equipment Cell
+name: v1.0.7 B416 Clean Equipment Cell
 on:
   workflow_dispatch:
   push:
@@ -87,6 +87,7 @@ jobs:
             'work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java',
             'work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java',
             'work/src/main/java/dev/obsidiannetwork/core/EquipmentEligibility.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EquipmentRoutingSelfTest.java',
             'work/src/main/java/dev/obsidiannetwork/platform/MinecraftItemStackCodec.java',
             'work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java',
             'work/src/main/resources/assets/obsidiannetwork/lang/en_us.json',
@@ -95,7 +96,7 @@ jobs:
             'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
           }
           assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
-          print('B415 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          print('B416 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -147,13 +148,20 @@ jobs:
           json.loads(p.read_text())
           print('FINAL LANG NORMALIZATION PASS')
           PY
-          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+          cat >> work/build.gradle <<'EOF'
+tasks.register('equipmentRoutingSelfTest', JavaExec) {
+    dependsOn classes
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'dev.obsidiannetwork.core.EquipmentRoutingSelfTest'
+}
+EOF
+          (cd work && gradle --no-daemon --no-configuration-cache clean build equipmentRoutingSelfTest --stacktrace)
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B415
+      - name: Upload B416
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B415
+          name: xSxLabs-Network-Storage-v1.0.7-B416
           path: dist/*.jar
           if-no-files-found: error
