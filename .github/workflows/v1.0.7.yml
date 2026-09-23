@@ -1,4 +1,4 @@
-name: v1.0.7 B461 Clean Equipment Cell
+name: v1.0.7 B462 Clean Equipment Cell
 on:
   workflow_dispatch:
   push:
@@ -100,7 +100,7 @@ jobs:
             'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
           }
           assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
-          print('B461 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          print('B462 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
           # Verify generated Java before Gradle.
           import re
           js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
@@ -109,7 +109,7 @@ jobs:
           assert m, 'equipment creative output missing'
           before=js[:m.start()]
           assert before.count('{') > before.count('}'), 'equipment creative output outside scope'
-          print('B461 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
+          print('B462 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -156,7 +156,6 @@ jobs:
           data['itemGroup.obsidiannetwork']='xSxLabs Network Storage'
           data['tooltip.obsidiannetwork.system_migrator']='Migrates items from Refined Storage to xSxLabs Network Storage'
           data['tooltip.obsidiannetwork.cell_types']='%s of 128 types occupied'
-          data['tooltip.obsidiannetwork.cell_tools']='Tools/Armor: %s / %s'
           p.write_text(json.dumps(data,indent=2,ensure_ascii=False)+chr(10))
           json.loads(p.read_text())
           print('FINAL LANG NORMALIZATION PASS')
@@ -167,9 +166,9 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B461
+      - name: Upload B462
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B461
+          name: xSxLabs-Network-Storage-v1.0.7-B462
           path: dist/*.jar
           if-no-files-found: error
