@@ -1,4 +1,4 @@
-name: v1.0.7 B453 Clean Equipment Cell
+name: v1.0.7 B454 Clean Equipment Cell
 on:
   workflow_dispatch:
   push:
@@ -100,7 +100,7 @@ jobs:
             'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
           }
           assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
-          print('B453 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          print('B454 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -158,9 +158,9 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B453
+      - name: Upload B454
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B453
+          name: xSxLabs-Network-Storage-v1.0.7-B454
           path: dist/*.jar
           if-no-files-found: error
