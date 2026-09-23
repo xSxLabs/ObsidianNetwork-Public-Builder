@@ -1,4 +1,4 @@
-name: v1.0.7 B446 Clean Equipment Cell
+name: v1.0.7 B447 Clean Equipment Cell
 on:
   workflow_dispatch:
   push:
@@ -77,14 +77,12 @@ jobs:
               for p in root.rglob('*'):
                   if p.is_file(): after[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
           changed={p for p in set(before)|set(after) if before.get(p)!=after.get(p)}
-          # Compile-stage guard: legacy item class must remain byte-identical; StorageCellStore is currently touched only by the common endpoint integration and will be refactored back out before release.
-          assert 'work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java' not in changed, 'FATAL: frozen StorageCellItem changed'
+          # Release guard: both legacy Item Cell implementation files must remain byte-identical.
+          frozen={'work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java','work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java'}
+          assert not (changed & frozen), 'FATAL: frozen B281 Item Cell implementation changed'
           allowed={
             'work/src/main/java/dev/obsidiannetwork/item/EquipmentCellItem.java',
-            'work/src/main/java/dev/obsidiannetwork/core/CellStore.java',
             'work/src/main/java/dev/obsidiannetwork/core/EquipmentCellStore.java',
-            'work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java',
-            'work/src/main/java/dev/obsidiannetwork/core/StorageDriveRuntime.java',
             'work/src/main/java/dev/obsidiannetwork/core/NetworkRuntime.java',
             'work/src/main/java/dev/obsidiannetwork/registry/ModDataComponents.java',
             'work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java',
@@ -101,7 +99,7 @@ jobs:
             'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
           }
           assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
-          print('B446 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          print('B447 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -159,9 +157,9 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B446
+      - name: Upload B447
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B446
+          name: xSxLabs-Network-Storage-v1.0.7-B447
           path: dist/*.jar
           if-no-files-found: error
