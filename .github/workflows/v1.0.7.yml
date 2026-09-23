@@ -1,4 +1,4 @@
-name: v1.0.7 B472 Clean Equipment Cell
+name: v1.0.7 B473 Clean Equipment Cell
 'on':
   workflow_dispatch:
   push:
@@ -101,7 +101,7 @@ jobs:
             'work/src/main/resources/data/obsidiannetwork/recipe/battery.json',
           }
           assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
-          print('B472 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          print('B473 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
           # Verify generated Java before Gradle.
           import re
           js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
@@ -110,23 +110,23 @@ jobs:
           assert m, 'equipment creative output missing'
           before=js[:m.start()]
           assert before.count('{') > before.count('}'), 'equipment creative output outside scope'
-          print('B472 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
+          print('B473 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
           drive=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read_text()
           assert 'resource.toStack().getItem() instanceof EquipmentCellItem' in drive, 'drive slot does not accept equipment cell'
           assert 'candidate.getItem() instanceof EquipmentCellItem equipmentItem' in drive, 'drive validator equipment decode path missing'
-          print('B472 DRIVE EQUIPMENT SLOT ACCEPTANCE PASS')
+          print('B473 DRIVE EQUIPMENT SLOT ACCEPTANCE PASS')
           loot=Path('work/src/main/resources/data/obsidiannetwork/loot_table/blocks/system_migrator.json')
           assert loot.exists(), 'system migrator loot table missing'
           ld=json.loads(loot.read_text())
           assert 'obsidiannetwork:system_migrator' in loot.read_text(), 'system migrator self-drop missing'
-          print('B472 SYSTEM MIGRATOR SELF-DROP PASS')
+          print('B473 SYSTEM MIGRATOR SELF-DROP PASS')
           js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
           assert 'BATTERY = ITEMS.registerSimpleItem("battery"' in js
           assert re.search(r'output\\.accept\\([^\\n;]*BATTERY[^\\n;]*\\);',js)
           br=Path('work/src/main/resources/data/obsidiannetwork/recipe/battery.json')
           assert br.exists() and json.loads(br.read_text())['result']['id']=='obsidiannetwork:battery'
           assert json.loads(Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json').read_text())['item.obsidiannetwork.battery']=='Battery'
-          print('B472 BATTERY ITEM + RECIPE PASS')
+          print('B473 BATTERY ITEM + RECIPE PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -183,9 +183,9 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B472
+      - name: Upload B473
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B472
+          name: xSxLabs-Network-Storage-v1.0.7-B473
           path: dist/*.jar
           if-no-files-found: error
