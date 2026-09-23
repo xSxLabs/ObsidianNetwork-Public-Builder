@@ -1,4 +1,4 @@
-name: v1.0.7 B458 Clean Equipment Cell
+name: v1.0.7 B459 Clean Equipment Cell
 on:
   workflow_dispatch:
   push:
@@ -100,21 +100,15 @@ jobs:
             'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
           }
           assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
-          print('B458 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
-          # B458: verify the generated Java places the equipment cell inside a creative-tab output block, not at class scope.
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java')
-          s=p.read_text()
-          assert 'ITEMS.registerItem("equipment_cell_64k"' in s, 'equipment item registration missing'
-          m=re.search(r'output\.accept\([^\n;]*EQUIPMENT_CELL_64K[^\n;]*\);',s)
+          print('B459 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          # Verify generated Java before Gradle.
+          js=(root/'src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
+          assert 'ITEMS.registerItem("equipment_cell_64k"' in js, 'equipment item registration missing'
+          m=re.search(r'output\.accept\([^\\n;]*EQUIPMENT_CELL_64K[^\\n;]*\);',js)
           assert m, 'equipment creative output missing'
-          before=s[:m.start()]
-          assert before.count('{') > before.count('}'), 'equipment creative output appears outside class/method scope'
-          print('B458 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
-          PY
-
+          before=js[:m.start()]
+          assert before.count('{') > before.count('}'), 'equipment creative output outside scope'
+          print('B459 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -172,9 +166,9 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B458
+      - name: Upload B459
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B458
+          name: xSxLabs-Network-Storage-v1.0.7-B459
           path: dist/*.jar
           if-no-files-found: error
