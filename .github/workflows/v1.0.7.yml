@@ -1,4 +1,4 @@
-name: v1.0.7 B479 Clean Equipment Cell
+name: v1.0.7 B480 Clean Equipment Cell
 'on':
   workflow_dispatch:
   push:
@@ -91,6 +91,8 @@ jobs:
             'work/src/main/java/dev/obsidiannetwork/core/EquipmentEligibility.java',
             'work/src/main/java/dev/obsidiannetwork/core/EquipmentRoutingSelfTest.java',
             'work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java',
+            'work/src/main/java/dev/obsidiannetwork/recipe/BatteryUpgradeSmithingRecipe.java',
+            'work/src/main/java/dev/obsidiannetwork/registry/ModRecipes.java',
             'work/src/main/java/dev/obsidiannetwork/platform/MinecraftItemStackCodec.java',
             'work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java',
             'work/src/main/resources/assets/obsidiannetwork/lang/en_us.json',
@@ -101,11 +103,12 @@ jobs:
             'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
             'work/src/main/resources/data/obsidiannetwork/recipe/battery.json',
             'work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade_smithing.json',
             'work/src/main/resources/assets/obsidiannetwork/models/item/battery_upgrade.json',
             'work/src/main/resources/assets/obsidiannetwork/items/battery_upgrade.json',
           }
           assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
-          print('B479 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          print('B480 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
           # Verify generated Java before Gradle.
           import re
           js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
@@ -114,32 +117,37 @@ jobs:
           assert m, 'equipment creative output missing'
           before=js[:m.start()]
           assert before.count('{') > before.count('}'), 'equipment creative output outside scope'
-          print('B479 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
+          print('B480 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
           drive=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read_text()
           assert 'resource.toStack().getItem() instanceof EquipmentCellItem' in drive, 'drive slot does not accept equipment cell'
           assert 'candidate.getItem() instanceof EquipmentCellItem equipmentItem' in drive, 'drive validator equipment decode path missing'
-          print('B479 DRIVE EQUIPMENT SLOT ACCEPTANCE PASS')
+          print('B480 DRIVE EQUIPMENT SLOT ACCEPTANCE PASS')
           loot=Path('work/src/main/resources/data/obsidiannetwork/loot_table/blocks/system_migrator.json')
           assert loot.exists(), 'system migrator loot table missing'
           ld=json.loads(loot.read_text())
           assert 'obsidiannetwork:system_migrator' in loot.read_text(), 'system migrator self-drop missing'
-          print('B479 SYSTEM MIGRATOR SELF-DROP PASS')
+          print('B480 SYSTEM MIGRATOR SELF-DROP PASS')
           js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
           assert 'BATTERY = ITEMS.registerSimpleItem("battery"' in js
           assert 'BATTERY.get()' in js and 'output.accept' in js, 'battery creative exposure missing'
           br=Path('work/src/main/resources/data/obsidiannetwork/recipe/battery.json')
           assert br.exists() and json.loads(br.read_text())['result']['id']=='obsidiannetwork:battery'
           assert json.loads(Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json').read_text())['item.obsidiannetwork.battery']=='Battery'
-          print('B479 BATTERY ITEM + RECIPE PASS')
+          print('B480 BATTERY ITEM + RECIPE PASS')
           bu=Path('work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade.json')
           assert 'BATTERY_UPGRADE = ITEMS.registerSimpleItem("battery_upgrade"' in js
           assert bu.exists() and json.loads(bu.read_text())['result']['id']=='obsidiannetwork:battery_upgrade'
           assert json.loads(Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json').read_text())['item.obsidiannetwork.battery_upgrade']=='Battery Upgrade'
-          print('B479 BATTERY UPGRADE TEMPLATE ITEM + RECIPE PASS')
+          print('B480 BATTERY UPGRADE TEMPLATE ITEM + RECIPE PASS')
           et=Path('work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java').read_text()
           dc=Path('work/src/main/java/dev/obsidiannetwork/registry/ModDataComponents.java').read_text()
           assert 'ENERGY_TOOL_FE' in dc and 'CAPACITY=100000L' in et and 'isDamageableItem()' in et
-          print('B479 GENERIC ENERGY TOOL PERSISTENCE PASS')
+          print('B480 GENERIC ENERGY TOOL PERSISTENCE PASS')
+          sm=Path('work/src/main/java/dev/obsidiannetwork/recipe/BatteryUpgradeSmithingRecipe.java').read_text()
+          assert 'in.base().copy()' in sm and 'EnergyTool.eligible(in.base())' in sm and '!EnergyTool.upgraded(in.base())' in sm
+          assert 'BATTERY_UPGRADE.get()' in sm and 'BATTERY.get()' in sm
+          assert json.loads(Path('work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade_smithing.json').read_text())['type']=='obsidiannetwork:battery_upgrade_smithing'
+          print('B480 IDENTITY-PRESERVING GENERIC SMITHING PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -196,9 +204,9 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B479
+      - name: Upload B480
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B479
+          name: xSxLabs-Network-Storage-v1.0.7-B480
           path: dist/*.jar
           if-no-files-found: error
