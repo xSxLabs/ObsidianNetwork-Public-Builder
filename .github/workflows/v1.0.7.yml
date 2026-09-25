@@ -1,4 +1,4 @@
-name: v1.0.7 B512 Clean Equipment Cell
+name: v1.0.7 B513 Clean Equipment Cell
 'on':
   workflow_dispatch:
   push:
@@ -125,8 +125,10 @@ jobs:
             'work/src/main/resources/data/obsidiannetwork/loot_table/blocks/cell_manipulator.json',
             'work/src/main/resources/data/obsidiannetwork/recipe/cell_manipulator.json',
           }
-          assert not (changed-allowed), 'unexpected clean v1.0.7 file change'
-          print('B512 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          extra=changed-allowed
+          print('B513 CHANGED EXTRA',sorted(extra))
+          assert not extra, 'unexpected clean v1.0.7 file change'
+          print('B513 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
           # Verify generated Java before Gradle.
           import re
           js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
@@ -135,39 +137,39 @@ jobs:
           assert m, 'equipment creative output missing'
           before=js[:m.start()]
           assert before.count('{') > before.count('}'), 'equipment creative output outside scope'
-          print('B512 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
+          print('B513 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
           drive=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read_text()
           assert 'resource.toStack().getItem() instanceof EquipmentCellItem' in drive, 'drive slot does not accept equipment cell'
           assert 'candidate.getItem() instanceof EquipmentCellItem equipmentItem' in drive, 'drive validator equipment decode path missing'
-          print('B512 DRIVE EQUIPMENT SLOT ACCEPTANCE PASS')
+          print('B513 DRIVE EQUIPMENT SLOT ACCEPTANCE PASS')
           loot=Path('work/src/main/resources/data/obsidiannetwork/loot_table/blocks/system_migrator.json')
           assert loot.exists(), 'system migrator loot table missing'
           ld=json.loads(loot.read_text())
           assert 'obsidiannetwork:system_migrator' in loot.read_text(), 'system migrator self-drop missing'
-          print('B512 SYSTEM MIGRATOR SELF-DROP PASS')
+          print('B513 SYSTEM MIGRATOR SELF-DROP PASS')
           js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
           assert 'BATTERY = ITEMS.registerSimpleItem("battery"' in js
           assert 'BATTERY.get()' in js and 'output.accept' in js, 'battery creative exposure missing'
           br=Path('work/src/main/resources/data/obsidiannetwork/recipe/battery.json')
           assert br.exists() and json.loads(br.read_text())['result']['id']=='obsidiannetwork:battery'
           assert json.loads(Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json').read_text())['item.obsidiannetwork.battery']=='Battery'
-          print('B512 BATTERY ITEM + RECIPE PASS')
+          print('B513 BATTERY ITEM + RECIPE PASS')
           bu=Path('work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade.json')
           assert 'BATTERY_UPGRADE = ITEMS.registerSimpleItem("battery_upgrade"' in js
           assert bu.exists() and json.loads(bu.read_text())['result']['id']=='obsidiannetwork:battery_upgrade'
           assert json.loads(Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json').read_text())['item.obsidiannetwork.battery_upgrade']=='Battery Upgrade'
-          print('B512 BATTERY UPGRADE TEMPLATE ITEM + RECIPE PASS')
+          print('B513 BATTERY UPGRADE TEMPLATE ITEM + RECIPE PASS')
           et=Path('work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java').read_text()
           dc=Path('work/src/main/java/dev/obsidiannetwork/registry/ModDataComponents.java').read_text()
           assert 'ENERGY_TOOL_FE' in dc and 'CAPACITY=100000L' in et and 'isDamageableItem()' in et
-          print('B512 GENERIC ENERGY TOOL PERSISTENCE PASS')
+          print('B513 GENERIC ENERGY TOOL PERSISTENCE PASS')
           sm=Path('work/src/main/java/dev/obsidiannetwork/recipe/BatteryUpgradeSmithingRecipe.java').read_text()
           assert 'in.base().copy()' in sm and 'EnergyTool.eligible(in.base())' in sm and '!EnergyTool.upgraded(in.base())' in sm
           assert 'BATTERY_UPGRADE.get()' in sm and 'BATTERY.get()' in sm
           assert json.loads(Path('work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade_smithing.json').read_text())['type']=='obsidiannetwork:battery_upgrade_smithing'
-          print('B512 IDENTITY-PRESERVING GENERIC SMITHING PASS')
+          print('B513 IDENTITY-PRESERVING GENERIC SMITHING PASS')
           assert 'boolean consume(ItemStack s,long fe)' in et and 'barWidth(ItemStack s)' in et and 'barColor(ItemStack s)' in et
-          print('B512 ENERGY TOOL CONSUMPTION + BAR PRIMITIVES PASS')
+          print('B513 ENERGY TOOL CONSUMPTION + BAR PRIMITIVES PASS')
           PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
@@ -224,9 +226,9 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B512
+      - name: Upload B513
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B512
+          name: xSxLabs-Network-Storage-v1.0.7-B513
           path: dist/*.jar
           if-no-files-found: error
