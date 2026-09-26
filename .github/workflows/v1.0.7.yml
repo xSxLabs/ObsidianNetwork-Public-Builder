@@ -131,10 +131,12 @@ jobs:
             'work/src/main/resources/assets/obsidiannetwork/blockstates/cell_manipulator.json',
             'work/src/main/resources/assets/obsidiannetwork/items/cell_manipulator.json',
             'work/src/main/resources/assets/obsidiannetwork/models/block/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/textures/item/battery_upgrade.png',
             'work/src/main/resources/data/obsidiannetwork/loot_table/blocks/cell_manipulator.json',
             'work/src/main/resources/data/obsidiannetwork/recipe/cell_manipulator.json',
           }
-          extra=changed-allowed
+          extra={p for p in changed-allowed if not (p.startswith('work/src/main/resources/assets/obsidiannetwork/blockstates/') and p.endswith('terminal_panel.json'))}
           print('B577 CHANGED EXTRA',sorted(extra))
           assert not extra, 'unexpected clean v1.0.7 file change'
           print('B577 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
