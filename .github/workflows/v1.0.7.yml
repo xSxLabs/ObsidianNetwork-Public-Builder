@@ -1,4 +1,4 @@
-name: v1.0.7 B577 Clean Equipment Cell
+name: v1.0.8 B578 Logistics + Network Fluids
 'on':
   workflow_dispatch:
   push:
@@ -38,7 +38,7 @@ jobs:
           minecraft_version=26.1.2
           neo_version=26.1.2.106
           mod_id=obsidiannetwork
-          mod_version=1.0.7
+          mod_version=1.0.8
           mod_group_id=dev.obsidiannetwork
           EOF
           cat > work/build.gradle <<'EOF'
@@ -217,6 +217,17 @@ jobs:
           assert 'toolSlot().removeItemNoUpdate(0)' in ecblock and 'Containers.dropItemStack' in ecblock
           print('B577 ENERGY CELL TOOL CHARGE + PERSISTENCE + BREAK-DROP PASS')
           PY
+          python3 private/v1.0.8/apply-logistics-fluid.py
+          python3 - <<'PY'
+          from pathlib import Path
+          required=['LogisticsCableBlockEntity.java','NetworkTankBlockEntity.java','FluidPortBlockEntity.java']
+          for n in required: assert any(Path('work/src/main/java').rglob(n)), n
+          o=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
+          for x in ['ITEM_CABLE','FLUID_CABLE','NETWORK_TANK_64K','NETWORK_TANK_4096K','FLUID_IMPORTER','FLUID_EXPORTER']: assert x in o,x
+          c=Path('work/src/main/java/dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java').read_text()
+          assert 'Mode{OFF,IMPORT,EXPORT}' in c and 'speed_upgrade' in c and 'stack_upgrade' in c
+          print('B578 LOGISTICS + NETWORK FLUID STRUCTURE PASS')
+          PY
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
           for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
@@ -278,9 +289,9 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B577
+      - name: Upload B578
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.0.7-B577
+          name: xSxLabs-Network-Storage-v1.0.8-B578
           path: dist/*.jar
           if-no-files-found: error
