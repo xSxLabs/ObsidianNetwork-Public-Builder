@@ -217,6 +217,7 @@ jobs:
           assert 'toolSlot().removeItemNoUpdate(0)' in ecblock and 'Containers.dropItemStack' in ecblock
           print('B577 ENERGY CELL TOOL CHARGE + PERSISTENCE + BREAK-DROP PASS')
           PY
+          python3 -m pip install --user pillow
           python3 private/v1.0.8/apply-logistics-fluid.py
           python3 - <<'PY'
           from pathlib import Path
