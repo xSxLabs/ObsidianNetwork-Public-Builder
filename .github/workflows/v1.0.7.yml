@@ -296,3 +296,5 @@ jobs:
           name: xSxLabs-Network-Storage-v1.0.8-B580
           path: dist/*.jar
           if-no-files-found: error
+
+# build-trigger: B622
