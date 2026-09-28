@@ -297,4 +297,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B627
+# current-check: B627-R1
