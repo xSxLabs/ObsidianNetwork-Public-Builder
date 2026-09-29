@@ -300,4 +300,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B640-SERVER-FLUID-SNAPSHOT-LIFECYCLE
+# current-check: B640-R1-FLUIDS-SNAPSHOT-REQUEST
