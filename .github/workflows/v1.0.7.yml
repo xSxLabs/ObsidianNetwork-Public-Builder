@@ -250,6 +250,9 @@ jobs:
           print("ZERO-ITEM-LOSS CONTRACT PASS")
           PY
           python3 private/v1.0.5/diagnose-system-migrator-importer.py
+          echo '===== B633 JEI HANDLER SOURCE ====='
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/network/JeiCraftTransferHandler.java
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/compat/jei/ObsidianNetworkJeiPlugin.java
           python3 private/v1.0.5/diagnose-system-migrator-core.py
           python3 private/v1.0.5/diagnose-system-migrator-signatures.py
           python3 private/v1.0.5/diagnose-system-migrator-topology-anchors.py
