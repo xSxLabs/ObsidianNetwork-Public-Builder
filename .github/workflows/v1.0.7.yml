@@ -219,6 +219,7 @@ jobs:
           PY
           python3 -m pip install --user pillow
           python3 private/v1.0.8/apply-logistics-fluid.py
+          python3 private/v1.0.8/apply-b590-runtime-model-fix.py
           python3 - <<'PY'
           from pathlib import Path
           required=['LogisticsCableBlockEntity.java','NetworkTankBlockEntity.java','FluidPortBlockEntity.java']
@@ -297,4 +298,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B630
+# current-check: B630-R1
