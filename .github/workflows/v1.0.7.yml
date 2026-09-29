@@ -221,11 +221,6 @@ jobs:
           python3 private/v1.0.8/apply-logistics-fluid.py
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('work/src/main/java/dev/obsidiannetwork/core/TerminalScreenModel.java')
-          x=p.read_text(); i=x.index('enum ViewMode'); print(repr(x[i:i+250])); raise SystemExit(1)
-          PY
-          python3 - <<'PY'
-          from pathlib import Path
           required=['LogisticsCableBlockEntity.java','NetworkTankBlockEntity.java','FluidPortBlockEntity.java']
           for n in required: assert any(Path('work/src/main/java').rglob(n)), n
           o=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
@@ -302,4 +297,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B631-DIAG2
+# current-check: B631-R3
