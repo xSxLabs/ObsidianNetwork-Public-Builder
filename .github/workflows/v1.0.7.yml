@@ -300,4 +300,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B634
+# current-check: FINAL-REGRESSION
