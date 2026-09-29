@@ -221,7 +221,7 @@ jobs:
           python3 private/v1.0.8/apply-logistics-fluid.py
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('/tmp/obsidian-b580-decomp/dev/obsidiannetwork/core/TerminalScreenModel.java')
+          p=Path('work/src/main/java/dev/obsidiannetwork/core/TerminalScreenModel.java')
           x=p.read_text(); i=x.index('enum ViewMode'); print(repr(x[i:i+250])); raise SystemExit(1)
           PY
           python3 - <<'PY'
