@@ -300,4 +300,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B636-SHARED-NETWORK-TANK-DISCOVERY
+# current-check: B636-R1-AUTHORITATIVE-TOPOLOGY
