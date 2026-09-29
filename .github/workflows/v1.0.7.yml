@@ -300,4 +300,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B640-R3-VERIFIED-CONTAINER-TICK
+# current-check: FINAL-REGRESSION-B640
