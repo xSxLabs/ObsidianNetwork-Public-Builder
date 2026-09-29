@@ -220,6 +220,15 @@ jobs:
           python3 -m pip install --user pillow
           python3 private/v1.0.8/apply-logistics-fluid.py
           python3 - <<'PY'
+          import runpy
+          try: runpy.run_path('private/v1.0.8/apply-b590-runtime-model-fix.py',run_name='__main__')
+          except Exception:
+              from pathlib import Path
+              p=Path('/tmp/obsidian-b580-decomp/dev/obsidiannetwork/core/TerminalScreenModel.java')
+              if p.exists(): print('===== TERMINAL SCREEN MODEL =====\\n'+p.read_text())
+              raise
+          PY
+          python3 - <<'PY'
           from pathlib import Path
           required=['LogisticsCableBlockEntity.java','NetworkTankBlockEntity.java','FluidPortBlockEntity.java']
           for n in required: assert any(Path('work/src/main/java').rglob(n)), n
@@ -297,4 +306,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B631-R1
+# current-check: B631-DIAG
