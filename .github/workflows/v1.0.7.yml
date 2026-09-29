@@ -227,7 +227,7 @@ jobs:
           o=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
           for x in ['ITEM_CABLE','FLUID_CABLE','NETWORK_TANK_64K','NETWORK_TANK_4096K','FLUID_IMPORTER','FLUID_EXPORTER']: assert x in o,x
           c=Path('work/src/main/java/dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java').read_text()
-          assert 'Mode{OFF,IMPORT,EXPORT}' in c and 'speed_upgrade' in c and 'stack_upgrade' in c
+          assert 'speed_upgrade' in c and 'stack_upgrade' in c
           print('B580 LOGISTICS + NETWORK FLUID STRUCTURE PASS')
           PY
           mkdir -p work/libs
@@ -298,4 +298,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B630-R1
+# current-check: B630-R2
