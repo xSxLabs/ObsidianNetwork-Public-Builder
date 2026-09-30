@@ -300,4 +300,4 @@ jobs:
           path: dist/*.jar
           if-no-files-found: error
 
-# current-check: B650-REBUILD-INGAME-BASELINE
+# current-check: B651-FLUID-KEY-BUCKET-TANK
