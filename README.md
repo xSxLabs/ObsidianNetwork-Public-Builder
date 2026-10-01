@@ -1,3 +1,5 @@
 # ObsidianNetwork-Public-Builder
 
 RC11_BUILD_TRIGGER=B670-de9b44a5863b3a26deb6255e8e3c91c28177a3eb
+
+B670_RETRY=2c2ab134
