@@ -230,7 +230,6 @@ jobs:
           print('B580 LOGISTICS + NETWORK FLUID STRUCTURE PASS')
           PY
           python3 private/v1.0.8/apply-b590-runtime-model-fix.py
-          python3 private/v1.1.1/apply-network-teleporter.py
           mkdir -p work/libs
           curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
           for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
