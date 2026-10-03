@@ -26,3 +26,5 @@ round6-compilefix source 87aa8232ad45258f26945790c56f25db8e898b60
 round6-compilefix source 75c2fa69be90245e9440d7750d0b16d791aba88f
 
 round6-compile-lightprobe source ce9bfae4aeb08a196d1a1b7911751435cb8c03ad
+
+round6-compilefix source a31abe0f806376470d4619bd1028e32b967a408e
