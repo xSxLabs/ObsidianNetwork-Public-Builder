@@ -36,3 +36,5 @@ v1.1.1 teleporter retry source 9fa8798a330c17addc45c2fea2d3f8d0d418a8a8
 v1.1.1 retry source 9c7460976c6a2c58334e39e79a9baeba085c0146
 
 v1.1.1 teleport signature source 07d3bbf9eb92c94a7aa9900460a9384340fb7463
+
+v1.1.1 native fe source 30b7283b4bd19106f0fb827ad160ef7802e69b6d
