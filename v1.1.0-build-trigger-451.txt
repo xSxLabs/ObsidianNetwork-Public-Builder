@@ -24,3 +24,5 @@ round6-channel-lifecycle source 26e2ac8adcbd2261d13345f2419660d1938677e4
 round6-compilefix source 87aa8232ad45258f26945790c56f25db8e898b60
 
 round6-compilefix source 75c2fa69be90245e9440d7750d0b16d791aba88f
+
+round6-compile-lightprobe source ce9bfae4aeb08a196d1a1b7911751435cb8c03ad
