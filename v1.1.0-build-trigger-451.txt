@@ -28,3 +28,5 @@ round6-compilefix source 75c2fa69be90245e9440d7750d0b16d791aba88f
 round6-compile-lightprobe source ce9bfae4aeb08a196d1a1b7911751435cb8c03ad
 
 round6-compilefix source a31abe0f806376470d4619bd1028e32b967a408e
+
+round7-tesseract-item-runtime source 01e5017fbc3d90be5a4ab04c38c1d358af98e7df
