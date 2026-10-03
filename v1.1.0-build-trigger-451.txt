@@ -20,3 +20,5 @@ round5-compilefix source 6a7a0c9e64e8622e2e521da62e541698a9ae535a
 round5-markerfix source fe8d6b1b8c8da8b7f8b679fbba8294a1dd5f0711
 
 round6-channel-lifecycle source 26e2ac8adcbd2261d13345f2419660d1938677e4
+
+round6-compilefix source 87aa8232ad45258f26945790c56f25db8e898b60
