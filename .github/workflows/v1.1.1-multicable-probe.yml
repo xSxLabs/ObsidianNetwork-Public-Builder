@@ -315,9 +315,9 @@ jobs:
           check(all(x in cclient for x in ['MULTI_CABLE','CableFacadeRenderer','registerBlockEntityRenderer']),'renderer registration')
           check('replaceOnlyLayer' in item and 'setFacade(facade,rot)' in citem,'legacy cable conversion state migration')
           bs=json.loads((R/'assets/obsidiannetwork/blockstates/multi_cable.json').read_text())
-          assert bs=={'variants':{'':{'model':'obsidiannetwork:block/multi_cable_joint'}}}, bs
+          assert bs=={'variants':{'':{'model':'obsidiannetwork:block/multi_cable_empty'}}}, bs
           for p in [
-              R/'assets/obsidiannetwork/models/block/multi_cable_joint.json',
+              R/'assets/obsidiannetwork/models/block/multi_cable_empty.json',
               R/'assets/obsidiannetwork/models/item/multi_cable.json',
               R/'assets/obsidiannetwork/items/multi_cable.json',
               R/'data/obsidiannetwork/loot_table/blocks/multi_cable.json']:
@@ -393,4 +393,5 @@ jobs:
 
 
 
-# source-trigger: 64d89c97a74d58b62e8c757560089c08a3fc7c1b
+
+# source-trigger: multicable-empty-base-smoke
