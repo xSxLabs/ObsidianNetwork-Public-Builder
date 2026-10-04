@@ -294,6 +294,8 @@ jobs:
           assert 'speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,hit.getDirection())!=1' in cblock
           assert 'playerWillDestroy(' not in block and 'getDrops(' in block
           assert 'MULTI_CABLE.get(), (cable, side) -> cable.energyHandler(side)' in caps
+          assert 'onCableConnectionsChanged(server,worldPosition)' in cb
+          assert 'if(l==Layer.NETWORK)networkChanged()' in cb
           assert 'ObsidianNetwork.MULTI_CABLE.get()' in topo and 'Layer.NETWORK' in topo
           assert 'MULTI_CABLE.get(), dev.obsidiannetwork.client.render.CableFacadeRenderer::new' in client
           assert 'replaceOnlyLayer' in item and 'setFacade(facade,rot)' in item
