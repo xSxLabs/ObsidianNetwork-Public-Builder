@@ -356,6 +356,19 @@ jobs:
           json.loads(p.read_text())
           print('FINAL LANG NORMALIZATION PASS')
           PY
+          # The frozen v1.1.0 resource contains a literal version. The v1.1.1 test JAR must
+          # identify itself as 1.1.1 internally as well as in the archive filename.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('work/src/main/resources/META-INF/neoforge.mods.toml')
+          s=p.read_text()
+          s,n=re.subn(r'(?m)^(version\\s*=\\s*["\\\'])1\\.1\\.0(["\\\'])',r'\\g<1>1.1.1\\2',s,count=1)
+          assert n==1, 'expected frozen v1.1.0 mod version in neoforge.mods.toml'
+          p.write_text(s)
+          assert 'version="1.1.1"' in s or "version='1.1.1'" in s
+          print('V1.1.1 INTERNAL MOD VERSION PASS')
+          PY
           cat >> work/build.gradle <<'EOF'
           EOF
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
