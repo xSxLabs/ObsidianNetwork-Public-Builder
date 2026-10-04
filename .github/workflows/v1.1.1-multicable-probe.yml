@@ -363,7 +363,7 @@ jobs:
           import re
           p=Path('work/src/main/resources/META-INF/neoforge.mods.toml')
           s=p.read_text()
-          s,n=re.subn(r'(?m)^(version\\s*=\\s*["\\\'])1\\.1\\.0(["\\\'])',r'\\g<1>1.1.1\\2',s,count=1)
+          s,n=re.subn(r'(?m)^(version\s*=\s*["\'])1\.1\.0(["\'])',r'\g<1>1.1.1\2',s,count=1)
           assert n==1, 'expected frozen v1.1.0 mod version in neoforge.mods.toml'
           p.write_text(s)
           assert 'version="1.1.1"' in s or "version='1.1.1'" in s
