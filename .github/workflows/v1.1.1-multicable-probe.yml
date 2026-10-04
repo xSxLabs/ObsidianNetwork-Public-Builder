@@ -1,0 +1,308 @@
+name: v1.1.1 MultiCable Compile Probe
+'on':
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: v1.1.1-io-facades-teleporter
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - name: Reconstruct v1.0.5 baseline and inspect Importer
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar "$JAR" work/decompiled
+          cp -a work/decompiled/dev work/src/main/java/
+          MASTER="$GITHUB_WORKSPACE/$JAR"; (cd work/src/main/resources && jar xf "$MASTER")
+          find work/src/main/resources -name '*.class' -delete; rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.0.8
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version=mod_version; group=mod_group_id; base { archivesName='xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
+          tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
+          EOF
+          export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources" V1_PROJECT_ROOT="$GITHUB_WORKSPACE/work"
+          python3 private/reconstruction/apply-baseline-fixes.py
+          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py"; done
+          for p in private/fixes/apply-fix-18-facade-render-state.py private/fixes/apply-fix-19-facade-lighting.py private/fixes/apply-fix-20-facade-vertical-lighting.py private/fixes/apply-fix-21-energy-cell-capacities.py private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py private/fixes/apply-fix-22-terminal-english-labels.py private/v1.0.4/apply-wireless-charger-visual.py private/v1.0.4/apply-function-01-terminal-energy-storage.py private/v1.0.4/apply-function-02-terminal-active-consumption.py private/v1.0.4/apply-function-03-wireless-charger.py private/v1.0.4/apply-function-06-direct-block-adjacency.py private/v1.0.4/apply-function-07-pickaxe-mining.py private/v1.0.4/apply-function-08-filter54-scroll.py private/v1.0.4/apply-fix-storage-cell-upgrade-content.py private/v1.0.4/apply-function-09-storage-density.py private/v1.0.4/apply-fix-storage-drive-16slot-visual-clamp.py; do python3 "$p"; done
+          python3 private/v1.0.5/apply-function-01-system-migrator.py
+          python3 private/v1.0.6/apply-v106-features.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          roots=[Path('work/src/main/java'),Path('work/src/main/resources')]
+          out={}
+          for root in roots:
+              for p in root.rglob('*'):
+                  if p.is_file(): out[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+          Path('/tmp/b281-v106-manifest.json').write_text(json.dumps(out,sort_keys=True))
+          print('B281/V106 REGRESSION SNAPSHOT PASS')
+          PY
+          python3 private/v1.0.7/apply-equipment-cell.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          before=json.loads(Path('/tmp/b281-v106-manifest.json').read_text())
+          after={}
+          for root in [Path('work/src/main/java'),Path('work/src/main/resources')]:
+              for p in root.rglob('*'):
+                  if p.is_file(): after[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+          changed={p for p in set(before)|set(after) if before.get(p)!=after.get(p)}
+          # Release guard: both legacy Item Cell implementation files must remain byte-identical.
+          frozen={'work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java','work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java'}
+          assert not (changed & frozen), 'FATAL: frozen B281 Item Cell implementation changed'
+          allowed={
+            'work/src/main/java/dev/obsidiannetwork/item/EquipmentCellItem.java',
+            'work/src/main/java/dev/obsidiannetwork/component/EquipmentCellContents.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EquipmentCellStore.java',
+            'work/src/main/java/dev/obsidiannetwork/core/NetworkRuntime.java',
+            'work/src/main/java/dev/obsidiannetwork/registry/ModDataComponents.java',
+            'work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java',
+            'work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCellBlockEntity.java',
+            'work/src/main/java/dev/obsidiannetwork/block/EnergyCellBlock.java',
+            'work/src/main/java/dev/obsidiannetwork/menu/EnergyCellMenu.java',
+            'work/src/main/java/dev/obsidiannetwork/client/EnergyCellScreen.java',
+            'work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EquipmentEligibility.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EquipmentRoutingSelfTest.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EnergyToolEvents.java',
+            'work/src/main/java/dev/obsidiannetwork/mixin/ItemStackEnergyMixin.java',
+            'work/src/main/resources/obsidiannetwork.mixins.json',
+            'work/src/main/resources/META-INF/neoforge.mods.toml',
+            'work/src/main/java/dev/obsidiannetwork/client/EnergyToolClientEvents.java',
+            'work/src/main/java/dev/obsidiannetwork/menu/CellManipulatorMenu.java',
+            'work/src/main/java/dev/obsidiannetwork/client/CellManipulatorScreen.java',
+            'work/src/main/java/dev/obsidiannetwork/menu/DriveMenu.java',
+            'work/src/main/resources/assets/obsidiannetwork/items/battery.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/battery.json',
+            'work/src/main/resources/assets/obsidiannetwork/textures/item/battery.png',
+            'work/src/main/java/dev/obsidiannetwork/registry/ModMenus.java',
+            'work/src/main/java/dev/obsidiannetwork/client/ModClientEvents.java',
+            'work/src/main/java/dev/obsidiannetwork/client/ClientModEvents.java',
+            'work/src/main/java/dev/obsidiannetwork/blockentity/CellManipulatorBlockEntity.java',
+            'work/src/main/java/dev/obsidiannetwork/block/CellManipulatorBlock.java',
+            'work/src/main/java/dev/obsidiannetwork/recipe/BatteryUpgradeSmithingRecipe.java',
+            'work/src/main/java/dev/obsidiannetwork/registry/ModRecipes.java',
+            'work/src/main/java/dev/obsidiannetwork/platform/MinecraftItemStackCodec.java',
+            'work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java',
+            'work/src/main/resources/assets/obsidiannetwork/lang/en_us.json',
+            'work/src/main/resources/assets/obsidiannetwork/lang/de_de.json',
+            'work/src/main/resources/assets/obsidiannetwork/textures/item/equipment_pickaxe_overlay.png',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/equipment_cell_64k.json',
+            'work/src/main/resources/assets/obsidiannetwork/items/equipment_cell_64k.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/battery.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade_smithing.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/battery_upgrade.json',
+            'work/src/main/resources/assets/obsidiannetwork/items/battery_upgrade.json',
+            'work/src/main/java/dev/obsidiannetwork/registry/ModBlockEntities.java',
+            'work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java',
+            'work/src/main/resources/assets/obsidiannetwork/blockstates/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/items/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/block/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/textures/item/battery_upgrade.png',
+            'work/src/main/resources/data/obsidiannetwork/loot_table/blocks/cell_manipulator.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/cell_manipulator.json',
+          }
+          extra={p for p in changed-allowed if not (p.startswith('work/src/main/resources/assets/obsidiannetwork/blockstates/') and p.endswith('terminal_panel.json'))}
+          print('B577 CHANGED EXTRA',sorted(extra))
+          assert not extra, 'unexpected clean v1.0.7 file change'
+          print('B577 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          # Verify generated Java before Gradle.
+          import re
+          js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
+          assert 'ITEMS.registerItem("equipment_cell_64k"' in js, 'equipment item registration missing'
+          m=re.search(r'output\.accept\([^\\n;]*EQUIPMENT_CELL_64K[^\\n;]*\);',js)
+          assert m, 'equipment creative output missing'
+          before=js[:m.start()]
+          assert before.count('{') > before.count('}'), 'equipment creative output outside scope'
+          print('B577 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
+          drive=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read_text()
+          assert 'resource.toStack().getItem() instanceof EquipmentCellItem' in drive, 'drive slot does not accept equipment cell'
+          assert 'candidate.getItem() instanceof EquipmentCellItem equipmentItem' in drive, 'drive validator equipment decode path missing'
+          assert any('EquipmentCellItem' in p.read_text() for p in Path('work/src/main/java/dev/obsidiannetwork/menu').glob('*Menu.java'))
+          print('B577 DRIVE EQUIPMENT SLOT ACCEPTANCE PASS')
+          loot=Path('work/src/main/resources/data/obsidiannetwork/loot_table/blocks/system_migrator.json')
+          assert loot.exists(), 'system migrator loot table missing'
+          ld=json.loads(loot.read_text())
+          assert 'obsidiannetwork:system_migrator' in loot.read_text(), 'system migrator self-drop missing'
+          smbe=Path('work/src/main/java/dev/obsidiannetwork/blockentity/SystemMigratorBlockEntity.java').read_text()
+          assert 'SystemMigratorTickDiag' not in smbe and 'LOGGER.info' not in smbe
+          print('B577 SYSTEM MIGRATOR SELF-DROP + NO PERIODIC INFO DIAGNOSTICS PASS')
+          js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
+          assert 'BATTERY = ITEMS.registerSimpleItem("battery"' in js
+          assert 'BATTERY.get()' in js and 'output.accept' in js, 'battery creative exposure missing'
+          br=Path('work/src/main/resources/data/obsidiannetwork/recipe/battery.json')
+          assert br.exists() and json.loads(br.read_text())['result']['id']=='obsidiannetwork:battery'
+          assert json.loads(Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json').read_text())['item.obsidiannetwork.battery']=='Battery'
+          print('B577 BATTERY ITEM + RECIPE PASS')
+          bu=Path('work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade.json')
+          assert 'BATTERY_UPGRADE = ITEMS.registerSimpleItem("battery_upgrade"' in js
+          assert bu.exists() and json.loads(bu.read_text())['result']['id']=='obsidiannetwork:battery_upgrade'
+          assert json.loads(Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json').read_text())['item.obsidiannetwork.battery_upgrade']=='Battery Upgrade'
+          print('B577 BATTERY UPGRADE TEMPLATE ITEM + RECIPE PASS')
+          et=Path('work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java').read_text()
+          dc=Path('work/src/main/java/dev/obsidiannetwork/registry/ModDataComponents.java').read_text()
+          assert 'ENERGY_TOOL_FE' in dc and 'capacity(ItemStack s)' in et and 'getMaxDamage()' in et and 'CAPACITY=100000L' not in et and 'isDamageableItem()' in et
+          print('B577 GENERIC ENERGY TOOL PERSISTENCE PASS')
+          sm=Path('work/src/main/java/dev/obsidiannetwork/recipe/BatteryUpgradeSmithingRecipe.java').read_text()
+          assert 'in.base().copy()' in sm and 'EnergyTool.eligible(in.base())' in sm and '!EnergyTool.upgraded(in.base())' in sm
+          assert 'BATTERY_UPGRADE.get()' in sm and 'BATTERY.get()' in sm
+          assert 'filter(i->i!=Items.AIR)' in sm, 'generic smithing placement ingredient still contains AIR'
+          assert 'EnergyTool.capacity(out)' in sm and 'out.setDamageValue(0)' in sm
+          assert Path('work/src/main/resources/assets/obsidiannetwork/items/battery.json').exists()
+          assert Path('work/src/main/resources/assets/obsidiannetwork/models/item/battery.json').exists()
+          assert json.loads(Path('work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade_smithing.json').read_text())['type']=='obsidiannetwork:battery_upgrade_smithing'
+          print('B577 IDENTITY-PRESERVING GENERIC SMITHING PASS')
+          assert 'boolean consume(ItemStack s,long fe)' in et and 'barWidth(ItemStack s)' in et and 'barColor(ItemStack s)' in et
+          ev=Path('work/src/main/java/dev/obsidiannetwork/core/EnergyToolEvents.java').read_text()
+          mx=Path('work/src/main/java/dev/obsidiannetwork/mixin/ItemStackEnergyMixin.java').read_text()
+          assert 'IdentityHashMap' not in ev and 'EntityTickEvent' not in ev, 'legacy tick durability tracker still present'
+          assert 'method="setDamageValue"' in mx and 'ci.cancel()' in mx and 'Math.min(available,delta)' in mx
+          assert 'AttackEntityEvent' in ev and 'RightClickItem' in ev and 'UseItemOnBlockEvent' in ev and 'BreakSpeed' in ev
+          mix=json.loads(Path('work/src/main/resources/obsidiannetwork.mixins.json').read_text())
+          assert 'ItemStackEnergyMixin' in mix['mixins']
+          assert 'obsidiannetwork.mixins.json' in Path('work/src/main/resources/META-INF/neoforge.mods.toml').read_text()
+          print('B577 FINAL-DAMAGE-WRITE ENERGY INTERCEPT + EMPTY-FE ACTION GATES PASS')
+          cmb=Path('work/src/main/java/dev/obsidiannetwork/blockentity/CellManipulatorBlockEntity.java').read_text()
+          cmm=Path('work/src/main/java/dev/obsidiannetwork/menu/CellManipulatorMenu.java').read_text()
+          cmblock=Path('work/src/main/java/dev/obsidiannetwork/block/CellManipulatorBlock.java').read_text()
+          topo=Path('work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java').read_text()
+          assert 'instanceof StorageCellItem' in cmb and 'EquipmentCellItem' not in cmb
+          assert 'previewInsertExact' in cmb and 'insertExact' in cmb and 'src.extract(en.getKey(),inserted)' in cmb
+          assert 'out.store("cell",ItemStack.CODEC' in cmb and 'in.read("cell",ItemStack.CODEC)' in cmb
+          assert 'instanceof StorageCellItem' in cmm and 'moveItemStackTo(src,0,1,false)' in cmm
+          assert 'removeItemNoUpdate(0)' in cmblock and 'Containers.dropItemStack' in cmblock
+          assert 'CELL_MANIPULATOR.get()' in topo
+          for rp in ['assets/obsidiannetwork/blockstates/cell_manipulator.json','assets/obsidiannetwork/items/cell_manipulator.json','assets/obsidiannetwork/models/block/cell_manipulator.json','data/obsidiannetwork/loot_table/blocks/cell_manipulator.json','data/obsidiannetwork/recipe/cell_manipulator.json']:
+              json.loads(Path('work/src/main/resources',rp).read_text())
+          print('B577 CELL MANIPULATOR GUI + ROUTING + ZERO-LOSS + DROP + JSON PASS')
+          ecb=Path('work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCellBlockEntity.java').read_text()
+          ecm=Path('work/src/main/java/dev/obsidiannetwork/menu/EnergyCellMenu.java').read_text()
+          ecblock=Path('work/src/main/java/dev/obsidiannetwork/block/EnergyCellBlock.java').read_text()
+          assert 'charge_tool' in ecb and 'EnergyTool.upgraded(tool)' in ecb and 'toolSlot.setChanged()' in ecb
+          assert 'EnergyTool.upgraded(stack)' in ecm and 'getMaxStackSize(){return 1;}' in ecm and 'moveItemStackTo(src,0,1,false)' in ecm and 'moveItemStackTo(src,1,37,true)' in ecm
+          assert 'toolSlot().removeItemNoUpdate(0)' in ecblock and 'Containers.dropItemStack' in ecblock
+          print('B577 ENERGY CELL TOOL CHARGE + PERSISTENCE + BREAK-DROP PASS')
+          PY
+          python3 -m pip install --user pillow
+          python3 private/v1.0.8/apply-logistics-fluid.py
+          python3 - <<'PY'
+          from pathlib import Path
+          required=['LogisticsCableBlockEntity.java','NetworkTankBlockEntity.java','FluidPortBlockEntity.java']
+          for n in required: assert any(Path('work/src/main/java').rglob(n)), n
+          o=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
+          for x in ['ITEM_CABLE','FLUID_CABLE','NETWORK_TANK_64K','NETWORK_TANK_4096K','FLUID_IMPORTER','FLUID_EXPORTER']: assert x in o,x
+          c=Path('work/src/main/java/dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java').read_text()
+          assert 'Mode{OFF,IMPORT,EXPORT}' in c and 'speed_upgrade' in c and 'stack_upgrade' in c
+          print('B580 LOGISTICS + NETWORK FLUID STRUCTURE PASS')
+          PY
+          echo '===== V1.1.1 MULTICABLE APPLY ====='
+          python3 private/v1.1.1/apply-multicable.py
+          echo '===== V1.1.1 MULTICABLE COMPILE PROBE ====='
+          (cd work && gradle --no-daemon --no-configuration-cache clean compileJava --stacktrace)
+          echo '===== V1.1.1 MULTICABLE COMPILE PASS ====='
+          exit 0
+          curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
+          for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
+          mkdir -p work/rs-src
+          for j in work/libs/*-3.2.1-sources.jar; do (cd work/rs-src && jar xf "../libs/$(basename "$j")"); done
+          export RS_SOURCE_ROOT="$GITHUB_WORKSPACE/work/rs-src"
+          python3 private/v1.0.5/apply-system-migrator-rs-dependency.py
+          python3 - <<'PY'
+          from pathlib import Path
+          rsb=Path('work/src/main/java/dev/obsidiannetwork/compat/refinedstorage/SystemMigratorRsBridge.java').read_text()
+          assert 'SystemMigratorDiag' not in rsb and 'LOGGER.info' not in rsb
+          print('B577 SYSTEM MIGRATOR RS BRIDGE NO INFO DIAGNOSTICS PASS')
+          PY
+          python3 - <<'PY'
+          from pathlib import Path
+          n=Path("private/v1.0.5/SYSTEM_MIGRATOR_RS32_API_NOTES.md").read_text()
+          required=["Action.SIMULATE","Action.EXECUTE","previewInsertExact","compensate the difference back into the SAME RS root storage with","fail closed"]
+          assert all(x in n for x in required), "zero-item-loss contract incomplete"
+          print("ZERO-ITEM-LOSS CONTRACT PASS")
+          PY
+          python3 private/v1.0.5/diagnose-system-migrator-importer.py
+          echo '===== B633 RETRY CHECK ====='
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/network/JeiCraftTransferHandler.java
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/compat/jei/ObsidianNetworkJeiPlugin.java
+          python3 private/v1.0.5/diagnose-system-migrator-core.py
+          python3 private/v1.0.5/diagnose-system-migrator-signatures.py
+          python3 private/v1.0.5/diagnose-system-migrator-topology-anchors.py
+          python3 private/v1.0.5/diagnose-system-migrator-registration-shapes.py
+          python3 private/v1.0.5/diagnose-system-migrator-item-registration.py
+          python3 private/v1.0.5/diagnose-system-migrator-recipe-tooltip.py
+          python3 private/v1.0.5/diagnose-system-migrator-minimal-imports.py
+          python3 private/v1.0.5/diagnose-system-migrator-method-shapes.py
+          python3 private/v1.0.5/diagnose-system-migrator-block-codec.py
+          python3 private/v1.0.5/diagnose-system-migrator-control-api.py
+          python3 private/v1.0.5/diagnose-system-migrator-descriptor-api.py
+          python3 private/v1.0.5/diagnose-system-migrator-codec-ctor.py
+          python3 private/v1.0.5/diagnose-system-migrator-key-api.py
+          python3 private/v1.0.5/diagnose-rs321-exact-api.py
+          python3 private/v1.0.5/diagnose-rs321-transfer-signatures.py
+          # Final resource normalization after every private patch, immediately before packaging.
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json')
+          raw=p.read_text(); dec=json.JSONDecoder(); data={}
+          try:
+              obj,_=dec.raw_decode(raw.lstrip())
+              if isinstance(obj,dict): data.update(obj)
+          except json.JSONDecodeError:
+              data={}
+          data['block.obsidiannetwork.system_migrator']='System Migrator'
+          data['itemGroup.obsidiannetwork']='xSxLabs Network Storage'
+          data['tooltip.obsidiannetwork.system_migrator']='Migrates items from Refined Storage to xSxLabs Network Storage'
+          data['tooltip.obsidiannetwork.cell_types']='%s of 128 types occupied'
+          p.write_text(json.dumps(data,indent=2,ensure_ascii=False)+chr(10))
+          json.loads(p.read_text())
+          print('FINAL LANG NORMALIZATION PASS')
+          PY
+          cat >> work/build.gradle <<'EOF'
+          EOF
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+
+          mkdir -p dist
+          cp work/build/libs/*.jar dist/
+      - name: Upload B580
+        uses: actions/upload-artifact@v4
+        with:
+          name: xSxLabs-Network-Storage-v1.0.8-B580
+          path: dist/*.jar
+          if-no-files-found: error
+
+# current-check: B659-SHARED-FLUID-TOPOLOGY
