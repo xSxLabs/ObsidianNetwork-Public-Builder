@@ -294,7 +294,7 @@ jobs:
           check('dropUpgrades(l,d)' in cb and '>8' in cb,'upgrade drop/max semantics')
           check('speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,hit.getDirection())!=1' in cblock,'upgrade installation import gate')
           check('playerWillDestroy(' not in block and 'getDrops(' in block,'single break-drop pipeline')
-          check(all(x in ccaps for x in ['MULTI_CABLE','Capabilities.Energy.BLOCK','energyHandler']),'energy capability registration')
+          check(all(x in ccaps for x in ['MULTI_CABLE','Energy.BLOCK','energyHandler']),'energy capability registration')
           check('onCableConnectionsChanged(server,worldPosition)' in cb,'network topology refresh callback')
           check('if(l==Layer.NETWORK)networkChanged()' in cb,'network mutation refresh gate')
           check('ObsidianNetwork.MULTI_CABLE.get()' in topo and 'Layer.NETWORK' in topo,'topology MultiCable membership')
