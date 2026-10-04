@@ -1,4 +1,4 @@
-name: v1.1.1 IO Facades + Teleporter + MultiCable
+name: v1.1.1 IO Facades + Teleporter + MultiCable B508
 'on':
   workflow_dispatch:
   push:
