@@ -257,6 +257,7 @@ jobs:
           python3 private/v1.1.0/apply-facade-b677-registration-fix.py
           python3 private/v1.1.1/apply-io-port-facades.py
           python3 private/v1.1.1/apply-network-teleporter.py
+          python3 private/v1.1.1/apply-multicable.py
           echo '===== MULTICABLE INVENTORY ====='
           find work/src/main/java/dev/obsidiannetwork -type f \( -iname '*Cable*.java' -o -iname '*Wrench*.java' -o -iname '*Facade*.java' \) -print | sort
           for f in $(find work/src/main/java/dev/obsidiannetwork -type f \( -iname '*Cable*.java' -o -iname '*Wrench*.java' -o -iname '*Facade*.java' \) | sort); do echo "===== $f ====="; sed -n '1,320p' "$f"; done
