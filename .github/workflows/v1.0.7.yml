@@ -251,6 +251,9 @@ jobs:
           PY
           python3 private/v1.0.5/diagnose-system-migrator-importer.py
           python3 private/v1.1.0/apply-tesseract-recipe-fix.py
+          echo '===== FACADE RENDERER BEFORE OPAQUE FIX ====='
+          sed -n '1,260p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          python3 private/v1.1.0/apply-facade-opaque-fix.py
           echo '===== B633 RETRY CHECK ====='
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/network/JeiCraftTransferHandler.java
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/compat/jei/ObsidianNetworkJeiPlugin.java
