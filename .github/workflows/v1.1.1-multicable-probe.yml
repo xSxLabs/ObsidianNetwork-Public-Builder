@@ -273,7 +273,11 @@ jobs:
           python3 private/v1.1.0/apply-facade-opaque-fix.py
           python3 private/v1.1.0/apply-facade-b677-registration-fix.py
           echo '===== V1.1.0 BUILD 490 FREEZE RESTORED ====='
-          echo '===== V1.1.1 MULTICABLE APPLY ====='
+          echo '===== V1.1.1 IO PORT FACADES APPLY ====='
+          python3 private/v1.1.1/apply-io-port-facades.py
+          echo '===== V1.1.1 NETWORK TELEPORTER APPLY ====='
+          python3 private/v1.1.1/apply-network-teleporter.py
+          echo '===== V1.1.1 MULTICABLE + POLYMORPH APPLY ====='
           python3 private/v1.1.1/apply-multicable.py
           echo '===== V1.1.1 FACADE RENDERER AUDIT ====='
           sed -n '1,260p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
