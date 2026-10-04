@@ -342,3 +342,10 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
+      - name: Upload v1.1.1 MultiCable test JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: obsidiannetwork-v1.1.1-multicable-test
+          path: dist/*.jar
+          if-no-files-found: error
+          retention-days: 14
