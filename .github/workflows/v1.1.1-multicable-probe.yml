@@ -281,8 +281,9 @@ jobs:
           python3 private/v1.1.1/apply-multicable.py
           echo '===== V1.1.1 INGAME VISUAL FIXES APPLY ====='
           python3 private/v1.1.1/apply-runtime-visual-fixes.py
-          echo '===== V1.1.1 FACADE RENDERER AUDIT ====='
-          sed -n '1,260p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          echo '===== V1.1.1 RENDER API AUDIT ====='
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
           echo '===== V1.1.1 MULTICABLE COMPILE PROBE ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean compileJava --stacktrace)
           echo '===== V1.1.1 MULTICABLE COMPILE PASS ====='
