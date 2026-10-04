@@ -34,3 +34,5 @@ round7-tesseract-item-runtime source 01e5017fbc3d90be5a4ab04c38c1d358af98e7df
 v1.1.0 tesseract recipe fix source da5e6ab1ee498a55c363ee45f6326a9fad780fab
 
 v1.1.0 tesseract valid ingredient source 389ebcf00295a6606c233ce05349251f479fc0aa
+
+trigger corrected recipe build
