@@ -273,7 +273,44 @@ jobs:
           echo '===== V1.1.1 MULTICABLE COMPILE PROBE ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean compileJava --stacktrace)
           echo '===== V1.1.1 MULTICABLE COMPILE PASS ====='
-          exit 0
+          echo '===== V1.1.1 MULTICABLE RUNTIME/RESOURCE SMOKE ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          J=Path('work/src/main/java'); R=Path('work/src/main/resources')
+          be=(J/'dev/obsidiannetwork/blockentity/MultiCableBlockEntity.java').read_text()
+          block=(J/'dev/obsidiannetwork/block/MultiCableBlock.java').read_text()
+          item=(J/'dev/obsidiannetwork/item/CableBlockItem.java').read_text()
+          caps=(J/'dev/obsidiannetwork/registry/ModCapabilities.java').read_text()
+          topo=(J/'dev/obsidiannetwork/network/WorldTopologyBridge.java').read_text()
+          client=(J/'dev/obsidiannetwork/client/ClientModEvents.java').read_text()
+          assert 'Mode{OFF,IMPORT,EXPORT}' in (J/'dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java').read_text()
+          assert 'int next=(m+1)%3' in be and 'else if(m==2)out.add(new Endpoint(p,d))' in be
+          assert 'logisticsOpen(n,layer,d.getOpposite())' in be
+          assert 'dropUpgrades(l,d)' in be and 'q.getCount()>8' in be
+          assert 'speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,hit.getDirection())!=1' in block
+          assert 'playerWillDestroy(' not in block and 'getDrops(' in block
+          assert 'MULTI_CABLE.get(), (cable, side) -> cable.energyHandler(side)' in caps
+          assert 'ObsidianNetwork.MULTI_CABLE.get()' in topo and 'Layer.NETWORK' in topo
+          assert 'MULTI_CABLE.get(), dev.obsidiannetwork.client.render.CableFacadeRenderer::new' in client
+          assert 'replaceOnlyLayer' in item and 'setFacade(facade,rot)' in item
+          bs=json.loads((R/'assets/obsidiannetwork/blockstates/multi_cable.json').read_text())
+          assert bs=={'variants':{'':{'model':'obsidiannetwork:block/multi_cable_joint'}}}, bs
+          for p in [
+              R/'assets/obsidiannetwork/models/block/multi_cable_joint.json',
+              R/'assets/obsidiannetwork/models/item/multi_cable.json',
+              R/'assets/obsidiannetwork/items/multi_cable.json',
+              R/'data/obsidiannetwork/loot_table/blocks/multi_cable.json']:
+              assert p.exists(), str(p)
+              json.loads(p.read_text())
+          marker=(R/'assets/obsidiannetwork/v111-multicable.txt').read_text()
+          assert 'TEMP_BUILD_DIAGNOSTIC_NOT_FOR_RELEASE' not in marker
+          assert not (R/'assets/obsidiannetwork/v111-multicable-probe.txt').exists()
+          print('V1.1.1 MULTICABLE RUNTIME/RESOURCE SMOKE PASS')
+          PY
+          echo '===== V1.1.1 MULTICABLE FULL BUILD ====='
+          (cd work && gradle --no-daemon --no-configuration-cache build --stacktrace)
+          echo '===== V1.1.1 MULTICABLE FULL BUILD PASS ====='
           # Final resource normalization after every private patch, immediately before packaging.
           python3 - <<'PY'
           from pathlib import Path
