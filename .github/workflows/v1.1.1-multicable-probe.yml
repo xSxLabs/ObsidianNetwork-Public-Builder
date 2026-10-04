@@ -345,6 +345,12 @@ jobs:
           data['itemGroup.obsidiannetwork']='xSxLabs Network Storage'
           data['tooltip.obsidiannetwork.system_migrator']='Migrates items from Refined Storage to xSxLabs Network Storage'
           data['tooltip.obsidiannetwork.cell_types']='%s of 128 types occupied'
+          # Preserve the v1.1.0 Build-490 cable display names. CableBlockItem changes the
+          # item class in v1.1.1, so explicit item translation keys are required.
+          data['item.obsidiannetwork.network_cable']='Network Cable'
+          data['item.obsidiannetwork.energy_cable']='Energy Cable'
+          data['item.obsidiannetwork.item_cable']='Item Cable'
+          data['item.obsidiannetwork.fluid_cable']='Fluid Cable'
           p.write_text(json.dumps(data,indent=2,ensure_ascii=False)+chr(10))
           json.loads(p.read_text())
           print('FINAL LANG NORMALIZATION PASS')
