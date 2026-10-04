@@ -335,3 +335,5 @@ jobs:
 # trigger: interaction signature fix
 
 # trigger: regex escaping fix
+
+# trigger: multipart blockstate fix
