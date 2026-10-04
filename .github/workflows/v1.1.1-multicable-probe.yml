@@ -299,11 +299,3 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload B580
-        uses: actions/upload-artifact@v4
-        with:
-          name: xSxLabs-Network-Storage-v1.0.8-B580
-          path: dist/*.jar
-          if-no-files-found: error
-
-# current-check: B659-SHARED-FLUID-TOPOLOGY
