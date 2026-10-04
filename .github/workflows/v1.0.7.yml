@@ -260,6 +260,8 @@ jobs:
           echo '===== MULTICABLE INVENTORY ====='
           find work/src/main/java/dev/obsidiannetwork -type f \( -iname '*Cable*.java' -o -iname '*Wrench*.java' -o -iname '*Facade*.java' \) -print | sort
           for f in $(find work/src/main/java/dev/obsidiannetwork -type f \( -iname '*Cable*.java' -o -iname '*Wrench*.java' -o -iname '*Facade*.java' \) | sort); do echo "===== $f ====="; sed -n '1,320p' "$f"; done
+          echo '===== MULTICABLE DEEP PROBE ====='
+          grep -RIlE 'NETWORK_CABLE|ITEM_CABLE|ENERGY_CABLE|FLUID_CABLE|useItemOn|useWithoutItem|BlockCapability|registerBlockEntity|refreshForWrench|FacadeCable' work/src/main/java/dev/obsidiannetwork | sort | while read f; do echo "===== PROBE $f ====="; sed -n '1,360p' "$f"; done
           echo '===== B633 RETRY CHECK ====='
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/network/JeiCraftTransferHandler.java
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/compat/jei/ObsidianNetworkJeiPlugin.java
