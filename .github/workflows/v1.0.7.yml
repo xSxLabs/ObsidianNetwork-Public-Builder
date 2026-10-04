@@ -331,3 +331,5 @@ jobs:
 
 # io-facade-retry-494
 # trigger: io-facades build after TransferNodeBlock fix
+
+# trigger: interaction signature fix
