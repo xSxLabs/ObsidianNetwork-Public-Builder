@@ -36,3 +36,5 @@ v1.1.0 tesseract recipe fix source da5e6ab1ee498a55c363ee45f6326a9fad780fab
 v1.1.0 tesseract valid ingredient source 389ebcf00295a6606c233ce05349251f479fc0aa
 
 trigger corrected recipe build
+
+v1.1.0 facade opaque render fix 54930d122500f4922d9b7fc8326b4254702c2777
