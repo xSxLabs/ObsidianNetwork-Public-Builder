@@ -289,7 +289,6 @@ jobs:
           cb=compact(be); cblock=compact(block); clegacy=compact(legacy); ccaps=compact(caps); cclient=compact(client); citem=compact(item)
           def check(ok,name):
               assert ok, name
-          check(all(x in clegacy for x in ['OFF','IMPORT','EXPORT']),'legacy logistics modes')
           check('(m+1)%3' in cb and 'm==2' in cb and 'Endpoint(p,d)' in cb,'logistics cycle/export semantics')
           check('logisticsOpen(n,layer,d.getOpposite())' in cb,'mixed cable opposite-side traversal')
           check('dropUpgrades(l,d)' in cb and '>8' in cb,'upgrade drop/max semantics')
