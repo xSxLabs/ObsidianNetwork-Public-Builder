@@ -1,8 +1,8 @@
-name: v1.1.1 IO Port Facades
+name: v1.1.1 IO Facades + Teleporter
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.1.1-io-facades]
+    branches: [v1.1.1-io-facades-teleporter]
 permissions: {contents: read}
 jobs:
   inspect:
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: v1.1.1-io-facades
+          ref: v1.1.1-io-facades-teleporter
           token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
           path: private
       - uses: actions/setup-java@v4
@@ -256,6 +256,7 @@ jobs:
           python3 private/v1.1.0/apply-facade-opaque-fix.py
           python3 private/v1.1.0/apply-facade-b677-registration-fix.py
           python3 private/v1.1.1/apply-io-port-facades.py
+          python3 private/v1.1.1/apply-network-teleporter.py
           echo '===== B633 RETRY CHECK ====='
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/network/JeiCraftTransferHandler.java
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/compat/jei/ObsidianNetworkJeiPlugin.java
@@ -302,7 +303,7 @@ jobs:
       - name: Upload B580
         uses: actions/upload-artifact@v4
         with:
-          name: xSxLabs-Network-Storage-v1.1.1-io-facades
+          name: xSxLabs-Network-Storage-v1.1.1-io-facades-teleporter
           path: dist/*.jar
           if-no-files-found: error
 
