@@ -6,7 +6,7 @@ name: v1.1.1 MultiCable Compile Probe
 permissions: {contents: read}
 jobs:
   inspect:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
