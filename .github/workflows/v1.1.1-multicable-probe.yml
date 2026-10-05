@@ -290,10 +290,20 @@ jobs:
           echo '===== V1.1.1 ROOTCAUSE ENDERIO PASS APPLY ====='
           python3 private/v1.1.1/apply-rootcause-enderio-pass.py
           echo '===== V1.1.1 ROOTCAUSE SMOKE ====='
-          grep -q 'TRY_WITH_EMPTY_HAND' work/src/main/java/dev/obsidiannetwork/block/MultiCableBlock.java
-          grep -q 'V112_AUTHORITATIVE_FACADE_TARGET' work/src/main/java/dev/obsidiannetwork/item/CableFacadeItem.java
-          grep -q 'be.id()+"\\t"+be.frequency' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkTeleporterBlockEntity.java
-          ! grep -q '"FREQ "+menu.frequency()+" | "+s' work/src/main/java/dev/obsidiannetwork/client/NetworkTeleporterScreen.java
+          python3 - <<'PY'
+          from pathlib import Path
+          J=Path('work/src/main/java/dev/obsidiannetwork')
+          block=(J/'block/MultiCableBlock.java').read_text()
+          facade=(J/'item/CableFacadeItem.java').read_text()
+          tele=(J/'blockentity/NetworkTeleporterBlockEntity.java').read_text()
+          screen=(J/'client/NetworkTeleporterScreen.java').read_text()
+          assert 'InteractionResult.TRY_WITH_EMPTY_HAND' in block
+          assert 'V112_AUTHORITATIVE_FACADE_TARGET' in facade
+          assert 'be.id()+"\\\\t"+be.frequency' in tele or 'be.id()+"\\t"+be.frequency' in tele
+          assert '"FREQ "+menu.frequency()+" | "+s' not in screen
+          assert 'String[] q=s.split' in screen
+          print('ROOTCAUSE SOURCE ASSERTIONS PASS')
+          PY
           echo '===== V1.1.1 RENDER API AUDIT ====='
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
