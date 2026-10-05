@@ -1,0 +1,103 @@
+name: Isolated Run 79 Headless Runtime Test
+
+on:
+  push:
+    branches:
+      - isolated-run79-headless-ingame-test
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  run79-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXPECTED_SHA256: eb512b448aaf20457efb8ae14caba29543ae7deefaf68ea5eba97ee7f803c0a8
+      RUN79_ARTIFACT_ID: "11329269807"
+      NEOFORGE_VERSION: "26.1.2.106"
+    steps:
+      - name: Install Java 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Install headless graphics tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb mesa-utils unzip curl
+
+      - name: Download exact Run 79 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/run79"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${RUN79_ARTIFACT_ID}/zip" > "$RUNNER_TEMP/run79.zip"
+          unzip -q "$RUNNER_TEMP/run79.zip" -d "$RUNNER_TEMP/run79"
+          find "$RUNNER_TEMP/run79" -maxdepth 2 -type f -print
+
+      - name: Verify exact target JAR
+        run: |
+          MOD_JAR="$(find "$RUNNER_TEMP/run79" -type f -name '*.jar' | head -n1)"
+          test -n "$MOD_JAR"
+          ACTUAL="$(sha256sum "$MOD_JAR" | awk '{print $1}')"
+          echo "Target: $MOD_JAR"
+          echo "SHA256: $ACTUAL"
+          test "$ACTUAL" = "$EXPECTED_SHA256"
+          echo "MOD_JAR=$MOD_JAR" >> "$GITHUB_ENV"
+
+      - name: Verify required client resources in Run 79
+        run: |
+          for f in             assets/obsidiannetwork/models/block/importer.json             assets/obsidiannetwork/models/block/exporter.json             assets/obsidiannetwork/models/block/fluid_importer.json             assets/obsidiannetwork/models/block/fluid_exporter.json; do
+            unzip -t "$MOD_JAR" "$f" | grep -q "OK"
+          done
+          unzip -l "$MOD_JAR" | grep -E 'MultiCable|NetworkTeleporter|Facade|Importer|Exporter' > "$RUNNER_TEMP/relevant-classes.txt"
+          cat "$RUNNER_TEMP/relevant-classes.txt"
+
+      - name: Install NeoForge 26.1.2.106 server runtime
+        run: |
+          mkdir -p "$RUNNER_TEMP/server"
+          cd "$RUNNER_TEMP/server"
+          curl --fail --location --retry 3             "https://maven.neoforged.net/releases/net/neoforged/neoforge/${NEOFORGE_VERSION}/neoforge-${NEOFORGE_VERSION}-installer.jar"             -o neoforge-installer.jar
+          java -jar neoforge-installer.jar --installServer
+          mkdir -p mods
+          cp "$MOD_JAR" mods/xSxLabs-Network-Storage-1.1.1-run79.jar
+          echo "eula=true" > eula.txt
+
+      - name: Boot exact Run 79 on NeoForge
+        continue-on-error: true
+        run: |
+          cd "$RUNNER_TEMP/server"
+          set +e
+          timeout 180s bash run.sh nogui 2>&1 | tee "$RUNNER_TEMP/server-console.log"
+          CODE=${PIPESTATUS[0]}
+          echo "SERVER_EXIT=$CODE" >> "$GITHUB_ENV"
+          exit 0
+
+      - name: Evaluate runtime
+        run: |
+          LOG="$RUNNER_TEMP/server-console.log"
+          echo "Server exit: ${SERVER_EXIT:-unknown}"
+          if grep -Eqi 'Mod loading has failed|Failed to load|Exception in thread|NoClassDefFoundError|Mixin.*failed' "$LOG"; then
+            echo "Runtime failure detected"
+            exit 1
+          fi
+          if ! grep -Eqi 'Done \(|For help, type|obsidiannetwork|xSxLabs Network Storage' "$LOG"; then
+            echo "No successful Minecraft/NeoForge runtime evidence found"
+            exit 1
+          fi
+          echo "Run 79 loaded without a detected fatal mod-loading error."
+
+      - name: Upload diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run79-headless-runtime-logs
+          path: |
+            ${{ runner.temp }}/server-console.log
+            ${{ runner.temp }}/relevant-classes.txt
+            ${{ runner.temp }}/server/logs/**
+          if-no-files-found: ignore
