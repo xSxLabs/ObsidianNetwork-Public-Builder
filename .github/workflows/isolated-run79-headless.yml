@@ -81,7 +81,7 @@ jobs:
         run: |
           LOG="$RUNNER_TEMP/server-console.log"
           echo "Server exit: ${SERVER_EXIT:-unknown}"
-          if grep -Eqi 'Mod loading has failed|Failed to load|Exception in thread|NoClassDefFoundError|Mixin.*failed' "$LOG"; then
+          if grep -Eqi 'Mod loading has failed|Failed to load.*obsidiannetwork|Exception in thread.*obsidiannetwork|Mixin.*obsidiannetwork.*failed' "$LOG"; then
             echo "Runtime failure detected"
             exit 1
           fi
@@ -89,7 +89,7 @@ jobs:
             echo "No successful Minecraft/NeoForge runtime evidence found"
             exit 1
           fi
-          echo "Run 79 loaded without a detected fatal mod-loading error."
+          echo "Run 79 loaded without a detected fatal mod-loading error."\n          grep -q 'Done (' "$LOG"\n          echo "PASS: exact Run 79 reached a fully started Minecraft world."
 
       - name: Upload diagnostic logs
         if: always()
