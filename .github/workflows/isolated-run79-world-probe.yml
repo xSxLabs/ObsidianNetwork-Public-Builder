@@ -1,0 +1,128 @@
+name: Isolated Run 79 World Placement Probe
+
+on:
+  push:
+    branches:
+      - isolated-run79-headless-ingame-test
+    paths:
+      - "isolated-run79-test/world-probe-trigger.txt"
+      - ".github/workflows/isolated-run79-world-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  world-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      EXPECTED_SHA256: eb512b448aaf20457efb8ae14caba29543ae7deefaf68ea5eba97ee7f803c0a8
+      RUN79_ARTIFACT_ID: "11329269807"
+      NEOFORGE_VERSION: "26.1.2.106"
+    steps:
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Download and verify exact Run 79
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/run79"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${RUN79_ARTIFACT_ID}/zip" > "$RUNNER_TEMP/run79.zip"
+          unzip -q "$RUNNER_TEMP/run79.zip" -d "$RUNNER_TEMP/run79"
+          MOD_JAR="$(find "$RUNNER_TEMP/run79" -type f -name '*.jar' | head -n1)"
+          test "$(sha256sum "$MOD_JAR" | awk '{print $1}')" = "$EXPECTED_SHA256"
+          echo "MOD_JAR=$MOD_JAR" >> "$GITHUB_ENV"
+
+      - name: Install isolated NeoForge server
+        run: |
+          mkdir -p "$RUNNER_TEMP/server"
+          cd "$RUNNER_TEMP/server"
+          curl --fail --location --retry 3 "https://maven.neoforged.net/releases/net/neoforged/neoforge/${NEOFORGE_VERSION}/neoforge-${NEOFORGE_VERSION}-installer.jar" -o installer.jar
+          java -jar installer.jar --installServer
+          mkdir -p mods
+          cp "$MOD_JAR" mods/run79-exact.jar
+          echo "eula=true" > eula.txt
+          cat > server.properties <<'EOF'
+          online-mode=false
+          enable-rcon=true
+          rcon.password=isolated-run79-test-only
+          rcon.port=25575
+          server-port=25565
+          level-name=isolated-run79-world
+          spawn-protection=0
+          view-distance=3
+          simulation-distance=3
+          EOF
+
+      - name: Boot server and probe registered blocks in-world
+        run: |
+          cd "$RUNNER_TEMP/server"
+          bash run.sh nogui > "$RUNNER_TEMP/server-console.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/server.pid"
+          for i in $(seq 1 120); do
+            grep -q "Done (" "$RUNNER_TEMP/server-console.log" && break
+            kill -0 "$(cat "$RUNNER_TEMP/server.pid")" || { cat "$RUNNER_TEMP/server-console.log"; exit 1; }
+            sleep 1
+          done
+          grep -q "Done (" "$RUNNER_TEMP/server-console.log"
+
+          python3 - <<'PY'
+          import socket, struct, time, sys
+          HOST,PORT,PW="127.0.0.1",25575,"isolated-run79-test-only"
+          def pkt(i,t,s):
+              b=s.encode()+b"\0\0"
+              return struct.pack("<iii",len(b)+8,i,t)+b
+          def recv(sock):
+              raw=sock.recv(4)
+              if len(raw)!=4: raise RuntimeError("short RCON length")
+              n=struct.unpack("<i",raw)[0]
+              data=b""
+              while len(data)<n: data+=sock.recv(n-len(data))
+              rid,typ=struct.unpack("<ii",data[:8])
+              return rid,typ,data[8:-2].decode(errors="replace")
+          s=socket.create_connection((HOST,PORT),10)
+          s.sendall(pkt(1,3,PW)); rid,_,body=recv(s)
+          if rid == -1: raise SystemExit("RCON auth failed")
+          tests=[
+            ("teleporter","obsidiannetwork:network_teleporter",(0,100,0)),
+            ("importer","obsidiannetwork:importer",(2,100,0)),
+            ("exporter","obsidiannetwork:exporter",(4,100,0)),
+            ("fluid_importer","obsidiannetwork:fluid_importer",(6,100,0)),
+            ("fluid_exporter","obsidiannetwork:fluid_exporter",(8,100,0)),
+          ]
+          out=[]
+          q=10
+          for name,bid,(x,y,z) in tests:
+              cmd=f"setblock {x} {y} {z} {bid}"
+              s.sendall(pkt(q,2,cmd)); rid,_,body=recv(s); q+=1
+              out.append((name,cmd,body))
+              verify=f"execute if block {x} {y} {z} {bid} run data get block {x} {y} {z}"
+              s.sendall(pkt(q,2,verify)); rid,_,vbody=recv(s); q+=1
+              out.append((name,"VERIFY",vbody))
+              low=(body+" "+vbody).lower()
+              if "unknown" in low or "expected" in low or "no block" in low:
+                  print("\n".join(map(str,out)))
+                  raise SystemExit(f"FAIL {name}: {body} / {vbody}")
+          with open("/tmp/world-probe.txt","w") as f:
+              for row in out: f.write(" | ".join(map(str,row))+"\n")
+          print(open("/tmp/world-probe.txt").read())
+          s.sendall(pkt(q,2,"stop"))
+          PY
+          cp /tmp/world-probe.txt "$RUNNER_TEMP/world-probe.txt"
+          wait "$(cat "$RUNNER_TEMP/server.pid")" || true
+
+      - name: Upload world-probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run79-world-probe-evidence
+          path: |
+            ${{ runner.temp }}/world-probe.txt
+            ${{ runner.temp }}/server-console.log
+            ${{ runner.temp }}/server/logs/**
+          if-no-files-found: ignore
