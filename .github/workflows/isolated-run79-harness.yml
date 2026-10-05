@@ -1,4 +1,4 @@
-name: Isolated Run 79 Harness Compile
+name: Isolated Run 79 Functional Harness
 on:
   push:
     branches: [isolated-run79-headless-ingame-test]
@@ -10,7 +10,7 @@ permissions:
   actions: read
   contents: read
 jobs:
-  compile:
+  functional:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -28,8 +28,25 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${RUN79_ARTIFACT_ID}/zip" > "$RUNNER_TEMP/run79.zip"
           unzip -q "$RUNNER_TEMP/run79.zip" -d "$RUNNER_TEMP/run79"
           JAR="$(find "$RUNNER_TEMP/run79" -type f -name '*.jar' | head -n1)"
-          test "$(sha256sum "$JAR" | awk '{print $1}')" = "$EXPECTED_SHA256"
+          GOT="$(sha256sum "$JAR" | awk '{print $1}')"
+          echo "Run79 SHA256=$GOT"
+          test "$GOT" = "$EXPECTED_SHA256"
           cp "$JAR" isolated-run79-test/harness/libs/run79-exact.jar
-      - name: Compile isolated harness
+      - name: Compile real harness
         working-directory: isolated-run79-test/harness
         run: gradle --no-daemon compileJava
+      - name: Launch isolated NeoForge server with harness
+        working-directory: isolated-run79-test/harness
+        run: |
+          mkdir -p run
+          echo "eula=true" > run/eula.txt
+          timeout 120s gradle --no-daemon runServer 2>&1 | tee functional.log || test ${PIPESTATUS[0]} -eq 124
+          grep -F "[RUN79-HARNESS] loaded contracts=6" functional.log
+          grep -F "obsidiannetwork" functional.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run79-functional-harness-evidence
+          path: |
+            isolated-run79-test/harness/functional.log
+            isolated-run79-test/harness/run/logs/latest.log
