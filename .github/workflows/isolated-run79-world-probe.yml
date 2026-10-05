@@ -105,7 +105,7 @@ jobs:
               s.sendall(pkt(q,2,verify)); rid,_,vbody=recv(s); q+=1
               out.append((name,"VERIFY",vbody))
               low=(body+" "+vbody).lower()
-              if "unknown" in low or "expected" in low or "no block" in low:
+              if "unknown" in low or "expected" in low or "no block" in low or "not loaded" in low or "could not" in low or "failed" in low:
                   print("\n".join(map(str,out)))
                   raise SystemExit(f"FAIL {name}: {body} / {vbody}")
           with open("/tmp/world-probe.txt","w") as f:
