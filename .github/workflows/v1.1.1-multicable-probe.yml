@@ -283,6 +283,8 @@ jobs:
           python3 private/v1.1.1/apply-runtime-visual-fixes.py
           echo '===== V1.1.1 RUN80 REGRESSION-SAFE FIXES APPLY ====='
           python3 private/v1.1.1/apply-run80-regression-fixes.py
+          echo '===== V1.1.1 RUN85 INGAME FEEDBACK APPLY ====='
+          python3 private/v1.1.1/apply-run85-ingame-feedback.py
           echo '===== V1.1.1 RENDER API AUDIT ====='
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
@@ -403,4 +405,4 @@ jobs:
 
 
 
-# source-trigger: cae0b0c59431a0a49ac0bdd8d26a73a4b9408946
+# source-trigger: ae246e59d576858a62edf07442bdee9f28a14243
