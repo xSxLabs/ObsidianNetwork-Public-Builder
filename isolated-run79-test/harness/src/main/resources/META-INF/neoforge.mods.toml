@@ -1,0 +1,19 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="All Rights Reserved"
+[[mods]]
+modId="run79test"
+version="1.0.0"
+displayName="Run79 Isolated Functional Harness"
+[[dependencies.run79test]]
+modId="neoforge"
+type="required"
+versionRange="[26.1.2.106,) "
+ordering="NONE"
+side="BOTH"
+[[dependencies.run79test]]
+modId="obsidiannetwork"
+type="required"
+versionRange="[1.1.1,) "
+ordering="AFTER"
+side="BOTH"
