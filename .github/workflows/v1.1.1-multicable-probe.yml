@@ -281,6 +281,8 @@ jobs:
           python3 private/v1.1.1/apply-multicable.py
           echo '===== V1.1.1 INGAME VISUAL FIXES APPLY ====='
           python3 private/v1.1.1/apply-runtime-visual-fixes.py
+          echo '===== V1.1.1 RUN80 REGRESSION-SAFE FIXES APPLY ====='
+          python3 private/v1.1.1/apply-run80-regression-fixes.py
           echo '===== V1.1.1 RENDER API AUDIT ====='
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
@@ -401,4 +403,4 @@ jobs:
 
 
 
-# source-trigger: 1c19e497fa50e6bb26ce37fe24819cfdd9b71704
+# source-trigger: fa7b5b9f31e5776a9bc3b13a4d3d86daa363fd27
