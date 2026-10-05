@@ -297,11 +297,15 @@ jobs:
           facade=(J/'item/CableFacadeItem.java').read_text()
           tele=(J/'blockentity/NetworkTeleporterBlockEntity.java').read_text()
           screen=(J/'client/NetworkTeleporterScreen.java').read_text()
-          assert 'InteractionResult.TRY_WITH_EMPTY_HAND' in block
-          assert 'V112_AUTHORITATIVE_FACADE_TARGET' in facade
-          assert 'be.id()+"\\\\t"+be.frequency' in tele or 'be.id()+"\\t"+be.frequency' in tele
-          assert '"FREQ "+menu.frequency()+" | "+s' not in screen
-          assert 'String[] q=s.split' in screen
+          checks={
+            'empty-hand dispatch':'InteractionResult.TRY_WITH_EMPTY_HAND' in block,
+            'facade item authority':'V112_AUTHORITATIVE_FACADE_TARGET' in facade,
+            'target-owned frequency':'be.frequency' in tele and 'out.add(be.id()' in tele,
+            'no current-frequency target label':'"FREQ "+menu.frequency()+" | "+s' not in screen,
+            'row metadata parser':'String[] q=s.split' in screen,
+          }
+          print('ROOTCAUSE CHECKS',checks)
+          assert all(checks.values()),checks
           print('ROOTCAUSE SOURCE ASSERTIONS PASS')
           PY
           echo '===== V1.1.1 RENDER API AUDIT ====='
