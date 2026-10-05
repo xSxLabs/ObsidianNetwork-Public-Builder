@@ -289,6 +289,8 @@ jobs:
           python3 private/v1.1.1/apply-enderio-connection-pass.py
           echo '===== V1.1.1 ROOTCAUSE ENDERIO PASS APPLY ====='
           python3 private/v1.1.1/apply-rootcause-enderio-pass.py
+          echo '===== V1.1.1 RUN92 INGAME ROOTCAUSE APPLY ====='
+          python3 private/v1.1.1/apply-run92-ingame-rootcause.py
           echo '===== V1.1.1 ROOTCAUSE SMOKE ====='
           python3 - <<'PY'
           from pathlib import Path
@@ -303,6 +305,8 @@ jobs:
             'target-owned frequency':'be.frequency' in tele and 'out.add(be.id()' in tele,
             'no current-frequency target label':'"FREQ "+menu.frequency()+" | "+s' not in screen,
             'row metadata parser':'String[] q=s.split' in screen,
+            'connection side from hit':'connectionSide(p,hit)' in block,
+            'teleporter inventory label removed':'"INVENTORY"' not in screen,
           }
           print('ROOTCAUSE CHECKS',checks)
           assert all(checks.values()),checks
@@ -428,4 +432,4 @@ jobs:
 
 
 
-# source-trigger: fb72fba738cf4225404263a58f9924b92be09fd8
+# source-trigger: 45f1e65171f453c095058bfacc7cd8e38c5bea61
