@@ -285,6 +285,8 @@ jobs:
           python3 private/v1.1.1/apply-run80-regression-fixes.py
           echo '===== V1.1.1 RUN85 INGAME FEEDBACK APPLY ====='
           python3 private/v1.1.1/apply-run85-ingame-feedback.py
+          echo '===== V1.1.1 ENDERIO CONNECTION PASS APPLY ====='
+          python3 private/v1.1.1/apply-enderio-connection-pass.py
           echo '===== V1.1.1 RENDER API AUDIT ====='
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
@@ -405,4 +407,4 @@ jobs:
 
 
 
-# source-trigger: ae246e59d576858a62edf07442bdee9f28a14243
+# source-trigger: 75fc5f261a1d72952172f92633a0b2042ddcff82
