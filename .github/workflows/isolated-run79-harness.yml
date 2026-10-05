@@ -1,0 +1,35 @@
+name: Isolated Run 79 Harness Compile
+on:
+  push:
+    branches: [isolated-run79-headless-ingame-test]
+    paths:
+      - "isolated-run79-test/harness/**"
+      - ".github/workflows/isolated-run79-harness.yml"
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXPECTED_SHA256: eb512b448aaf20457efb8ae14caba29543ae7deefaf68ea5eba97ee7f803c0a8
+      RUN79_ARTIFACT_ID: "11329269807"
+    steps:
+      - uses: actions/checkout@v5
+        with: {ref: isolated-run79-headless-ingame-test}
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: "25"}
+      - name: Fetch exact Run 79 into isolated harness
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          mkdir -p isolated-run79-test/harness/libs "$RUNNER_TEMP/run79"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${RUN79_ARTIFACT_ID}/zip" > "$RUNNER_TEMP/run79.zip"
+          unzip -q "$RUNNER_TEMP/run79.zip" -d "$RUNNER_TEMP/run79"
+          JAR="$(find "$RUNNER_TEMP/run79" -type f -name '*.jar' | head -n1)"
+          test "$(sha256sum "$JAR" | awk '{print $1}')" = "$EXPECTED_SHA256"
+          cp "$JAR" isolated-run79-test/harness/libs/run79-exact.jar
+      - name: Compile isolated harness
+        working-directory: isolated-run79-test/harness
+        run: gradle --no-daemon compileJava
