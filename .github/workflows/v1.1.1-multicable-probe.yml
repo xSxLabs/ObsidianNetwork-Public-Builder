@@ -287,6 +287,13 @@ jobs:
           python3 private/v1.1.1/apply-run85-ingame-feedback.py
           echo '===== V1.1.1 ENDERIO CONNECTION PASS APPLY ====='
           python3 private/v1.1.1/apply-enderio-connection-pass.py
+          echo '===== V1.1.1 ROOTCAUSE ENDERIO PASS APPLY ====='
+          python3 private/v1.1.1/apply-rootcause-enderio-pass.py
+          echo '===== V1.1.1 ROOTCAUSE SMOKE ====='
+          grep -q 'TRY_WITH_EMPTY_HAND' work/src/main/java/dev/obsidiannetwork/block/MultiCableBlock.java
+          grep -q 'V112_AUTHORITATIVE_FACADE_TARGET' work/src/main/java/dev/obsidiannetwork/item/CableFacadeItem.java
+          grep -q 'be.id()+"\\t"+be.frequency' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkTeleporterBlockEntity.java
+          ! grep -q '"FREQ "+menu.frequency()+" | "+s' work/src/main/java/dev/obsidiannetwork/client/NetworkTeleporterScreen.java
           echo '===== V1.1.1 RENDER API AUDIT ====='
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
@@ -407,4 +414,4 @@ jobs:
 
 
 
-# source-trigger: 6e6fdba0532907279d675997e6ea8326fb7d2d11
+# source-trigger: fb72fba738cf4225404263a58f9924b92be09fd8
