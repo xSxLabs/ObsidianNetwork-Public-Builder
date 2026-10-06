@@ -1,8 +1,10 @@
 name: v1.1.1 MultiCable Compile Probe
-# Run115 trigger: Run112 parser + four-IO-only marker gate
+# Run152: enable PR observability for build-fix loop
 'on':
   workflow_dispatch:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 permissions: {contents: read}
 jobs:
