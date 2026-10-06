@@ -362,9 +362,9 @@ jobs:
           check('connectionMode(Layerl,Directiond)' in cb and 'if(l==Layer.ENERGY)returnMath.min(2,state[l.ordinal()][d.ordinal()]&255)' in cb,'energy authoritative three-state mode')
           check('connectionMode(Layer.ENERGY,exposedSide)!=2' in cb,'energy export capability side gate')
           check('connectionMode(Layer.ENERGY,exposedSide)!=1' in cb,'energy import capability side gate')
-          check('if(!energyCanImport(p,d))continue;EnergyHandlerh=' in cb and 'if(!energyCanExport(p,d))continue;EnergyHandlerh=' in cb,'energy traversal endpoint direction gates')
+          check('if(!energyCanExport(p,d))continue;EnergyHandlerh=' in cb and 'if(!energyCanImport(p,d))continue;EnergyHandlerh=' in cb,'energy traversal endpoint direction gates')
           energy_marker=(R/'assets/obsidiannetwork/v111-run128-energy-io.txt').read_text()
-          for token in ['ENERGY_DISABLED_IMPORT_EXPORT','ENERGY_IMPORT_ACCEPTS_FE_INTO_CONDUIT','ENERGY_EXPORT_EXPOSES_FE_TO_MACHINE','ENERGY_NETWORK_TRAVERSAL_RESPECTS_ENDPOINT_DIRECTION','LEGACY_SINGLE_ENERGY_CABLE_REMAINS_BIDIRECTIONAL','NETWORK_REMAINS_DIRECTIONLESS_CONNECTED_DISABLED','TELEPORTER_UNTOUCHED','POLYMORPH_UNTOUCHED']:
+          for token in ['ENERGY_DISABLED_IMPORT_EXPORT','ENERGY_IMPORT_ACCEPTS_FE_INTO_CONDUIT','ENERGY_EXPORT_EXPOSES_FE_TO_MACHINE','ENERGY_NETWORK_TRAVERSAL_RESPECTS_ENDPOINT_DIRECTION','ENERGY_EXTRACT_READS_EXPORT_ENDPOINTS','ENERGY_INSERT_WRITES_IMPORT_ENDPOINTS','LEGACY_SINGLE_ENERGY_CABLE_REMAINS_BIDIRECTIONAL','NETWORK_REMAINS_DIRECTIONLESS_CONNECTED_DISABLED','TELEPORTER_UNTOUCHED','POLYMORPH_UNTOUCHED']:
               check(token in energy_marker,'energy marker '+token)
           check('onCableConnectionsChanged(server,worldPosition)' in cb,'network topology refresh callback')
           check('if(l==Layer.NETWORK)networkChanged()' in cb,'network mutation refresh gate')
@@ -847,3 +847,4 @@ jobs:
 # run140 enlarge CI GameTest structure for bend endpoints
 # run141 runtime energy capability direction gates
 # run142 disabled energy side capability null contract
+# run143 fix reversed energy BFS endpoint semantics d8cb7ad3
