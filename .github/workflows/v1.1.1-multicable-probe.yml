@@ -404,7 +404,7 @@ jobs:
           EOF
           # Build 101 quality gates: isolated tests on reconstructed work tree.
           cat >> work/build.gradle <<'EOF'
-          dependencies { testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4' }
+          dependencies { testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'; testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4' }
           tasks.named('test') { useJUnitPlatform() }
           neoForge {
             runs {
@@ -502,3 +502,5 @@ jobs:
 # final waiting build trigger
 
 # build101 quality-gates trigger
+
+# build101 junit-platform-launcher fix
