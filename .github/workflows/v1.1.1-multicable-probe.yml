@@ -1,4 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
+# Run115 trigger: Run112 parser + four-IO-only marker gate
 'on':
   workflow_dispatch:
   push:
