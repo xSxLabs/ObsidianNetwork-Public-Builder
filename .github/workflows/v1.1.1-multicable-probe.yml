@@ -501,7 +501,7 @@ jobs:
             public static void register(RegisterGameTestsEvent event) {
               var environment = event.registerEnvironment(ENV, new TestEnvironmentDefinition.AllOf(java.util.List.of()));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "multicable_state_machine"),
-                  new StateMachineTest(new TestData<>(environment, STRUCTURE, 100, 0, true, Rotation.NONE, false, 1, 1, false)));
+                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 100, 0, true, Rotation.NONE, false, 1, 1, false)));
             }
 
             private static final class StateMachineTest extends GameTestInstance {
