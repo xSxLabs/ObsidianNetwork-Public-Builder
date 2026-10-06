@@ -660,6 +660,12 @@ jobs:
                 MultiCableBlockEntity.tick(helper.getLevel(),cable,helper.getLevel().getBlockState(cable),fluidMc);
                 check(dstFluid.getFluidInTank(0).getAmount()>0,"FLUID bundle transfer tank-to-tank");
 
+                // Isolate the bend from the preceding straight ITEM/FLUID fixture. Without this,
+                // bendA can traverse EAST through the old cable at (1,1,1) and bypass bendB's disabled export.
+                helper.getLevel().setBlock(src,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+                helper.getLevel().setBlock(cable,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+                helper.getLevel().setBlock(dst,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+
                 // Run132: multi-segment ITEM path with a 90-degree bend.
                 BlockPos bendA=helper.absolutePos(new BlockPos(0,1,1));
                 BlockPos bendB=helper.absolutePos(new BlockPos(0,1,2));
@@ -868,3 +874,4 @@ jobs:
 # run159 make legacy energy compatibility gate formatting-independent
 # run160 fix raw-regex escaping in legacy energy gate
 # run161 make bend transport tick cadence deterministic
+# run162 isolate bend fixture from preceding straight cable
