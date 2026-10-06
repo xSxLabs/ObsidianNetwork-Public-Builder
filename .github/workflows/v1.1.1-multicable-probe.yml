@@ -346,7 +346,7 @@ jobs:
           check('(m+1)%3' in cb and 'm==2' in cb and 'Endpoint(p,d)' in cb,'logistics cycle/export semantics')
           check('logisticsOpen(n,layer,d.getOpposite())' in cb,'mixed cable opposite-side traversal')
           check('dropUpgrades(l,d)' in cb and '>8' in cb,'upgrade drop/max semantics')
-          check('speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,hit.getDirection())!=1' in cblock,'upgrade installation import gate')
+          check('speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,side)!=1' in cblock,'upgrade installation import gate uses conduit arm side')
           check('playerWillDestroy(' not in block and 'getDrops(' in block,'single break-drop pipeline')
           check(all(x in ccaps for x in ['MULTI_CABLE','Energy.BLOCK','energyHandler']),'energy capability registration')
           check('onCableConnectionsChanged(server,worldPosition)' in cb,'network topology refresh callback')
