@@ -499,6 +499,7 @@ jobs:
           import net.minecraft.network.chat.Component;
           import net.minecraft.resources.Identifier;
           import net.minecraft.world.level.block.Rotation;
+          import net.minecraft.world.level.block.Blocks;
           import net.neoforged.bus.api.SubscribeEvent;
           import net.neoforged.fml.common.EventBusSubscriber;
           import net.neoforged.neoforge.event.RegisterGameTestsEvent;
@@ -697,3 +698,5 @@ jobs:
 # retrigger marker-submit placement a9e264d1
 
 # run121 conduit functional repair ddd1f02c
+
+# run124 Build103 Blocks import fix
