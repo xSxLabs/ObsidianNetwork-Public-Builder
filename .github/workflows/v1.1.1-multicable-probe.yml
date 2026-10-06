@@ -369,6 +369,8 @@ jobs:
           check('onCableConnectionsChanged(server,worldPosition)' in cb,'network topology refresh callback')
           check('if(l==Layer.NETWORK)networkChanged()' in cb,'network mutation refresh gate')
           check('ObsidianNetwork.MULTI_CABLE.get()' in topo and 'Layer.NETWORK' in topo,'topology MultiCable membership')
+          check('if(l==Layer.NETWORK){setEnabled(l,d,m!=0);return;}' in cb,'network remains directionless connected-disabled')
+          check('Layer.NETWORK' in cb and 'networkChanged()' in cb,'network shared-container state participates in topology refresh')
           check(all(x in cclient for x in ['MULTI_CABLE','CableFacadeRenderer','registerBlockEntityRenderer']),'renderer registration')
           check('replaceOnlyLayer' in item and 'setFacade(facade,rot)' in citem,'legacy cable conversion state migration')
           check('connectionSide(p,hit)' in cblock and 'hit.getDirection()' not in cblock.split('protectedInteractionResultuseItemOn',1)[-1].split('}',1)[0],'bundle arm direction authority')
@@ -818,3 +820,5 @@ jobs:
 # run134 fluid bend disable-reenable gametest
 
 # run135 directional energy source gates
+
+# run136 network shared-container source gates
