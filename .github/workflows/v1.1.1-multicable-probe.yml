@@ -739,7 +739,7 @@ jobs:
           def i32(v): return struct.pack('>i',v)
           root=b''
           root+=tag(3,'DataVersion',i32(0))
-          root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(5)+i32(3)+i32(5)
+          root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(5)+i32(3)+i32(5)  # TAG_List<int>, length=3, values 5,3,5
           # palette: one compound {Name:"minecraft:air"}
           pal=bytes([10])+name('palette')+i32(1)+tag(8,'Name',name('minecraft:air'))+b'\x00'
           root+=pal
@@ -846,3 +846,4 @@ jobs:
 # run143 fix reversed energy BFS endpoint semantics d8cb7ad3
 # run144 exact network topology shared-container gates
 # run145 remove unverified Transaction API from CI-only GameTest
+# run146 document valid 5x3x5 NBT size list
