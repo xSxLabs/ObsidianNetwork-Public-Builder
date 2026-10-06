@@ -371,7 +371,7 @@ jobs:
           check('connectionMode(Layer.ENERGY,exposedSide)!=2' in cb,'energy export capability side gate')
           check('connectionMode(Layer.ENERGY,exposedSide)!=1' in cb,'energy import capability side gate')
           check('if(!energyCanExport(p,d))continue;EnergyHandlerh=' in cb and 'if(!energyCanImport(p,d))continue;EnergyHandlerh=' in cb,'energy traversal endpoint direction gates')
-          check(re.search(r'energyCanImport\\(BlockPos p,Direction d\\).*?ENERGY_CABLE.*?isCut\\(s,d\\)',be,re.S) is not None and re.search(r'energyCanExport\\(BlockPos p,Direction d\\).*?ENERGY_CABLE.*?isCut\\(s,d\\)',be,re.S) is not None,'legacy energy cable stays bidirectional in import/export endpoint gates')
+          check(re.search(r'energyCanImport\(BlockPos p,Direction d\).*?ENERGY_CABLE.*?isCut\(s,d\)',be,re.S) is not None and re.search(r'energyCanExport\(BlockPos p,Direction d\).*?ENERGY_CABLE.*?isCut\(s,d\)',be,re.S) is not None,'legacy energy cable stays bidirectional in import/export endpoint gates')
           energy_marker=(R/'assets/obsidiannetwork/v111-run128-energy-io.txt').read_text()
           for token in ['ENERGY_DISABLED_IMPORT_EXPORT','ENERGY_IMPORT_ACCEPTS_FE_INTO_CONDUIT','ENERGY_EXPORT_EXPOSES_FE_TO_MACHINE','ENERGY_NETWORK_TRAVERSAL_RESPECTS_ENDPOINT_DIRECTION','ENERGY_EXTRACT_READS_EXPORT_ENDPOINTS','ENERGY_INSERT_WRITES_IMPORT_ENDPOINTS','ENERGY_INTERNAL_TRAVERSAL_ACCEPTS_IMPORT_AND_EXPORT_ARMS','ENERGY_EXPORT_MODE_PERSISTS_ACROSS_RELOAD','LEGACY_SINGLE_ENERGY_CABLE_REMAINS_BIDIRECTIONAL','NETWORK_REMAINS_DIRECTIONLESS_CONNECTED_DISABLED','TELEPORTER_UNTOUCHED','POLYMORPH_UNTOUCHED']:
               check(token in energy_marker,'energy marker '+token)
@@ -866,3 +866,4 @@ jobs:
 # run157 force PR synchronize with real diff
 # run158 fix smoke compact whitespace regex
 # run159 make legacy energy compatibility gate formatting-independent
+# run160 fix raw-regex escaping in legacy energy gate
