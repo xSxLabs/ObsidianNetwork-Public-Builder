@@ -760,10 +760,10 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-      - name: Upload v1.1.1 MultiCable test JAR
+      - name: Upload v1.1.1 shared-conduit test JAR
         uses: actions/upload-artifact@v4
         with:
-          name: obsidiannetwork-v1.1.1-run121-conduit-function-quality-gates
+          name: obsidiannetwork-v1.1.1-shared-conduit-quality-gates
           path: dist/*.jar
           if-no-files-found: error
           retention-days: 14
@@ -822,3 +822,5 @@ jobs:
 # run135 directional energy source gates
 
 # run136 network shared-container source gates
+
+# run137 stable shared-conduit artifact name
