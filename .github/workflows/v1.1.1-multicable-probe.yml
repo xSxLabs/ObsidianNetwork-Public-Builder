@@ -591,8 +591,9 @@ jobs:
           set -e
           cat /tmp/build103-gametest.log
           if [ "$GT_RC" -ne 0 ]; then echo "Build103 GameTest server failed rc=$GT_RC"; exit "$GT_RC"; fi
-          grep -Eq 'multicable_state_machine|BUILD103 GAMETEST' /tmp/build103-gametest.log
-          if grep -Eq 'required.*failed|GameTest.*failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
+          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(1 tests\)" /tmp/build103-gametest.log
+          grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
+          if grep -Eqi '[0-9]+ required tests failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
           echo '===== BUILD 103 REAL NEOFORGE GAMETEST PASS ====='
           # Never package CI-only GameTest hooks/resources into the user JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
