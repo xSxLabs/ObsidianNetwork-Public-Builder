@@ -562,9 +562,9 @@ jobs:
                 BlockPos src = helper.absolutePos(new BlockPos(1, 1, 0));
                 BlockPos cable = helper.absolutePos(new BlockPos(1, 1, 1));
                 BlockPos dst = helper.absolutePos(new BlockPos(1, 1, 2));
-                helper.getLevel().setBlock(src, Blocks.CHEST.defaultBlockState(), 3);
+                helper.getLevel().setBlock(src, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
                 helper.getLevel().setBlock(cable, ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(), 3);
-                helper.getLevel().setBlock(dst, Blocks.CHEST.defaultBlockState(), 3);
+                helper.getLevel().setBlock(dst, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
                 var srcChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(src);
                 var dstChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(dst);
                 var itemMc=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(cable);
