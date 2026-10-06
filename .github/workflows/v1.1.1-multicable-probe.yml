@@ -291,6 +291,8 @@ jobs:
           python3 private/v1.1.1/apply-rootcause-enderio-pass.py
           echo '===== V1.1.1 RUN92 INGAME ROOTCAUSE APPLY ====='
           python3 private/v1.1.1/apply-run92-ingame-rootcause.py
+          echo '===== V1.1.1 RUN109 ENDERIO CABLE GEOMETRY APPLY ====='
+          python3 private/v1.1.1/apply-run109-enderio-cables.py
           echo '===== V1.1.1 ROOTCAUSE SMOKE ====='
           python3 - <<'PY'
           from pathlib import Path
@@ -610,7 +612,7 @@ jobs:
       - name: Upload v1.1.1 MultiCable test JAR
         uses: actions/upload-artifact@v4
         with:
-          name: obsidiannetwork-v1.1.1-build103-gametest-quality-gates
+          name: obsidiannetwork-v1.1.1-run109-enderio-cables-ingame-test
           path: dist/*.jar
           if-no-files-found: error
           retention-days: 14
