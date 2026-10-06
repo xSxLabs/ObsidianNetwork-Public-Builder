@@ -369,6 +369,10 @@ jobs:
           check('onCableConnectionsChanged(server,worldPosition)' in cb,'network topology refresh callback')
           check('if(l==Layer.NETWORK)networkChanged()' in cb,'network mutation refresh gate')
           check('ObsidianNetwork.MULTI_CABLE.get()' in topo and 'Layer.NETWORK' in topo,'topology MultiCable membership')
+          ctopo=compact(topo)
+          check('mc.enabled(dev.obsidiannetwork.blockentity.MultiCableBlockEntity.Layer.NETWORK,direction)' in ctopo,'topology local MultiCable side gate')
+          check('mc.enabled(dev.obsidiannetwork.blockentity.MultiCableBlockEntity.Layer.NETWORK,direction.getOpposite())' in ctopo,'topology neighbour MultiCable opposite-side gate')
+          check('mc.has(dev.obsidiannetwork.blockentity.MultiCableBlockEntity.Layer.NETWORK)' in ctopo,'topology MultiCable network membership gate')
           check('if(l==Layer.NETWORK){setEnabled(l,d,m!=0);return;}' in cb,'network remains directionless connected-disabled')
           check('Layer.NETWORK' in cb and 'networkChanged()' in cb,'network shared-container state participates in topology refresh')
           check(all(x in cclient for x in ['MULTI_CABLE','CableFacadeRenderer','registerBlockEntityRenderer']),'renderer registration')
@@ -848,3 +852,4 @@ jobs:
 # run141 runtime energy capability direction gates
 # run142 disabled energy side capability null contract
 # run143 fix reversed energy BFS endpoint semantics d8cb7ad3
+# run144 exact network topology shared-container gates
