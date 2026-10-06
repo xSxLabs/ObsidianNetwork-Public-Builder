@@ -709,3 +709,5 @@ jobs:
 # run121 conduit functional repair ddd1f02c
 
 # run124 Build103 Blocks import fix
+
+# run129 resilient energy IO patch 836abc00
