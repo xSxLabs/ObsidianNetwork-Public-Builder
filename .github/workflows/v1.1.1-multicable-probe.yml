@@ -467,7 +467,7 @@ jobs:
           neoForge {
             runs {
               gameTestServer {
-                gameTestServer()
+                type = "gameTestServer"
                 systemProperty 'neoforge.enabledGameTestNamespaces', 'obsidiannetwork'
               }
             }
