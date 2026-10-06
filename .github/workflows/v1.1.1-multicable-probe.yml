@@ -461,6 +461,142 @@ jobs:
           grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/build101-server.log
           if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
           echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
+          echo '===== BUILD 103 REAL NEOFORGE GAMETEST GATE ====='
+          # Test-only source/resource injection into the reconstructed CI worktree. Removed before packaging.
+          cat >> work/build.gradle <<'EOF'
+          neoForge {
+            runs {
+              gameTestServer {
+                gameTestServer()
+                systemProperty 'neoforge.enabledGameTestNamespaces', 'obsidiannetwork'
+              }
+            }
+          }
+          EOF
+          mkdir -p work/src/main/java/dev/obsidiannetwork/build103 work/src/main/resources/data/obsidiannetwork/structure
+          cat > work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java <<'EOF'
+          package dev.obsidiannetwork.build103;
+
+          import dev.obsidiannetwork.ObsidianNetwork;
+          import dev.obsidiannetwork.blockentity.MultiCableBlockEntity;
+          import net.minecraft.core.BlockPos;
+          import net.minecraft.core.Direction;
+          import net.minecraft.gametest.framework.GameTestHelper;
+          import net.minecraft.gametest.framework.GameTestInstance;
+          import net.minecraft.gametest.framework.TestData;
+          import net.minecraft.gametest.framework.TestEnvironmentDefinition;
+          import net.minecraft.network.chat.Component;
+          import net.minecraft.resources.Identifier;
+          import net.minecraft.world.level.block.Rotation;
+          import net.neoforged.bus.api.SubscribeEvent;
+          import net.neoforged.fml.common.EventBusSubscriber;
+          import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+
+          @EventBusSubscriber(modid = "obsidiannetwork")
+          public final class Build103GameTests {
+            private static final Identifier ENV = Identifier.fromNamespaceAndPath("obsidiannetwork", "build103_env");
+            private static final Identifier STRUCTURE = Identifier.fromNamespaceAndPath("obsidiannetwork", "build103_empty");
+
+            @SubscribeEvent
+            public static void register(RegisterGameTestsEvent event) {
+              var environment = event.registerEnvironment(ENV, new TestEnvironmentDefinition.AllOf(java.util.List.of()));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "multicable_state_machine"),
+                  new StateMachineTest(new TestData<>(environment, STRUCTURE, 100, 0, true, Rotation.NONE, false, 1, 1, false)));
+            }
+
+            private static final class StateMachineTest extends GameTestInstance {
+              StateMachineTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data) { super(data); }
+
+              @Override public void run(GameTestHelper helper) {
+                BlockPos p = helper.absolutePos(new BlockPos(1, 1, 1));
+                helper.getLevel().setBlock(p, ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(), 3);
+                if (!(helper.getLevel().getBlockEntity(p) instanceof MultiCableBlockEntity mc))
+                  throw new IllegalStateException("MultiCable block entity missing");
+
+                check(mc.layerCount() == 1 && mc.has(MultiCableBlockEntity.Layer.NETWORK), "default NETWORK layer");
+                check(mc.add(MultiCableBlockEntity.Layer.ITEM), "add ITEM layer");
+                check(mc.add(MultiCableBlockEntity.Layer.FLUID), "add FLUID layer");
+                check(mc.add(MultiCableBlockEntity.Layer.ENERGY), "add ENERGY layer");
+                check(mc.layerCount() == 4, "four layers present");
+                check(!mc.add(MultiCableBlockEntity.Layer.ITEM), "duplicate layer rejected");
+
+                mc.setEnabled(MultiCableBlockEntity.Layer.ITEM, Direction.EAST, false);
+                check(!mc.enabled(MultiCableBlockEntity.Layer.ITEM, Direction.EAST), "ITEM east disconnect");
+                check(mc.enabled(MultiCableBlockEntity.Layer.ITEM, Direction.WEST), "ITEM west remains connected");
+                mc.setLogistics(MultiCableBlockEntity.Layer.ITEM, Direction.EAST, 1, 3, 4);
+                check(mc.logisticsMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 1, "ITEM import mode");
+                check(mc.logisticsSpeed(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 3, "speed state");
+                check(mc.logisticsStack(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 4, "stack state");
+                mc.setEnabled(MultiCableBlockEntity.Layer.ITEM, Direction.EAST, true);
+                mc.forceConnectionSync();
+                check(mc.enabled(MultiCableBlockEntity.Layer.ITEM, Direction.EAST), "ITEM reconnect");
+                check(mc.logisticsMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 1, "mode retained after reconnect");
+
+                mc.cycleLogistics(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH);
+                check(mc.logisticsMode(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH) == 1, "FLUID OFF->IMPORT");
+                mc.cycleLogistics(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH);
+                check(mc.logisticsMode(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH) == 2, "FLUID IMPORT->EXPORT");
+                mc.cycleLogistics(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH);
+                check(mc.logisticsMode(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH) == 0, "FLUID EXPORT->OFF");
+
+                check(mc.remove(MultiCableBlockEntity.Layer.ENERGY), "remove ENERGY");
+                check(!mc.has(MultiCableBlockEntity.Layer.ENERGY), "ENERGY removed");
+                check(mc.remove(MultiCableBlockEntity.Layer.FLUID), "remove FLUID");
+                check(mc.remove(MultiCableBlockEntity.Layer.ITEM), "remove ITEM");
+                check(mc.layerCount() == 1, "one layer remains");
+                check(!mc.remove(MultiCableBlockEntity.Layer.NETWORK), "cannot remove last layer");
+                helper.succeed();
+              }
+
+              private static void check(boolean ok, String message) {
+                if (!ok) throw new IllegalStateException("BUILD103 GAMETEST: " + message);
+              }
+
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec() {
+                throw new UnsupportedOperationException("Build103 CI-only test instance is registered in code");
+              }
+
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription() {
+                return Component.literal("Build 103 MultiCable state-machine GameTest");
+              }
+            }
+          }
+          EOF
+          python3 - <<'PY'
+          from pathlib import Path
+          import gzip, struct
+          # Minimal valid 3x3x3 empty structure template for the CI-only GameTest.
+          def name(s):
+              b=s.encode(); return struct.pack('>H',len(b))+b
+          def tag(t,n,payload): return bytes([t])+name(n)+payload
+          def i32(v): return struct.pack('>i',v)
+          root=b''
+          root+=tag(3,'DataVersion',i32(0))
+          root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(3)+i32(3)+i32(3)
+          # palette: one compound {Name:"minecraft:air"}
+          pal=bytes([10])+name('palette')+i32(1)+tag(8,'Name',name('minecraft:air'))+b'\x00'
+          root+=pal
+          root+=bytes([9])+name('blocks')+bytes([10])+i32(0)
+          root+=bytes([9])+name('entities')+bytes([10])+i32(0)
+          data=bytes([10])+name('')+root+b'\x00'
+          p=Path('work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt')
+          with gzip.open(p,'wb') as g:g.write(data)
+          print('BUILD103 GAMETEST STRUCTURE WRITTEN',p)
+          PY
+          # Compile the test-only registration first so API drift fails clearly.
+          (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
+          set +e
+          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-gametest.log 2>&1
+          GT_RC=$?
+          set -e
+          cat /tmp/build103-gametest.log
+          if [ "$GT_RC" -ne 0 ]; then echo "Build103 GameTest server failed rc=$GT_RC"; exit "$GT_RC"; fi
+          grep -Eq 'multicable_state_machine|BUILD103 GAMETEST' /tmp/build103-gametest.log
+          if grep -Eq 'required.*failed|GameTest.*failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
+          echo '===== BUILD 103 REAL NEOFORGE GAMETEST PASS ====='
+          # Never package CI-only GameTest hooks/resources into the user JAR.
+          rm -rf work/src/main/java/dev/obsidiannetwork/build103
+          rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
           echo '===== BUILD 101 FINAL BUILD ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
@@ -473,7 +609,7 @@ jobs:
       - name: Upload v1.1.1 MultiCable test JAR
         uses: actions/upload-artifact@v4
         with:
-          name: obsidiannetwork-v1.1.1-build101-quality-gates
+          name: obsidiannetwork-v1.1.1-build103-gametest-quality-gates
           path: dist/*.jar
           if-no-files-found: error
           retention-days: 14
@@ -504,3 +640,4 @@ jobs:
 # build101 quality-gates trigger
 
 # build101 junit-platform-launcher fix
+# build103 real-neoforge-gametest gate
