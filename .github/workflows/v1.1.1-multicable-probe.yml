@@ -300,6 +300,11 @@ jobs:
           python3 private/v1.1.1/apply-run112-io-function-face.py
           echo '===== V1.1.1 RUN121 CONDUIT FUNCTION APPLY ====='
           python3 private/v1.1.1/apply-run121-conduit-function.py
+          echo '===== RUN126 CONDUIT GUI API PROBE ====='
+          sed -n '1,240p' work/src/main/java/dev/obsidiannetwork/registry/ModMenus.java
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/ClientModEvents.java
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/menu/NetworkTankMenu.java || true
+          grep -R "openMenu" -n work/src/main/java/dev/obsidiannetwork/block work/src/main/java/dev/obsidiannetwork/blockentity | head -40 || true
           echo '===== V1.1.1 ROOTCAUSE SMOKE ====='
           python3 - <<'PY'
           from pathlib import Path
