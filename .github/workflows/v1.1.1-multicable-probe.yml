@@ -6,6 +6,7 @@ name: v1.1.1 MultiCable Compile Probe
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened]
 permissions: {contents: read}
 jobs:
   inspect:
