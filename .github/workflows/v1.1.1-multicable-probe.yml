@@ -649,14 +649,16 @@ jobs:
                 bendSrcChest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT,4));
                 for(int i=0;i<4;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
                 check(bendDstChest.getItem(0).getCount()>0,"ITEM multi-segment bend transfer");
-                int before=bendDstChest.getItem(0).getCount();
+                int before=0; for(int slot=0;slot<bendDstChest.getContainerSize();slot++) before+=bendDstChest.getItem(slot).getCount();
                 bendMcB.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.EAST,0);
                 bendSrcChest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLD_INGOT,4));
                 for(int i=0;i<3;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
-                check(bendDstChest.getItem(0).getCount()==before,"ITEM disabled endpoint blocks bend transfer");
+                int disabledTotal=0; for(int slot=0;slot<bendDstChest.getContainerSize();slot++) disabledTotal+=bendDstChest.getItem(slot).getCount();
+                check(disabledTotal==before,"ITEM disabled endpoint blocks bend transfer");
                 bendMcB.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.EAST,2);
                 for(int i=0;i<3;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
-                check(bendDstChest.getItem(0).getCount()>before,"ITEM re-enabled endpoint resumes bend transfer");
+                int reenabledTotal=0; for(int slot=0;slot<bendDstChest.getContainerSize();slot++) reenabledTotal+=bendDstChest.getItem(slot).getCount();
+                check(reenabledTotal>before,"ITEM re-enabled endpoint resumes bend transfer");
 
                 helper.succeed();
               }
@@ -775,3 +777,4 @@ jobs:
 # run131 deterministic energy menu 8398671b
 
 # run132 shared-conduit real gametest matrix
+# run133 fix bend re-enable inventory assertion
