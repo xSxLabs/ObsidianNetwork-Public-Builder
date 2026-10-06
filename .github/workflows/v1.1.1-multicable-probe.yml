@@ -358,6 +358,14 @@ jobs:
           check('speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,side)!=1' in cblock,'upgrade installation import gate uses conduit arm side')
           check('playerWillDestroy(' not in block and 'getDrops(' in block,'single break-drop pipeline')
           check(all(x in ccaps for x in ['MULTI_CABLE','Energy.BLOCK','energyHandler']),'energy capability registration')
+          # Run135: fail hard if directional Energy semantics silently disappear from the reconstructed source.
+          check('connectionMode(Layerl,Directiond)' in cb and 'if(l==Layer.ENERGY)returnMath.min(2,state[l.ordinal()][d.ordinal()]&255)' in cb,'energy authoritative three-state mode')
+          check('connectionMode(Layer.ENERGY,exposedSide)!=2' in cb,'energy export capability side gate')
+          check('connectionMode(Layer.ENERGY,exposedSide)!=1' in cb,'energy import capability side gate')
+          check('energyCanImport(p,d)' in cb and 'energyCanExport(p,d)' in cb,'energy traversal endpoint direction gates')
+          energy_marker=(R/'assets/obsidiannetwork/v111-run128-energy-io.txt').read_text()
+          for token in ['ENERGY_DISABLED_IMPORT_EXPORT','ENERGY_IMPORT_ACCEPTS_FE_INTO_CONDUIT','ENERGY_EXPORT_EXPOSES_FE_TO_MACHINE','ENERGY_NETWORK_TRAVERSAL_RESPECTS_ENDPOINT_DIRECTION','LEGACY_SINGLE_ENERGY_CABLE_REMAINS_BIDIRECTIONAL','NETWORK_REMAINS_DIRECTIONLESS_CONNECTED_DISABLED','TELEPORTER_UNTOUCHED','POLYMORPH_UNTOUCHED']:
+              check(token in energy_marker,'energy marker '+token)
           check('onCableConnectionsChanged(server,worldPosition)' in cb,'network topology refresh callback')
           check('if(l==Layer.NETWORK)networkChanged()' in cb,'network mutation refresh gate')
           check('ObsidianNetwork.MULTI_CABLE.get()' in topo and 'Layer.NETWORK' in topo,'topology MultiCable membership')
@@ -808,3 +816,5 @@ jobs:
 # run133 fix bend re-enable inventory assertion
 
 # run134 fluid bend disable-reenable gametest
+
+# run135 directional energy source gates
