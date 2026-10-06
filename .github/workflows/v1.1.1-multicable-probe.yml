@@ -303,6 +303,11 @@ jobs:
           echo '===== V1.1.1 RUN127 ENDERIO CONDUIT CONTAINER APPLY ====='
           python3 private/v1.1.1/apply-run127-enderio-conduit-container.py
           echo '===== V1.1.1 RUN128 ENERGY IO APPLY ====='
+          git -C private rev-parse HEAD
+          git -C private log -1 --oneline
+          grep -q 'ENERGY_EXPORT_MODE_PERSISTS_ACROSS_RELOAD' private/v1.1.1/apply-run128-energy-io.py
+          grep -q "energyCanExport')" private/v1.1.1/apply-run128-energy-io.py
+          grep -q "energyCanImport')" private/v1.1.1/apply-run128-energy-io.py
           python3 private/v1.1.1/apply-run128-energy-io.py
           echo '===== RUN126 CONDUIT GUI API PROBE ====='
           sed -n '1,240p' work/src/main/java/dev/obsidiannetwork/registry/ModMenus.java
@@ -850,3 +855,4 @@ jobs:
 # run146 document valid 5x3x5 NBT size list
 # run147 energy traversal invariant marker 151d841f
 # run148 energy export persistence fix 34dd45aa
+# run149 prove private build head contains energy fixes
