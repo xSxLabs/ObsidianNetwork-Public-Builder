@@ -298,6 +298,8 @@ jobs:
           python3 private/v1.1.1/apply-run110-full-conduit.py
           echo '===== V1.1.1 RUN112 IO FUNCTION FACE APPLY ====='
           python3 private/v1.1.1/apply-run112-io-function-face.py
+          echo '===== V1.1.1 RUN121 CONDUIT FUNCTION APPLY ====='
+          python3 private/v1.1.1/apply-run121-conduit-function.py
           echo '===== V1.1.1 ROOTCAUSE SMOKE ====='
           python3 - <<'PY'
           from pathlib import Path
@@ -352,6 +354,8 @@ jobs:
           check('ObsidianNetwork.MULTI_CABLE.get()' in topo and 'Layer.NETWORK' in topo,'topology MultiCable membership')
           check(all(x in cclient for x in ['MULTI_CABLE','CableFacadeRenderer','registerBlockEntityRenderer']),'renderer registration')
           check('replaceOnlyLayer' in item and 'setFacade(facade,rot)' in citem,'legacy cable conversion state migration')
+          check('connectionSide(p,hit)' in cblock and 'hit.getDirection()' not in cblock.split('protectedInteractionResultuseItemOn',1)[-1].split('}',1)[0],'bundle arm direction authority')
+          check('ioMode' in (J/'client/render/MultiCableRenderer.java').read_text() and 'collar(' in (J/'client/render/MultiCableRenderer.java').read_text(),'bundle IO collar renderer')
           bs=json.loads((R/'assets/obsidiannetwork/blockstates/multi_cable.json').read_text())
           assert bs=={'variants':{'':{'model':'obsidiannetwork:block/multi_cable_empty'}}}, bs
           for p in [
@@ -552,6 +556,40 @@ jobs:
                 check(mc.remove(MultiCableBlockEntity.Layer.ITEM), "remove ITEM");
                 check(mc.layerCount() == 1, "one layer remains");
                 check(!mc.remove(MultiCableBlockEntity.Layer.NETWORK), "cannot remove last layer");
+
+                // Real ITEM transport through a bundle: chest -> MultiCable ITEM -> chest.
+                BlockPos src = helper.absolutePos(new BlockPos(1, 1, 0));
+                BlockPos cable = helper.absolutePos(new BlockPos(1, 1, 1));
+                BlockPos dst = helper.absolutePos(new BlockPos(1, 1, 2));
+                helper.getLevel().setBlock(src, Blocks.CHEST.defaultBlockState(), 3);
+                helper.getLevel().setBlock(cable, ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(), 3);
+                helper.getLevel().setBlock(dst, Blocks.CHEST.defaultBlockState(), 3);
+                var srcChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(src);
+                var dstChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(dst);
+                var itemMc=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(cable);
+                itemMc.add(MultiCableBlockEntity.Layer.ITEM);
+                itemMc.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.NORTH,1,8,0);
+                itemMc.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.SOUTH,2,0,0);
+                srcChest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COBBLESTONE,8));
+                MultiCableBlockEntity.tick(helper.getLevel(),cable,helper.getLevel().getBlockState(cable),itemMc);
+                check(dstChest.getItem(0).getCount()>0,"ITEM bundle transfer chest-to-chest");
+
+                // Real FLUID transport through a bundle: network tank -> MultiCable FLUID -> network tank.
+                helper.getLevel().setBlock(src, ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(), 3);
+                helper.getLevel().setBlock(cable, ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(), 3);
+                helper.getLevel().setBlock(dst, ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(), 3);
+                var srcTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(src);
+                var dstTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(dst);
+                var fluidMc=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(cable);
+                fluidMc.add(MultiCableBlockEntity.Layer.FLUID);
+                fluidMc.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1,8,0);
+                fluidMc.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.SOUTH,2,0,0);
+                var srcFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(srcTank.tank());
+                var dstFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dstTank.tank());
+                srcFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,1000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                MultiCableBlockEntity.tick(helper.getLevel(),cable,helper.getLevel().getBlockState(cable),fluidMc);
+                check(dstFluid.getFluidInTank(0).getAmount()>0,"FLUID bundle transfer tank-to-tank");
+
                 helper.succeed();
               }
 
@@ -617,7 +655,7 @@ jobs:
       - name: Upload v1.1.1 MultiCable test JAR
         uses: actions/upload-artifact@v4
         with:
-          name: obsidiannetwork-v1.1.1-run112-conduit-io-quality-gates
+          name: obsidiannetwork-v1.1.1-run121-conduit-function-quality-gates
           path: dist/*.jar
           if-no-files-found: error
           retention-days: 14
@@ -657,3 +695,5 @@ jobs:
 # retrigger real-newline Run112 fix 7c8b74c2
 
 # retrigger marker-submit placement a9e264d1
+
+# run121 conduit functional repair ddd1f02c
