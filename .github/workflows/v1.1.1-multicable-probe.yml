@@ -370,9 +370,9 @@ jobs:
           check('playerWillDestroy(' not in block and 'getDrops(' in block,'single break-drop pipeline')
           check(all(x in ccaps for x in ['MULTI_CABLE','Energy.BLOCK','energyHandler']),'energy capability registration')
           # Run135: fail hard if directional Energy semantics silently disappear from the reconstructed source.
-          check('connectionMode(Layerl,Directiond)' in cb and 'if(l==Layer.ENERGY)returnMath.min(2,state[l.ordinal()][d.ordinal()]&255)' in cb,'energy authoritative three-state mode')
-          check('connectionMode(Layer.ENERGY,exposedSide)!=2' in cb,'energy export capability side gate')
-          check('connectionMode(Layer.ENERGY,exposedSide)!=1' in cb,'energy import capability side gate')
+          check('connectionMode(Layerl,Directiond)' in cb and 'conduitCanInsert(Layerl,Directiond)' in cb and 'conduitCanExtract(Layerl,Directiond)' in cb,'energy authoritative independent insert/extract flags')
+          check('!conduitCanExtract(Layer.ENERGY,exposedSide)' in cb,'energy export capability side gate')
+          check('!conduitCanInsert(Layer.ENERGY,exposedSide)' in cb,'energy import capability side gate')
           check('if(!energyCanExport(p,d))continue;EnergyHandlerh=' in cb and 'if(!energyCanImport(p,d))continue;EnergyHandlerh=' in cb,'energy traversal endpoint direction gates')
           check(re.search(r'energyCanImport\(BlockPos p,Direction d\).*?ENERGY_CABLE.*?isCut\(s,d\)',be,re.S) is not None and re.search(r'energyCanExport\(BlockPos p,Direction d\).*?ENERGY_CABLE.*?isCut\(s,d\)',be,re.S) is not None,'legacy energy cable stays bidirectional in import/export endpoint gates')
           energy_marker=(R/'assets/obsidiannetwork/v111-run128-energy-io.txt').read_text()
