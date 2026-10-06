@@ -302,6 +302,8 @@ jobs:
           python3 private/v1.1.1/apply-run121-conduit-function.py
           echo '===== V1.1.1 RUN127 ENDERIO CONDUIT CONTAINER APPLY ====='
           python3 private/v1.1.1/apply-run127-enderio-conduit-container.py
+          echo '===== V1.1.1 RUN128 ENERGY IO APPLY ====='
+          python3 private/v1.1.1/apply-run128-energy-io.py
           echo '===== RUN126 CONDUIT GUI API PROBE ====='
           sed -n '1,240p' work/src/main/java/dev/obsidiannetwork/registry/ModMenus.java
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/ClientModEvents.java
