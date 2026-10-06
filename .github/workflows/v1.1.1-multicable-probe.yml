@@ -598,6 +598,24 @@ jobs:
                 check(mc.connectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN) == 2, "ENERGY export");
                 check(mc.connectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.UP) != 2, "ENERGY per-side isolation");
 
+                // Runtime capability direction: disabled rejects both, import accepts insert only, export allows extract only.
+                mc.setConnectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN, 0);
+                var e0=mc.energyHandler(Direction.DOWN);
+                try(var tx=net.neoforged.neoforge.transfer.transaction.Transaction.openOuter()){
+                  check(e0.insert(100,tx)==0,"ENERGY disabled rejects insert");
+                  check(e0.extract(100,tx)==0,"ENERGY disabled rejects extract");
+                }
+                mc.setConnectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN, 1);
+                var eIn=mc.energyHandler(Direction.DOWN);
+                try(var tx=net.neoforged.neoforge.transfer.transaction.Transaction.openOuter()){
+                  check(eIn.extract(100,tx)==0,"ENERGY import rejects extract");
+                }
+                mc.setConnectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN, 2);
+                var eOut=mc.energyHandler(Direction.DOWN);
+                try(var tx=net.neoforged.neoforge.transfer.transaction.Transaction.openOuter()){
+                  check(eOut.insert(100,tx)==0,"ENERGY export rejects insert");
+                }
+
                 check(mc.remove(MultiCableBlockEntity.Layer.ENERGY), "remove ENERGY");
                 check(!mc.has(MultiCableBlockEntity.Layer.ENERGY), "ENERGY removed");
                 check(mc.remove(MultiCableBlockEntity.Layer.FLUID), "remove FLUID");
@@ -829,3 +847,4 @@ jobs:
 # run138 exact directional energy traversal source gate
 # run139 explicit fluid bend endpoint modes
 # run140 enlarge CI GameTest structure for bend endpoints
+# run141 runtime energy capability direction gates
