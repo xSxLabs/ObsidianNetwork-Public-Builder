@@ -356,7 +356,7 @@ jobs:
           topo=(J/'dev/obsidiannetwork/network/WorldTopologyBridge.java').read_text()
           client=(J/'dev/obsidiannetwork/client/ClientModEvents.java').read_text()
           legacy=(J/'dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java').read_text()
-          compact=lambda s: re.sub(r'\\s+','',s)
+          compact=lambda s: re.sub(r'\s+','',s)
           cb=compact(be); cblock=compact(block); clegacy=compact(legacy); ccaps=compact(caps); cclient=compact(client); citem=compact(item)
           def check(ok,name):
               assert ok, name
@@ -371,7 +371,7 @@ jobs:
           check('connectionMode(Layer.ENERGY,exposedSide)!=2' in cb,'energy export capability side gate')
           check('connectionMode(Layer.ENERGY,exposedSide)!=1' in cb,'energy import capability side gate')
           check('if(!energyCanExport(p,d))continue;EnergyHandlerh=' in cb and 'if(!energyCanImport(p,d))continue;EnergyHandlerh=' in cb,'energy traversal endpoint direction gates')
-          check(cb.count('if(s.is(ObsidianNetwork.ENERGY_CABLE.get()))return!EnergyCableBlock.isCut(s,d);')==2,'legacy energy cable stays bidirectional in import/export endpoint gates')
+          check(re.search(r'energyCanImport\(BlockPos p,Direction d\).*?ENERGY_CABLE.*?isCut\(s,d\)',be,re.S) is not None and re.search(r'energyCanExport\(BlockPos p,Direction d\).*?ENERGY_CABLE.*?isCut\(s,d\)',be,re.S) is not None,'legacy energy cable stays bidirectional in import/export endpoint gates')
           energy_marker=(R/'assets/obsidiannetwork/v111-run128-energy-io.txt').read_text()
           for token in ['ENERGY_DISABLED_IMPORT_EXPORT','ENERGY_IMPORT_ACCEPTS_FE_INTO_CONDUIT','ENERGY_EXPORT_EXPOSES_FE_TO_MACHINE','ENERGY_NETWORK_TRAVERSAL_RESPECTS_ENDPOINT_DIRECTION','ENERGY_EXTRACT_READS_EXPORT_ENDPOINTS','ENERGY_INSERT_WRITES_IMPORT_ENDPOINTS','ENERGY_INTERNAL_TRAVERSAL_ACCEPTS_IMPORT_AND_EXPORT_ARMS','ENERGY_EXPORT_MODE_PERSISTS_ACROSS_RELOAD','LEGACY_SINGLE_ENERGY_CABLE_REMAINS_BIDIRECTIONAL','NETWORK_REMAINS_DIRECTIONLESS_CONNECTED_DISABLED','TELEPORTER_UNTOUCHED','POLYMORPH_UNTOUCHED']:
               check(token in energy_marker,'energy marker '+token)
@@ -660,6 +660,12 @@ jobs:
                 MultiCableBlockEntity.tick(helper.getLevel(),cable,helper.getLevel().getBlockState(cable),fluidMc);
                 check(dstFluid.getFluidInTank(0).getAmount()>0,"FLUID bundle transfer tank-to-tank");
 
+                // Isolate the bend from the preceding straight ITEM/FLUID fixture. Without this,
+                // bendA can traverse EAST through the old cable at (1,1,1) and bypass bendB's disabled export.
+                helper.getLevel().setBlock(src,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+                helper.getLevel().setBlock(cable,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+                helper.getLevel().setBlock(dst,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+
                 // Run132: multi-segment ITEM path with a 90-degree bend.
                 BlockPos bendA=helper.absolutePos(new BlockPos(0,1,1));
                 BlockPos bendB=helper.absolutePos(new BlockPos(0,1,2));
@@ -674,7 +680,7 @@ jobs:
                 var bendMcA=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendA);
                 var bendMcB=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendB);
                 bendMcA.add(MultiCableBlockEntity.Layer.ITEM); bendMcB.add(MultiCableBlockEntity.Layer.ITEM);
-                bendMcA.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.NORTH,1);
+                bendMcA.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.NORTH,1,8,0);
                 bendMcA.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.SOUTH,1);
                 bendMcB.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.NORTH,1);
                 bendMcB.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.EAST,2);
@@ -702,7 +708,7 @@ jobs:
                 var fluidA=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendA);
                 var fluidB=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendB);
                 fluidA.add(MultiCableBlockEntity.Layer.FLUID); fluidB.add(MultiCableBlockEntity.Layer.FLUID);
-                fluidA.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1);
+                fluidA.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1,8,0);
                 fluidA.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.SOUTH,1);
                 fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1);
                 fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST,2);
@@ -862,3 +868,10 @@ jobs:
 # run149 prove private build head contains energy fixes
 # run150 exact pre-build energy direction proof
 # run151 legacy energy bidirectional compatibility gate
+
+# run157 force PR synchronize with real diff
+# run158 fix smoke compact whitespace regex
+# run159 make legacy energy compatibility gate formatting-independent
+# run160 fix raw-regex escaping in legacy energy gate
+# run161 make bend transport tick cadence deterministic
+# run162 isolate bend fixture from preceding straight cable
