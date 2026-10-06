@@ -660,6 +660,34 @@ jobs:
                 int reenabledTotal=0; for(int slot=0;slot<bendDstChest.getContainerSize();slot++) reenabledTotal+=bendDstChest.getItem(slot).getCount();
                 check(reenabledTotal>before,"ITEM re-enabled endpoint resumes bend transfer");
 
+                // Run134: multi-segment FLUID path with the same 90-degree bend.
+                helper.getLevel().setBlock(bendSrc,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(bendA,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(bendB,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(bendDst,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                var bendSrcTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(bendSrc);
+                var bendDstTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(bendDst);
+                var fluidA=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendA);
+                var fluidB=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendB);
+                fluidA.add(MultiCableBlockEntity.Layer.FLUID); fluidB.add(MultiCableBlockEntity.Layer.FLUID);
+                fluidA.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1);
+                fluidA.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.SOUTH,1);
+                fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1);
+                fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST,2);
+                var bendSrcFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(bendSrcTank.tank());
+                var bendDstFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(bendDstTank.tank());
+                bendSrcFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,2000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                for(int i=0;i<4;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
+                check(bendDstFluid.getFluidInTank(0).getAmount()>0,"FLUID multi-segment bend transfer");
+                int fluidBefore=bendDstFluid.getFluidInTank(0).getAmount();
+                fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST,0);
+                bendSrcFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,1000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                for(int i=0;i<3;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
+                check(bendDstFluid.getFluidInTank(0).getAmount()==fluidBefore,"FLUID disabled endpoint blocks bend transfer");
+                fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST,2);
+                for(int i=0;i<3;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
+                check(bendDstFluid.getFluidInTank(0).getAmount()>fluidBefore,"FLUID re-enabled endpoint resumes bend transfer");
+
                 helper.succeed();
               }
 
@@ -778,3 +806,5 @@ jobs:
 
 # run132 shared-conduit real gametest matrix
 # run133 fix bend re-enable inventory assertion
+
+# run134 fluid bend disable-reenable gametest
