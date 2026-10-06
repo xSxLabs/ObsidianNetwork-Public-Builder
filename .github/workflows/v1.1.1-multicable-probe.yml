@@ -713,3 +713,5 @@ jobs:
 # run129 resilient energy IO patch 836abc00
 
 # run130 energy IO menu-source alignment f6bdfc8b
+
+# run131 deterministic energy menu 8398671b
