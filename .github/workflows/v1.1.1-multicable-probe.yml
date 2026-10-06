@@ -727,7 +727,7 @@ jobs:
           def i32(v): return struct.pack('>i',v)
           root=b''
           root+=tag(3,'DataVersion',i32(0))
-          root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(3)+i32(3)+i32(3)
+          root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(5)+i32(3)+i32(5)
           # palette: one compound {Name:"minecraft:air"}
           pal=bytes([10])+name('palette')+i32(1)+tag(8,'Name',name('minecraft:air'))+b'\x00'
           root+=pal
@@ -828,3 +828,4 @@ jobs:
 # run137 stable shared-conduit artifact name
 # run138 exact directional energy traversal source gate
 # run139 explicit fluid bend endpoint modes
+# run140 enlarge CI GameTest structure for bend endpoints
