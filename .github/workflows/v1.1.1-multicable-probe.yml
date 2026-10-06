@@ -402,6 +402,70 @@ jobs:
           PY
           cat >> work/build.gradle <<'EOF'
           EOF
+          # Build 101 quality gates: isolated tests on reconstructed work tree.
+          cat >> work/build.gradle <<'EOF'
+          dependencies { testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4' }
+          tasks.named('test') { useJUnitPlatform() }
+          neoForge {
+            runs {
+              server {
+                server()
+                programArgument '--nogui'
+              }
+            }
+          }
+          EOF
+          mkdir -p work/src/test/java/dev/obsidiannetwork
+          cat > work/src/test/java/dev/obsidiannetwork/Build101ResourceTest.java <<'EOF'
+          package dev.obsidiannetwork;
+          import static org.junit.jupiter.api.Assertions.*;
+          import java.nio.file.*;
+          import org.junit.jupiter.api.Test;
+          class Build101ResourceTest {
+            @Test void requiredRun92MarkerIsPackagedInSourceResources() throws Exception {
+              String s=Files.readString(Path.of("src/main/resources/assets/obsidiannetwork/v111-run92-ingame-rootcause.txt"));
+              for(String k:new String[]{"CONNECTION_SIDE_FROM_HIT_POSITION","SERVER_MENU_SIDE_AUTHORITATIVE","IMPORT_EXPORT_RECONNECT_FINAL_SYNC","CABLE_BODY_TEXTURE_PREFERRED","FACADED_IO_BASE_MODEL_HIDDEN","TELEPORTER_INVENTORY_LABEL_REMOVED_ONLY","LEGACY_ADJACENT_TO_BUNDLE_CONVERTS_TO_THIN_LAYER","CRAFTING_LOOT_ASSERTED","POLYMORPH_UNTOUCHED"}) assertTrue(s.contains(k),k);
+            }
+            @Test void requiredRecipesAndLootExist() {
+              for(String n:new String[]{"network_cable","item_cable","fluid_cable","energy_cable","network_teleporter"}) {
+                assertTrue(Files.exists(Path.of("src/main/resources/data/obsidiannetwork/recipe/"+n+".json")), "recipe "+n);
+                assertTrue(Files.exists(Path.of("src/main/resources/data/obsidiannetwork/loot_table/blocks/"+n+".json")), "loot "+n);
+              }
+            }
+          }
+          EOF
+          echo '===== BUILD 101 JSON/RESOURCE GATE ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          files=list(Path('work/src/main/resources').rglob('*.json'))
+          assert files,'no JSON resources'
+          for p in files:
+              json.loads(p.read_text())
+          print('BUILD101 JSON RESOURCE PASS',len(files))
+          PY
+          echo '===== BUILD 101 JUNIT GATE ====='
+          (cd work && gradle --no-daemon --no-configuration-cache test --stacktrace)
+          test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
+          grep -R 'tests="' work/build/test-results/test/*.xml
+          echo '===== BUILD 101 JUNIT PASS ====='
+          echo '===== BUILD 101 DEDICATED SERVER STARTUP GATE ====='
+          set +e
+          timeout 90s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1
+          SERVER_RC=$?
+          set -e
+          cat /tmp/build101-server.log
+          # A healthy server normally remains running until timeout. Require evidence that NeoForge
+          # reached server startup and reject crashes/exceptions before accepting timeout 124.
+          if [ "$SERVER_RC" -ne 124 ]; then echo "server exited unexpectedly rc=$SERVER_RC"; exit 1; fi
+          grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/build101-server.log
+          if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
+          echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
+          echo '===== BUILD 101 FINAL BUILD ====='
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+          test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
+          echo '===== BUILD 101 ALL AUTOMATABLE GATES PASS ====='
+
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
 
           mkdir -p dist
@@ -409,7 +473,7 @@ jobs:
       - name: Upload v1.1.1 MultiCable test JAR
         uses: actions/upload-artifact@v4
         with:
-          name: obsidiannetwork-v1.1.1-multicable-test
+          name: obsidiannetwork-v1.1.1-build101-quality-gates
           path: dist/*.jar
           if-no-files-found: error
           retention-days: 14
@@ -436,3 +500,5 @@ jobs:
 # runner retrigger: run96
 # fresh build trigger: run98
 # final waiting build trigger
+
+# build101 quality-gates trigger
