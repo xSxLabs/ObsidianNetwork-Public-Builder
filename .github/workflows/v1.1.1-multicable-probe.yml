@@ -643,10 +643,10 @@ jobs:
                 BlockPos bendB=helper.absolutePos(new BlockPos(0,1,2));
                 BlockPos bendDst=helper.absolutePos(new BlockPos(1,1,2));
                 BlockPos bendSrc=helper.absolutePos(new BlockPos(0,1,0));
-                helper.getLevel().setBlock(bendSrc,Blocks.CHEST.defaultBlockState(),3);
+                helper.getLevel().setBlock(bendSrc,net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),3);
                 helper.getLevel().setBlock(bendA,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
                 helper.getLevel().setBlock(bendB,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
-                helper.getLevel().setBlock(bendDst,Blocks.CHEST.defaultBlockState(),3);
+                helper.getLevel().setBlock(bendDst,net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),3);
                 var bendSrcChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(bendSrc);
                 var bendDstChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(bendDst);
                 var bendMcA=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendA);
@@ -814,7 +814,7 @@ jobs:
 
 # run131 deterministic energy menu 8398671b
 
-# run132 shared-conduit real gametest matrix
+# run133 fix CI-only GameTest compile qualification
 # run133 fix bend re-enable inventory assertion
 
 # run134 fluid bend disable-reenable gametest
