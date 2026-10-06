@@ -684,6 +684,8 @@ jobs:
                 fluidA.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.SOUTH,1);
                 fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1);
                 fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST,2);
+                check(fluidA.connectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH)==1,"FLUID bend source import mode");
+                check(fluidB.connectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST)==2,"FLUID bend destination export mode");
                 var bendSrcFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(bendSrcTank.tank());
                 var bendDstFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(bendDstTank.tank());
                 bendSrcFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,2000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
@@ -825,3 +827,4 @@ jobs:
 
 # run137 stable shared-conduit artifact name
 # run138 exact directional energy traversal source gate
+# run139 explicit fluid bend endpoint modes
