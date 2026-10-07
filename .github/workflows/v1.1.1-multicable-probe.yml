@@ -350,7 +350,8 @@ jobs:
           for x in ['IO_OPERATION_FACE_OPPOSITE_FACING','IO_MARKER_RENDER_ORDER_AFTER_FACADE','FACADED_IO_FULL_BLOCK_COLLISION','CONDUIT_BUNDLE_FINAL_ID_MODEL_PRESENT','ITEM_FLUID_SUBTLE_ENDPOINT_COLLARS','NO_CONDUIT_TRANSFER_TOPOLOGY_CHANGE']: assert x in marker
           cr=(J/'dev/obsidiannetwork/client/render/CableFacadeRenderer.java').read_text()
           assert '.getOpposite()' in cr and '.order(1)' in cr and 'e=1f/128f' in cr
-          assert 'debugFilledBox()' in cr and 'setColor(0.10f,0.82f,0.38f,1f)' in cr
+          assert 'RenderTypes.entityCutout' in cr and 'setColor(1f,1f,1f,1f)' in cr
+          assert 'debugFilledBox()' not in cr
           assert 'a,a,-e' in cr and '1+e' in cr and '-e,a,b' in cr
           for n in ['ImporterBlock.java','ExporterBlock.java','FluidPortBlock.java']:
            assert 'BUILD246_FACADE_COLLISION' in (J/'dev/obsidiannetwork/block'/n).read_text()
