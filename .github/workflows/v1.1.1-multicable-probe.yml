@@ -323,6 +323,7 @@ jobs:
           python3 private/v1.1.1/apply-run136-network-manager.py
           python3 private/v1.1.1/apply-run137-connection-semantics.py
           python3 private/v1.1.1/apply-run138-authoritative-io.py
+          python3 private/v1.1.1/apply-run139-network-cache.py
           echo '===== V1.1.1 ENDERIO RUNTIME OWNERSHIP HARD GATE ====='
           python3 - <<'PY'
           from pathlib import Path
@@ -772,3 +773,4 @@ jobs:
 # run160 fix raw-regex escaping in legacy energy gate
 # run161 make bend transport tick cadence deterministic
 # run162 isolate bend fixture from preceding straight cable
+# run207 cached per-network endpoint topology 39020a1d
