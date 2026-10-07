@@ -330,10 +330,16 @@ jobs:
           forbidden=['private void transferItem(','private void transferFluid(','java.util.ArrayDeque<BlockPos> q=new java.util.ArrayDeque<>()']
           assert not any(x in be for x in forbidden), 'ConduitBundleBlockEntity still owns legacy BFS/transfer runtime'
           # Dedicated type tickers must contain actual work, not Run132 no-op bodies.
-          for name,src in tickers.items():
-              compact=''.join(src.split())
-              assert 'if(network.type()!=ConduitType.' in compact
-              assert 'return;}}' not in compact, name+' is still a no-op ticker'
+          required={
+              'ItemConduitTicker.java':['ConduitRuntime.endpoints','extractItem(','insertItem('],
+              'FluidConduitTicker.java':['ConduitRuntime.endpoints','drain(','fill('],
+              'EnergyConduitTicker.java':['ConduitRuntime.endpoints'],
+              'NetworkConduitTicker.java':['ConduitRuntime.component','consumeDirty()'],
+          }
+          for name,needles in required.items():
+              src=tickers[name]
+              for needle in needles: assert needle in src, name+' missing runtime operation '+needle
+          assert (conduit/'EnergyConduitRuntime.java').exists(), 'Energy runtime traversal missing'
           # Final runtime identity may not resurrect MultiCable.
           assert not (J/'block/MultiCableBlock.java').exists()
           assert not (J/'blockentity/MultiCableBlockEntity.java').exists()
