@@ -315,7 +315,6 @@ jobs:
           grep -Fq "x=gate_method(x,'public int insert(int amount,TransactionContext tx)','energyCanImport')" private/v1.1.1/apply-run128-energy-io.py
           python3 private/v1.1.1/apply-run128-energy-io.py
           python3 private/v1.1.1/apply-run129-enderio-node-architecture.py
-          python3 private/v1.1.1/apply-run130-conduit-bundle-replacement.py
           python3 private/v1.1.1/apply-run130-conduit-bundle-hard-cut.py
           echo '===== RUN126 CONDUIT GUI API PROBE ====='
           sed -n '1,240p' work/src/main/java/dev/obsidiannetwork/registry/ModMenus.java
@@ -346,10 +345,10 @@ jobs:
           echo '===== V1.1.1 RENDER API AUDIT ====='
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
-          echo '===== V1.1.1 MULTICABLE COMPILE PROBE ====='
+          echo '===== V1.1.1 CONDUIT BUNDLE COMPILE PROBE ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean compileJava --stacktrace)
-          echo '===== V1.1.1 MULTICABLE COMPILE PASS ====='
-          echo '===== V1.1.1 MULTICABLE RUNTIME/RESOURCE SMOKE ====='
+          echo '===== V1.1.1 CONDUIT BUNDLE COMPILE PASS ====='
+          echo '===== V1.1.1 CONDUIT BUNDLE RUNTIME/RESOURCE SMOKE ====='
           python3 - <<'PY'
           from pathlib import Path
           import json,re
@@ -382,11 +381,11 @@ jobs:
               check(token in energy_marker,'energy marker '+token)
           check('onCableConnectionsChanged(server,worldPosition)' in cb,'network topology refresh callback')
           check('if(l==Layer.NETWORK)networkChanged()' in cb,'network mutation refresh gate')
-          check('ObsidianNetwork.CONDUIT_BUNDLE.get()' in topo and 'Layer.NETWORK' in topo,'topology MultiCable membership')
+          check('ObsidianNetwork.CONDUIT_BUNDLE.get()' in topo and 'Layer.NETWORK' in topo,'topology ConduitBundle membership')
           ctopo=compact(topo)
-          check('mc.enabled(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK,direction)' in ctopo,'topology local MultiCable side gate')
+          check('mc.enabled(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK,direction)' in ctopo,'topology local ConduitBundle side gate')
           check('mc.enabled(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK,direction.getOpposite())' in ctopo,'topology neighbour MultiCable opposite-side gate')
-          check('mc.has(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK)' in ctopo,'topology MultiCable network membership gate')
+          check('mc.has(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK)' in ctopo,'topology ConduitBundle network membership gate')
           check('if(l==Layer.NETWORK){setEnabled(l,d,m!=0);connectionFlags[l.ordinal()][d.ordinal()]=(byte)(m==0?0:3);return;}' in cb,'network remains directionless connected-disabled')
           check('mc_flags_' in be and 'copyRaw(in.getIntArray' in be and 'connectionFlags' in cb,'independent connection flags survive save-load')
           check('Layer.NETWORK' in cb and 'networkChanged()' in cb,'network shared-container state participates in topology refresh')
