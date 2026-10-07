@@ -341,7 +341,8 @@ jobs:
           assert 'endpoints(true)' not in n and 'endpoints(false)' not in n
           assert 'network.nodes()' in e and 'connected' in e
           assert 'endpoints(true)' not in e and 'endpoints(false)' not in e
-          assert 'bundle.enabled' in e and 'Capabilities.Energy.BLOCK' in e
+          assert 'bundle.enabled' not in e and 'Capabilities.Energy.BLOCK' in e
+          assert 'level.getCapability(Capabilities.Energy.BLOCK,bundle.getBlockPos().relative(d),d.getOpposite())' in e
           print('BUILD225 NETWORK CONNECTION + BIDIRECTIONAL ENERGY PASS')
           PY
           echo '===== V1.1.1 ENDERIO RUNTIME OWNERSHIP HARD GATE ====='
