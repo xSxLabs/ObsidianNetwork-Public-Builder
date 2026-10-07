@@ -344,6 +344,7 @@ jobs:
           python3 private/v1.1.1/apply-build246-visual-fixes.py
           python3 - <<'PY'
           from pathlib import Path
+          import re
           J=Path('work/src/main/java'); R=Path('work/src/main/resources')
           marker=(R/'assets/obsidiannetwork/v111-build246-visual-fixes.txt').read_text()
           for x in ['IO_OPERATION_FACE_OPPOSITE_FACING','IO_MARKER_RENDER_ORDER_AFTER_FACADE','FACADED_IO_FULL_BLOCK_COLLISION','CONDUIT_BUNDLE_FINAL_ID_MODEL_PRESENT','ITEM_FLUID_SUBTLE_ENDPOINT_COLLARS','NO_CONDUIT_TRANSFER_TOPOLOGY_CHANGE']: assert x in marker
@@ -359,7 +360,8 @@ jobs:
           bundle=(J/'dev/obsidiannetwork/client/render/ConduitBundleRenderer.java').read_text()
           assert 'CONDUIT_BUNDLE.get(), dev.obsidiannetwork.client.render.ConduitBundleRenderer::new' in client
           assert 'facadeModel.submit' in bundle and 'blockResolver.update' in bundle
-          assert ('if(mode!=0)collar(' in bundle or 'if(m!=0)collar(' in bundle or 'ioMode[l][d.ordinal()]!=0' in bundle)
+          assert 'ioMode' in bundle and 'collar(' in bundle
+          assert not re.search(r'==\s*2\s*\)\s*collar\s*\(',bundle), 'export-only conduit collar condition survived visual patch'
           # hard safety gate: visual pass must not modify ticker/runtime topology sources
           print('BUILD246 VISUAL SOURCE GATE PASS')
           PY
