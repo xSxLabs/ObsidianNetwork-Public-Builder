@@ -408,8 +408,8 @@ jobs:
           check(all(x in ccaps for x in ['CONDUIT_BUNDLE','Energy.BLOCK','energyHandler']),'energy capability registration')
           # Run135: fail hard if directional Energy semantics silently disappear from the reconstructed source.
           check('connectionMode(Layerl,Directiond)' in cb and 'conduitCanInsert(Layerl,Directiond)' in cb and 'conduitCanExtract(Layerl,Directiond)' in cb,'energy authoritative independent insert/extract flags')
-          check('conduitCanExtract(Layer.ENERGY,exposedSide)' in cb and 'EnergyConduitRuntime.extract' in be,'energy export capability side gate delegates to runtime')
-          check('conduitCanInsert(Layer.ENERGY,exposedSide)' in cb and 'EnergyConduitRuntime.insert' in be,'energy import capability side gate delegates to runtime')
+          check('EnergyConduitRuntime.extract' in be and 'exposed!=null&&!origin.conduitCanExtract' in compact(energyrt),'energy export capability side gate delegates to runtime')
+          check('EnergyConduitRuntime.insert' in be and 'exposed!=null&&!origin.conduitCanInsert' in compact(energyrt),'energy import capability side gate delegates to runtime')
           check('conduitCanExtract' in energyrt and 'conduitCanInsert' in energyrt and 'Capabilities.Energy.BLOCK' in energyrt,'energy traversal endpoint direction gates')
           check('energyCanImport(' not in be and 'energyCanExport(' not in be,'legacy bundle energy traversal removed')
           energy_marker=(R/'assets/obsidiannetwork/v111-run128-energy-io.txt').read_text()
