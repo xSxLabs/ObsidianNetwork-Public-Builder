@@ -738,7 +738,8 @@ jobs:
                     var b=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(2,1,1)));
                     var nn=a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network();
                     var en=a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY).network();
-                    System.out.println("BUILD231 NETWORK DEBUG same="+(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network())+" aSize="+nn.nodes().size()+" bSize="+b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network().nodes().size()+" aHas="+a.has(ConduitBundleBlockEntity.Layer.NETWORK)+" bHas="+b.has(ConduitBundleBlockEntity.Layer.NETWORK));\n  check(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network()&&nn.nodes().size()==2,"NETWORK connection-only topology joins bundles");
+                    System.out.println("BUILD231 NETWORK DEBUG same="+(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network())+" aSize="+nn.nodes().size()+" bSize="+b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network().nodes().size()+" aHas="+a.has(ConduitBundleBlockEntity.Layer.NETWORK)+" bHas="+b.has(ConduitBundleBlockEntity.Layer.NETWORK));
+                      check(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network()&&nn.nodes().size()==2,"NETWORK connection-only topology joins bundles");
                     check(en==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY).network()&&en.nodes().size()==2,"ENERGY no-mode topology joins bundles");
                   })
                   .thenSucceed();
