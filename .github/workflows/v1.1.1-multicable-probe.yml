@@ -16,6 +16,7 @@ permissions: {contents: read}
 # Build 216 broad conduit semantics trigger
 # Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest\n# Build 222 bidirectional ENERGY and connection-only NETWORK semantics\n# Build 223 fix legacy runtime ownership gate for no-mode ENERGY\n# Build 225 assert connection-only NETWORK and bidirectional ENERGY runtime\n# Build 226 real server-tick NETWORK/ENERGY no-IO topology GameTest\n# Build 227 tolerate default NETWORK layer and assert resulting topology
 # Build 234 ENERGY external faces are capability-connected and have no input/output mode
+# Build 236 inspect real Energy Cell API for capability-backed transfer GameTest
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -331,6 +332,18 @@ jobs:
           python3 private/v1.1.1/apply-run138-authoritative-io.py
           python3 private/v1.1.1/apply-run139-network-cache.py
           python3 private/v1.1.1/apply-run140-topology-energy.py
+          # Build236: inspect the reconstructed real Energy Cell capability contract before wiring the world GameTest.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCellBlockEntity.java')
+          o=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java')
+          print('===== BUILD236 ENERGY CELL BE =====')
+          print(p.read_text())
+          print('===== BUILD236 ENERGY CAPABILITY REGISTRATION LINES =====')
+          for line in o.read_text().splitlines():
+              if 'Energy' in line or 'ENERGY' in line or 'Capabilities.Energy' in line:
+                  print(line)
+          PY
           # Build225: NETWORK has no directional IO semantics; ENERGY discovers all connected external faces bidirectionally.
           python3 - <<'PY'
           from pathlib import Path
