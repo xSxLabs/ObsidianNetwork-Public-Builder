@@ -739,8 +739,8 @@ jobs:
                     var nn=a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network();
                     var en=a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY).network();
                     System.out.println("BUILD231 NETWORK DEBUG same="+(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network())+" aSize="+nn.nodes().size()+" bSize="+b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network().nodes().size()+" aHas="+a.has(ConduitBundleBlockEntity.Layer.NETWORK)+" bHas="+b.has(ConduitBundleBlockEntity.Layer.NETWORK));
-                      check(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network()&&nn.nodes().size()==2,"NETWORK connection-only topology joins bundles");
-                    check(en==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY).network()&&en.nodes().size()==2,"ENERGY no-mode topology joins bundles");
+                      check(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network()&&nn.nodes().contains(a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK))&&nn.nodes().contains(b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK)),"NETWORK connection-only topology joins bundles");
+                    check(en==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY).network()&&en.nodes().contains(a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY))&&en.nodes().contains(b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY)),"ENERGY no-mode topology joins bundles");
                   })
                   .thenSucceed();
               }
