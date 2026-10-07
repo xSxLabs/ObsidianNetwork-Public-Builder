@@ -1,4 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
+# Build 249 fixed regex trigger
 # Build 248 robust visual patch trigger
 # Run198: continue autonomous EnderIO conduit runtime verification
 # BUILD LOCK: automatic CI disabled after verified v1.1.1 in-game test JAR.
