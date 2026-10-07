@@ -1,5 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
-# Build 261 explicit runtime textures + tesseract inspection
+# Build 262 bundle + IO working zone + cross-dimension tesseract
 # Build 251 persist outside marker geometry
 # Build 250 reconstruction-robust visual gate
 # Build 249 fixed regex trigger
@@ -342,6 +342,8 @@ jobs:
           python3 private/v1.1.1/apply-run140-topology-energy.py
           echo '===== BUILD246 VISUAL/FACADE FIXES ====='
           python3 private/v1.1.1/apply-build246-visual-fixes.py
+          echo '===== BUILD262 TESSERACT CROSS-DIM ====='
+          python3 private/v1.1.1/apply-build262-tesseract-crossdim.py
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -368,8 +370,11 @@ jobs:
           print('BUILD246 VISUAL SOURCE GATE PASS')
           tp=J/'dev/obsidiannetwork/blockentity/TesseractBlockEntity.java'
           assert tp.exists(), 'TesseractBlockEntity missing'
-          print('===== BUILD260 TESSERACT SOURCE =====')
-          print(tp.read_text())
+          ts=tp.read_text()
+          assert 'ObsidianNetwork.TESSERACT_CHUNKS.forceChunk' in ts
+          assert 'LIVE.get(level.getServer())' in ts
+          assert 'true,false' in ts and 'false,false' in ts
+          print('BUILD262 TESSERACT INFINITY-STYLE CHUNK LIFECYCLE PASS')
           PY
           # Build236: inspect the reconstructed real Energy Cell capability contract before wiring the world GameTest.
           python3 - <<'PY'
