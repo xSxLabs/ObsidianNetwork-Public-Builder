@@ -392,12 +392,16 @@ jobs:
           topo=(J/'dev/obsidiannetwork/network/WorldTopologyBridge.java').read_text()
           client=(J/'dev/obsidiannetwork/client/ClientModEvents.java').read_text()
           legacy=(J/'dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java').read_text()
+          runtime=(J/'dev/obsidiannetwork/conduit/ConduitRuntime.java').read_text()
+          itemtick=(J/'dev/obsidiannetwork/conduit/ItemConduitTicker.java').read_text()
+          fluidtick=(J/'dev/obsidiannetwork/conduit/FluidConduitTicker.java').read_text()
+          energyrt=(J/'dev/obsidiannetwork/conduit/EnergyConduitRuntime.java').read_text()
           compact=lambda s: re.sub(r'\s+','',s)
           cb=compact(be); cblock=compact(block); clegacy=compact(legacy); ccaps=compact(caps); cclient=compact(client); citem=compact(item)
           def check(ok,name):
               assert ok, name
-          check('(m+1)%3' in cb and 'm==2' in cb and 'Endpoint(p,d)' in cb,'logistics cycle/export semantics')
-          check('logisticsOpen(n,layer,d.getOpposite())' in cb,'mixed cable opposite-side traversal')
+          check('conduitCanInsert' in cb and 'conduitCanExtract' in cb and 'ConduitRuntime.endpoints' in itemtick,'independent conduit insert/extract runtime semantics')
+          check('component(ServerLevel' in runtime and 'd.getOpposite()' in runtime,'conduit opposite-side topology traversal')
           check('dropUpgrades(l,d)' in cb and '>8' in cb,'upgrade drop/max semantics')
           check('speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,side)!=1' in cblock,'upgrade installation import gate uses conduit arm side')
           check('playerWillDestroy(' not in block and 'getDrops(' in block,'single break-drop pipeline')
