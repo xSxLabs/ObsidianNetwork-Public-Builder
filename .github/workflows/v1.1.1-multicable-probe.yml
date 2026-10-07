@@ -1,5 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
-# Build 257 operation plate + import collars
+# Build 260 explicit runtime textures + tesseract inspection
 # Build 251 persist outside marker geometry
 # Build 250 reconstruction-robust visual gate
 # Build 249 fixed regex trigger
@@ -350,7 +350,7 @@ jobs:
           for x in ['IO_OPERATION_FACE_OPPOSITE_FACING','IO_MARKER_RENDER_ORDER_AFTER_FACADE','FACADED_IO_FULL_BLOCK_COLLISION','CONDUIT_BUNDLE_FINAL_ID_MODEL_PRESENT','ITEM_FLUID_SUBTLE_ENDPOINT_COLLARS','NO_CONDUIT_TRANSFER_TOPOLOGY_CHANGE']: assert x in marker
           cr=(J/'dev/obsidiannetwork/client/render/CableFacadeRenderer.java').read_text()
           assert '.getOpposite()' in cr and '.order(1)' in cr and 'e=1f/128f' in cr
-          assert 'RenderTypes.entityCutout' in cr and 'setColor(1f,1f,1f,1f)' in cr
+          assert 'textures/block/iron_block.png' in cr and 'setColor(1f,1f,1f,1f)' in cr
           assert 'debugFilledBox()' not in cr
           assert 'a,a,-e' in cr and '1+e' in cr and '-e,a,b' in cr
           for n in ['ImporterBlock.java','ExporterBlock.java','FluidPortBlock.java']:
@@ -361,10 +361,15 @@ jobs:
           bundle=(J/'dev/obsidiannetwork/client/render/ConduitBundleRenderer.java').read_text()
           assert 'CONDUIT_BUNDLE.get(), dev.obsidiannetwork.client.render.ConduitBundleRenderer::new' in client
           assert 'facadeModel.submit' in bundle and 'blockResolver.update' in bundle
+          assert 'textures/block/white_concrete.png' in bundle and 'TextureAtlas.LOCATION_BLOCKS' not in bundle
           assert 'ioMode' in bundle and 'collar(' in bundle
           assert not re.search(r'==\s*2\s*\)\s*collar\s*\(',bundle), 'export-only conduit collar condition survived visual patch'
           # hard safety gate: visual pass must not modify ticker/runtime topology sources
           print('BUILD246 VISUAL SOURCE GATE PASS')
+          tp=J/'dev/obsidiannetwork/blockentity/TesseractBlockEntity.java'
+          assert tp.exists(), 'TesseractBlockEntity missing'
+          print('===== BUILD260 TESSERACT SOURCE =====')
+          print(tp.read_text())
           PY
           # Build236: inspect the reconstructed real Energy Cell capability contract before wiring the world GameTest.
           python3 - <<'PY'
