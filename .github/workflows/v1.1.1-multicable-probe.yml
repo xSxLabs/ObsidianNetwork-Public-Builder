@@ -14,7 +14,7 @@ permissions: {contents: read}
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
 # Build 216 broad conduit semantics trigger
-# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest\n# Build 222 bidirectional ENERGY and connection-only NETWORK semantics\n# Build 223 fix legacy runtime ownership gate for no-mode ENERGY\n# Build 225 assert connection-only NETWORK and bidirectional ENERGY runtime
+# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest\n# Build 222 bidirectional ENERGY and connection-only NETWORK semantics\n# Build 223 fix legacy runtime ownership gate for no-mode ENERGY\n# Build 225 assert connection-only NETWORK and bidirectional ENERGY runtime\n# Build 226 real server-tick NETWORK/ENERGY no-IO topology GameTest
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -724,6 +724,22 @@ jobs:
                     var dh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dstTank.tank());
                     check(dh.getFluidInTank(0).getAmount()>0,"FLUID real NetworkTank-to-NetworkTank transfer");
                     check(sh.getFluidInTank(0).getAmount()<4000,"FLUID source drained by conduit ticker");
+                    // Build 226: NETWORK and ENERGY form topology without any insert/extract configuration.
+                    for(int x=0;x<4;x++) helper.getLevel().setBlock(helper.absolutePos(new BlockPos(x,1,1)),Blocks.AIR.defaultBlockState(),3);
+                    BlockPos a=helper.absolutePos(new BlockPos(1,1,1)), b=helper.absolutePos(new BlockPos(2,1,1));
+                    helper.getLevel().setBlock(a,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(b,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    var ba=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(a); var bb=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(b);
+                    check(ba.add(ConduitBundleBlockEntity.Layer.NETWORK)&&bb.add(ConduitBundleBlockEntity.Layer.NETWORK),"install NETWORK route without IO flags");
+                    check(ba.add(ConduitBundleBlockEntity.Layer.ENERGY)&&bb.add(ConduitBundleBlockEntity.Layer.ENERGY),"install ENERGY route without IO flags");
+                  })
+                  .thenExecuteAfter(10,()->{
+                    var a=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(1,1,1)));
+                    var b=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(2,1,1)));
+                    var nn=a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network();
+                    var en=a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY).network();
+                    check(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network()&&nn.nodes().size()==2,"NETWORK connection-only topology joins bundles");
+                    check(en==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY).network()&&en.nodes().size()==2,"ENERGY no-mode topology joins bundles");
                   })
                   .thenSucceed();
               }
