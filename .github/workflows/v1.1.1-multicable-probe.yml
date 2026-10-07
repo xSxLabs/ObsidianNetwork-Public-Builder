@@ -408,10 +408,10 @@ jobs:
           check(all(x in ccaps for x in ['CONDUIT_BUNDLE','Energy.BLOCK','energyHandler']),'energy capability registration')
           # Run135: fail hard if directional Energy semantics silently disappear from the reconstructed source.
           check('connectionMode(Layerl,Directiond)' in cb and 'conduitCanInsert(Layerl,Directiond)' in cb and 'conduitCanExtract(Layerl,Directiond)' in cb,'energy authoritative independent insert/extract flags')
-          check('!conduitCanExtract(Layer.ENERGY,exposedSide)' in cb,'energy export capability side gate')
-          check('!conduitCanInsert(Layer.ENERGY,exposedSide)' in cb,'energy import capability side gate')
-          check('if(!energyCanExport(p,d))continue;EnergyHandlerh=' in cb and 'if(!energyCanImport(p,d))continue;EnergyHandlerh=' in cb,'energy traversal endpoint direction gates')
-          check(re.search(r'energyCanImport\(BlockPos p,Direction d\).*?ENERGY_CABLE.*?isCut\(s,d\)',be,re.S) is not None and re.search(r'energyCanExport\(BlockPos p,Direction d\).*?ENERGY_CABLE.*?isCut\(s,d\)',be,re.S) is not None,'legacy energy cable stays bidirectional in import/export endpoint gates')
+          check('conduitCanExtract(Layer.ENERGY,exposedSide)' in cb and 'EnergyConduitRuntime.extract' in be,'energy export capability side gate delegates to runtime')
+          check('conduitCanInsert(Layer.ENERGY,exposedSide)' in cb and 'EnergyConduitRuntime.insert' in be,'energy import capability side gate delegates to runtime')
+          check('conduitCanExtract' in energyrt and 'conduitCanInsert' in energyrt and 'Capabilities.Energy.BLOCK' in energyrt,'energy traversal endpoint direction gates')
+          check('energyCanImport(' not in be and 'energyCanExport(' not in be,'legacy bundle energy traversal removed')
           energy_marker=(R/'assets/obsidiannetwork/v111-run128-energy-io.txt').read_text()
           for token in ['ENERGY_DISABLED_IMPORT_EXPORT','ENERGY_IMPORT_ACCEPTS_FE_INTO_CONDUIT','ENERGY_EXPORT_EXPOSES_FE_TO_MACHINE','ENERGY_NETWORK_TRAVERSAL_RESPECTS_ENDPOINT_DIRECTION','ENERGY_EXTRACT_READS_EXPORT_ENDPOINTS','ENERGY_INSERT_WRITES_IMPORT_ENDPOINTS','ENERGY_INTERNAL_TRAVERSAL_ACCEPTS_IMPORT_AND_EXPORT_ARMS','ENERGY_EXPORT_MODE_PERSISTS_ACROSS_RELOAD','LEGACY_SINGLE_ENERGY_CABLE_REMAINS_BIDIRECTIONAL','NETWORK_REMAINS_DIRECTIONLESS_CONNECTED_DISABLED','TELEPORTER_UNTOUCHED','POLYMORPH_UNTOUCHED']:
               check(token in energy_marker,'energy marker '+token)
