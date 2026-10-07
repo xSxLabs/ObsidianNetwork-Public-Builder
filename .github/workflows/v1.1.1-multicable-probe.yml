@@ -1,5 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
-# Run152: enable PR observability for build-fix loop
+# Run198: continue autonomous EnderIO conduit runtime verification
 # BUILD LOCK: automatic CI disabled after verified v1.1.1 in-game test JAR.
 # Re-enable only after the user explicitly requests "build".
 'on':
