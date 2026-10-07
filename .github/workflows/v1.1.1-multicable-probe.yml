@@ -14,7 +14,7 @@ permissions: {contents: read}
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
 # Build 216 broad conduit semantics trigger
-# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest\n# Build 222 bidirectional ENERGY and connection-only NETWORK semantics
+# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest\n# Build 222 bidirectional ENERGY and connection-only NETWORK semantics\n# Build 223 fix legacy runtime ownership gate for no-mode ENERGY
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -344,7 +344,7 @@ jobs:
           required={
               'ItemConduitTicker.java':['network.endpoints','extractItem(','insertItem('],
               'FluidConduitTicker.java':['network.endpoints','drain(','fill('],
-              'EnergyConduitTicker.java':['network.endpoints','Capabilities.Energy.BLOCK','extract(','insert(','Transaction.openRoot'],
+              'EnergyConduitTicker.java':['network.nodes()','connected','Capabilities.Energy.BLOCK','extract(','insert(','Transaction.openRoot'],
               'NetworkConduitTicker.java':['ConduitNetworkManager.ensure'],
           }
           for name,needles in required.items():
