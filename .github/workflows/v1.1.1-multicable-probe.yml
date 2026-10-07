@@ -317,6 +317,7 @@ jobs:
           python3 private/v1.1.1/apply-run129-enderio-node-architecture.py
           python3 private/v1.1.1/apply-run130-conduit-bundle-hard-cut.py
           python3 private/v1.1.1/apply-run132-enderio-core.py
+          python3 private/v1.1.1/apply-run133-runtime-tickers.py
           echo '===== V1.1.1 ENDERIO RUNTIME OWNERSHIP HARD GATE ====='
           python3 - <<'PY'
           from pathlib import Path
