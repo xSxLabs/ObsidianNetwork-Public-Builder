@@ -554,8 +554,6 @@ jobs:
           if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
           echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
           echo '===== BUILD 103 REAL NEOFORGE GAMETEST GATE ====='
-          grep -Fq 'ITEM server-tick transfer chest-to-chest' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
-          if grep -Fq 'ConduitBundleBlockEntity.tick(' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java; then echo 'Build103 may not invoke bundle tick directly'; exit 1; fi
           # Test-only source/resource injection into the reconstructed CI worktree. Removed before packaging.
           cat >> work/build.gradle <<'EOF'
           neoForge {
@@ -641,6 +639,9 @@ jobs:
             }
           }
           EOF
+          # Validate the injected test itself, not a path that does not exist yet.
+          grep -Fq 'ITEM server-tick transfer chest-to-chest' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          if grep -Fq 'ConduitBundleBlockEntity.tick(' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java; then echo 'Build103 may not invoke bundle tick directly'; exit 1; fi
           python3 - <<'PY'
           from pathlib import Path
           import gzip, struct
