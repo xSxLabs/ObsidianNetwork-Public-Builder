@@ -306,3 +306,5 @@ AUTONOMOUS_V111_LOOP=b43e4e00229ea8a9431f7f956f1661ccfded04f6
 <!-- Build 230: mutual directional links only for ITEM/FLUID; NETWORK/ENERGY connection-only -->
 
 <!-- Build 252 visual patch syntax fix -->
+
+<!-- Build 253 ordered marker geometry compile fix -->
