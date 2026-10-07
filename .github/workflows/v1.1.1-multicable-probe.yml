@@ -1,4 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
+# Build 251 persist outside marker geometry
 # Build 250 reconstruction-robust visual gate
 # Build 249 fixed regex trigger
 # Build 248 robust visual patch trigger
