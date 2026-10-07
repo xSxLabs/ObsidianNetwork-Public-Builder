@@ -393,7 +393,7 @@ jobs:
           check(all(x in cclient for x in ['CONDUIT_BUNDLE','CableFacadeRenderer','registerBlockEntityRenderer']),'renderer registration')
           check('replaceOnlyLayer' in item and 'setFacade(facade,rot)' in citem,'legacy cable conversion state migration')
           check('connectionSide(p,hit)' in cblock and 'hit.getDirection()' not in cblock.split('protectedInteractionResultuseItemOn',1)[-1].split('}',1)[0],'bundle arm direction authority')
-          check('ioMode' in (J/'dev/obsidiannetwork/client/render/MultiCableRenderer.java').read_text() and 'collar(' in (J/'dev/obsidiannetwork/client/render/MultiCableRenderer.java').read_text(),'bundle IO collar renderer')
+          check('ioMode' in (J/'dev/obsidiannetwork/client/render/ConduitBundleRenderer.java').read_text() and 'collar(' in (J/'dev/obsidiannetwork/client/render/ConduitBundleRenderer.java').read_text(),'bundle IO collar renderer')
           bs=json.loads((R/'assets/obsidiannetwork/blockstates/multi_cable.json').read_text())
           assert bs=={'variants':{'':{'model':'obsidiannetwork:block/multi_cable_empty'}}}, bs
           for p in [
