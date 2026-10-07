@@ -336,10 +336,10 @@ jobs:
           assert not any(x in be for x in forbidden), 'ConduitBundleBlockEntity still owns legacy BFS/transfer runtime'
           # Dedicated type tickers must contain actual work, not Run132 no-op bodies.
           required={
-              'ItemConduitTicker.java':['ConduitRuntime.endpoints','extractItem(','insertItem('],
-              'FluidConduitTicker.java':['ConduitRuntime.endpoints','drain(','fill('],
-              'EnergyConduitTicker.java':['ConduitRuntime.endpoints'],
-              'NetworkConduitTicker.java':['ConduitRuntime.component','consumeDirty()'],
+              'ItemConduitTicker.java':['network.endpoints','extractItem(','insertItem('],
+              'FluidConduitTicker.java':['network.endpoints','drain(','fill('],
+              'EnergyConduitTicker.java':['network.endpoints'],
+              'NetworkConduitTicker.java':['ConduitNetworkManager.ensure'],
           }
           for name,needles in required.items():
               src=tickers[name]
@@ -347,6 +347,9 @@ jobs:
           assert (conduit/'EnergyConduitRuntime.java').exists(), 'Energy runtime traversal missing'
           manager=(conduit/'ConduitNetworkManager.java').read_text(); network=(conduit/'ConduitNetwork.java').read_text()
           assert 'replaceNodes' in network and 'ConduitRuntime.component' in manager and 'n.network(this)' in network, 'shared per-type network lifecycle missing'
+          runtime=(conduit/'ConduitRuntime.java').read_text(); energy=(conduit/'EnergyConduitRuntime.java').read_text()
+          assert 'cacheEndpoints' in network and 'scanEndpoints' in runtime, 'network-owned endpoint cache missing'
+          assert 'ConduitRuntime.component' not in tickers['ItemConduitTicker.java']+tickers['FluidConduitTicker.java']+tickers['EnergyConduitTicker.java']+energy, 'transfer path still performs component BFS'
           assert 'dst.side()==src.side()' in tickers['ItemConduitTicker.java'], 'self-feed guard must only reject exact same connection'
           assert 'b.conduitCanInsert(layer,d),b.conduitCanExtract(layer,d)' in (conduit/'ConduitRuntime.java').read_text(), 'node endpoint config not synchronized with bundle side flags'
           assert 'connectionFlags[l.ordinal()][q]=(byte)normalized' in be, 'legacy migration config can diverge from conduit IO flags'
@@ -774,3 +777,4 @@ jobs:
 # run161 make bend transport tick cadence deterministic
 # run162 isolate bend fixture from preceding straight cable
 # run207 cached per-network endpoint topology 39020a1d
+# run208 update runtime gate for cached endpoint architecture
