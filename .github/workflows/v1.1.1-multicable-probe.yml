@@ -326,7 +326,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           J=Path('work/src/main/java/dev/obsidiannetwork')
-          block=(J/'block/MultiCableBlock.java').read_text()
+          block=(J/'block/ConduitBundleBlock.java').read_text()
           facade=(J/'item/CableFacadeItem.java').read_text()
           tele=(J/'blockentity/NetworkTeleporterBlockEntity.java').read_text()
           screen=(J/'client/NetworkTeleporterScreen.java').read_text()
@@ -354,8 +354,8 @@ jobs:
           from pathlib import Path
           import json,re
           J=Path('work/src/main/java'); R=Path('work/src/main/resources')
-          be=(J/'dev/obsidiannetwork/blockentity/MultiCableBlockEntity.java').read_text()
-          block=(J/'dev/obsidiannetwork/block/MultiCableBlock.java').read_text()
+          be=(J/'dev/obsidiannetwork/blockentity/ConduitBundleBlockEntity.java').read_text()
+          block=(J/'dev/obsidiannetwork/block/ConduitBundleBlock.java').read_text()
           item=(J/'dev/obsidiannetwork/item/CableBlockItem.java').read_text()
           caps=(J/'dev/obsidiannetwork/registry/ModCapabilities.java').read_text()
           topo=(J/'dev/obsidiannetwork/network/WorldTopologyBridge.java').read_text()
@@ -370,7 +370,7 @@ jobs:
           check('dropUpgrades(l,d)' in cb and '>8' in cb,'upgrade drop/max semantics')
           check('speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,side)!=1' in cblock,'upgrade installation import gate uses conduit arm side')
           check('playerWillDestroy(' not in block and 'getDrops(' in block,'single break-drop pipeline')
-          check(all(x in ccaps for x in ['MULTI_CABLE','Energy.BLOCK','energyHandler']),'energy capability registration')
+          check(all(x in ccaps for x in ['CONDUIT_BUNDLE','Energy.BLOCK','energyHandler']),'energy capability registration')
           # Run135: fail hard if directional Energy semantics silently disappear from the reconstructed source.
           check('connectionMode(Layerl,Directiond)' in cb and 'conduitCanInsert(Layerl,Directiond)' in cb and 'conduitCanExtract(Layerl,Directiond)' in cb,'energy authoritative independent insert/extract flags')
           check('!conduitCanExtract(Layer.ENERGY,exposedSide)' in cb,'energy export capability side gate')
@@ -382,15 +382,15 @@ jobs:
               check(token in energy_marker,'energy marker '+token)
           check('onCableConnectionsChanged(server,worldPosition)' in cb,'network topology refresh callback')
           check('if(l==Layer.NETWORK)networkChanged()' in cb,'network mutation refresh gate')
-          check('ObsidianNetwork.MULTI_CABLE.get()' in topo and 'Layer.NETWORK' in topo,'topology MultiCable membership')
+          check('ObsidianNetwork.CONDUIT_BUNDLE.get()' in topo and 'Layer.NETWORK' in topo,'topology MultiCable membership')
           ctopo=compact(topo)
-          check('mc.enabled(dev.obsidiannetwork.blockentity.MultiCableBlockEntity.Layer.NETWORK,direction)' in ctopo,'topology local MultiCable side gate')
-          check('mc.enabled(dev.obsidiannetwork.blockentity.MultiCableBlockEntity.Layer.NETWORK,direction.getOpposite())' in ctopo,'topology neighbour MultiCable opposite-side gate')
-          check('mc.has(dev.obsidiannetwork.blockentity.MultiCableBlockEntity.Layer.NETWORK)' in ctopo,'topology MultiCable network membership gate')
+          check('mc.enabled(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK,direction)' in ctopo,'topology local MultiCable side gate')
+          check('mc.enabled(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK,direction.getOpposite())' in ctopo,'topology neighbour MultiCable opposite-side gate')
+          check('mc.has(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK)' in ctopo,'topology MultiCable network membership gate')
           check('if(l==Layer.NETWORK){setEnabled(l,d,m!=0);connectionFlags[l.ordinal()][d.ordinal()]=(byte)(m==0?0:3);return;}' in cb,'network remains directionless connected-disabled')
           check('mc_flags_' in be and 'copyRaw(in.getIntArray' in be and 'connectionFlags' in cb,'independent connection flags survive save-load')
           check('Layer.NETWORK' in cb and 'networkChanged()' in cb,'network shared-container state participates in topology refresh')
-          check(all(x in cclient for x in ['MULTI_CABLE','CableFacadeRenderer','registerBlockEntityRenderer']),'renderer registration')
+          check(all(x in cclient for x in ['CONDUIT_BUNDLE','CableFacadeRenderer','registerBlockEntityRenderer']),'renderer registration')
           check('replaceOnlyLayer' in item and 'setFacade(facade,rot)' in citem,'legacy cable conversion state migration')
           check('connectionSide(p,hit)' in cblock and 'hit.getDirection()' not in cblock.split('protectedInteractionResultuseItemOn',1)[-1].split('}',1)[0],'bundle arm direction authority')
           check('ioMode' in (J/'dev/obsidiannetwork/client/render/MultiCableRenderer.java').read_text() and 'collar(' in (J/'dev/obsidiannetwork/client/render/MultiCableRenderer.java').read_text(),'bundle IO collar renderer')
@@ -527,7 +527,7 @@ jobs:
           package dev.obsidiannetwork.build103;
 
           import dev.obsidiannetwork.ObsidianNetwork;
-          import dev.obsidiannetwork.blockentity.MultiCableBlockEntity;
+          import dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity;
           import net.minecraft.core.BlockPos;
           import net.minecraft.core.Direction;
           import net.minecraft.gametest.framework.GameTestHelper;
@@ -559,110 +559,110 @@ jobs:
 
               @Override public void run(GameTestHelper helper) {
                 BlockPos p = helper.absolutePos(new BlockPos(1, 1, 1));
-                helper.getLevel().setBlock(p, ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(), 3);
-                if (!(helper.getLevel().getBlockEntity(p) instanceof MultiCableBlockEntity mc))
+                helper.getLevel().setBlock(p, ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(), 3);
+                if (!(helper.getLevel().getBlockEntity(p) instanceof ConduitBundleBlockEntity mc))
                   throw new IllegalStateException("MultiCable block entity missing");
 
-                check(mc.layerCount() == 1 && mc.has(MultiCableBlockEntity.Layer.NETWORK), "default NETWORK layer");
-                check(mc.add(MultiCableBlockEntity.Layer.ITEM), "add ITEM layer");
-                check(mc.add(MultiCableBlockEntity.Layer.FLUID), "add FLUID layer");
-                check(mc.add(MultiCableBlockEntity.Layer.ENERGY), "add ENERGY layer");
+                check(mc.layerCount() == 1 && mc.has(ConduitBundleBlockEntity.Layer.NETWORK), "default NETWORK layer");
+                check(mc.add(ConduitBundleBlockEntity.Layer.ITEM), "add ITEM layer");
+                check(mc.add(ConduitBundleBlockEntity.Layer.FLUID), "add FLUID layer");
+                check(mc.add(ConduitBundleBlockEntity.Layer.ENERGY), "add ENERGY layer");
                 check(mc.layerCount() == 4, "four layers present");
-                check(!mc.add(MultiCableBlockEntity.Layer.ITEM), "duplicate layer rejected");
+                check(!mc.add(ConduitBundleBlockEntity.Layer.ITEM), "duplicate layer rejected");
 
-                mc.setEnabled(MultiCableBlockEntity.Layer.ITEM, Direction.EAST, false);
-                check(!mc.enabled(MultiCableBlockEntity.Layer.ITEM, Direction.EAST), "ITEM east disconnect");
-                check(mc.enabled(MultiCableBlockEntity.Layer.ITEM, Direction.WEST), "ITEM west remains connected");
-                mc.setLogistics(MultiCableBlockEntity.Layer.ITEM, Direction.EAST, 1, 3, 4);
-                check(mc.logisticsMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 1, "ITEM import mode");
-                check(mc.logisticsSpeed(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 3, "speed state");
-                check(mc.logisticsStack(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 4, "stack state");
-                mc.setEnabled(MultiCableBlockEntity.Layer.ITEM, Direction.EAST, true);
+                mc.setEnabled(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST, false);
+                check(!mc.enabled(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST), "ITEM east disconnect");
+                check(mc.enabled(ConduitBundleBlockEntity.Layer.ITEM, Direction.WEST), "ITEM west remains connected");
+                mc.setLogistics(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST, 1, 3, 4);
+                check(mc.logisticsMode(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST) == 1, "ITEM import mode");
+                check(mc.logisticsSpeed(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST) == 3, "speed state");
+                check(mc.logisticsStack(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST) == 4, "stack state");
+                mc.setEnabled(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST, true);
                 mc.forceConnectionSync();
-                check(mc.enabled(MultiCableBlockEntity.Layer.ITEM, Direction.EAST), "ITEM reconnect");
-                check(mc.logisticsMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 1, "mode retained after reconnect");
+                check(mc.enabled(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST), "ITEM reconnect");
+                check(mc.logisticsMode(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST) == 1, "mode retained after reconnect");
 
-                mc.cycleLogistics(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH);
-                check(mc.logisticsMode(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH) == 1, "FLUID OFF->IMPORT");
-                mc.cycleLogistics(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH);
-                check(mc.logisticsMode(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH) == 2, "FLUID IMPORT->EXPORT");
-                mc.cycleLogistics(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH);
-                check(mc.logisticsMode(MultiCableBlockEntity.Layer.FLUID, Direction.NORTH) == 0, "FLUID EXPORT->OFF");
+                mc.cycleLogistics(ConduitBundleBlockEntity.Layer.FLUID, Direction.NORTH);
+                check(mc.logisticsMode(ConduitBundleBlockEntity.Layer.FLUID, Direction.NORTH) == 1, "FLUID OFF->IMPORT");
+                mc.cycleLogistics(ConduitBundleBlockEntity.Layer.FLUID, Direction.NORTH);
+                check(mc.logisticsMode(ConduitBundleBlockEntity.Layer.FLUID, Direction.NORTH) == 2, "FLUID IMPORT->EXPORT");
+                mc.cycleLogistics(ConduitBundleBlockEntity.Layer.FLUID, Direction.NORTH);
+                check(mc.logisticsMode(ConduitBundleBlockEntity.Layer.FLUID, Direction.NORTH) == 0, "FLUID EXPORT->OFF");
 
                 // Run132: authoritative per-side mode matrix for all four conduits.
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.NETWORK, Direction.UP, 0);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.NETWORK, Direction.UP) == 0, "NETWORK disabled");
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.NETWORK, Direction.UP, 1);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.NETWORK, Direction.UP) == 1, "NETWORK re-enabled");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.NETWORK, Direction.UP, 0);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.NETWORK, Direction.UP) == 0, "NETWORK disabled");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.NETWORK, Direction.UP, 1);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.NETWORK, Direction.UP) == 1, "NETWORK re-enabled");
 
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST, 0);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 0, "ITEM disabled");
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST, 1);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 1, "ITEM import");
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST, 2);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.ITEM, Direction.EAST) == 2, "ITEM export");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST, 0);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST) == 0, "ITEM disabled");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST, 1);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST) == 1, "ITEM import");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST, 2);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST) == 2, "ITEM export");
 
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.FLUID, Direction.WEST, 0);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.FLUID, Direction.WEST) == 0, "FLUID disabled");
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.FLUID, Direction.WEST, 1);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.FLUID, Direction.WEST) == 1, "FLUID import");
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.FLUID, Direction.WEST, 2);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.FLUID, Direction.WEST) == 2, "FLUID export");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID, Direction.WEST, 0);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.FLUID, Direction.WEST) == 0, "FLUID disabled");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID, Direction.WEST, 1);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.FLUID, Direction.WEST) == 1, "FLUID import");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID, Direction.WEST, 2);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.FLUID, Direction.WEST) == 2, "FLUID export");
 
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN, 0);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN) == 0, "ENERGY disabled");
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN, 1);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN) == 1, "ENERGY import");
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN, 2);
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN) == 2, "ENERGY export");
-                check(mc.connectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.UP) != 2, "ENERGY per-side isolation");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.DOWN, 0);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.DOWN) == 0, "ENERGY disabled");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.DOWN, 1);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.DOWN) == 1, "ENERGY import");
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.DOWN, 2);
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.DOWN) == 2, "ENERGY export");
+                check(mc.connectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.UP) != 2, "ENERGY per-side isolation");
 
                 // Runtime capability exposure contract; transfer direction itself is source-gated below.
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN, 0);
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.DOWN, 0);
                 check(mc.energyHandler(Direction.DOWN)==null,"ENERGY disabled hides side capability");
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN, 1);
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.DOWN, 1);
                 check(mc.energyHandler(Direction.DOWN)!=null,"ENERGY import exposes side capability");
-                mc.setConnectionMode(MultiCableBlockEntity.Layer.ENERGY, Direction.DOWN, 2);
+                mc.setConnectionMode(ConduitBundleBlockEntity.Layer.ENERGY, Direction.DOWN, 2);
                 check(mc.energyHandler(Direction.DOWN)!=null,"ENERGY export exposes side capability");
 
-                check(mc.remove(MultiCableBlockEntity.Layer.ENERGY), "remove ENERGY");
-                check(!mc.has(MultiCableBlockEntity.Layer.ENERGY), "ENERGY removed");
-                check(mc.remove(MultiCableBlockEntity.Layer.FLUID), "remove FLUID");
-                check(mc.remove(MultiCableBlockEntity.Layer.ITEM), "remove ITEM");
+                check(mc.remove(ConduitBundleBlockEntity.Layer.ENERGY), "remove ENERGY");
+                check(!mc.has(ConduitBundleBlockEntity.Layer.ENERGY), "ENERGY removed");
+                check(mc.remove(ConduitBundleBlockEntity.Layer.FLUID), "remove FLUID");
+                check(mc.remove(ConduitBundleBlockEntity.Layer.ITEM), "remove ITEM");
                 check(mc.layerCount() == 1, "one layer remains");
-                check(!mc.remove(MultiCableBlockEntity.Layer.NETWORK), "cannot remove last layer");
+                check(!mc.remove(ConduitBundleBlockEntity.Layer.NETWORK), "cannot remove last layer");
 
                 // Real ITEM transport through a bundle: chest -> MultiCable ITEM -> chest.
                 BlockPos src = helper.absolutePos(new BlockPos(1, 1, 0));
                 BlockPos cable = helper.absolutePos(new BlockPos(1, 1, 1));
                 BlockPos dst = helper.absolutePos(new BlockPos(1, 1, 2));
                 helper.getLevel().setBlock(src, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
-                helper.getLevel().setBlock(cable, ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(), 3);
+                helper.getLevel().setBlock(cable, ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(), 3);
                 helper.getLevel().setBlock(dst, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
                 var srcChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(src);
                 var dstChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(dst);
-                var itemMc=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(cable);
-                itemMc.add(MultiCableBlockEntity.Layer.ITEM);
-                itemMc.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.NORTH,1,8,0);
-                itemMc.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.SOUTH,2,0,0);
+                var itemMc=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(cable);
+                itemMc.add(ConduitBundleBlockEntity.Layer.ITEM);
+                itemMc.setLogistics(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,1,8,0);
+                itemMc.setLogistics(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,2,0,0);
                 srcChest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COBBLESTONE,8));
-                MultiCableBlockEntity.tick(helper.getLevel(),cable,helper.getLevel().getBlockState(cable),itemMc);
+                ConduitBundleBlockEntity.tick(helper.getLevel(),cable,helper.getLevel().getBlockState(cable),itemMc);
                 check(dstChest.getItem(0).getCount()>0,"ITEM bundle transfer chest-to-chest");
 
                 // Real FLUID transport through a bundle: network tank -> MultiCable FLUID -> network tank.
                 helper.getLevel().setBlock(src, ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(), 3);
-                helper.getLevel().setBlock(cable, ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(), 3);
+                helper.getLevel().setBlock(cable, ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(), 3);
                 helper.getLevel().setBlock(dst, ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(), 3);
                 var srcTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(src);
                 var dstTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(dst);
-                var fluidMc=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(cable);
-                fluidMc.add(MultiCableBlockEntity.Layer.FLUID);
-                fluidMc.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1,8,0);
-                fluidMc.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.SOUTH,2,0,0);
+                var fluidMc=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(cable);
+                fluidMc.add(ConduitBundleBlockEntity.Layer.FLUID);
+                fluidMc.setLogistics(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH,1,8,0);
+                fluidMc.setLogistics(ConduitBundleBlockEntity.Layer.FLUID,Direction.SOUTH,2,0,0);
                 var srcFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(srcTank.tank());
                 var dstFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dstTank.tank());
                 srcFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,1000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
-                MultiCableBlockEntity.tick(helper.getLevel(),cable,helper.getLevel().getBlockState(cable),fluidMc);
+                ConduitBundleBlockEntity.tick(helper.getLevel(),cable,helper.getLevel().getBlockState(cable),fluidMc);
                 check(dstFluid.getFluidInTank(0).getAmount()>0,"FLUID bundle transfer tank-to-tank");
 
                 // Isolate the bend from the preceding straight ITEM/FLUID fixture. Without this,
@@ -677,60 +677,60 @@ jobs:
                 BlockPos bendDst=helper.absolutePos(new BlockPos(1,1,2));
                 BlockPos bendSrc=helper.absolutePos(new BlockPos(0,1,0));
                 helper.getLevel().setBlock(bendSrc,net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),3);
-                helper.getLevel().setBlock(bendA,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
-                helper.getLevel().setBlock(bendB,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(bendA,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(bendB,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
                 helper.getLevel().setBlock(bendDst,net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),3);
                 var bendSrcChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(bendSrc);
                 var bendDstChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(bendDst);
-                var bendMcA=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendA);
-                var bendMcB=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendB);
-                bendMcA.add(MultiCableBlockEntity.Layer.ITEM); bendMcB.add(MultiCableBlockEntity.Layer.ITEM);
-                bendMcA.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.NORTH,1,8,0);
-                bendMcA.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.SOUTH,1);
-                bendMcB.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.NORTH,1);
-                bendMcB.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.EAST,2);
+                var bendMcA=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(bendA);
+                var bendMcB=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(bendB);
+                bendMcA.add(ConduitBundleBlockEntity.Layer.ITEM); bendMcB.add(ConduitBundleBlockEntity.Layer.ITEM);
+                bendMcA.setLogistics(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,1,8,0);
+                bendMcA.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,1);
+                bendMcB.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,1);
+                bendMcB.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.EAST,2);
                 bendSrcChest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT,4));
-                for(int i=0;i<4;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
+                for(int i=0;i<4;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
                 check(bendDstChest.getItem(0).getCount()>0,"ITEM multi-segment bend transfer");
                 int before=0; for(int slot=0;slot<bendDstChest.getContainerSize();slot++) before+=bendDstChest.getItem(slot).getCount();
-                bendMcB.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.EAST,0);
+                bendMcB.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.EAST,0);
                 bendSrcChest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLD_INGOT,4));
-                for(int i=0;i<3;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
+                for(int i=0;i<3;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
                 int disabledTotal=0; for(int slot=0;slot<bendDstChest.getContainerSize();slot++) disabledTotal+=bendDstChest.getItem(slot).getCount();
                 check(disabledTotal==before,"ITEM disabled endpoint blocks bend transfer");
-                bendMcB.setConnectionMode(MultiCableBlockEntity.Layer.ITEM,Direction.EAST,2);
-                for(int i=0;i<3;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
+                bendMcB.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.EAST,2);
+                for(int i=0;i<3;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
                 int reenabledTotal=0; for(int slot=0;slot<bendDstChest.getContainerSize();slot++) reenabledTotal+=bendDstChest.getItem(slot).getCount();
                 check(reenabledTotal>before,"ITEM re-enabled endpoint resumes bend transfer");
 
                 // Run134: multi-segment FLUID path with the same 90-degree bend.
                 helper.getLevel().setBlock(bendSrc,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
-                helper.getLevel().setBlock(bendA,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
-                helper.getLevel().setBlock(bendB,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(bendA,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(bendB,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
                 helper.getLevel().setBlock(bendDst,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
                 var bendSrcTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(bendSrc);
                 var bendDstTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(bendDst);
-                var fluidA=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendA);
-                var fluidB=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(bendB);
-                fluidA.add(MultiCableBlockEntity.Layer.FLUID); fluidB.add(MultiCableBlockEntity.Layer.FLUID);
-                fluidA.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1,8,0);
-                fluidA.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.SOUTH,1);
-                fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1);
-                fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST,2);
-                check(fluidA.connectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH)==1,"FLUID bend source import mode");
-                check(fluidB.connectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST)==2,"FLUID bend destination export mode");
+                var fluidA=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(bendA);
+                var fluidB=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(bendB);
+                fluidA.add(ConduitBundleBlockEntity.Layer.FLUID); fluidB.add(ConduitBundleBlockEntity.Layer.FLUID);
+                fluidA.setLogistics(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH,1,8,0);
+                fluidA.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.SOUTH,1);
+                fluidB.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH,1);
+                fluidB.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,2);
+                check(fluidA.connectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH)==1,"FLUID bend source import mode");
+                check(fluidB.connectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST)==2,"FLUID bend destination export mode");
                 var bendSrcFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(bendSrcTank.tank());
                 var bendDstFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(bendDstTank.tank());
                 bendSrcFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,2000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
-                for(int i=0;i<4;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
+                for(int i=0;i<4;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
                 check(bendDstFluid.getFluidInTank(0).getAmount()>0,"FLUID multi-segment bend transfer");
                 int fluidBefore=bendDstFluid.getFluidInTank(0).getAmount();
-                fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST,0);
+                fluidB.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,0);
                 bendSrcFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,1000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
-                for(int i=0;i<3;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
+                for(int i=0;i<3;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
                 check(bendDstFluid.getFluidInTank(0).getAmount()==fluidBefore,"FLUID disabled endpoint blocks bend transfer");
-                fluidB.setConnectionMode(MultiCableBlockEntity.Layer.FLUID,Direction.EAST,2);
-                for(int i=0;i<3;i++){MultiCableBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);MultiCableBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
+                fluidB.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,2);
+                for(int i=0;i<3;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
                 check(bendDstFluid.getFluidInTank(0).getAmount()>fluidBefore,"FLUID re-enabled endpoint resumes bend transfer");
 
                 helper.succeed();
