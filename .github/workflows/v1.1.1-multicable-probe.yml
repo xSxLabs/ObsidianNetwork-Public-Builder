@@ -12,6 +12,7 @@ name: v1.1.1 MultiCable Compile Probe
 permissions: {contents: read}
 # Build 214 energy API trigger
 # Build 212 explicit trigger
+# Build 215 expanded conduit test trigger
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -562,7 +563,7 @@ jobs:
           grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/build101-server.log
           if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
           echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
-          echo '===== BUILD 103 REAL NEOFORGE GAMETEST GATE ====='
+          echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST GATE ====='
           # Test-only source/resource injection into the reconstructed CI worktree. Removed before packaging.
           cat >> work/build.gradle <<'EOF'
           neoForge {
@@ -602,7 +603,7 @@ jobs:
             @SubscribeEvent
             public static void register(RegisterGameTestsEvent event) {
               var environment = event.registerEnvironment(ENV, new TestEnvironmentDefinition.AllOf(java.util.List.of()));
-              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "multicable_state_machine"),
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "conduit_bundle_runtime"),
                   new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 100, 0, true, Rotation.NONE)));
             }
 
@@ -643,7 +644,7 @@ jobs:
               }
 
               @Override protected net.minecraft.network.chat.MutableComponent typeDescription() {
-                return Component.literal("Build 103 MultiCable state-machine GameTest");
+                return Component.literal("ConduitBundle runtime GameTest");
               }
             }
           }
@@ -683,7 +684,19 @@ jobs:
           grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(1 tests\)" /tmp/build103-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
           if grep -Eqi '[0-9]+ required tests failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
-          echo '===== BUILD 103 REAL NEOFORGE GAMETEST PASS ====='
+          echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST PASS ====='
+          # Build 215 final runtime source gates: cached split/removal invalidation and no legacy runtime classes.
+          python3 - <<'PY'
+          from pathlib import Path
+          J=Path('work/src/main/java/dev/obsidiannetwork')
+          topology=(J/'conduit/ConduitTopology.java').read_text()
+          assert 'network.nodes().stream().anyMatch' in topology and 'relative(d)' in topology, 'cached removal invalidation missing'
+          assert not (J/'block/MultiCableBlock.java').exists(), 'MultiCableBlock runtime leaked'
+          assert not (J/'blockentity/MultiCableBlockEntity.java').exists(), 'MultiCableBlockEntity runtime leaked'
+          gt=(J/'build103/Build103GameTests.java').read_text()
+          assert 'conduit_bundle_runtime' in gt and 'multicable_state_machine' not in gt.lower(), 'legacy GameTest identity remains'
+          print('BUILD215 CONDUIT FINAL SOURCE GATES PASS')
+          PY
           # Never package CI-only GameTest hooks/resources into the user JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
           rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
