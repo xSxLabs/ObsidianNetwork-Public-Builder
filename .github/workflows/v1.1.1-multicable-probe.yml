@@ -310,6 +310,9 @@ jobs:
           python3 private/v1.1.1/apply-run110-full-conduit.py
           echo '===== V1.1.1 RUN112 IO FUNCTION FACE APPLY ====='
           python3 private/v1.1.1/apply-run112-io-function-face.py
+          grep -Fq 'BLACK_FUNCTION_FACE_MARKER' work/src/main/resources/assets/obsidiannetwork/v111-run112-io-function-face.txt
+          grep -Fq 'INSET_FROM_FACADE_NO_ZFIGHT' work/src/main/resources/assets/obsidiannetwork/v111-run112-io-function-face.txt
+          grep -Fq 'MULTICABLE_FACADE_RENDERER_PRESERVED' work/src/main/resources/assets/obsidiannetwork/v111-runtime-visual-fixes.txt || true
           echo '===== V1.1.1 RUN121 CONDUIT FUNCTION APPLY ====='
           python3 private/v1.1.1/apply-run121-conduit-function.py
           echo '===== V1.1.1 RUN127 ENDERIO CONDUIT CONTAINER APPLY ====='
@@ -861,7 +864,7 @@ jobs:
           assert 'Transaction.openRoot()' in energy
           print('BUILD220 REAL FLUID/ENERGY CAPABILITY ROUTING PASS')
           PY
-          # Build 244: rerun unchanged real Controller/StorageDrive NETWORK split/merge test after symmetric remove/add topology refresh.
+          # Build 245: rerun unchanged real Controller/StorageDrive NETWORK split/merge test after symmetric remove/add topology refresh.
           grep -Fq 'NETWORK real StorageDrive binds to Controller through two bundles' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WorldTopologyBridge.runtimeForDrive' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'controllerRt.drives().contains(drive.drive())' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
