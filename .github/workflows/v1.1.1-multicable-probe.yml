@@ -861,7 +861,7 @@ jobs:
           assert 'Transaction.openRoot()' in energy
           print('BUILD220 REAL FLUID/ENERGY CAPABILITY ROUTING PASS')
           PY
-          # Build 240: NETWORK must prove real Controller/StorageDrive binding and split/merge, not only conduit-node topology.
+          # Build 241: rerun unchanged real Controller/StorageDrive NETWORK split/merge test after production topology invalidation fix.
           grep -Fq 'NETWORK real StorageDrive binds to Controller through two bundles' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WorldTopologyBridge.runtimeForDrive' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'controllerRt.drives().contains(drive.drive())' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
