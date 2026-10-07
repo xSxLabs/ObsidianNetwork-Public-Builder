@@ -13,6 +13,7 @@ permissions: {contents: read}
 # Build 214 energy API trigger
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
+# Build 216 broad conduit semantics trigger
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -696,6 +697,24 @@ jobs:
           gt=(J/'build103/Build103GameTests.java').read_text()
           assert 'conduit_bundle_runtime' in gt and 'multicable_state_machine' not in gt.lower(), 'legacy GameTest identity remains'
           print('BUILD215 CONDUIT FINAL SOURCE GATES PASS')
+          PY
+          # Build 216 broad conduit semantics gate before packaging.
+          python3 - <<'PY'
+          from pathlib import Path
+          P=Path('work/src/main/java/dev/obsidiannetwork/conduit')
+          item=(P/'ItemConduitTicker.java').read_text()
+          fluid=(P/'FluidConduitTicker.java').read_text()
+          energy=(P/'EnergyConduitTicker.java').read_text()
+          topology=(P/'ConduitTopology.java').read_text()
+          manager=(P/'ConduitNetworkManager.java').read_text()
+          network=(P/'ConduitNetwork.java').read_text()
+          assert all(x in item for x in ['network.endpoints(true)','network.endpoints(false)','roundRobin()','selfFeed()','priority()'])
+          assert all(x in fluid for x in ['network.endpoints(true)','network.endpoints(false)','drain(1000','fill('])
+          assert all(x in energy for x in ['network.endpoints(true)','network.endpoints(false)','extract(1000','insert(','Transaction.openRoot'])
+          assert 'network.nodes().stream().anyMatch' in topology
+          assert 'ConduitRuntime.component' in manager and 'if(!current.dirty()' in manager
+          assert 'cacheEndpoints' in network
+          print('BUILD216 ITEM FLUID ENERGY SPLIT MERGE CACHE SEMANTICS PASS')
           PY
           # Never package CI-only GameTest hooks/resources into the user JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
