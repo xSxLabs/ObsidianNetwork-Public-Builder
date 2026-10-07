@@ -14,7 +14,7 @@ permissions: {contents: read}
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
 # Build 216 broad conduit semantics trigger
-# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests
+# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -703,6 +703,20 @@ jobs:
                 return Component.literal("ConduitBundle runtime GameTest");
               }
             }
+          }
+          EOF
+          # Build 219: compile a CI-only capability fixture. It is test infrastructure only and is deleted before packaging.
+          cat > work/src/main/java/dev/obsidiannetwork/build103/Build219CapabilityFixture.java <<'EOF'
+          package dev.obsidiannetwork.build103;
+          import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+          import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+          public final class Build219CapabilityFixture implements EnergyHandler {
+            private int energy;
+            public Build219CapabilityFixture(int energy){this.energy=energy;}
+            public long getAmountAsLong(){return energy;}
+            public long getCapacityAsLong(){return 100000;}
+            public int extract(int amount,TransactionContext tx){int n=Math.min(Math.max(0,amount),energy);energy-=n;return n;}
+            public int insert(int amount,TransactionContext tx){int n=Math.min(Math.max(0,amount),100000-energy);energy+=n;return n;}
           }
           EOF
           # Validate the injected test itself, not a path that does not exist yet.
