@@ -634,7 +634,7 @@ jobs:
             public static void register(RegisterGameTestsEvent event) {
               var environment = event.registerEnvironment(ENV, new TestEnvironmentDefinition.AllOf(java.util.List.of()));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "conduit_bundle_runtime"),
-                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 100, 0, true, Rotation.NONE)));
+                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 140, 0, true, Rotation.NONE)));
             }
 
             private static final class StateMachineTest extends GameTestInstance {
