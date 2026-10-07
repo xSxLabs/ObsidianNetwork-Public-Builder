@@ -14,7 +14,7 @@ permissions: {contents: read}
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
 # Build 216 broad conduit semantics trigger
-# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest
+# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest\n# Build 222 bidirectional ENERGY and connection-only NETWORK semantics
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -753,7 +753,7 @@ jobs:
           fluid=(p/'FluidConduitTicker.java').read_text()
           energy=(p/'EnergyConduitTicker.java').read_text()
           assert 'Capabilities.Fluid.BLOCK' in fluid and 'network.endpoints(true)' in fluid and 'network.endpoints(false)' in fluid
-          assert 'Capabilities.Energy.BLOCK' in energy and 'network.endpoints(true)' in energy and 'network.endpoints(false)' in energy
+          assert 'Capabilities.Energy.BLOCK' in energy and 'connected' in energy and 'network.nodes()' in energy
           assert 'Transaction.openRoot()' in energy
           print('BUILD220 REAL FLUID/ENERGY CAPABILITY ROUTING PASS')
           PY
@@ -819,7 +819,7 @@ jobs:
           assert all(x in item for x in ['network.endpoints(true)','network.endpoints(false)','roundRobin()','selfFeed()'])
           assert 'config().priority()' in runtime and '.reversed()' in runtime, 'endpoint priority ordering missing'
           assert all(x in fluid for x in ['network.endpoints(true)','network.endpoints(false)','drain(1000','fill('])
-          assert all(x in energy for x in ['network.endpoints(true)','network.endpoints(false)','extract(1000','insert(','Transaction.openRoot'])
+          assert all(x in energy for x in ['network.nodes()','connected','extract(1000','insert(','Transaction.openRoot'])
           assert 'network.nodes().stream().anyMatch' in topology
           assert 'ConduitRuntime.component' in manager and 'if(!current.dirty()' in manager
           assert 'cacheEndpoints' in network
