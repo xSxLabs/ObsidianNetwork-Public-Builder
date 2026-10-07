@@ -1,5 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
-# Build 264 bundle always-visible core + IO working zone + cross-dimension tesseract
+# Build 265 compile complete requested fix set
 # Build 251 persist outside marker geometry
 # Build 250 reconstruction-robust visual gate
 # Build 249 fixed regex trigger
