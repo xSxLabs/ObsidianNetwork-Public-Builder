@@ -14,7 +14,7 @@ permissions: {contents: read}
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
 # Build 216 broad conduit semantics trigger
-# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing
+# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -687,6 +687,30 @@ jobs:
                   .thenExecuteAfter(15,()->{
                     var bentSink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(2,1,3)));
                     check(bentSink.getItem(0).getCount()>0,"ITEM bent three-bundle transfer");
+                    // Build 221: real FLUID transfer, project NetworkTank capabilities on both ends.
+                    BlockPos fs=helper.absolutePos(new BlockPos(0,1,1)), f1=helper.absolutePos(new BlockPos(1,1,1)), f2=helper.absolutePos(new BlockPos(2,1,1)), fd=helper.absolutePos(new BlockPos(3,1,1));
+                    for(int x=0;x<4;x++) helper.getLevel().setBlock(helper.absolutePos(new BlockPos(x,1,1)),Blocks.AIR.defaultBlockState(),3);
+                    helper.getLevel().setBlock(fs,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(f1,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(f2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(fd,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                    var fb1=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(f1); var fb2=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(f2);
+                    check(fb1.add(ConduitBundleBlockEntity.Layer.FLUID)&&fb2.add(ConduitBundleBlockEntity.Layer.FLUID),"install FLUID route");
+                    fb1.setConduitFlags(ConduitBundleBlockEntity.Layer.FLUID,Direction.WEST,false,true);
+                    fb2.setConduitFlags(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,true,false);
+                    var srcTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(fs);
+                    var h=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(srcTank.tank());
+                    int filled=h.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                    check(filled==4000,"prefill source NetworkTank with water");
+                  })
+                  .thenExecuteAfter(15,()->{
+                    BlockPos fs=helper.absolutePos(new BlockPos(0,1,1)), fd=helper.absolutePos(new BlockPos(3,1,1));
+                    var srcTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(fs);
+                    var dstTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(fd);
+                    var sh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(srcTank.tank());
+                    var dh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dstTank.tank());
+                    check(dh.getFluidInTank(0).getAmount()>0,"FLUID real NetworkTank-to-NetworkTank transfer");
+                    check(sh.getFluidInTank(0).getAmount()<4000,"FLUID source drained by conduit ticker");
                   })
                   .thenSucceed();
               }
