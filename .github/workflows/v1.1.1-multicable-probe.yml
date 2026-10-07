@@ -1,5 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
-# Build 260 explicit runtime textures + tesseract inspection
+# Build 261 explicit runtime textures + tesseract inspection
 # Build 251 persist outside marker geometry
 # Build 250 reconstruction-robust visual gate
 # Build 249 fixed regex trigger
@@ -361,7 +361,7 @@ jobs:
           bundle=(J/'dev/obsidiannetwork/client/render/ConduitBundleRenderer.java').read_text()
           assert 'CONDUIT_BUNDLE.get(), dev.obsidiannetwork.client.render.ConduitBundleRenderer::new' in client
           assert 'facadeModel.submit' in bundle and 'blockResolver.update' in bundle
-          assert 'textures/block/white_concrete.png' in bundle and 'TextureAtlas.LOCATION_BLOCKS' not in bundle
+          assert 'textures/block/white_concrete.png' in bundle and 'RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS)' not in bundle
           assert 'ioMode' in bundle and 'collar(' in bundle
           assert not re.search(r'==\s*2\s*\)\s*collar\s*\(',bundle), 'export-only conduit collar condition survived visual patch'
           # hard safety gate: visual pass must not modify ticker/runtime topology sources
