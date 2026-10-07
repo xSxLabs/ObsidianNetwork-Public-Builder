@@ -411,7 +411,7 @@ jobs:
           check('EnergyConduitRuntime.extract' in be and 'exposed!=null&&!origin.conduitCanExtract' in compact(energyrt),'energy export capability side gate delegates to runtime')
           check('EnergyConduitRuntime.insert' in be and 'exposed!=null&&!origin.conduitCanInsert' in compact(energyrt),'energy import capability side gate delegates to runtime')
           check('conduitCanExtract' in energyrt and 'conduitCanInsert' in energyrt and 'Capabilities.Energy.BLOCK' in energyrt,'energy traversal endpoint direction gates')
-          check('energyCanImport(' not in be and 'energyCanExport(' not in be,'legacy bundle energy traversal removed')
+          check('java.util.ArrayDeque<BlockPos> q=new java.util.ArrayDeque<>()' not in be and 'Capabilities.Energy.BLOCK' not in be and 'EnergyConduitRuntime.extract' in be and 'EnergyConduitRuntime.insert' in be,'bundle owns no energy traversal')
           energy_marker=(R/'assets/obsidiannetwork/v111-run128-energy-io.txt').read_text()
           for token in ['ENERGY_DISABLED_IMPORT_EXPORT','ENERGY_IMPORT_ACCEPTS_FE_INTO_CONDUIT','ENERGY_EXPORT_EXPOSES_FE_TO_MACHINE','ENERGY_NETWORK_TRAVERSAL_RESPECTS_ENDPOINT_DIRECTION','ENERGY_EXTRACT_READS_EXPORT_ENDPOINTS','ENERGY_INSERT_WRITES_IMPORT_ENDPOINTS','ENERGY_INTERNAL_TRAVERSAL_ACCEPTS_IMPORT_AND_EXPORT_ARMS','ENERGY_EXPORT_MODE_PERSISTS_ACROSS_RELOAD','LEGACY_SINGLE_ENERGY_CABLE_REMAINS_BIDIRECTIONAL','NETWORK_REMAINS_DIRECTIONLESS_CONNECTED_DISABLED','TELEPORTER_UNTOUCHED','POLYMORPH_UNTOUCHED']:
               check(token in energy_marker,'energy marker '+token)
