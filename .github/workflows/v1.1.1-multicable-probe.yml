@@ -10,6 +10,7 @@ name: v1.1.1 MultiCable Compile Probe
       - '.github/workflows/v1.1.1-multicable-probe.yml'
       - 'README.md'
 permissions: {contents: read}
+# Build 214 energy API trigger
 # Build 212 explicit trigger
 jobs:
   inspect:
