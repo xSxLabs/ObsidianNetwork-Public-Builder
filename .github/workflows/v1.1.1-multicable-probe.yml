@@ -14,7 +14,7 @@ permissions: {contents: read}
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
 # Build 216 broad conduit semantics trigger
-# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest\n# Build 222 bidirectional ENERGY and connection-only NETWORK semantics\n# Build 223 fix legacy runtime ownership gate for no-mode ENERGY
+# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest\n# Build 222 bidirectional ENERGY and connection-only NETWORK semantics\n# Build 223 fix legacy runtime ownership gate for no-mode ENERGY\n# Build 225 assert connection-only NETWORK and bidirectional ENERGY runtime
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -330,6 +330,19 @@ jobs:
           python3 private/v1.1.1/apply-run138-authoritative-io.py
           python3 private/v1.1.1/apply-run139-network-cache.py
           python3 private/v1.1.1/apply-run140-topology-energy.py
+          # Build225: NETWORK has no directional IO semantics; ENERGY discovers all connected external faces bidirectionally.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/conduit')
+          n=(p/'NetworkConduitTicker.java').read_text()
+          e=(p/'EnergyConduitTicker.java').read_text()
+          assert 'ConduitNetworkManager.ensure' in n
+          assert 'endpoints(true)' not in n and 'endpoints(false)' not in n
+          assert 'network.nodes()' in e and 'connected' in e
+          assert 'endpoints(true)' not in e and 'endpoints(false)' not in e
+          assert 'bundle.enabled' in e and 'Capabilities.Energy.BLOCK' in e
+          print('BUILD225 NETWORK CONNECTION + BIDIRECTIONAL ENERGY PASS')
+          PY
           echo '===== V1.1.1 ENDERIO RUNTIME OWNERSHIP HARD GATE ====='
           python3 - <<'PY'
           from pathlib import Path
