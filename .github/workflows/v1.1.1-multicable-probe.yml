@@ -761,24 +761,24 @@ jobs:
                     BlockPos es=helper.absolutePos(new BlockPos(0,1,1)), ed=helper.absolutePos(new BlockPos(3,1,1));
                     helper.getLevel().setBlock(es,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
                     helper.getLevel().setBlock(ed,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
-                    var src=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(es);
-                    var dst=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(ed);
-                    check(src!=null&&dst!=null,"ENERGY real EnergyCell block entities");
+                    var energySrc=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(es);
+                    var energyDst=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(ed);
+                    check(energySrc!=null&&energyDst!=null,"ENERGY real EnergyCell block entities");
                     try(var tx=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
-                      int inserted=src.energyHandler(null).insert(8000,tx);
+                      int inserted=energySrc.energyHandler(null).insert(8000,tx);
                       check(inserted==8000,"prefill source EnergyCell through real handler");
                       tx.commit();
                     }
-                    check(src.stored()==8000&&dst.stored()==0,"ENERGY initial EnergyCell state");
-                    src.cycleSide(Direction.EAST.get3DDataValue());
-                    check(src.sideMode(Direction.EAST)==dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.OUTPUT,"source EnergyCell east face output");
-                    check(dst.sideMode(Direction.WEST)==dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.INPUT,"sink EnergyCell west face input");
+                    check(energySrc.stored()==8000&&energyDst.stored()==0,"ENERGY initial EnergyCell state");
+                    energySrc.cycleSide(Direction.EAST.get3DDataValue());
+                    check(energySrc.sideMode(Direction.EAST)==dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.OUTPUT,"source EnergyCell east face output");
+                    check(energyDst.sideMode(Direction.WEST)==dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.INPUT,"sink EnergyCell west face input");
                   })
                   .thenExecuteAfter(15,()->{
-                    var src=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(0,1,1)));
-                    var dst=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(3,1,1)));
-                    check(dst.stored()>0,"ENERGY real EnergyCell sink receives FE through two bundles");
-                    check(src.stored()<8000,"ENERGY real EnergyCell source loses FE through two bundles");
+                    var energySrcAfter=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(0,1,1)));
+                    var energyDstAfter=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(3,1,1)));
+                    check(energyDstAfter.stored()>0,"ENERGY real EnergyCell sink receives FE through two bundles");
+                    check(energySrcAfter.stored()<8000,"ENERGY real EnergyCell source loses FE through two bundles");
                   })
                   .thenSucceed();
               }
@@ -835,7 +835,7 @@ jobs:
           gt=Path('work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java').read_text()
           energy_section=gt[gt.index('// Build 237:'):gt.index('.thenSucceed();',gt.index('// Build 237:'))]
           assert 'setConduitFlags(ConduitBundleBlockEntity.Layer.ENERGY' not in energy_section
-          assert 'energyHandler(null).insert(8000' in energy_section
+          assert 'energySrc.energyHandler(null).insert(8000' in energy_section
           assert 'SideMode.OUTPUT' in energy_section and 'SideMode.INPUT' in energy_section
           print('BUILD237 REAL ENERGY CELL GAMETEST SOURCE PASS')
           PY
