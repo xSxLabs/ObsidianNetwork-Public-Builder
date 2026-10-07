@@ -1,4 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
+# Build 254 fix invisible bundle renderer ownership
 # Build 251 persist outside marker geometry
 # Build 250 reconstruction-robust visual gate
 # Build 249 fixed regex trigger
@@ -353,6 +354,10 @@ jobs:
            assert 'BUILD246_FACADE_COLLISION' in (J/'dev/obsidiannetwork/block'/n).read_text()
           assert (R/'assets/obsidiannetwork/blockstates/conduit_bundle.json').exists()
           assert (R/'assets/obsidiannetwork/models/block/conduit_bundle_empty.json').exists()
+          client=(J/'dev/obsidiannetwork/client/ClientModEvents.java').read_text()
+          bundle=(J/'dev/obsidiannetwork/client/render/ConduitBundleRenderer.java').read_text()
+          assert 'CONDUIT_BUNDLE.get(), dev.obsidiannetwork.client.render.ConduitBundleRenderer::new' in client
+          assert 'facadeModel.submit' in bundle and 'blockResolver.update' in bundle
           # hard safety gate: visual pass must not modify ticker/runtime topology sources
           print('BUILD246 VISUAL SOURCE GATE PASS')
           PY
