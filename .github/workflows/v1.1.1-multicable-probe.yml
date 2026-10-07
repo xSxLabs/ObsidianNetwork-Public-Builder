@@ -315,6 +315,7 @@ jobs:
           grep -Fq "x=gate_method(x,'public int insert(int amount,TransactionContext tx)','energyCanImport')" private/v1.1.1/apply-run128-energy-io.py
           python3 private/v1.1.1/apply-run128-energy-io.py
           python3 private/v1.1.1/apply-run129-enderio-node-architecture.py
+          python3 private/v1.1.1/apply-run130-conduit-bundle-replacement.py
           python3 private/v1.1.1/apply-run130-conduit-bundle-hard-cut.py
           echo '===== RUN126 CONDUIT GUI API PROBE ====='
           sed -n '1,240p' work/src/main/java/dev/obsidiannetwork/registry/ModMenus.java
