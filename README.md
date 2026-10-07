@@ -300,3 +300,5 @@ AUTONOMOUS_V111_LOOP=b43e4e00229ea8a9431f7f956f1661ccfded04f6
 <!-- Build 224: restore bidirectional no-mode ENERGY runtime -->
 
 <!-- Build 228: verify connection-only BFS for NETWORK and ENERGY -->
+
+<!-- Build 229: invalidate clean conduit network when adjacent bundle appears -->
