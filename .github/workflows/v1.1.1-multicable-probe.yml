@@ -320,6 +320,7 @@ jobs:
           python3 private/v1.1.1/apply-run133-runtime-tickers.py
           python3 private/v1.1.1/apply-run134-energy-runtime.py
           python3 private/v1.1.1/apply-run135-energy-api.py
+          python3 private/v1.1.1/apply-run136-network-manager.py
           echo '===== V1.1.1 ENDERIO RUNTIME OWNERSHIP HARD GATE ====='
           python3 - <<'PY'
           from pathlib import Path
@@ -341,6 +342,8 @@ jobs:
               src=tickers[name]
               for needle in needles: assert needle in src, name+' missing runtime operation '+needle
           assert (conduit/'EnergyConduitRuntime.java').exists(), 'Energy runtime traversal missing'
+          manager=(conduit/'ConduitNetworkManager.java').read_text(); network=(conduit/'ConduitNetwork.java').read_text()
+          assert 'replaceNodes' in network and 'ConduitRuntime.component' in manager and 'n.network(this)' in network, 'shared per-type network lifecycle missing'
           # Final runtime identity may not resurrect MultiCable.
           assert not (J/'block/MultiCableBlock.java').exists()
           assert not (J/'blockentity/MultiCableBlockEntity.java').exists()
@@ -678,8 +681,8 @@ jobs:
                 var dstChest=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(dst);
                 var itemMc=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(cable);
                 itemMc.add(ConduitBundleBlockEntity.Layer.ITEM);
-                itemMc.setLogistics(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,1,8,0);
-                itemMc.setLogistics(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,2,0,0);
+                itemMc.setLogistics(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,2,8,0);
+                itemMc.setLogistics(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,1,0,0);
                 srcChest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COBBLESTONE,8));
                 ConduitBundleBlockEntity.tick(helper.getLevel(),cable,helper.getLevel().getBlockState(cable),itemMc);
                 check(dstChest.getItem(0).getCount()>0,"ITEM bundle transfer chest-to-chest");
@@ -692,8 +695,8 @@ jobs:
                 var dstTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(dst);
                 var fluidMc=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(cable);
                 fluidMc.add(ConduitBundleBlockEntity.Layer.FLUID);
-                fluidMc.setLogistics(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH,1,8,0);
-                fluidMc.setLogistics(ConduitBundleBlockEntity.Layer.FLUID,Direction.SOUTH,2,0,0);
+                fluidMc.setLogistics(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH,2,8,0);
+                fluidMc.setLogistics(ConduitBundleBlockEntity.Layer.FLUID,Direction.SOUTH,1,0,0);
                 var srcFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(srcTank.tank());
                 var dstFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dstTank.tank());
                 srcFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,1000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
@@ -720,10 +723,10 @@ jobs:
                 var bendMcA=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(bendA);
                 var bendMcB=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(bendB);
                 bendMcA.add(ConduitBundleBlockEntity.Layer.ITEM); bendMcB.add(ConduitBundleBlockEntity.Layer.ITEM);
-                bendMcA.setLogistics(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,1,8,0);
+                bendMcA.setLogistics(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,2,8,0);
                 bendMcA.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,1);
                 bendMcB.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,1);
-                bendMcB.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.EAST,2);
+                bendMcB.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.EAST,1);
                 bendSrcChest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT,4));
                 for(int i=0;i<4;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
                 check(bendDstChest.getItem(0).getCount()>0,"ITEM multi-segment bend transfer");
@@ -733,7 +736,7 @@ jobs:
                 for(int i=0;i<3;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
                 int disabledTotal=0; for(int slot=0;slot<bendDstChest.getContainerSize();slot++) disabledTotal+=bendDstChest.getItem(slot).getCount();
                 check(disabledTotal==before,"ITEM disabled endpoint blocks bend transfer");
-                bendMcB.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.EAST,2);
+                bendMcB.setConnectionMode(ConduitBundleBlockEntity.Layer.ITEM,Direction.EAST,1);
                 for(int i=0;i<3;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),bendMcA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),bendMcB);}
                 int reenabledTotal=0; for(int slot=0;slot<bendDstChest.getContainerSize();slot++) reenabledTotal+=bendDstChest.getItem(slot).getCount();
                 check(reenabledTotal>before,"ITEM re-enabled endpoint resumes bend transfer");
@@ -748,10 +751,10 @@ jobs:
                 var fluidA=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(bendA);
                 var fluidB=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(bendB);
                 fluidA.add(ConduitBundleBlockEntity.Layer.FLUID); fluidB.add(ConduitBundleBlockEntity.Layer.FLUID);
-                fluidA.setLogistics(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH,1,8,0);
+                fluidA.setLogistics(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH,2,8,0);
                 fluidA.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.SOUTH,1);
                 fluidB.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH,1);
-                fluidB.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,2);
+                fluidB.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,1);
                 check(fluidA.connectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.NORTH)==1,"FLUID bend source import mode");
                 check(fluidB.connectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST)==2,"FLUID bend destination export mode");
                 var bendSrcFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(bendSrcTank.tank());
@@ -764,7 +767,7 @@ jobs:
                 bendSrcFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,1000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
                 for(int i=0;i<3;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
                 check(bendDstFluid.getFluidInTank(0).getAmount()==fluidBefore,"FLUID disabled endpoint blocks bend transfer");
-                fluidB.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,2);
+                fluidB.setConnectionMode(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,1);
                 for(int i=0;i<3;i++){ConduitBundleBlockEntity.tick(helper.getLevel(),bendA,helper.getLevel().getBlockState(bendA),fluidA);ConduitBundleBlockEntity.tick(helper.getLevel(),bendB,helper.getLevel().getBlockState(bendB),fluidB);}
                 check(bendDstFluid.getFluidInTank(0).getAmount()>fluidBefore,"FLUID re-enabled endpoint resumes bend transfer");
 
