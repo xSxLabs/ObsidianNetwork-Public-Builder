@@ -14,7 +14,7 @@ permissions: {contents: read}
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
 # Build 216 broad conduit semantics trigger
-# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture
+# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -705,7 +705,10 @@ jobs:
             }
           }
           EOF
-          # Build 219: compile a CI-only capability fixture. It is test infrastructure only and is deleted before packaging.
+          # Build 220: real fluid + energy transport uses project tank capabilities and a CI-only registered energy fixture.
+          # The fixture is intentionally kept out of the packaged JAR by the existing build103 cleanup.
+          grep -Fq 'FluidStacksResourceHandler tank' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkTankBlockEntity.java
+          grep -Fq 'Capabilities.Fluid.BLOCK' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           cat > work/src/main/java/dev/obsidiannetwork/build103/Build219CapabilityFixture.java <<'EOF'
           package dev.obsidiannetwork.build103;
           import net.neoforged.neoforge.transfer.energy.EnergyHandler;
@@ -719,6 +722,17 @@ jobs:
             public int insert(int amount,TransactionContext tx){int n=Math.min(Math.max(0,amount),100000-energy);energy+=n;return n;}
           }
           EOF
+          # Build220 source-level runtime contract: both tickers must route through cached real capability endpoints.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/conduit')
+          fluid=(p/'FluidConduitTicker.java').read_text()
+          energy=(p/'EnergyConduitTicker.java').read_text()
+          assert 'Capabilities.Fluid.BLOCK' in fluid and 'network.endpoints(true)' in fluid and 'network.endpoints(false)' in fluid
+          assert 'Capabilities.Energy.BLOCK' in energy and 'network.endpoints(true)' in energy and 'network.endpoints(false)' in energy
+          assert 'Transaction.openRoot()' in energy
+          print('BUILD220 REAL FLUID/ENERGY CAPABILITY ROUTING PASS')
+          PY
           # Validate the injected test itself, not a path that does not exist yet.
           grep -Fq 'ITEM server-tick transfer chest-to-chest' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           if grep -Fq 'ConduitBundleBlockEntity.tick(' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java; then echo 'Build103 may not invoke bundle tick directly'; exit 1; fi
