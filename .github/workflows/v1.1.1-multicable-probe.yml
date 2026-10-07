@@ -634,7 +634,7 @@ jobs:
             public static void register(RegisterGameTestsEvent event) {
               var environment = event.registerEnvironment(ENV, new TestEnvironmentDefinition.AllOf(java.util.List.of()));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "conduit_bundle_runtime"),
-                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 140, 0, true, Rotation.NONE)));
+                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
             }
 
             private static final class StateMachineTest extends GameTestInstance {
@@ -779,6 +779,40 @@ jobs:
                     var energyDstAfter=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(3,1,1)));
                     check(energyDstAfter.stored()>0,"ENERGY real EnergyCell sink receives FE through two bundles");
                     check(energySrcAfter.stored()<8000,"ENERGY real EnergyCell source loses FE through two bundles");
+                    // Build 240: real storage-network binding over NETWORK conduit bundles.
+                    for(int x=0;x<4;x++) helper.getLevel().setBlock(helper.absolutePos(new BlockPos(x,1,1)),Blocks.AIR.defaultBlockState(),3);
+                    BlockPos nc=helper.absolutePos(new BlockPos(0,1,1)), n1=helper.absolutePos(new BlockPos(1,1,1)), n2=helper.absolutePos(new BlockPos(2,1,1)), nd=helper.absolutePos(new BlockPos(3,1,1));
+                    helper.getLevel().setBlock(nc,ObsidianNetwork.NETWORK_CONTROLLER.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(n1,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(n2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(nd,ObsidianNetwork.STORAGE_DRIVE.get().defaultBlockState(),3);
+                    for(BlockPos p:java.util.List.of(n1,n2)){
+                      var nb=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(p);
+                      if(!nb.has(ConduitBundleBlockEntity.Layer.NETWORK)) check(nb.add(ConduitBundleBlockEntity.Layer.NETWORK),"install real storage NETWORK conduit");
+                    }
+                  })
+                  .thenExecuteAfter(10,()->{
+                    BlockPos nc=helper.absolutePos(new BlockPos(0,1,1)), nd=helper.absolutePos(new BlockPos(3,1,1));
+                    var drive=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)helper.getLevel().getBlockEntity(nd);
+                    var controllerRt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForController((net.minecraft.server.level.ServerLevel)helper.getLevel(),nc);
+                    var driveRt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive((net.minecraft.server.level.ServerLevel)helper.getLevel(),nd);
+                    check(controllerRt!=null&&driveRt==controllerRt,"NETWORK real StorageDrive binds to Controller through two bundles");
+                    check(controllerRt.drives().contains(drive.drive()),"NETWORK Controller runtime owns real StorageDrive runtime");
+                    helper.getLevel().setBlock(helper.absolutePos(new BlockPos(2,1,1)),Blocks.AIR.defaultBlockState(),3);
+                  })
+                  .thenExecuteAfter(10,()->{
+                    BlockPos nd=helper.absolutePos(new BlockPos(3,1,1));
+                    check(dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive((net.minecraft.server.level.ServerLevel)helper.getLevel(),nd)==null,"NETWORK split detaches real StorageDrive");
+                    BlockPos n2=helper.absolutePos(new BlockPos(2,1,1));
+                    helper.getLevel().setBlock(n2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    var nb=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(n2);
+                    if(!nb.has(ConduitBundleBlockEntity.Layer.NETWORK)) check(nb.add(ConduitBundleBlockEntity.Layer.NETWORK),"restore real storage NETWORK conduit");
+                  })
+                  .thenExecuteAfter(10,()->{
+                    BlockPos nc=helper.absolutePos(new BlockPos(0,1,1)), nd=helper.absolutePos(new BlockPos(3,1,1));
+                    var controllerRt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForController((net.minecraft.server.level.ServerLevel)helper.getLevel(),nc);
+                    var driveRt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive((net.minecraft.server.level.ServerLevel)helper.getLevel(),nd);
+                    check(controllerRt!=null&&driveRt==controllerRt,"NETWORK merge rebinds real StorageDrive through bundles");
                   })
                   .thenSucceed();
               }
@@ -827,6 +861,12 @@ jobs:
           assert 'Transaction.openRoot()' in energy
           print('BUILD220 REAL FLUID/ENERGY CAPABILITY ROUTING PASS')
           PY
+          # Build 240: NETWORK must prove real Controller/StorageDrive binding and split/merge, not only conduit-node topology.
+          grep -Fq 'NETWORK real StorageDrive binds to Controller through two bundles' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'WorldTopologyBridge.runtimeForDrive' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'controllerRt.drives().contains(drive.drive())' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'NETWORK split detaches real StorageDrive' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'NETWORK merge rebinds real StorageDrive through bundles' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Build 237: GameTest must use real mod EnergyCells and must not configure ENERGY conduit IO flags.
           grep -Fq 'ENERGY real EnergyCell sink receives FE through two bundles' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'ObsidianNetwork.BASIC_ENERGY_CELL' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
