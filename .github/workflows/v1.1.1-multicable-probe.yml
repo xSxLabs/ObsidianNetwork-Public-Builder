@@ -317,6 +317,28 @@ jobs:
           python3 private/v1.1.1/apply-run129-enderio-node-architecture.py
           python3 private/v1.1.1/apply-run130-conduit-bundle-hard-cut.py
           python3 private/v1.1.1/apply-run132-enderio-core.py
+          echo '===== V1.1.1 ENDERIO RUNTIME OWNERSHIP HARD GATE ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          J=Path('work/src/main/java/dev/obsidiannetwork')
+          be=(J/'blockentity/ConduitBundleBlockEntity.java').read_text()
+          conduit=J/'conduit'
+          tickers={n:(conduit/n).read_text() for n in ['ItemConduitTicker.java','FluidConduitTicker.java','EnergyConduitTicker.java','NetworkConduitTicker.java']}
+          # A green build must no longer hide transport in the bundle BE.
+          forbidden=['private void transferItem(','private void transferFluid(','java.util.ArrayDeque<BlockPos> q=new java.util.ArrayDeque<>()']
+          assert not any(x in be for x in forbidden), 'ConduitBundleBlockEntity still owns legacy BFS/transfer runtime'
+          # Dedicated type tickers must contain actual work, not Run132 no-op bodies.
+          for name,src in tickers.items():
+              compact=''.join(src.split())
+              assert 'if(network.type()!=ConduitType.' in compact
+              assert 'return;}}' not in compact, name+' is still a no-op ticker'
+          # Final runtime identity may not resurrect MultiCable.
+          assert not (J/'block/MultiCableBlock.java').exists()
+          assert not (J/'blockentity/MultiCableBlockEntity.java').exists()
+          registry=(J/'ObsidianNetwork.java').read_text()
+          assert 'registerBlock("multi_cable"' not in registry and 'MULTI_CABLE' not in registry
+          print('V1.1.1 ENDERIO RUNTIME OWNERSHIP HARD GATE PASS')
+          PY
           echo '===== RUN126 CONDUIT GUI API PROBE ====='
           sed -n '1,240p' work/src/main/java/dev/obsidiannetwork/registry/ModMenus.java
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/ClientModEvents.java
