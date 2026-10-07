@@ -14,7 +14,7 @@ permissions: {contents: read}
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
 # Build 216 broad conduit semantics trigger
-# Build 217 correct centralized priority gate
+# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -633,6 +633,60 @@ jobs:
                   .thenExecute(()->{
                     bundle.setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,true,true);
                     check(bundle.conduitCanInsert(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH)&&bundle.conduitCanExtract(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH),"ITEM simultaneous insert+extract");
+                    // Build 218: replace the one-cable fixture with a real three-bundle straight route.
+                    helper.getLevel().setBlock(cable,Blocks.AIR.defaultBlockState(),3);
+                    helper.getLevel().setBlock(dst,Blocks.AIR.defaultBlockState(),3);
+                    BlockPos c1=helper.absolutePos(new BlockPos(1,1,1));
+                    BlockPos c2=helper.absolutePos(new BlockPos(1,1,2));
+                    BlockPos c3=helper.absolutePos(new BlockPos(1,1,3));
+                    BlockPos out=helper.absolutePos(new BlockPos(1,1,4));
+                    helper.getLevel().setBlock(c1,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(c2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(c3,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(out,Blocks.CHEST.defaultBlockState(),3);
+                    for(BlockPos p:java.util.List.of(c1,c2,c3)) check(((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(p)).add(ConduitBundleBlockEntity.Layer.ITEM),"install straight ITEM conduit");
+                    ((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(c1)).setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,false,true);
+                    ((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(c3)).setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,true,false);
+                    source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,12));
+                  })
+                  .thenExecuteAfter(15,()->{
+                    BlockPos out=helper.absolutePos(new BlockPos(1,1,4));
+                    var straightSink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(out);
+                    check(straightSink.getItem(0).getCount()>0,"ITEM straight three-bundle transfer");
+                    straightSink.clearContent();
+                    source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD,8));
+                    helper.getLevel().setBlock(helper.absolutePos(new BlockPos(1,1,2)),Blocks.AIR.defaultBlockState(),3);
+                  })
+                  .thenExecuteAfter(15,()->{
+                    var straightSink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(1,1,4)));
+                    check(straightSink.isEmpty(),"ITEM split blocks transfer after middle removal");
+                    BlockPos mid=helper.absolutePos(new BlockPos(1,1,2));
+                    helper.getLevel().setBlock(mid,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    check(((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(mid)).add(ConduitBundleBlockEntity.Layer.ITEM),"restore middle ITEM conduit");
+                  })
+                  .thenExecuteAfter(15,()->{
+                    var straightSink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(1,1,4)));
+                    check(straightSink.getItem(0).getCount()>0,"ITEM merge resumes transfer after middle replacement");
+                    // Build a separate bent route in the same real server world.
+                    for(int z=0;z<5;z++) helper.getLevel().setBlock(helper.absolutePos(new BlockPos(1,1,z)),Blocks.AIR.defaultBlockState(),3);
+                    BlockPos bsrc=helper.absolutePos(new BlockPos(0,1,1));
+                    BlockPos b1=helper.absolutePos(new BlockPos(1,1,1));
+                    BlockPos b2=helper.absolutePos(new BlockPos(2,1,1));
+                    BlockPos b3=helper.absolutePos(new BlockPos(2,1,2));
+                    BlockPos bdst=helper.absolutePos(new BlockPos(2,1,3));
+                    helper.getLevel().setBlock(bsrc,Blocks.CHEST.defaultBlockState(),3);
+                    helper.getLevel().setBlock(b1,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(b2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(b3,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(bdst,Blocks.CHEST.defaultBlockState(),3);
+                    for(BlockPos p:java.util.List.of(b1,b2,b3)) check(((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(p)).add(ConduitBundleBlockEntity.Layer.ITEM),"install bent ITEM conduit");
+                    ((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(b1)).setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.WEST,false,true);
+                    ((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(b3)).setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,true,false);
+                    ((net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(bsrc)).setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLD_INGOT,9));
+                  })
+                  .thenExecuteAfter(15,()->{
+                    var bentSink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(2,1,3)));
+                    check(bentSink.getItem(0).getCount()>0,"ITEM bent three-bundle transfer");
                   })
                   .thenSucceed();
               }
