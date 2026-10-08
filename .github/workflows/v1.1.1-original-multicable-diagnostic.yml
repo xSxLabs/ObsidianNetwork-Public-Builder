@@ -494,10 +494,10 @@ jobs:
           PY
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
           set +e
-          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/original-multicable-gametest.log 2>&1
+          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace --info) > /tmp/original-multicable-gametest.log 2>&1
           GT_RC=$?
           set -e
-          tail -n 200 /tmp/original-multicable-gametest.log
+          cat /tmp/original-multicable-gametest.log
           if [ "$GT_RC" -ne 0 ]; then echo "Original MultiCable GameTest failed rc=$GT_RC"; exit "$GT_RC"; fi
           grep -Eq 'All [0-9]+ required tests passed' /tmp/original-multicable-gametest.log
           echo 'ORIGINAL MULTICABLE NEOFORGE GAMETEST PASS'
