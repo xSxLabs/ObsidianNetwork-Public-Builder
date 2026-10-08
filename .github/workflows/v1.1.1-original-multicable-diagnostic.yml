@@ -523,6 +523,7 @@ jobs:
                 var source=(net.minecraft.world.level.block.entity.ChestBlockEntity)world.getBlockEntity(sourcePos);
                 var target=(net.minecraft.world.level.block.entity.ChestBlockEntity)world.getBlockEntity(targetPos);
                 if(source==null||target==null)throw new IllegalStateException("Standalone ITEM fixture chests missing");
+                // Regression: a single original cable must discover its own EXPORT face.
                 var cable=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)world.getBlockEntity(cablePos);
                 if(cable==null)throw new IllegalStateException("Standalone ITEM cable block entity missing");
                 for(int i=0;i<3&&cable.mode(Direction.WEST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT;i++)
