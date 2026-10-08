@@ -455,6 +455,8 @@ jobs:
                 new TesseractLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_two_server_levels"),
                 new TesseractTwoLevelsTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_original_cables"),
+                new StandaloneOriginalCablesTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","legacy_multicable_layers"),
                 new LayerTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
             }
@@ -500,6 +502,28 @@ jobs:
                 }finally{
                   overworld.removeBlock(a,false);
                   nether.removeBlock(b,false);
+                }
+                helper.succeed();
+              }
+            }
+            static final class StandaloneOriginalCablesTest extends GameTestInstance {
+              StandaloneOriginalCablesTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Four original standalone cable blocks");}
+              @Override public void run(GameTestHelper helper){
+                var world=helper.getLevel();
+                var blocks=java.util.List.of(ObsidianNetwork.NETWORK_CABLE.get(),ObsidianNetwork.ITEM_CABLE.get(),ObsidianNetwork.FLUID_CABLE.get(),ObsidianNetwork.ENERGY_CABLE.get());
+                var names=java.util.List.of("NETWORK","ITEM","FLUID","ENERGY");
+                for(int i=0;i<blocks.size();i++){
+                  var block=blocks.get(i);
+                  if(block==net.minecraft.world.level.block.Blocks.AIR || block==ObsidianNetwork.MULTI_CABLE.get())
+                    throw new IllegalStateException(names.get(i)+" standalone cable registry aliases AIR or MultiCable");
+                  for(int j=0;j<i;j++)if(block==blocks.get(j))
+                    throw new IllegalStateException(names.get(i)+" cable aliases "+names.get(j));
+                  var pos=helper.absolutePos(new BlockPos(i+1,1,3));
+                  world.setBlock(pos,block.defaultBlockState(),3);
+                  if(!world.getBlockState(pos).is(block))
+                    throw new IllegalStateException(names.get(i)+" original standalone cable cannot be placed");
                 }
                 helper.succeed();
               }
