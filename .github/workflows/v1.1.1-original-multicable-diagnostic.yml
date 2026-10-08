@@ -401,6 +401,16 @@ jobs:
           print('V1.1.0 EXACT ORIGINAL CABLE SOURCE HASHES VERIFIED:',len(manifest))
           print('RESTORED:',restored)
           PY
+          echo '===== DIAGNOSE V1.1.0 ITEM CABLE ENDPOINT RULES ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java')
+          s=p.read_text()
+          for key in ['private List<Endpoint> exports()', 'private void transferItem(', 'public void setMode(', 'public Mode mode(', 'public static void tick(']:
+            at=s.find(key)
+            print('V110_CABLE_METHOD',key,'offset',at)
+            if at>=0: print(s[at:at+2100])
+          PY
           echo '===== COMPILE ORIGINAL RUNTIME (DIAGNOSTIC ONLY) ====='
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
           echo 'ORIGINAL MULTICABLE COMPILE PASS'
