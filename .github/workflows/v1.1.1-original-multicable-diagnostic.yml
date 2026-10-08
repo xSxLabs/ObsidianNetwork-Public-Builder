@@ -451,8 +451,27 @@ jobs:
             static final Identifier STRUCTURE=Identifier.fromNamespaceAndPath("obsidiannetwork","build103_empty");
             @SubscribeEvent public static void register(RegisterGameTestsEvent event){
               var env=event.registerEnvironment(ENV,new TestEnvironmentDefinition.AllOf(java.util.List.of()));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_chunk_lifecycle"),
+                new TesseractLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","legacy_multicable_layers"),
                 new LayerTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+            }
+            static final class TesseractLifecycleTest extends GameTestInstance {
+              TesseractLifecycleTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Tesseract chunk ticket lifecycle");}
+              @Override public void run(GameTestHelper helper){
+                var world=helper.getLevel();
+                BlockPos pos=helper.absolutePos(new BlockPos(2,1,2));
+                world.setBlock(pos,ObsidianNetwork.TESSERACT.get().defaultBlockState(),3);
+                if(!(world.getBlockEntity(pos) instanceof dev.obsidiannetwork.blockentity.TesseractBlockEntity))
+                  throw new IllegalStateException("Tesseract block entity did not load");
+                helper.startSequence().thenExecuteAfter(5,()->{
+                  if(!world.hasChunkAt(pos))throw new IllegalStateException("Tesseract chunk unloaded");
+                  world.removeBlock(pos,false);
+                  if(world.getBlockEntity(pos)!=null)throw new IllegalStateException("Tesseract block entity not removed");
+                }).thenSucceed();
+              }
             }
             static final class LayerTest extends GameTestInstance {
               LayerTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
