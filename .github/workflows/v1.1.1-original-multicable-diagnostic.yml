@@ -551,10 +551,8 @@ jobs:
                 // Regression: a single original cable must discover its own EXPORT face.
                 var cable=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)world.getBlockEntity(cablePos);
                 if(cable==null)throw new IllegalStateException("Standalone ITEM cable block entity missing");
-                for(int i=0;i<3&&cable.mode(Direction.WEST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT;i++)
-                  cable.cycle(Direction.WEST);
-                for(int i=0;i<3&&cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT;i++)
-                  cable.cycle(Direction.EAST);
+                cable.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                cable.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT);
                 if(cable.mode(Direction.WEST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT)
                   throw new IllegalStateException("Standalone ITEM input side not configured");
                 if(cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT)
