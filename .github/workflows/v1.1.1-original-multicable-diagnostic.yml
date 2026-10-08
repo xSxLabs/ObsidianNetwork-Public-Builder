@@ -580,10 +580,10 @@ jobs:
                 var cable=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)world.getBlockEntity(cablePos);
                 if(cable==null)throw new IllegalStateException("Standalone ITEM cable block entity missing");
                 cable.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
-                cable.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT);
+                cable.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.CONNECTED);
                 if(cable.mode(Direction.WEST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT)
                   throw new IllegalStateException("Standalone ITEM input side not configured");
-                if(cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT)
+                if(cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.CONNECTED)
                   throw new IllegalStateException("Standalone ITEM output side not configured");
                 source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
                 helper.startSequence().thenExecuteAfter(40,()->{
@@ -612,9 +612,9 @@ jobs:
                 var cable=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)world.getBlockEntity(cablePos);
                 if(source==null||target==null||cable==null)throw new IllegalStateException("Standalone FLUID fixtures missing");
                 cable.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
-                cable.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT);
+                cable.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.CONNECTED);
                 if(cable.mode(Direction.WEST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT||
-                   cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT)
+                   cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.CONNECTED)
                   throw new IllegalStateException("Standalone FLUID faces not configured");
                 var src=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(source.tank());
                 int filled=src.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
