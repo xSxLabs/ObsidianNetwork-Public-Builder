@@ -554,6 +554,25 @@ jobs:
                   long a=sourceCell.stored(),b=targetCell.stored();
                   if(b<=0)throw new IllegalStateException("Mixed original ENERGY route transferred no FE");
                   if(a+b!=8000)throw new IllegalStateException("ENERGY conservation failed: "+a+" + "+b);
+                }).thenExecute(()->{
+                  // NETWORK: controller -> original MultiCable -> standalone NETWORK -> MultiCable -> storage drive.
+                  world.setBlock(sourcePos,ObsidianNetwork.NETWORK_CONTROLLER.get().defaultBlockState(),3);
+                  world.setBlock(bridgePos,ObsidianNetwork.NETWORK_CABLE.get().defaultBlockState(),3);
+                  world.setBlock(targetPos,ObsidianNetwork.STORAGE_DRIVE.get().defaultBlockState(),3);
+                  if(!left.has(MultiCableBlockEntity.Layer.NETWORK))left.add(MultiCableBlockEntity.Layer.NETWORK);
+                  if(!right.has(MultiCableBlockEntity.Layer.NETWORK))right.add(MultiCableBlockEntity.Layer.NETWORK);
+                  for(Direction d:Direction.values()){
+                    if(!left.enabled(MultiCableBlockEntity.Layer.NETWORK,d)||!right.enabled(MultiCableBlockEntity.Layer.NETWORK,d))
+                      throw new IllegalStateException("Original NETWORK layer missing face "+d);
+                  }
+                  if(world.getBlockEntity(sourcePos)==null||world.getBlockEntity(targetPos)==null)
+                    throw new IllegalStateException("NETWORK controller or storage drive block entity missing");
+                  left.setEnabled(MultiCableBlockEntity.Layer.NETWORK,Direction.EAST,false);
+                  if(left.enabled(MultiCableBlockEntity.Layer.NETWORK,Direction.EAST))
+                    throw new IllegalStateException("NETWORK bridge isolation failed");
+                  left.setEnabled(MultiCableBlockEntity.Layer.NETWORK,Direction.EAST,true);
+                  if(!left.enabled(MultiCableBlockEntity.Layer.NETWORK,Direction.EAST))
+                    throw new IllegalStateException("NETWORK bridge reconnect failed");
                 }).thenSucceed();
               }
             }
