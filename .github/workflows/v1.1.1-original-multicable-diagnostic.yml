@@ -484,6 +484,8 @@ jobs:
                 new StandaloneItemTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_fluid_transport"),
                 new StandaloneFluidTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_energy_transport"),
+                new StandaloneEnergyTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_original_cables"),
                 new StandaloneOriginalCablesTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","legacy_multicable_layers"),
@@ -601,6 +603,36 @@ jobs:
                   if(left+right!=4000)throw new IllegalStateException("Standalone FLUID conservation failed: "+left+" + "+right);
                   if(!b.getFluidInTank(0).is(net.minecraft.world.level.material.Fluids.WATER))
                     throw new IllegalStateException("Standalone FLUID target received wrong fluid");
+                }).thenSucceed();
+              }
+            }
+            static final class StandaloneEnergyTransportTest extends GameTestInstance {
+              StandaloneEnergyTransportTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Standalone ENERGY cable real FE transfer and conservation");}
+              @Override public void run(GameTestHelper helper){
+                var world=helper.getLevel();
+                BlockPos sourcePos=helper.absolutePos(new BlockPos(1,1,1));
+                BlockPos cablePos=helper.absolutePos(new BlockPos(2,1,1));
+                BlockPos targetPos=helper.absolutePos(new BlockPos(3,1,1));
+                world.setBlock(sourcePos,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+                world.setBlock(cablePos,ObsidianNetwork.ENERGY_CABLE.get().defaultBlockState(),3);
+                world.setBlock(targetPos,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+                var source=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(sourcePos);
+                var target=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(targetPos);
+                if(source==null||target==null)throw new IllegalStateException("Standalone ENERGY fixtures missing");
+                try(var tx=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
+                  int inserted=source.energyHandler(null).insert(8000,tx);
+                  if(inserted!=8000)throw new IllegalStateException("Standalone ENERGY prefill failed: "+inserted);
+                  tx.commit();
+                }
+                source.cycleSide(Direction.EAST.get3DDataValue());
+                if(source.sideMode(Direction.EAST)!=dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.OUTPUT)
+                  throw new IllegalStateException("Standalone ENERGY source side not OUTPUT");
+                helper.startSequence().thenExecuteAfter(45,()->{
+                  long a=source.stored(),b=target.stored();
+                  if(b<=0)throw new IllegalStateException("Standalone ENERGY cable transferred no FE");
+                  if(a+b!=8000)throw new IllegalStateException("Standalone ENERGY conservation failed: "+a+" + "+b);
                 }).thenSucceed();
               }
             }
