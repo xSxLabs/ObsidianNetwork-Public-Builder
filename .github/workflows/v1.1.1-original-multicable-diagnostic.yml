@@ -284,6 +284,25 @@ jobs:
           python3 private/v1.1.0/apply-facade-opaque-fix.py
           python3 private/v1.1.0/apply-facade-b677-registration-fix.py
           echo '===== V1.1.0 BUILD 490 FREEZE RESTORED ====='
+          echo '===== CAPTURE V1.1.0 BUILD 490 ORIGINAL CABLE SOURCES ====='
+          mkdir -p /tmp/obsidian-v110-cables
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil,hashlib,json
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          names=['LogisticsCableBlockEntity.java','NetworkCableBlock.java','ItemCableBlock.java','FluidCableBlock.java','EnergyCableBlock.java','EnergyCableBlockEntity.java','NetworkCableBlockEntity.java']
+          manifest={}
+          for name in names:
+            found=list(root.rglob(name))
+            if len(found)==1:
+              p=found[0];rel=p.relative_to(root);dest=Path('/tmp/obsidian-v110-cables')/rel
+              dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(p,dest)
+              manifest[str(rel)]=hashlib.sha256(p.read_bytes()).hexdigest()
+          assert any(p.endswith('LogisticsCableBlockEntity.java') for p in manifest), 'Missing v1.1.0 logistics cable baseline'
+          Path('/tmp/obsidian-v110-cables/manifest.json').write_text(json.dumps(manifest,indent=2))
+          print('FROZEN V1.1.0 ORIGINAL CABLE SOURCE SNAPSHOT:',manifest)
+          PY
+
           echo '===== V1.1.1 IO PORT FACADES APPLY ====='
           python3 private/v1.1.1/apply-io-port-facades.py
           echo '===== V1.1.1 NETWORK TELEPORTER APPLY ====='
@@ -364,6 +383,25 @@ jobs:
 
           echo '===== RESTORE ORIGINAL MULTICABLE RUNTIME ====='
           python3 private/v1.1.1/apply-restore-original-multicable-runtime.py
+          echo '===== RESTORE V1.1.0 ORIGINAL STANDALONE CABLE BLOCK IMPLEMENTATIONS ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,shutil,hashlib
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          frozen=Path('/tmp/obsidian-v110-cables')
+          manifest=json.loads((frozen/'manifest.json').read_text())
+          restored=[]
+          for rel,expected in manifest.items():
+            # Keep the v1.1.1 logistics BE runtime adapter for required mode/endpoint fixes.
+            # Restore original standalone block implementations without touching MultiCable.
+            if not rel.endswith('CableBlock.java') or rel.endswith('MultiCableBlock.java'):continue
+            src=frozen/rel;dst=root/rel
+            assert hashlib.sha256(src.read_bytes()).hexdigest()==expected
+            if dst.exists() and dst.read_bytes()!=src.read_bytes():
+              shutil.copy2(src,dst);restored.append(rel)
+          print('V1.1.0 ORIGINAL CABLE BLOCKS RESTORED:',restored)
+          print('V1.1.0 LOGISTICS BE KEPT WITH V1.1.1 RUNTIME ADAPTER; NOT BYTE IDENTICAL')
+          PY
           echo '===== REPAIR ORIGINAL STANDALONE CABLE ENDPOINT DISCOVERY ====='
           python3 - <<'PY'
           from pathlib import Path
