@@ -523,6 +523,15 @@ jobs:
                 var source=(net.minecraft.world.level.block.entity.ChestBlockEntity)world.getBlockEntity(sourcePos);
                 var target=(net.minecraft.world.level.block.entity.ChestBlockEntity)world.getBlockEntity(targetPos);
                 if(source==null||target==null)throw new IllegalStateException("Standalone ITEM fixture chests missing");
+                var cable=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)world.getBlockEntity(cablePos);
+                if(cable==null)throw new IllegalStateException("Standalone ITEM cable block entity missing");
+                cable.cycle(Direction.WEST);
+                cable.cycle(Direction.EAST);
+                cable.cycle(Direction.EAST);
+                if(cable.mode(Direction.WEST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT)
+                  throw new IllegalStateException("Standalone ITEM input side not configured");
+                if(cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT)
+                  throw new IllegalStateException("Standalone ITEM output side not configured");
                 source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
                 helper.startSequence().thenExecuteAfter(40,()->{
                   int a=0,b=0;
