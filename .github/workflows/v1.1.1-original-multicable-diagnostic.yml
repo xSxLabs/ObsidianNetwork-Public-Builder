@@ -364,6 +364,31 @@ jobs:
 
           echo '===== RESTORE ORIGINAL MULTICABLE RUNTIME ====='
           python3 private/v1.1.1/apply-restore-original-multicable-runtime.py
+          echo '===== REPAIR ORIGINAL STANDALONE CABLE ENDPOINT DISCOVERY ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java')
+          s=p.read_text()
+          begin=s.index(' private List<Endpoint> exports(){')
+          end=s.index(' private void transferItem(',begin)
+          original=s[begin:end]
+          assert 'thisEdgeOpen(' in original and 'Mode.DISCONNECTED' in original, 'Expected post-B590 cable topology guards missing'
+          replacement=''' private List<Endpoint> exports(){
+  ArrayList<Endpoint> out=new ArrayList<>();HashSet<BlockPos> seen=new HashSet<>();ArrayDeque<BlockPos> q=new ArrayDeque<>();q.add(worldPosition);seen.add(worldPosition);
+  while(!q.isEmpty()&&seen.size()<2048){BlockPos p=q.removeFirst();BlockEntity x=level.getBlockEntity(p);if(!(x instanceof LogisticsCableBlockEntity c)||c.fluid!=fluid)continue;
+   for(Direction d:Direction.values()){if(!c.thisEdgeOpen(p,d))continue;BlockPos n=p.relative(d);BlockEntity nb=level.getBlockEntity(n);
+    if(nb instanceof LogisticsCableBlockEntity next){if(next.fluid==fluid&&next.mode(d.getOpposite())!=Mode.DISCONNECTED&&seen.add(n.immutable()))q.addLast(n.immutable());}
+    else if(c.mode(d)==Mode.EXPORT)out.add(new Endpoint(p,d));
+   }
+  }
+  return out;
+ }
+ private boolean thisEdgeOpen(BlockPos p,Direction d){BlockEntity x=level.getBlockEntity(p);return !(x instanceof LogisticsCableBlockEntity c)||c.mode(d)!=Mode.DISCONNECTED;}
+'''
+          s=s[:begin]+replacement+s[end:]
+          p.write_text(s)
+          print('STANDALONE ITEM/FLUID EXPORT DISCOVERY REPAIRED AFTER B590')
+          PY
           echo '===== COMPILE ORIGINAL RUNTIME (DIAGNOSTIC ONLY) ====='
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
           echo 'ORIGINAL MULTICABLE COMPILE PASS'
