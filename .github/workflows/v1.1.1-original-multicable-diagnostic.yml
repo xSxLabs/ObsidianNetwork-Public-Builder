@@ -477,19 +477,19 @@ jobs:
           mkdir -p work/src/main/resources/data/obsidiannetwork/structure
           python3 - <<'PY'
           from pathlib import Path
-          import struct,gzip
-          def tag(t,n,payload):return bytes([t])+struct.pack('>H',len(n))+n.encode()+payload
-          def string(s):return struct.pack('>H',len(s))+s.encode()
-          def compound(n,body):return tag(10,n,body+b'\\x00')
-          data=compound('', b''.join([
-            tag(3,'DataVersion',struct.pack('>i',4325)),
-            tag(9,'size',bytes([3])+struct.pack('>i',3)+b''.join(struct.pack('>i',i) for i in (5,3,5))),
-            tag(9,'palette',bytes([10])+struct.pack('>i',1)+compound('',tag(8,'Name',string('minecraft:air')))),
-            tag(9,'blocks',bytes([10])+struct.pack('>i',0)),
-            tag(9,'entities',bytes([10])+struct.pack('>i',0))
-          ]))
+          import gzip,struct
+          def name(s):
+              b=s.encode();return struct.pack('>H',len(b))+b
+          def tag(t,n,payload):return bytes([t])+name(n)+payload
+          def i32(v):return struct.pack('>i',v)
+          root=tag(3,'DataVersion',i32(0))
+          root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(5)+i32(3)+i32(5)
+          root+=bytes([9])+name('palette')+bytes([10])+i32(1)+tag(8,'Name',name('minecraft:air'))+b'\\x00'
+          root+=bytes([9])+name('blocks')+bytes([10])+i32(0)
+          root+=bytes([9])+name('entities')+bytes([10])+i32(0)
+          data=bytes([10])+name('')+root+b'\\x00'
           p=Path('work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt')
-          p.write_bytes(gzip.compress(data))
+          with gzip.open(p,'wb') as g:g.write(data)
           print('ORIGINAL MULTICABLE TEST STRUCTURE CREATED')
           PY
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
