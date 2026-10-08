@@ -5,7 +5,7 @@ name: v1.1.1 Original MultiCable Runtime Diagnostic
   push:
     branches: [main]
     paths:
-      - '.github/workflows/v1.1.1-multicable-probe.yml'
+      - '.github/workflows/v1.1.1-original-multicable-diagnostic.yml'
       - 'README.md'
 permissions: {contents: read}
 # Build 214 energy API trigger
