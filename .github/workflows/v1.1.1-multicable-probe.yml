@@ -340,6 +340,8 @@ jobs:
           python3 private/v1.1.1/apply-run138-authoritative-io.py
           python3 private/v1.1.1/apply-run139-network-cache.py
           python3 private/v1.1.1/apply-run140-topology-energy.py
+          python3 private/v1.1.1/apply-run142-mixed-item-fluid-runtime.py
+          python3 private/v1.1.1/apply-run141-mixed-network-release-gate.py
           echo '===== BUILD246 VISUAL/FACADE FIXES ====='
           python3 private/v1.1.1/apply-build246-visual-fixes.py
           echo '===== BUILD262 TESSERACT CROSS-DIM ====='
