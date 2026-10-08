@@ -437,7 +437,7 @@ jobs:
           assert 'ConduitRuntime.component' not in tickers['ItemConduitTicker.java']+tickers['FluidConduitTicker.java']+tickers['EnergyConduitTicker.java']+energy, 'transfer path still performs component BFS'
           assert 'dst.side()==src.side()' in tickers['ItemConduitTicker.java'], 'self-feed guard must only reject exact same connection'
           assert 'b.conduitCanInsert(layer,d),b.conduitCanExtract(layer,d)' in (conduit/'ConduitRuntime.java').read_text(), 'node endpoint config not synchronized with bundle side flags'
-          assert 'connectionFlags[l.ordinal()][q]=(byte)normalized' in be, 'legacy migration config can diverge from conduit IO flags'
+          assert 'int flags=normalized==1?2:normalized==2?1:normalized;' in be and 'connectionFlags[l.ordinal()][q]=(byte)flags;' in be and 'ConnectionConfig((flags&1)!=0,(flags&2)!=0' in be, 'legacy import/export must synchronize extract/insert flags and network config'
           # Final runtime identity may not resurrect MultiCable.
           assert not (J/'block/MultiCableBlock.java').exists()
           assert not (J/'blockentity/MultiCableBlockEntity.java').exists()
