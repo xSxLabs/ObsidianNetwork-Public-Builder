@@ -411,6 +411,17 @@ jobs:
             print('V110_CABLE_METHOD',key,'offset',at)
             if at>=0: print(s[at:at+2100])
           PY
+          echo '===== INSPECT ORIGINAL NETWORK AND TESSERACT FUNCTIONAL APIS ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          for name in ['NetworkControllerBlockEntity.java','StorageDriveBlockEntity.java','NetworkCableBlockEntity.java','TesseractBlockEntity.java']:
+            matches=list(root.rglob(name))
+            for p in matches:
+              s=p.read_text()
+              print('ORIGINAL_FUNCTIONAL_API',name,'path',p.relative_to(root),'bytes',len(s))
+              print(s[:11000])
+          PY
           echo '===== COMPILE ORIGINAL RUNTIME (DIAGNOSTIC ONLY) ====='
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
           echo 'ORIGINAL MULTICABLE COMPILE PASS'
