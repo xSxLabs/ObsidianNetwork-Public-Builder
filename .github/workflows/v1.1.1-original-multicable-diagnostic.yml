@@ -563,7 +563,6 @@ jobs:
                 var block=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("obsidiannetwork","network_tesseract"));
                 BlockPos a=helper.absolutePos(new BlockPos(4,1,4));
                 BlockPos b=new BlockPos(0,82,0);
-                nether.setChunkForced(b.getX() >> 4,b.getZ() >> 4,true);
                 nether.getChunkAt(b);
                 if(!nether.getBlockState(b).isAir())throw new IllegalStateException("Nether transfer fixture occupied");
                 overworld.setBlock(a,block.defaultBlockState(),3);
@@ -574,6 +573,7 @@ jobs:
                 src.setChannel(1,"ci_crossdim_fluid");dst.setChannel(1,"ci_crossdim_fluid");
                 src.setChannel(2,"ci_crossdim_energy");dst.setChannel(2,"ci_crossdim_energy");
                 src.setReceiveMode(false);dst.setReceiveMode(true);
+                nether.getChunkAt(b); // Ensure target receives its first scheduled tick before waiting
                 var sf=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(src.fluids());
                 int filled=sf.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
                 if(filled!=4000)throw new IllegalStateException("Source Tesseract failed water insertion");
@@ -589,7 +589,7 @@ jobs:
                   if(right<=0||eb<=0)throw new IllegalStateException("Crossdim Tesseract moved no water or FE: "+right+" mB, "+eb+" FE; source="+left+" mB/"+ea+" FE; sourceRemoved="+src.isRemoved()+" targetRemoved="+dst.isRemoved()+"; sourceLevel="+src.getLevel().dimension().identifier()+" targetLevel="+dst.getLevel().dimension().identifier()+"; overworldTick="+overworld.getGameTime()+" netherTick="+nether.getGameTime()+"; targetChunkLoaded="+nether.hasChunkAt(b)+"; receive="+dst.receiveMode()+"; fluidChannel="+dst.channel(1)+"; energyChannel="+dst.channel(2));
                   if(left+right!=4000||ea+eb!=8000)throw new IllegalStateException("Crossdim conservation failed: "+left+"+"+right+" mB; "+ea+"+"+eb+" FE");
                   if(!nether.hasChunkAt(b)||dst.isRemoved())throw new IllegalStateException("Crossdim receiver unloaded despite forced test fixture");
-                  overworld.removeBlock(a,false);nether.removeBlock(b,false);nether.setChunkForced(b.getX() >> 4,b.getZ() >> 4,false);
+                  overworld.removeBlock(a,false);nether.removeBlock(b,false);
                 }).thenSucceed();
               }
             }
