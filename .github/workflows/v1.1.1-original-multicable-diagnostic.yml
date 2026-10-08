@@ -463,7 +463,7 @@ jobs:
               @Override public void run(GameTestHelper helper){
                 var world=helper.getLevel();
                 BlockPos pos=helper.absolutePos(new BlockPos(2,1,2));
-                world.setBlock(pos,net.neoforged.neoforge.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract")).defaultBlockState(),3);
+                world.setBlock(pos,net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract")).defaultBlockState(),3);
                 if(!(world.getBlockEntity(pos) instanceof dev.obsidiannetwork.blockentity.TesseractBlockEntity))
                   throw new IllegalStateException("Tesseract block entity did not load");
                 helper.startSequence().thenExecuteAfter(5,()->{
