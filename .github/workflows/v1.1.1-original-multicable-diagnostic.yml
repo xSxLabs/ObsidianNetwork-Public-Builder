@@ -420,3 +420,80 @@ jobs:
           grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/original-multicable-server.log
           if grep -Eqi 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/original-multicable-server.log; then exit 1; fi
           echo 'ORIGINAL MULTICABLE DEDICATED SERVER STARTUP PASS'
+          echo '===== ORIGINAL MULTICABLE NEOFORGE GAMETEST ====='
+          cat >> work/build.gradle <<'EOF'
+          neoForge {
+            runs {
+              gameTestServer {
+                type = "gameTestServer"
+                systemProperty 'neoforge.enabledGameTestNamespaces', 'obsidiannetwork'
+              }
+            }
+          }
+          EOF
+          mkdir -p work/src/main/java/dev/obsidiannetwork/legacytest
+          cat > work/src/main/java/dev/obsidiannetwork/legacytest/LegacyMultiCableGameTests.java <<'EOF'
+          package dev.obsidiannetwork.legacytest;
+          import dev.obsidiannetwork.ObsidianNetwork;
+          import dev.obsidiannetwork.blockentity.MultiCableBlockEntity;
+          import net.minecraft.core.BlockPos;
+          import net.minecraft.core.Direction;
+          import net.minecraft.gametest.framework.*;
+          import net.minecraft.network.chat.Component;
+          import net.minecraft.resources.Identifier;
+          import net.minecraft.world.level.block.Rotation;
+          import net.neoforged.bus.api.SubscribeEvent;
+          import net.neoforged.fml.common.EventBusSubscriber;
+          import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+          @EventBusSubscriber(modid="obsidiannetwork")
+          public final class LegacyMultiCableGameTests {
+            static final Identifier ENV=Identifier.fromNamespaceAndPath("obsidiannetwork","legacy_multicable_env");
+            static final Identifier STRUCTURE=Identifier.fromNamespaceAndPath("obsidiannetwork","build103_empty");
+            @SubscribeEvent public static void register(RegisterGameTestsEvent event){
+              var env=event.registerEnvironment(ENV,new TestEnvironmentDefinition.AllOf(java.util.List.of()));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","legacy_multicable_layers"),
+                new LayerTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+            }
+            static final class LayerTest extends GameTestInstance {
+              LayerTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Original MultiCable four-layer runtime");}
+              @Override public void run(GameTestHelper helper){
+                BlockPos p=helper.absolutePos(new BlockPos(2,1,2));
+                helper.getLevel().setBlock(p,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
+                var be=(MultiCableBlockEntity)helper.getLevel().getBlockEntity(p);
+                if(be==null)throw new IllegalStateException("Missing original MultiCable block entity");
+                for(var layer:MultiCableBlockEntity.Layer.values()){
+                  if(!be.has(layer)&&!be.add(layer))throw new IllegalStateException("Cannot install "+layer);
+                  if(!be.has(layer))throw new IllegalStateException("Missing installed "+layer);
+                }
+                if(be.layerCount()!=4)throw new IllegalStateException("Incorrect layer count");
+                if(be.energyHandler(Direction.NORTH)==null)throw new IllegalStateException("Missing ENERGY capability");
+                helper.succeed();
+              }
+            }
+          }
+          EOF
+          mkdir -p work/src/main/resources/data/obsidiannetwork/structure
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct,gzip
+          def tag(t,n,payload):return bytes([t])+struct.pack('>H',len(n))+n.encode()+payload
+          def string(s):return struct.pack('>H',len(s))+s.encode()
+          def compound(n,body):return tag(10,n,body+b'\\x00')
+          data=compound('',tag(3,'DataVersion',struct.pack('>i',4325))+tag(9,'size',bytes([3])+struct.pack('>i',3)+b''.join(struct.pack('>i',i) for i in (5,3,5))+tag(9,'palette',bytes([10])+struct.pack('>i',1)+compound('',tag(8,'Name',string('minecraft:air')))+tag(9,'blocks',bytes([10])+struct.pack('>i',0))+tag(9,'entities',bytes([10])+struct.pack('>i',0)))
+          p=Path('work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt')
+          p.write_bytes(gzip.compress(data))
+          print('ORIGINAL MULTICABLE TEST STRUCTURE CREATED')
+          PY
+          (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
+          set +e
+          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/original-multicable-gametest.log 2>&1
+          GT_RC=$?
+          set -e
+          tail -n 200 /tmp/original-multicable-gametest.log
+          if [ "$GT_RC" -ne 0 ]; then echo "Original MultiCable GameTest failed rc=$GT_RC"; exit "$GT_RC"; fi
+          grep -Eq 'All [0-9]+ required tests passed' /tmp/original-multicable-gametest.log
+          echo 'ORIGINAL MULTICABLE NEOFORGE GAMETEST PASS'
+          rm -rf work/src/main/java/dev/obsidiannetwork/legacytest
+          rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
