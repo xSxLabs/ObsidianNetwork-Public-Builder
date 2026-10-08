@@ -484,10 +484,10 @@ jobs:
           def i32(v):return struct.pack('>i',v)
           root=tag(3,'DataVersion',i32(0))
           root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(5)+i32(3)+i32(5)
-          root+=bytes([9])+name('palette')+bytes([10])+i32(1)+tag(8,'Name',name('minecraft:air'))+b'\\x00'
+          root+=bytes([9])+name('palette')+bytes([10])+i32(1)+tag(8,'Name',name('minecraft:air'))+b'\x00'
           root+=bytes([9])+name('blocks')+bytes([10])+i32(0)
           root+=bytes([9])+name('entities')+bytes([10])+i32(0)
-          data=bytes([10])+name('')+root+b'\\x00'
+          data=bytes([10])+name('')+root+b'\x00'
           p=Path('work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt')
           with gzip.open(p,'wb') as g:g.write(data)
           print('ORIGINAL MULTICABLE TEST STRUCTURE CREATED')
