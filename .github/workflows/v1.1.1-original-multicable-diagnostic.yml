@@ -298,7 +298,9 @@ jobs:
               p=found[0];rel=p.relative_to(root);dest=Path('/tmp/obsidian-v110-cables')/rel
               dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(p,dest)
               manifest[str(rel)]=hashlib.sha256(p.read_bytes()).hexdigest()
-          assert any(p.endswith('LogisticsCableBlockEntity.java') for p in manifest), 'Missing v1.1.0 logistics cable baseline'
+          for required in ['LogisticsCableBlockEntity.java','EnergyCableBlockEntity.java','NetworkCableBlock.java']:
+            assert any(p.endswith(required) for p in manifest), 'Missing frozen v1.1.0 cable source: '+required
+          print('FROZEN ENERGY AND NETWORK SOURCES:',[p for p in manifest if 'Energy' in p or 'NetworkCable' in p])
           Path('/tmp/obsidian-v110-cables/manifest.json').write_text(json.dumps(manifest,indent=2))
           print('FROZEN V1.1.0 ORIGINAL CABLE SOURCE SNAPSHOT:',manifest)
           PY
@@ -397,7 +399,11 @@ jobs:
             if dst.exists() and dst.read_bytes()!=src.read_bytes():
               shutil.copy2(src,dst);restored.append(rel)
             assert dst.exists() and hashlib.sha256(dst.read_bytes()).hexdigest()==expected, 'V1.1.0 source mismatch: '+rel
-          assert any(x.endswith('LogisticsCableBlockEntity.java') for x in manifest), 'Missing original logistics runtime'
+          for required in ['LogisticsCableBlockEntity.java','EnergyCableBlockEntity.java','NetworkCableBlock.java']:
+            assert any(x.endswith(required) for x in manifest), 'Missing original '+required
+          for rel in manifest:
+            if 'EnergyCable' in rel or 'NetworkCable' in rel:
+              print('VERIFIED V1.1.0 ENERGY/NETWORK:',rel,manifest[rel])
           print('V1.1.0 EXACT ORIGINAL CABLE SOURCE HASHES VERIFIED:',len(manifest))
           print('RESTORED:',restored)
           PY
