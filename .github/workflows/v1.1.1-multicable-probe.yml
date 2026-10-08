@@ -1,5 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
-# Build 270 robust cable hardness matching
+# Build 271 bundle item/fluid input transport and intake sleeves
 # Build 251 persist outside marker geometry
 # Build 250 reconstruction-robust visual gate
 # Build 249 fixed regex trigger
@@ -346,6 +346,7 @@ jobs:
           python3 private/v1.1.1/apply-build262-tesseract-crossdim.py
           echo '===== BUILD268 ALL USER FIXES ====='
           python3 private/v1.1.1/apply-build268-all-user-fixes.py
+          python3 private/v1.1.1/apply-build271-bundle-io-input-collars.py
           python3 - <<'PY'
           from pathlib import Path
           import re
