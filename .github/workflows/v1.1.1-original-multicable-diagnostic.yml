@@ -525,9 +525,10 @@ jobs:
                 if(source==null||target==null)throw new IllegalStateException("Standalone ITEM fixture chests missing");
                 var cable=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)world.getBlockEntity(cablePos);
                 if(cable==null)throw new IllegalStateException("Standalone ITEM cable block entity missing");
-                cable.cycle(Direction.WEST);
-                cable.cycle(Direction.EAST);
-                cable.cycle(Direction.EAST);
+                for(int i=0;i<3&&cable.mode(Direction.WEST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT;i++)
+                  cable.cycle(Direction.WEST);
+                for(int i=0;i<3&&cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT;i++)
+                  cable.cycle(Direction.EAST);
                 if(cable.mode(Direction.WEST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT)
                   throw new IllegalStateException("Standalone ITEM input side not configured");
                 if(cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT)
