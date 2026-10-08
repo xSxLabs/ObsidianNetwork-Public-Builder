@@ -690,6 +690,31 @@ jobs:
               var environment = event.registerEnvironment(ENV, new TestEnvironmentDefinition.AllOf(java.util.List.of()));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "conduit_bundle_runtime"),
                   new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "mixed_item_bridge_topology"),
+                  new MixedCableTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+            }
+
+            private static final class MixedCableTest extends GameTestInstance {
+              MixedCableTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data) { super(data); }
+              @Override public void run(GameTestHelper helper) {
+                BlockPos a=helper.absolutePos(new BlockPos(1,1,1));
+                BlockPos mid=helper.absolutePos(new BlockPos(2,1,1));
+                BlockPos b=helper.absolutePos(new BlockPos(3,1,1));
+                helper.getLevel().setBlock(a,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(mid,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(b,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                var left=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(a);
+                var right=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(b);
+                if(!left.has(ConduitBundleBlockEntity.Layer.ITEM)) check(left.add(ConduitBundleBlockEntity.Layer.ITEM),"mixed left ITEM");
+                if(!right.has(ConduitBundleBlockEntity.Layer.ITEM)) check(right.add(ConduitBundleBlockEntity.Layer.ITEM),"mixed right ITEM");
+                var type=dev.obsidiannetwork.conduit.ConduitType.ITEM;
+                var connected=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,type);
+                check(connected.contains(mid)&&connected.contains(b),"mixed ITEM standalone bridge topology");
+                helper.getLevel().setBlock(mid,Blocks.AIR.defaultBlockState(),3);
+                var split=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,type);
+                check(!split.contains(b),"mixed ITEM bridge removal splits network");
+                helper.succeed();
+              }
             }
 
             private static final class StateMachineTest extends GameTestInstance {
