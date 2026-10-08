@@ -383,7 +383,7 @@ jobs:
 
           echo '===== RESTORE ORIGINAL MULTICABLE RUNTIME ====='
           python3 private/v1.1.1/apply-restore-original-multicable-runtime.py
-          echo '===== RESTORE V1.1.0 ORIGINAL STANDALONE CABLE BLOCK IMPLEMENTATIONS ====='
+          echo '===== RESTORE COMPLETE V1.1.0 ORIGINAL STANDALONE CABLE SOURCES ====='
           python3 - <<'PY'
           from pathlib import Path
           import json,shutil,hashlib
@@ -392,40 +392,14 @@ jobs:
           manifest=json.loads((frozen/'manifest.json').read_text())
           restored=[]
           for rel,expected in manifest.items():
-            # Keep the v1.1.1 logistics BE runtime adapter for required mode/endpoint fixes.
-            # Restore original standalone block implementations without touching MultiCable.
-            if not rel.endswith('CableBlock.java') or rel.endswith('MultiCableBlock.java'):continue
             src=frozen/rel;dst=root/rel
             assert hashlib.sha256(src.read_bytes()).hexdigest()==expected
             if dst.exists() and dst.read_bytes()!=src.read_bytes():
               shutil.copy2(src,dst);restored.append(rel)
-          print('V1.1.0 ORIGINAL CABLE BLOCKS RESTORED:',restored)
-          print('V1.1.0 LOGISTICS BE KEPT WITH V1.1.1 RUNTIME ADAPTER; NOT BYTE IDENTICAL')
-          PY
-          echo '===== REPAIR ORIGINAL STANDALONE CABLE ENDPOINT DISCOVERY ====='
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java')
-          s=p.read_text()
-          begin=s.index(' private List<Endpoint> exports(){')
-          end=s.index(' private void transferItem(',begin)
-          original=s[begin:end]
-          assert 'thisEdgeOpen(' in original and 'Mode.DISCONNECTED' in original, 'Expected post-B590 cable topology guards missing'
-          replacement=''' private List<Endpoint> exports(){
-            ArrayList<Endpoint> out=new ArrayList<>();HashSet<BlockPos> seen=new HashSet<>();ArrayDeque<BlockPos> q=new ArrayDeque<>();q.add(worldPosition);seen.add(worldPosition);
-            while(!q.isEmpty()&&seen.size()<2048){BlockPos p=q.removeFirst();BlockEntity x=level.getBlockEntity(p);if(!(x instanceof LogisticsCableBlockEntity c)||c.fluid!=fluid)continue;
-             for(Direction d:Direction.values()){if(!c.thisEdgeOpen(p,d))continue;BlockPos n=p.relative(d);BlockEntity nb=level.getBlockEntity(n);
-              if(nb instanceof LogisticsCableBlockEntity next){if(next.fluid==fluid&&next.mode(d.getOpposite())!=Mode.DISCONNECTED&&seen.add(n.immutable()))q.addLast(n.immutable());}
-              else if(c.mode(d)==Mode.EXPORT)out.add(new Endpoint(p,d));
-             }
-            }
-            return out;
-           }
-           private boolean thisEdgeOpen(BlockPos p,Direction d){BlockEntity x=level.getBlockEntity(p);return !(x instanceof LogisticsCableBlockEntity c)||c.mode(d)!=Mode.DISCONNECTED;}
-          '''
-          s=s[:begin]+replacement+s[end:]
-          p.write_text(s)
-          print('STANDALONE ITEM/FLUID EXPORT DISCOVERY REPAIRED AFTER B590')
+            assert dst.exists() and hashlib.sha256(dst.read_bytes()).hexdigest()==expected, 'V1.1.0 source mismatch: '+rel
+          assert any(x.endswith('LogisticsCableBlockEntity.java') for x in manifest), 'Missing original logistics runtime'
+          print('V1.1.0 EXACT ORIGINAL CABLE SOURCE HASHES VERIFIED:',len(manifest))
+          print('RESTORED:',restored)
           PY
           echo '===== COMPILE ORIGINAL RUNTIME (DIAGNOSTIC ONLY) ====='
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
