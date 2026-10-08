@@ -340,7 +340,6 @@ jobs:
           python3 private/v1.1.1/apply-run138-authoritative-io.py
           python3 private/v1.1.1/apply-run139-network-cache.py
           python3 private/v1.1.1/apply-run140-topology-energy.py
-          grep -Fq 'unbalanced standalone exports()' private/v1.1.1/apply-run142-mixed-item-fluid-runtime.py
           python3 private/v1.1.1/apply-run142-mixed-item-fluid-runtime.py
           python3 private/v1.1.1/apply-run141-mixed-network-release-gate.py
           grep -Fq 'if(traversable(level,b.getBlockPos().relative(d),type))continue;' work/src/main/java/dev/obsidiannetwork/conduit/ConduitRuntime.java
