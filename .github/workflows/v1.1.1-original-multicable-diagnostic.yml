@@ -507,6 +507,29 @@ jobs:
                   int targetCount=target.getItem(0).getCount();
                   if(targetCount<=0)throw new IllegalStateException("Mixed original ITEM cable route transferred no diamonds");
                   if(sourceCount+targetCount!=8)throw new IllegalStateException("ITEM conservation failed: "+sourceCount+" + "+targetCount);
+                }).thenExecute(()->{
+                  // Reuse the physical mixed bridge with real water tanks.
+                  world.setBlock(sourcePos,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  world.setBlock(bridgePos,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                  world.setBlock(targetPos,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  if(!left.has(MultiCableBlockEntity.Layer.FLUID))left.add(MultiCableBlockEntity.Layer.FLUID);
+                  if(!right.has(MultiCableBlockEntity.Layer.FLUID))right.add(MultiCableBlockEntity.Layer.FLUID);
+                  left.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.WEST,1,0,0);
+                  right.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.EAST,2,0,0);
+                  var tankSource=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)world.getBlockEntity(sourcePos);
+                  var tankTarget=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)world.getBlockEntity(targetPos);
+                  var sourceFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(tankSource.tank());
+                  int filled=sourceFluid.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                  if(filled!=4000)throw new IllegalStateException("Cannot fill FLUID source tank: "+filled);
+                }).thenExecuteAfter(30,()->{
+                  var tankSource=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)world.getBlockEntity(sourcePos);
+                  var tankTarget=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)world.getBlockEntity(targetPos);
+                  var sourceFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(tankSource.tank());
+                  var targetFluid=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(tankTarget.tank());
+                  int a=sourceFluid.getFluidInTank(0).getAmount();
+                  int b=targetFluid.getFluidInTank(0).getAmount();
+                  if(b<=0)throw new IllegalStateException("Mixed original FLUID route transferred no water");
+                  if(a+b!=4000)throw new IllegalStateException("FLUID conservation failed: "+a+" + "+b);
                 }).thenSucceed();
               }
             }
