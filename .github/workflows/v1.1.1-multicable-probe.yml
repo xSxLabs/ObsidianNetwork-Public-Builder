@@ -783,8 +783,8 @@ jobs:
                 h.getLevel().setBlock(dst,Blocks.CHEST.defaultBlockState(),3);
                 var in=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(a);
                 var out=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(b);
-                in.cycle(Direction.WEST);
-                out.cycle(Direction.EAST);out.cycle(Direction.EAST);
+                in.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                check(out.mode(Direction.EAST)==dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.CONNECTED,"standalone ITEM sink is connected");
                 var chest=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(src);
                 chest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
                 h.startSequence().thenExecuteAfter(30,()->{
@@ -796,7 +796,8 @@ jobs:
                   h.getLevel().setBlock(dst,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
                   var fi=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(a);
                   var fo=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(b);
-                  fi.cycle(Direction.WEST);fo.cycle(Direction.EAST);fo.cycle(Direction.EAST);
+                  fi.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                  check(fo.mode(Direction.EAST)==dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.CONNECTED,"standalone FLUID sink is connected");
                   var sourceTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(src);
                   var sh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(sourceTank.tank());
                   check(sh.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)==4000,"standalone FLUID source fill");
