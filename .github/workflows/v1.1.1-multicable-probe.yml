@@ -1102,3 +1102,5 @@ jobs:
 # build276 incremental Jade icon and Cable Bundle naming verification
 
 # build277 user-authorized single CI trigger after private commits 3116ee1d, 5128dcc5, c99c1732
+
+# build279 verify direct setConduitFlags delegation fix private 866fcf3fdc328fcd1e2e5aa303552f37357b5a95
