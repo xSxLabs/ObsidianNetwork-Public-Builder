@@ -519,6 +519,8 @@ jobs:
                 new TesseractLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_two_server_levels"),
                 new TesseractTwoLevelsTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_fluid_energy"),
+                new TesseractCrossdimTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,120,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_item_transport"),
                 new StandaloneItemTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_fluid_transport"),
@@ -546,6 +548,45 @@ jobs:
                   if(!world.hasChunkAt(pos))throw new IllegalStateException("Tesseract chunk unloaded");
                   world.removeBlock(pos,false);
                   if(world.getBlockEntity(pos)!=null)throw new IllegalStateException("Tesseract block entity not removed");
+                }).thenSucceed();
+              }
+            }
+            static final class TesseractCrossdimTransportTest extends GameTestInstance {
+              TesseractCrossdimTransportTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Crossdim Tesseract fluid and FE conservation");}
+              @Override public void run(GameTestHelper helper){
+                var overworld=helper.getLevel();
+                var nether=overworld.getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+                if(nether==null||nether==overworld)throw new IllegalStateException("Nether dimension unavailable");
+                var block=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("obsidiannetwork","network_tesseract"));
+                BlockPos a=helper.absolutePos(new BlockPos(4,1,4));
+                BlockPos b=new BlockPos(0,82,0);
+                nether.getChunkAt(b);
+                if(!nether.getBlockState(b).isAir())throw new IllegalStateException("Nether transfer fixture occupied");
+                overworld.setBlock(a,block.defaultBlockState(),3);
+                nether.setBlock(b,block.defaultBlockState(),3);
+                var src=(dev.obsidiannetwork.blockentity.TesseractBlockEntity)overworld.getBlockEntity(a);
+                var dst=(dev.obsidiannetwork.blockentity.TesseractBlockEntity)nether.getBlockEntity(b);
+                if(src==null||dst==null)throw new IllegalStateException("Crossdim endpoints missing");
+                src.setChannel(1,"ci_crossdim_fluid");dst.setChannel(1,"ci_crossdim_fluid");
+                src.setChannel(2,"ci_crossdim_energy");dst.setChannel(2,"ci_crossdim_energy");
+                src.setReceiveMode(false);dst.setReceiveMode(true);
+                var sf=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(src.fluids());
+                int filled=sf.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                if(filled!=4000)throw new IllegalStateException("Source Tesseract failed water insertion");
+                try(var tx=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
+                  if(src.energy().insert(8000,tx)!=8000)throw new IllegalStateException("Source Tesseract failed FE insertion");
+                  tx.commit();
+                }
+                helper.startSequence().thenExecuteAfter(40,()->{
+                  var df=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dst.fluids());
+                  int left=sf.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
+                  int right=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
+                  long ea=src.energy().getAmountAsLong(),eb=dst.energy().getAmountAsLong();
+                  if(right<=0||eb<=0)throw new IllegalStateException("Crossdim Tesseract moved no water or FE: "+right+" mB, "+eb+" FE");
+                  if(left+right!=4000||ea+eb!=8000)throw new IllegalStateException("Crossdim conservation failed: "+left+"+"+right+" mB; "+ea+"+"+eb+" FE");
+                  overworld.removeBlock(a,false);nether.removeBlock(b,false);
                 }).thenSucceed();
               }
             }
