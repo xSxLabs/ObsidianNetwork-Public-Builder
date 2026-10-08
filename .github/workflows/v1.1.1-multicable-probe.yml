@@ -740,10 +740,23 @@ jobs:
                   var fluidType=dev.obsidiannetwork.conduit.ConduitType.FLUID;
                   var fluidPath=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,fluidType);
                   check(fluidPath.contains(mid)&&fluidPath.contains(b),"mixed FLUID standalone bridge topology");
-                  helper.getLevel().setBlock(mid,Blocks.AIR.defaultBlockState(),3);
-                  var fluidSplit=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,fluidType);
-                  check(!fluidSplit.contains(b),"mixed FLUID bridge removal splits network");
-                  helper.succeed();
+                  helper.getLevel().setBlock(sourcePos,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  helper.getLevel().setBlock(targetPos,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  left.setConduitFlags(ConduitBundleBlockEntity.Layer.FLUID,Direction.WEST,false,true);
+                  right.setConduitFlags(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,true,false);
+                  var fluidSource=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(sourcePos);
+                  var fluidTarget=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(targetPos);
+                  var input=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(fluidSource.tank());
+                  check(input.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)==4000,"mixed FLUID source fill");
+                  helper.startSequence().thenExecuteAfter(20,()->{
+                    var output=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(fluidTarget.tank());
+                    check(output.getFluidInTank(0).getAmount()>0,"mixed FLUID actual water transfer");
+                    check(input.getFluidInTank(0).getAmount()<4000,"mixed FLUID source decreases");
+                    helper.getLevel().setBlock(mid,Blocks.AIR.defaultBlockState(),3);
+                    var fluidSplit=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,fluidType);
+                    check(!fluidSplit.contains(b),"mixed FLUID bridge removal splits network");
+                    helper.succeed();
+                  });
                 });
               }
             }
