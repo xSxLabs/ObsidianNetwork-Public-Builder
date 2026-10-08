@@ -530,6 +530,30 @@ jobs:
                   int b=targetFluid.getFluidInTank(0).getAmount();
                   if(b<=0)throw new IllegalStateException("Mixed original FLUID route transferred no water");
                   if(a+b!=4000)throw new IllegalStateException("FLUID conservation failed: "+a+" + "+b);
+                }).thenExecute(()->{
+                  // ENERGY: real EnergyCell -> MultiCable -> standalone ENERGY -> MultiCable -> EnergyCell.
+                  world.setBlock(sourcePos,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+                  world.setBlock(bridgePos,ObsidianNetwork.ENERGY_CABLE.get().defaultBlockState(),3);
+                  world.setBlock(targetPos,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+                  if(!left.has(MultiCableBlockEntity.Layer.ENERGY))left.add(MultiCableBlockEntity.Layer.ENERGY);
+                  if(!right.has(MultiCableBlockEntity.Layer.ENERGY))right.add(MultiCableBlockEntity.Layer.ENERGY);
+                  var sourceCell=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(sourcePos);
+                  var targetCell=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(targetPos);
+                  if(sourceCell==null||targetCell==null)throw new IllegalStateException("Missing ENERGY cell fixture");
+                  try(var tx=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
+                    int inserted=sourceCell.energyHandler(null).insert(8000,tx);
+                    if(inserted!=8000)throw new IllegalStateException("ENERGY prefill failed: "+inserted);
+                    tx.commit();
+                  }
+                  sourceCell.cycleSide(Direction.EAST.get3DDataValue());
+                  if(sourceCell.sideMode(Direction.EAST)!=dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.OUTPUT)
+                    throw new IllegalStateException("ENERGY source side is not OUTPUT");
+                }).thenExecuteAfter(25,()->{
+                  var sourceCell=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(sourcePos);
+                  var targetCell=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(targetPos);
+                  long a=sourceCell.stored(),b=targetCell.stored();
+                  if(b<=0)throw new IllegalStateException("Mixed original ENERGY route transferred no FE");
+                  if(a+b!=8000)throw new IllegalStateException("ENERGY conservation failed: "+a+" + "+b);
                 }).thenSucceed();
               }
             }
