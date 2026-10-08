@@ -481,7 +481,13 @@ jobs:
           def tag(t,n,payload):return bytes([t])+struct.pack('>H',len(n))+n.encode()+payload
           def string(s):return struct.pack('>H',len(s))+s.encode()
           def compound(n,body):return tag(10,n,body+b'\\x00')
-          data=compound('',tag(3,'DataVersion',struct.pack('>i',4325))+tag(9,'size',bytes([3])+struct.pack('>i',3)+b''.join(struct.pack('>i',i) for i in (5,3,5))+tag(9,'palette',bytes([10])+struct.pack('>i',1)+compound('',tag(8,'Name',string('minecraft:air')))+tag(9,'blocks',bytes([10])+struct.pack('>i',0))+tag(9,'entities',bytes([10])+struct.pack('>i',0)))
+          data=compound('', b''.join([
+            tag(3,'DataVersion',struct.pack('>i',4325)),
+            tag(9,'size',bytes([3])+struct.pack('>i',3)+b''.join(struct.pack('>i',i) for i in (5,3,5))),
+            tag(9,'palette',bytes([10])+struct.pack('>i',1)+compound('',tag(8,'Name',string('minecraft:air')))),
+            tag(9,'blocks',bytes([10])+struct.pack('>i',0)),
+            tag(9,'entities',bytes([10])+struct.pack('>i',0))
+          ]))
           p=Path('work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt')
           p.write_bytes(gzip.compress(data))
           print('ORIGINAL MULTICABLE TEST STRUCTURE CREATED')
