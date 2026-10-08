@@ -397,6 +397,20 @@ jobs:
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           echo 'ORIGINAL MULTICABLE FULL BUILD PASS'
           echo '===== ORIGINAL MULTICABLE DEDICATED SERVER STARTUP ====='
+          # The reconstructed Gradle project has no server run until registered.
+          cat >> work/build.gradle <<'EOF'
+          neoForge {
+            runs {
+              server {
+                type = "server"
+                gameDirectory = project.file("run-original-multicable")
+              }
+            }
+          }
+          EOF
+          mkdir -p work/run-original-multicable
+          printf 'eula=true\n' > work/run-original-multicable/eula.txt
+          printf 'online-mode=false\n' > work/run-original-multicable/server.properties
           set +e
           timeout 110s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/original-multicable-server.log 2>&1
           SERVER_RC=$?
