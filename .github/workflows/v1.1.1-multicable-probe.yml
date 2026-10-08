@@ -696,6 +696,15 @@ jobs:
 
             private static final class MixedCableTest extends GameTestInstance {
               MixedCableTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data) { super(data); }
+              private static void check(boolean ok, String message) {
+                if (!ok) throw new IllegalStateException("BUILD103 MIXED GAMETEST: " + message);
+              }
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec() {
+                throw new UnsupportedOperationException("Build103 CI-only mixed test instance is registered in code");
+              }
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription() {
+                return Component.literal("Mixed ITEM bridge topology GameTest");
+              }
               @Override public void run(GameTestHelper helper) {
                 BlockPos a=helper.absolutePos(new BlockPos(1,1,1));
                 BlockPos mid=helper.absolutePos(new BlockPos(2,1,1));
