@@ -453,6 +453,8 @@ jobs:
               var env=event.registerEnvironment(ENV,new TestEnvironmentDefinition.AllOf(java.util.List.of()));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_chunk_lifecycle"),
                 new TesseractLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_two_server_levels"),
+                new TesseractTwoLevelsTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","legacy_multicable_layers"),
                 new LayerTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
             }
@@ -471,6 +473,35 @@ jobs:
                   world.removeBlock(pos,false);
                   if(world.getBlockEntity(pos)!=null)throw new IllegalStateException("Tesseract block entity not removed");
                 }).thenSucceed();
+              }
+            }
+            static final class TesseractTwoLevelsTest extends GameTestInstance {
+              TesseractTwoLevelsTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Tesseract endpoints in distinct ServerLevels");}
+              @Override public void run(GameTestHelper helper){
+                var overworld=helper.getLevel();
+                var nether=overworld.getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+                if(nether==null || nether==overworld)throw new IllegalStateException("Distinct Nether ServerLevel unavailable");
+                var id=Identifier.fromNamespaceAndPath("obsidiannetwork","network_tesseract");
+                var block=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(id);
+                if(block==net.minecraft.world.level.block.Blocks.AIR)throw new IllegalStateException("Tesseract registry ID resolved to AIR");
+                BlockPos a=helper.absolutePos(new BlockPos(3,1,3));
+                BlockPos b=new BlockPos(0,80,0);
+                nether.getChunkAt(b);
+                if(!nether.getBlockState(b).isAir())throw new IllegalStateException("Nether fixture position occupied");
+                try{
+                  overworld.setBlock(a,block.defaultBlockState(),3);
+                  nether.setBlock(b,block.defaultBlockState(),3);
+                  if(!(overworld.getBlockEntity(a) instanceof dev.obsidiannetwork.blockentity.TesseractBlockEntity))
+                    throw new IllegalStateException("Overworld Tesseract block entity missing");
+                  if(!(nether.getBlockEntity(b) instanceof dev.obsidiannetwork.blockentity.TesseractBlockEntity))
+                    throw new IllegalStateException("Nether Tesseract block entity missing");
+                }finally{
+                  overworld.removeBlock(a,false);
+                  nether.removeBlock(b,false);
+                }
+                helper.succeed();
               }
             }
             static final class LayerTest extends GameTestInstance {
