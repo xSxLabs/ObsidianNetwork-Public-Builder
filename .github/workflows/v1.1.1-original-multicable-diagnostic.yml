@@ -367,3 +367,32 @@ jobs:
           echo '===== COMPILE ORIGINAL RUNTIME (DIAGNOSTIC ONLY) ====='
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
           echo 'ORIGINAL MULTICABLE COMPILE PASS'
+          echo '===== ORIGINAL MULTICABLE TRANSPORT AND REGISTRY INVARIANTS ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          J=Path('work/src/main/java/dev/obsidiannetwork')
+          be=(J/'blockentity/MultiCableBlockEntity.java').read_text()
+          block=(J/'block/MultiCableBlock.java').read_text()
+          main=(J/'ObsidianNetwork.java').read_text()
+          registry=(J/'registry/ModBlockEntities.java').read_text()
+          caps=(J/'registry/ModCapabilities.java').read_text()
+          assert 'enum Layer{NETWORK,ITEM,FLUID,ENERGY}' in be
+          assert 'transferItem(' in be and 'transferFluid(' in be
+          assert 'LogisticsCableBlockEntity' in be
+          assert 'energyCableAt(' in be and 'energyHandler(Direction side)' in be
+          assert 'level.hasChunkAt' in be
+          assert 'MultiCableBlockEntity::tick' in block
+          assert '"multi_cable"' in main and 'MULTI_CABLE' in registry
+          assert 'ModBlockEntities.MULTI_CABLE.get()' in caps
+          assert not (J/'conduit').exists()
+          assert not (J/'blockentity/ConduitBundleBlockEntity.java').exists()
+          assert not (J/'block/ConduitBundleBlock.java').exists()
+          assert 'TESSERACT_CHUNKS' in main
+          tesseract=(J/'blockentity/TesseractBlockEntity.java').read_text()
+          assert 'WeakHashMap<MinecraftServer,Set<TesseractBlockEntity>> LIVE' in tesseract
+          assert 'forceChunk(' in tesseract
+          print('ORIGINAL FOUR-LAYER RUNTIME + CROSSDIM TESSERACT STATIC GATES PASS')
+          PY
+          echo '===== ORIGINAL MULTICABLE FULL BUILD (NO RELEASE UPLOAD) ====='
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+          echo 'ORIGINAL MULTICABLE FULL BUILD PASS'
