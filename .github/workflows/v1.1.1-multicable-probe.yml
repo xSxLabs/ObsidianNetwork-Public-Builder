@@ -1,4 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
+# Build 304 diagnostic compile/GameTest after integrated source investigations; not a release artifact
 # Build 303 verify idempotent Tesseract cross-dimension sender guard patch
 # Build 302 exact cross-dimensional item transfer guard removed
 # Build 301 Tesseract source context diagnostic corrected
