@@ -385,6 +385,14 @@ jobs:
           assert 'ObsidianNetwork.TESSERACT_CHUNKS.forceChunk' in ts
           assert 'LIVE.get(level.getServer())' in ts
           assert 'true,false' in ts and 'false,false' in ts
+          # Regression gates for the user-reported Tesseract and cable collar issues.
+          assert 'WeakHashMap<MinecraftServer,Set<TesseractBlockEntity>> LIVE' in ts
+          assert 'LIVE.get(level.getServer())' in ts, 'Tesseract partners must be server-global across dimensions'
+          assert 'TESSERACT_CHUNKS.forceChunk' in ts, 'Tesseract remote chunk ticket missing'
+          assert 'void setRemoved()' in ts and 'false,false' in ts, 'Tesseract chunk ticket release missing'
+          assert 'if(s.ioMode[layer][d.ordinal()]==1)collar(' in bundle, 'Bundle collar must render on input face only'
+          assert 'if(s.ioMode[layer][d.ordinal()]!=0)collar(' not in bundle, 'Output-only collar regression'
+          print('V111 TESSERACT + CABLE COLLAR REGRESSION SOURCE GATES PASS')
           print('BUILD262 TESSERACT INFINITY-STYLE CHUNK LIFECYCLE PASS')
           PY
           # Build236: inspect the reconstructed real Energy Cell capability contract before wiring the world GameTest.
