@@ -482,6 +482,8 @@ jobs:
                 new TesseractTwoLevelsTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_item_transport"),
                 new StandaloneItemTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_fluid_transport"),
+                new StandaloneFluidTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_original_cables"),
                 new StandaloneOriginalCablesTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","legacy_multicable_layers"),
@@ -564,6 +566,41 @@ jobs:
                   for(int i=0;i<target.getContainerSize();i++)if(target.getItem(i).is(net.minecraft.world.item.Items.DIAMOND))b+=target.getItem(i).getCount();
                   if(b==0)throw new IllegalStateException("Standalone ITEM cable transferred no diamonds");
                   if(a+b!=8)throw new IllegalStateException("Standalone ITEM cable conservation failed: "+a+" + "+b);
+                }).thenSucceed();
+              }
+            }
+            static final class StandaloneFluidTransportTest extends GameTestInstance {
+              StandaloneFluidTransportTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Standalone FLUID cable real water transfer and conservation");}
+              @Override public void run(GameTestHelper helper){
+                var world=helper.getLevel();
+                BlockPos sourcePos=helper.absolutePos(new BlockPos(1,1,1));
+                BlockPos cablePos=helper.absolutePos(new BlockPos(2,1,1));
+                BlockPos targetPos=helper.absolutePos(new BlockPos(3,1,1));
+                world.setBlock(sourcePos,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                world.setBlock(cablePos,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                world.setBlock(targetPos,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                var source=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)world.getBlockEntity(sourcePos);
+                var target=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)world.getBlockEntity(targetPos);
+                var cable=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)world.getBlockEntity(cablePos);
+                if(source==null||target==null||cable==null)throw new IllegalStateException("Standalone FLUID fixtures missing");
+                cable.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                cable.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT);
+                if(cable.mode(Direction.WEST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT||
+                   cable.mode(Direction.EAST)!=dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT)
+                  throw new IllegalStateException("Standalone FLUID faces not configured");
+                var src=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(source.tank());
+                int filled=src.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                if(filled!=4000)throw new IllegalStateException("Standalone FLUID source fill failed: "+filled);
+                helper.startSequence().thenExecuteAfter(45,()->{
+                  var a=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(source.tank());
+                  var b=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(target.tank());
+                  int left=a.getFluidInTank(0).getAmount(),right=b.getFluidInTank(0).getAmount();
+                  if(right<=0)throw new IllegalStateException("Standalone FLUID cable transferred no water");
+                  if(left+right!=4000)throw new IllegalStateException("Standalone FLUID conservation failed: "+left+" + "+right);
+                  if(!b.getFluidInTank(0).is(net.minecraft.world.level.material.Fluids.WATER))
+                    throw new IllegalStateException("Standalone FLUID target received wrong fluid");
                 }).thenSucceed();
               }
             }
