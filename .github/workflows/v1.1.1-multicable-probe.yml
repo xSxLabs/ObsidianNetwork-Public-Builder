@@ -342,6 +342,7 @@ jobs:
           python3 private/v1.1.1/apply-run140-topology-energy.py
           python3 private/v1.1.1/apply-run142-mixed-item-fluid-runtime.py
           python3 private/v1.1.1/apply-run141-mixed-network-release-gate.py
+          grep -Fq 'if(traversable(level,b.getBlockPos().relative(d),type))continue;' work/src/main/java/dev/obsidiannetwork/conduit/ConduitRuntime.java
           echo '===== BUILD246 VISUAL/FACADE FIXES ====='
           python3 private/v1.1.1/apply-build246-visual-fixes.py
           echo '===== BUILD262 TESSERACT CROSS-DIM ====='
