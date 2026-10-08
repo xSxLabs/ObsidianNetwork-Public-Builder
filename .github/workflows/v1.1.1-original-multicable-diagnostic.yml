@@ -396,3 +396,13 @@ jobs:
           echo '===== ORIGINAL MULTICABLE FULL BUILD (NO RELEASE UPLOAD) ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           echo 'ORIGINAL MULTICABLE FULL BUILD PASS'
+          echo '===== ORIGINAL MULTICABLE DEDICATED SERVER STARTUP ====='
+          set +e
+          timeout 110s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/original-multicable-server.log 2>&1
+          SERVER_RC=$?
+          set -e
+          tail -n 180 /tmp/original-multicable-server.log
+          if [ "$SERVER_RC" -ne 124 ]; then echo "original MultiCable server exited rc=$SERVER_RC"; exit 1; fi
+          grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/original-multicable-server.log
+          if grep -Eqi 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/original-multicable-server.log; then exit 1; fi
+          echo 'ORIGINAL MULTICABLE DEDICATED SERVER STARTUP PASS'
