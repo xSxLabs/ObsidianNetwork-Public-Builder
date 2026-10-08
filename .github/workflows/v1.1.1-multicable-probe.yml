@@ -994,7 +994,7 @@ jobs:
           assert all(x in fluid for x in ['network.endpoints(true)','network.endpoints(false)','drain(1000','fill('])
           assert all(x in energy for x in ['network.nodes()','connected','extract(1000','insert(','Transaction.openRoot'])
           assert 'network.nodes().stream().anyMatch' in topology
-          assert 'ConduitRuntime.component' in manager and 'if(!current.dirty()' in manager
+          assert 'ConduitRuntime.component' in manager and 'current.nodes().contains(seed)' in manager and 'seed.type()!=ConduitType.ITEM' in manager
           assert 'cacheEndpoints' in network
           print('BUILD216 ITEM FLUID ENERGY SPLIT MERGE CACHE SEMANTICS PASS')
           PY
