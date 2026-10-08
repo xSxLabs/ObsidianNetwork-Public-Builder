@@ -584,7 +584,7 @@ jobs:
                   int left=sf.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
                   int right=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
                   long ea=src.energy().getAmountAsLong(),eb=dst.energy().getAmountAsLong();
-                  if(right<=0||eb<=0)throw new IllegalStateException("Crossdim Tesseract moved no water or FE: "+right+" mB, "+eb+" FE");
+                  if(right<=0||eb<=0)throw new IllegalStateException("Crossdim Tesseract moved no water or FE: "+right+" mB, "+eb+" FE; source="+left+" mB/"+ea+" FE; sourceRemoved="+src.isRemoved()+" targetRemoved="+dst.isRemoved()+"; sourceLevel="+src.getLevel().dimension().location()+" targetLevel="+dst.getLevel().dimension().location()+"; overworldTick="+overworld.getGameTime()+" netherTick="+nether.getGameTime()+"; targetChunkLoaded="+nether.hasChunkAt(b)+"; receive="+dst.receiveMode()+"; fluidChannel="+dst.channel(1)+"; energyChannel="+dst.channel(2));
                   if(left+right!=4000||ea+eb!=8000)throw new IllegalStateException("Crossdim conservation failed: "+left+"+"+right+" mB; "+ea+"+"+eb+" FE");
                   overworld.removeBlock(a,false);nether.removeBlock(b,false);
                 }).thenSucceed();
