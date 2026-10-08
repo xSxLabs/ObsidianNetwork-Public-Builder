@@ -385,6 +385,14 @@ jobs:
           assert 'ObsidianNetwork.TESSERACT_CHUNKS.forceChunk' in ts
           assert 'LIVE.get(level.getServer())' in ts
           assert 'true,false' in ts and 'false,false' in ts
+          # Regression gates for the user-reported Tesseract and cable collar issues.
+          assert 'WeakHashMap<MinecraftServer,Set<TesseractBlockEntity>> LIVE' in ts
+          assert 'LIVE.get(level.getServer())' in ts, 'Tesseract partners must be server-global across dimensions'
+          assert 'TESSERACT_CHUNKS.forceChunk' in ts, 'Tesseract remote chunk ticket missing'
+          assert 'void setRemoved()' in ts and 'false,false' in ts, 'Tesseract chunk ticket release missing'
+          assert 'if(s.ioMode[layer][d.ordinal()]==1)collar(' in bundle, 'Bundle collar must render on input face only'
+          assert 'if(s.ioMode[layer][d.ordinal()]!=0)collar(' not in bundle, 'Output-only collar regression'
+          print('V111 TESSERACT + CABLE COLLAR REGRESSION SOURCE GATES PASS')
           print('BUILD262 TESSERACT INFINITY-STYLE CHUNK LIFECYCLE PASS')
           PY
           # Build236: inspect the reconstructed real Energy Cell capability contract before wiring the world GameTest.
@@ -692,6 +700,8 @@ jobs:
                   new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "mixed_item_bridge_topology"),
                   new MixedCableTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_item_and_fluid_transfer"),
+                  new StandaloneTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
             }
 
             private static final class MixedCableTest extends GameTestInstance {
@@ -759,6 +769,48 @@ jobs:
                   });
                 });
               }
+            }
+
+            private static final class StandaloneTransportTest extends GameTestInstance {
+              StandaloneTransportTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data){super(data);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Standalone item and fluid transfer");}
+              @Override public void run(GameTestHelper h){
+                BlockPos src=h.absolutePos(new BlockPos(0,1,1)),a=h.absolutePos(new BlockPos(1,1,1)),b=h.absolutePos(new BlockPos(2,1,1)),dst=h.absolutePos(new BlockPos(3,1,1));
+                h.getLevel().setBlock(src,Blocks.CHEST.defaultBlockState(),3);
+                h.getLevel().setBlock(a,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(b,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(dst,Blocks.CHEST.defaultBlockState(),3);
+                var in=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(a);
+                var out=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(b);
+                in.cycle(Direction.WEST);
+                out.cycle(Direction.EAST);out.cycle(Direction.EAST);
+                var chest=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(src);
+                chest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
+                h.startSequence().thenExecuteAfter(30,()->{
+                  var sink=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(dst);
+                  check(sink.getItem(0).getCount()>0,"standalone ITEM actual transport");
+                  h.getLevel().setBlock(src,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  h.getLevel().setBlock(a,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                  h.getLevel().setBlock(b,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                  h.getLevel().setBlock(dst,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  var fi=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(a);
+                  var fo=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(b);
+                  fi.cycle(Direction.WEST);fo.cycle(Direction.EAST);fo.cycle(Direction.EAST);
+                  var sourceTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(src);
+                  var sh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(sourceTank.tank());
+                  check(sh.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)==4000,"standalone FLUID source fill");
+                }).thenExecuteAfter(30,()->{
+                  var sinkTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(dst);
+                  var sourceTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(src);
+                  var dh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(sinkTank.tank());
+                  var sh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(sourceTank.tank());
+                  check(dh.getFluidInTank(0).getAmount()>0,"standalone FLUID actual transport");
+                  check(sh.getFluidInTank(0).getAmount()<4000,"standalone FLUID source drained");
+                  h.succeed();
+                });
+              }
+              private static void check(boolean ok,String message){if(!ok)throw new IllegalStateException("STANDALONE: "+message);}
             }
 
             private static final class StateMachineTest extends GameTestInstance {
