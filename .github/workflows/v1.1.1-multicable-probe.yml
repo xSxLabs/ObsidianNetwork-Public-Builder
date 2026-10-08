@@ -719,10 +719,22 @@ jobs:
                 var type=dev.obsidiannetwork.conduit.ConduitType.ITEM;
                 var connected=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,type);
                 check(connected.contains(mid)&&connected.contains(b),"mixed ITEM standalone bridge topology");
-                helper.getLevel().setBlock(mid,Blocks.AIR.defaultBlockState(),3);
-                var split=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,type);
-                check(!split.contains(b),"mixed ITEM bridge removal splits network");
-                helper.succeed();
+                BlockPos sourcePos=helper.absolutePos(new BlockPos(0,1,1));
+                BlockPos targetPos=helper.absolutePos(new BlockPos(4,1,1));
+                helper.getLevel().setBlock(sourcePos,Blocks.CHEST.defaultBlockState(),3);
+                helper.getLevel().setBlock(targetPos,Blocks.CHEST.defaultBlockState(),3);
+                var source=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(sourcePos);
+                var target=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(targetPos);
+                left.setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.WEST,false,true);
+                right.setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.EAST,true,false);
+                source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
+                helper.startSequence().thenExecuteAfter(15,()->{
+                  check(target.getItem(0).getCount()>0,"mixed ITEM bundle-standalone-bundle actual transfer");
+                  helper.getLevel().setBlock(mid,Blocks.AIR.defaultBlockState(),3);
+                  var split=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,type);
+                  check(!split.contains(b),"mixed ITEM bridge removal splits network");
+                  helper.succeed();
+                });
               }
             }
 
