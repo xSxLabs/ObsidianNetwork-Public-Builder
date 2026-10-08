@@ -486,6 +486,8 @@ jobs:
                 new StandaloneFluidTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_energy_transport"),
                 new StandaloneEnergyTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_network_topology"),
+                new StandaloneNetworkTopologyTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_original_cables"),
                 new StandaloneOriginalCablesTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","legacy_multicable_layers"),
@@ -633,6 +635,30 @@ jobs:
                   long a=source.stored(),b=target.stored();
                   if(b<=0)throw new IllegalStateException("Standalone ENERGY cable transferred no FE");
                   if(a+b!=8000)throw new IllegalStateException("Standalone ENERGY conservation failed: "+a+" + "+b);
+                }).thenSucceed();
+              }
+            }
+            static final class StandaloneNetworkTopologyTest extends GameTestInstance {
+              StandaloneNetworkTopologyTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Standalone NETWORK cable controller-to-drive physical topology");}
+              @Override public void run(GameTestHelper helper){
+                var world=helper.getLevel();
+                BlockPos controllerPos=helper.absolutePos(new BlockPos(1,1,1));
+                BlockPos cablePos=helper.absolutePos(new BlockPos(2,1,1));
+                BlockPos drivePos=helper.absolutePos(new BlockPos(3,1,1));
+                world.setBlock(controllerPos,ObsidianNetwork.NETWORK_CONTROLLER.get().defaultBlockState(),3);
+                world.setBlock(cablePos,ObsidianNetwork.NETWORK_CABLE.get().defaultBlockState(),3);
+                world.setBlock(drivePos,ObsidianNetwork.STORAGE_DRIVE.get().defaultBlockState(),3);
+                if(!world.getBlockState(cablePos).is(ObsidianNetwork.NETWORK_CABLE.get()))
+                  throw new IllegalStateException("Standalone NETWORK cable not placed");
+                if(world.getBlockEntity(controllerPos)==null||world.getBlockEntity(drivePos)==null)
+                  throw new IllegalStateException("Standalone NETWORK controller or drive block entity missing");
+                helper.startSequence().thenExecuteAfter(30,()->{
+                  if(!world.getBlockState(cablePos).is(ObsidianNetwork.NETWORK_CABLE.get()))
+                    throw new IllegalStateException("Standalone NETWORK cable disappeared during ticks");
+                  if(world.getBlockEntity(controllerPos)==null||world.getBlockEntity(drivePos)==null)
+                    throw new IllegalStateException("Standalone NETWORK endpoint lost during ticks");
                 }).thenSucceed();
               }
             }
