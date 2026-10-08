@@ -455,6 +455,7 @@ jobs:
           tesseract=(J/'blockentity/TesseractBlockEntity.java').read_text()
           assert 'WeakHashMap<MinecraftServer,Set<TesseractBlockEntity>> LIVE' in tesseract
           assert 'forceChunk(' in tesseract
+          assert 'TESSERACT_CHUNKS.forceChunk(s,worldPosition,c.x(),c.z(),true,true)' in tesseract, 'Tesseract receiver must hold a ticking chunk ticket'
           print('ORIGINAL FOUR-LAYER RUNTIME + CROSSDIM TESSERACT STATIC GATES PASS')
           PY
           echo '===== ORIGINAL MULTICABLE FULL BUILD (NO RELEASE UPLOAD) ====='
