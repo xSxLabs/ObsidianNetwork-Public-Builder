@@ -733,6 +733,16 @@ jobs:
                   helper.getLevel().setBlock(mid,Blocks.AIR.defaultBlockState(),3);
                   var split=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,type);
                   check(!split.contains(b),"mixed ITEM bridge removal splits network");
+                  // Repeat the physical bridge check for FLUID, including a split.
+                  helper.getLevel().setBlock(mid,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                  if(!left.has(ConduitBundleBlockEntity.Layer.FLUID))check(left.add(ConduitBundleBlockEntity.Layer.FLUID),"mixed left FLUID");
+                  if(!right.has(ConduitBundleBlockEntity.Layer.FLUID))check(right.add(ConduitBundleBlockEntity.Layer.FLUID),"mixed right FLUID");
+                  var fluidType=dev.obsidiannetwork.conduit.ConduitType.FLUID;
+                  var fluidPath=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,fluidType);
+                  check(fluidPath.contains(mid)&&fluidPath.contains(b),"mixed FLUID standalone bridge topology");
+                  helper.getLevel().setBlock(mid,Blocks.AIR.defaultBlockState(),3);
+                  var fluidSplit=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,fluidType);
+                  check(!fluidSplit.contains(b),"mixed FLUID bridge removal splits network");
                   helper.succeed();
                 });
               }
