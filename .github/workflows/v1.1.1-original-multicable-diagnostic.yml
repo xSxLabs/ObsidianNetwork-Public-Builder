@@ -481,7 +481,33 @@ jobs:
                 if(be.energyHandler(Direction.NORTH)!=null)throw new IllegalStateException("Disabled ENERGY face exposes capability");
                 be.setEnabled(MultiCableBlockEntity.Layer.ENERGY,Direction.NORTH,true);
                 if(be.energyHandler(Direction.NORTH)==null)throw new IllegalStateException("Reenabled ENERGY face missing capability");
-                helper.succeed();
+                // Physical mixed route: chest -> MultiCable -> standalone ITEM -> MultiCable -> chest.
+                BlockPos leftPos=helper.absolutePos(new BlockPos(1,1,1));
+                BlockPos bridgePos=helper.absolutePos(new BlockPos(2,1,1));
+                BlockPos rightPos=helper.absolutePos(new BlockPos(3,1,1));
+                BlockPos sourcePos=helper.absolutePos(new BlockPos(0,1,1));
+                BlockPos targetPos=helper.absolutePos(new BlockPos(4,1,1));
+                var world=helper.getLevel();
+                world.setBlock(sourcePos,net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),3);
+                world.setBlock(leftPos,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
+                world.setBlock(bridgePos,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                world.setBlock(rightPos,ObsidianNetwork.MULTI_CABLE.get().defaultBlockState(),3);
+                world.setBlock(targetPos,net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),3);
+                var left=(MultiCableBlockEntity)world.getBlockEntity(leftPos);
+                var right=(MultiCableBlockEntity)world.getBlockEntity(rightPos);
+                if(!left.has(MultiCableBlockEntity.Layer.ITEM))left.add(MultiCableBlockEntity.Layer.ITEM);
+                if(!right.has(MultiCableBlockEntity.Layer.ITEM))right.add(MultiCableBlockEntity.Layer.ITEM);
+                left.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.WEST,1,0,0);
+                right.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.EAST,2,0,0);
+                var source=(net.minecraft.world.level.block.entity.ChestBlockEntity)world.getBlockEntity(sourcePos);
+                var target=(net.minecraft.world.level.block.entity.ChestBlockEntity)world.getBlockEntity(targetPos);
+                source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
+                helper.startSequence().thenExecuteAfter(25,()->{
+                  int sourceCount=source.getItem(0).getCount();
+                  int targetCount=target.getItem(0).getCount();
+                  if(targetCount<=0)throw new IllegalStateException("Mixed original ITEM cable route transferred no diamonds");
+                  if(sourceCount+targetCount!=8)throw new IllegalStateException("ITEM conservation failed: "+sourceCount+" + "+targetCount);
+                }).thenSucceed();
               }
             }
           }
