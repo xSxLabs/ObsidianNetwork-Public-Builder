@@ -469,6 +469,18 @@ jobs:
                 }
                 if(be.layerCount()!=4)throw new IllegalStateException("Incorrect layer count");
                 if(be.energyHandler(Direction.NORTH)==null)throw new IllegalStateException("Missing ENERGY capability");
+                be.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.WEST,1,0,0);
+                be.setLogistics(MultiCableBlockEntity.Layer.ITEM,Direction.EAST,2,0,0);
+                be.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH,1,0,0);
+                be.setLogistics(MultiCableBlockEntity.Layer.FLUID,Direction.SOUTH,2,0,0);
+                if(be.logisticsMode(MultiCableBlockEntity.Layer.ITEM,Direction.WEST)!=1)throw new IllegalStateException("ITEM input configuration lost");
+                if(be.logisticsMode(MultiCableBlockEntity.Layer.ITEM,Direction.EAST)!=2)throw new IllegalStateException("ITEM output configuration lost");
+                if(be.logisticsMode(MultiCableBlockEntity.Layer.FLUID,Direction.NORTH)!=1)throw new IllegalStateException("FLUID input configuration lost");
+                if(be.logisticsMode(MultiCableBlockEntity.Layer.FLUID,Direction.SOUTH)!=2)throw new IllegalStateException("FLUID output configuration lost");
+                be.setEnabled(MultiCableBlockEntity.Layer.ENERGY,Direction.NORTH,false);
+                if(be.energyHandler(Direction.NORTH)!=null)throw new IllegalStateException("Disabled ENERGY face exposes capability");
+                be.setEnabled(MultiCableBlockEntity.Layer.ENERGY,Direction.NORTH,true);
+                if(be.energyHandler(Direction.NORTH)==null)throw new IllegalStateException("Reenabled ENERGY face missing capability");
                 helper.succeed();
               }
             }
