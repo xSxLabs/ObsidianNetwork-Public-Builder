@@ -1,4 +1,5 @@
 name: v1.1.1 MultiCable Compile Probe
+# Build 305 verify original MultiCable snapshot before EnderIO migration
 # Build 304 diagnostic compile/GameTest after integrated source investigations; not a release artifact
 # Build 303 verify idempotent Tesseract cross-dimension sender guard patch
 # Build 302 exact cross-dimensional item transfer guard removed
@@ -337,6 +338,20 @@ jobs:
           python3 private/v1.1.1/apply-run128-energy-io.py
           python3 private/v1.1.1/apply-run129-enderio-node-architecture.py
           python3 private/v1.1.1/apply-run130-conduit-bundle-hard-cut.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/multicable-original/dev/obsidiannetwork/blockentity/MultiCableBlockEntity.java')
+          # The snapshot must survive outside active Java compilation; keep a
+          # reproducible original source for the forthcoming runtime rollback.
+          if not p.exists():
+              p=Path('work/src/main/java').parent.parent/'multicable-original/dev/obsidiannetwork/blockentity/MultiCableBlockEntity.java'
+          assert p.is_file(), 'original MultiCable source snapshot missing'
+          text=p.read_text()
+          for token in ('enum Layer','transferItem(', 'transferFluid(', 'energyHandler(Direction side)', 'exports(Layer layer)'):
+              assert token in text, 'original MultiCable transport missing '+token
+          assert 'ConduitBundleBlockEntity' not in text
+          print('ORIGINAL MULTICABLE SNAPSHOT DIAGNOSTIC PASS')
+          PY
           python3 private/v1.1.1/apply-run132-enderio-core.py
           python3 private/v1.1.1/apply-run133-runtime-tickers.py
           python3 private/v1.1.1/apply-run134-energy-runtime.py
