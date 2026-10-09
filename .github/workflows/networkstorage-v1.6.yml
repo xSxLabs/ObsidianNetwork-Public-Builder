@@ -1297,3 +1297,5 @@ jobs:
 # Build23: relax Run148 EnergyCableBlock local variable assertion (private 5f14e7b)
 
 # Build24: compile Run148 BlockState scope fix private 260e80b
+
+# Build 25: verify standalone-to-bundle connection fix and slimmer input sleeves
