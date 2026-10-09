@@ -573,11 +573,11 @@ jobs:
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_two_server_levels"),
                 new TesseractTwoLevelsTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_item_endpoint_lifecycle"),
-                new TesseractItemEndpointLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+                new TesseractItemEndpointLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,260,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_item_endpoint_lifecycle_repeat_1"),
-                new TesseractItemEndpointLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE),1));
+                new TesseractItemEndpointLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,260,0,true,Rotation.NONE),1));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_item_endpoint_lifecycle_repeat_2"),
-                new TesseractItemEndpointLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE),2));
+                new TesseractItemEndpointLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,260,0,true,Rotation.NONE),2));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_fluid_energy"),
                 new TesseractCrossdimTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,120,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_fluid_energy_repeat_1"),
