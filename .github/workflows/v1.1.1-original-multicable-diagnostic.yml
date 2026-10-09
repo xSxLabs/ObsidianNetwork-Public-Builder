@@ -457,6 +457,9 @@ jobs:
           assert 'forceChunk(' in tesseract
           assert 'TESSERACT_CHUNKS.forceChunk(s,worldPosition,c.x(),c.z(),true,true)' in tesseract, 'Tesseract receiver must hold a ticking chunk ticket'
           assert 'TESSERACT_CHUNKS.forceChunk(s,worldPosition,c.x(),c.z(),false,true)' not in tesseract, 'Tesseract must not release its own chunk ticket on unload'
+          assert 'LIVE.get(level.getServer())' in tesseract, 'Tesseract item discovery must be server-global'
+          assert 'MinecraftItemStackCodec' in tesseract and 'ImporterRuntime' in tesseract, 'Tesseract item importer missing'
+          assert 'src==be||src.isRemoved()||src.receiveMode' in tesseract, 'Tesseract sender safety guard missing'
           print('ORIGINAL FOUR-LAYER RUNTIME + CROSSDIM TESSERACT STATIC GATES PASS')
           PY
           echo '===== ORIGINAL MULTICABLE FULL BUILD (NO RELEASE UPLOAD) ====='
