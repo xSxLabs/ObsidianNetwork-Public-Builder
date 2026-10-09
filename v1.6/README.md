@@ -106,6 +106,14 @@ Die folgende Liste dokumentiert **Anforderungen**, nicht bereits erfolgreich bes
 - **Technische Prüfung:** Interaktions-/Platzierungslogik, Facade-Speicherzustand, Block-/CollisionShape, Renderzustand und Synchronisation untersuchen; keine vorschnelle Annahme zur Ursache.
 - **Status:** Zwei Fehler offen: falsche MultiCable-Kollision ohne Facade und falsche Rechtsklick-/Shift-Interaktion bei Facade-Montage. Kollisionsänderung mit Facade und Entfernen noch zu prüfen. Kein neuer Build ohne ausdrückliches `build`.
 
+
+### 2026-10-09 — Ingame-Befund: ITEM-/FLUID-Transfer bricht am MultiCable ab
+
+- **Ist:** Sobald ein einzelnes ITEM- oder FLUID-Cable in ein MultiCable übergeht, funktioniert der ITEM- bzw. FLUID-Transport nicht.
+- **Soll:** ITEM-Cable → MultiCable → ITEM-Cable und FLUID-Cable → MultiCable → FLUID-Cable transportieren Ressourcen durchgehend; INPUT/OUTPUT funktionieren über die Übergänge. ITEM und FLUID bleiben logisch getrennt.
+- **Technische Prüfung:** Einzelkabel↔MultiCable-Netzwerkzuordnung, Anschluss-/Nachbarerkennung, gerichtete INPUT/OUTPUT-Pfade, Handler/Capabilities und Cache-Invalidierung; Fehlerursache noch nicht bestätigt. Bei NeoForge die zur tatsächlich verwendeten Minecraft-/NeoForge-Version passende Capability-API prüfen (offizielle Referenz: https://docs.neoforged.net/docs/1.21.1/inventories/capabilities/ ; Versionsunterschiede beachten).
+- **Status:** Ingame gemeldeter Transportfehler; Fix und Nachtest offen. Kein neuer Build ohne ausdrückliches `build`.
+
 ## Ingame-Testprotokoll (noch auszufüllen)
 
 | Datum / JAR / Run | Bereich | Reproduktion / Beobachtung | Erwartet | Fix-Commit | Nachtest |
