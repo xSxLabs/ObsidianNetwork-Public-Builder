@@ -1,6 +1,6 @@
 name: xSxLabs Network Storage v1.6
-# BUILD LOCK ACTIVE after successful v1.6 Run #2 (37955391053).
-# Manual workflow_dispatch retained; do not run until the user explicitly says "build".
+# User authorized corrected v1.6 build; trigger on this workflow file update only.
+# Manual workflow_dispatch retained; explicit build authorization received.
 # Original public workflow unchanged.
 # Build 307 verify four-layer legacy snapshot and item/fluid conservation safeguards
 # Build 306 repair run121 compatibility with guarded original MultiCable traversal
@@ -21,6 +21,9 @@ name: xSxLabs Network Storage v1.6
 # Re-enable only after the user explicitly requests "build".
 'on':
   workflow_dispatch:
+  push:
+    branches: [networkstorage-v1.6]
+    paths: ['.github/workflows/networkstorage-v1.6.yml']
 permissions: {contents: read}
 # Build 214 energy API trigger
 # Build 212 explicit trigger
