@@ -571,6 +571,10 @@ jobs:
                 new TesseractTwoLevelsTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_item_endpoint_lifecycle"),
                 new TesseractItemEndpointLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_item_endpoint_lifecycle_repeat_1"),
+                new TesseractItemEndpointLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE),1));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_item_endpoint_lifecycle_repeat_2"),
+                new TesseractItemEndpointLifecycleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE),2));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_fluid_energy"),
                 new TesseractCrossdimTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,120,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_fluid_energy_repeat_1"),
@@ -667,7 +671,9 @@ jobs:
               }
             }
             static final class TesseractItemEndpointLifecycleTest extends GameTestInstance {
-              TesseractItemEndpointLifecycleTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              final int fixture;
+              TesseractItemEndpointLifecycleTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){this(d,0);}
+              TesseractItemEndpointLifecycleTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d,int fixture){super(d);this.fixture=fixture;}
               @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
               @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Crossdim ITEM sender/receiver lifecycle and channel isolation (not item transfer)");}
               @Override public void run(GameTestHelper helper){
@@ -676,7 +682,7 @@ jobs:
                 if(nether==null)throw new IllegalStateException("Nether unavailable for ITEM endpoint test");
                 var block=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("obsidiannetwork","network_tesseract"));
                 BlockPos a=helper.absolutePos(new BlockPos(5,1,5));
-                BlockPos b=new BlockPos(96,82,0);
+                BlockPos b=new BlockPos(96+fixture*32,82,0);
                 nether.getChunkAt(b);
                 if(!nether.getBlockState(b).isAir())throw new IllegalStateException("ITEM endpoint fixture occupied");
                 overworld.setBlock(a,block.defaultBlockState(),3);
@@ -684,18 +690,18 @@ jobs:
                 var src=(dev.obsidiannetwork.blockentity.TesseractBlockEntity)overworld.getBlockEntity(a);
                 var dst=(dev.obsidiannetwork.blockentity.TesseractBlockEntity)nether.getBlockEntity(b);
                 if(src==null||dst==null)throw new IllegalStateException("Crossdim ITEM endpoints missing");
-                src.setChannel(0,"ci_item_endpoint");dst.setChannel(0,"ci_item_endpoint");
+                src.setChannel(0,"ci_item_endpoint_"+fixture);dst.setChannel(0,"ci_item_endpoint_"+fixture);
                 src.setReceiveMode(false);dst.setReceiveMode(true);
                 helper.startSequence().thenExecuteAfter(5,()->{
                   if(src.isRemoved()||dst.isRemoved()||!nether.hasChunkAt(b))
                     throw new IllegalStateException("Crossdim ITEM endpoint ticket lost in first 5 ticks: sourceRemoved="+src.isRemoved()+", targetRemoved="+dst.isRemoved()+", targetChunkLoaded="+nether.hasChunkAt(b)+", sourceBlock="+overworld.getBlockState(a)+", targetBlock="+nether.getBlockState(b)+", netherTick="+nether.getGameTime());
-                  if(!"ci_item_endpoint".equals(src.channel(0))||!"ci_item_endpoint".equals(dst.channel(0))||src.receiveMode()||!dst.receiveMode())
+                  if(!"ci_item_endpoint_"+fixture.equals(src.channel(0))||!"ci_item_endpoint_"+fixture.equals(dst.channel(0))||src.receiveMode()||!dst.receiveMode())
                     throw new IllegalStateException("Crossdim ITEM endpoint configuration changed");
                 }).thenExecuteAfter(35,()->{
                   if(src.isRemoved()||dst.isRemoved()||!nether.hasChunkAt(b))
                     throw new IllegalStateException("Crossdim ITEM endpoint unloaded before 40 ticks: sourceRemoved="+src.isRemoved()+", targetRemoved="+dst.isRemoved()+", targetChunkLoaded="+nether.hasChunkAt(b)+", netherTick="+nether.getGameTime());
-                  dst.setChannel(0,"ci_item_isolated");
-                  if(!"ci_item_endpoint".equals(src.channel(0))||!"ci_item_isolated".equals(dst.channel(0)))
+                  dst.setChannel(0,"ci_item_isolated_"+fixture);
+                  if(!"ci_item_endpoint_"+fixture.equals(src.channel(0))||!"ci_item_isolated_"+fixture.equals(dst.channel(0)))
                     throw new IllegalStateException("Crossdim ITEM channel isolation broken");
                   overworld.removeBlock(a,false);nether.removeBlock(b,false);
                 }).thenSucceed();
