@@ -843,7 +843,14 @@ jobs:
                   var to=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(target);
                   if(to.getItem(0).getCount()<=0)throw new IllegalStateException("BUILD151: standalone-bundle-standalone ITEM transfer failed");
                   if(from.getItem(0).getCount()+to.getItem(0).getCount()!=8)throw new IllegalStateException("BUILD151: ITEM transfer lost or duplicated diamonds");
-                  h.succeed();
+                  int delivered=to.getItem(0).getCount();
+                  h.getLevel().setBlock(middle,Blocks.AIR.defaultBlockState(),3);
+                  from.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
+                  h.startSequence().thenExecuteAfter(40,()->{
+                    if(to.getItem(0).getCount()!=delivered)throw new IllegalStateException("BUILD153: disconnected mixed ITEM bridge still transferred");
+                    if(from.getItem(0).getCount()!=8)throw new IllegalStateException("BUILD153: disconnected mixed ITEM bridge consumed source");
+                    h.succeed();
+                  });
                 });
               }
             }
