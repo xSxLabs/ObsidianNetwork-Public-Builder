@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: v1.1.1-io-facades-teleporter
+          ref: networkstorage-v1.6-ingame-fixes
           token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
           path: private
       - uses: actions/setup-java@v4
@@ -377,6 +377,7 @@ jobs:
           echo '===== BUILD268 ALL USER FIXES ====='
           python3 private/v1.1.1/apply-build268-all-user-fixes.py
           python3 private/v1.1.1/apply-build271-bundle-io-input-collars.py
+          python3 private/v1.1.1/apply-v16-ingame-collision.py
           python3 - <<'PY'
           from pathlib import Path
           import re
