@@ -1,4 +1,4 @@
-name: Build 80 - Mining Speed and Recipe Button Test
+name: Build 81 - Bundle Placement and Selector Regression
 # Independent compile-only legacy restoration probe; never publish as a release.
 'on':
   workflow_dispatch:
