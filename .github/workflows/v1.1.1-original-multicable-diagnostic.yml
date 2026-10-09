@@ -585,6 +585,7 @@ jobs:
                   if(src.energy().insert(8000,tx)!=8000)throw new IllegalStateException("Source Tesseract failed FE insertion");
                   tx.commit();
                 }
+                final long[] isolated = new long[2];
                 helper.startSequence().thenExecuteAfter(40,()->{
                   var df=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dst.fluids());
                   int left=sf.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
@@ -595,17 +596,15 @@ jobs:
                   if(!nether.hasChunkAt(b)||dst.isRemoved())throw new IllegalStateException("Crossdim receiver unloaded despite forced test fixture");
                   // Batch negative cases: a wrong channel must never move fluid or energy.
                   dst.setChannel(1,"ci_wrong_fluid");dst.setChannel(2,"ci_wrong_energy");
-                  int fluidBefore=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
-                  long energyBefore=dst.energy().getAmountAsLong();
+                  isolated[0]=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
+                  isolated[1]=dst.energy().getAmountAsLong();
                   // Leave the endpoints loaded and verify isolation over another relay window.
-                  helper.startSequence().thenExecuteAfter(20,()->{
+                  }).thenExecuteAfter(20,()->{
                     int fluidAfter=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
                     long energyAfter=dst.energy().getAmountAsLong();
-                    if(fluidAfter!=fluidBefore||energyAfter!=energyBefore)throw new IllegalStateException("Crossdim channel isolation failed: fluid "+fluidBefore+"->"+fluidAfter+" energy "+energyBefore+"->"+energyAfter);
+                    if(fluidAfter!=isolated[0]||energyAfter!=isolated[1])throw new IllegalStateException("Crossdim channel isolation failed: fluid "+isolated[0]+"->"+fluidAfter+" energy "+isolated[1]+"->"+energyAfter);
                     overworld.removeBlock(a,false);nether.removeBlock(b,false);
                   }).thenSucceed();
-
-                }).thenSucceed();
               }
             }
             static final class TesseractTwoLevelsTest extends GameTestInstance {
