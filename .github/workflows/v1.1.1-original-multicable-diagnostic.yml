@@ -464,6 +464,7 @@ jobs:
           assert 'TESSERACT_CHUNKS.forceChunk' in block_src and 'false,true' in block_src, 'Tesseract block removal must release its ticket'
           assert 'playerWillDestroy(' in block_src and 'super.playerWillDestroy(' in block_src, 'Tesseract ticket cleanup must use supported block destruction hook'
           assert 'BlockState playerWillDestroy(' in block_src and 'return super.playerWillDestroy(' in block_src, 'Tesseract destruction hook must return BlockState'
+          assert 'return return' not in block_src, 'Tesseract generated Java must not contain duplicate return'
           print('ORIGINAL FOUR-LAYER RUNTIME + CROSSDIM TESSERACT STATIC GATES PASS')
           PY
           echo '===== ORIGINAL MULTICABLE FULL BUILD (NO RELEASE UPLOAD) ====='
