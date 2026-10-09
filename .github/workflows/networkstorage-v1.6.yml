@@ -1309,3 +1309,5 @@ jobs:
 # Build 29: repaired Python syntax for bundle endpoint isolation
 
 # Build 30: bundle renderer must not connect to foreign cable capability fallback
+
+# Build 31: enforce mixed conduit endpoint and self-feed regression assertions
