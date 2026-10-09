@@ -461,7 +461,7 @@ jobs:
           assert 'server.getBlockState(worldPosition).is(dev.obsidiannetwork.ObsidianNetwork.NETWORK_TESSERACT.get())' in tesseract, 'Non-player Tesseract removal must distinguish block deletion from chunk unload'
           assert 'TESSERACT_CHUNKS.forceChunk(server,worldPosition,chunk.x(),chunk.z(),false,true)' in tesseract
           assert 'server.hasChunkAt(worldPosition)' in tesseract, 'Tesseract removal must not load unloaded chunks'
-          tesseract_block=(root/'block/TesseractBlock.java').read_text()
+          tesseract_block=(pathlib.Path('work/src/main/java/dev/obsidiannetwork')/'block/TesseractBlock.java').read_text()
           assert 'void onPlace(' in tesseract_block and 'TESSERACT_CHUNKS.forceChunk(server,pos,chunk.x(),chunk.z(),true,true)' in tesseract_block, 'Tesseract placement must acquire ticking ticket'
           assert 'MinecraftItemStackCodec' in tesseract and 'ImporterRuntime' in tesseract, 'Tesseract item importer missing'
           assert 'src==be||src.isRemoved()||src.receiveMode' in tesseract, 'Tesseract sender safety guard missing'
