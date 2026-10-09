@@ -1162,7 +1162,7 @@ jobs:
           set -e
           cat /tmp/build103-gametest.log
           if [ "$GT_RC" -ne 0 ]; then echo "Build103 GameTest server failed rc=$GT_RC"; exit "$GT_RC"; fi
-          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(3 tests\)" /tmp/build103-gametest.log
+          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(4 tests\)" /tmp/build103-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
           if grep -Eqi '[0-9]+ required tests failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
           echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST PASS ====='
