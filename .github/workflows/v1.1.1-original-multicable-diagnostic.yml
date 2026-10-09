@@ -1,4 +1,4 @@
-name: Build 79 - Facade and Visual Test
+name: Build 80 - Mining Speed and Recipe Button Test
 # Independent compile-only legacy restoration probe; never publish as a release.
 'on':
   workflow_dispatch:
