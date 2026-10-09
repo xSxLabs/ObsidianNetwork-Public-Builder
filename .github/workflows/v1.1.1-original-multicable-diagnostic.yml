@@ -1067,3 +1067,16 @@ jobs:
           echo 'ORIGINAL MULTICABLE NEOFORGE GAMETEST PASS'
           rm -rf work/src/main/java/dev/obsidiannetwork/legacytest
           rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
+          echo '===== BUILD CLEAN INGAME TEST JAR (WITHOUT CI GAMETEST SOURCES) ====='
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+          mkdir -p test-jar
+          find work/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -exec cp {} test-jar/ \;
+          test "$(find test-jar -maxdepth 1 -name '*.jar' | wc -l)" -eq 1
+          echo 'INGAME TEST JAR READY'
+      - name: Upload v1.1.1 INGAME TEST JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: obsidiannetwork-v1.1.1-ingame-test-jar
+          path: test-jar/*.jar
+          if-no-files-found: error
+          retention-days: 14
