@@ -481,7 +481,15 @@ jobs:
               assert loot.is_file(), f'Missing survival self-drop loot: {name}'
               data=json.loads(loot.read_text())
               entries=[e for pool in data.get('pools',[]) for e in pool.get('entries',[])]
-              assert any(e.get('type')=='minecraft:item' and e.get('name')=='obsidiannetwork:'+name for e in entries), f'No self-drop for {name}'
+              direct=any(e.get('type')=='minecraft:item' and e.get('name')=='obsidiannetwork:'+name for e in entries)
+              if name=='multi_cable':
+                  # Original MultiCable intentionally returns its constituent cable layers
+                  # through getDrops(), rather than dropping a duplicate bundle item.
+                  block=(J/'block/MultiCableBlock.java').read_text()
+                  assert 'getDrops(' in block and 'layerStack(q)' in block, 'Missing MultiCable layer recovery on break'
+                  assert 'for(MultiCableBlockEntity.Layer q:' in block, 'Missing MultiCable layer iteration'
+              else:
+                  assert direct, f'No self-drop for {name}'
               if name!='multi_cable':
                   recipe=R/'recipe'/f'{name}.json'
                   assert recipe.is_file(), f'Missing crafting recipe: {name}'
