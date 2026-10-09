@@ -67,6 +67,28 @@ Die folgende Liste dokumentiert **Anforderungen**, nicht bereits erfolgreich bes
 5. Gezielte automatisierte Tests und, nach Freigabe bzw. vor Build-Lock, Build ausführen; anschließend Ingame-Rückmeldung einarbeiten.
 6. Jede Änderung mit Datum, Commit, Fehlerursache, Fix, Teststatus und verbleibenden Risiken **hier** ergänzen.
 
+
+### 2026-10-09 — Ingame-Befund: Platzieren gleicher Kabeltypen fehlgeschlagen
+
+- **Reproduktion:** Ein FLUID-Cable in der Hand halten und auf ein bereits platziertes FLUID-Cable klicken.
+- **Ist:** Es wird kein benachbartes Kabel platziert; ein zusätzlicher Stützblock ist nötig.
+- **Soll:** Das neue Kabel wird an der angeklickten Blockseite direkt benachbart platziert. Entsprechend für NETWORK, ENERGY, ITEM und FLUID.
+- **Abgrenzung:** Klick mit einem anderen Kabeltyp soll weiterhin das vorgesehene MultiCable-Bündel ohne Schleichen ermöglichen.
+- **Status:** Gemeldeter Ingame-Fehler, Ursache und Code-Fix noch offen; kein neuer Build ohne ausdrückliches `build`.
+
+### 2026-10-09 — Ingame-Befund: falsche optische Kabelverbindungen
+
+- **Reproduktion:** Unterschiedliche Kabeltypen einzeln nebeneinander platzieren (kein MultiCable).
+- **Ist:** Die Typen bilden optisch Verbindungsarme zueinander.
+- **Soll:** Einzeln platzierte Kabel verbinden sich optisch nur mit demselben Typ.
+- **Status:** Gemeldeter Ingame-Fehler, Ursache und Code-Fix noch offen.
+
+### 2026-10-09 — Ingame-Befund: ITEM-Importer/Exporter-Operationsseite
+
+- **Referenz:** FLUID-Importer und -Exporter besitzen bereits die gewünschte hervorgehobene Operationsseite.
+- **Soll:** ITEM-Importer und -Exporter sollen dieselbe Darstellung der Operationsseite erhalten; andere Texturen beibehalten.
+- **Status:** Gemeldeter Ingame-Fehler, Ursache und Code-Fix noch offen.
+
 ## Ingame-Testprotokoll (noch auszufüllen)
 
 | Datum / JAR / Run | Bereich | Reproduktion / Beobachtung | Erwartet | Fix-Commit | Nachtest |
