@@ -23,9 +23,7 @@ name: xSxLabs Network Storage v1.6
 # Re-enable only after the user explicitly requests "build".
 'on':
   workflow_dispatch:
-  push:
-    branches: [networkstorage-v1.6]
-    paths: ['.github/workflows/networkstorage-v1.6.yml']
+
 
 permissions: {contents: read}
 # Build 214 energy API trigger
@@ -37,6 +35,7 @@ permissions: {contents: read}
 # Build 236 inspect real Energy Cell API for capability-backed transfer GameTest
 jobs:
   inspect:
+    if: ${{ false }} # BUILD LOCK restored after authorized run #7 was started.
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
