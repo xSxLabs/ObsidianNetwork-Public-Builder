@@ -628,7 +628,13 @@ jobs:
                 BlockPos a=helper.absolutePos(new BlockPos(4,1,4));
                 BlockPos b=new BlockPos(fixture*32,82,0);
                 nether.getChunkAt(b);
-                if(!nether.getBlockState(b).isAir())throw new IllegalStateException("Nether transfer fixture occupied");
+                var oldTransferFixture=nether.getBlockState(b);
+                if(oldTransferFixture.is(net.minecraft.world.level.block.Blocks.NETHERRACK)) {
+                  nether.removeBlock(b,false);
+                  if(!nether.getBlockState(b).isAir())throw new IllegalStateException("Natural Nether transfer fixture preparation failed");
+                } else if(!oldTransferFixture.isAir()) {
+                  throw new IllegalStateException("Nether transfer fixture occupied by "+oldTransferFixture);
+                }
                 overworld.setBlock(a,block.defaultBlockState(),3);
                 nether.setBlock(b,block.defaultBlockState(),3);
                 var src=(dev.obsidiannetwork.blockentity.TesseractBlockEntity)overworld.getBlockEntity(a);
