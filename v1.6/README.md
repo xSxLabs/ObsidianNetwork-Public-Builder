@@ -1,6 +1,6 @@
 # xSxLabs Network Storage — isolierter v1.6-Entwicklungsbereich
 
-**Workflow:** v1.6 · **Interne Mod-Version:** 1.1.1 · **Status:** Entwicklung / Ingame-Test noch ausstehend.
+**Workflow:** v1.6 · **Interne Mod-Version:** 1.1.1 · **Status:** Build #2 erfolgreich; Ingame-Test ausstehend; **Build-Lock aktiv**.
 
 Dieses Dokument begleitet ausschließlich den Branch `networkstorage-v1.6` und den Workflow `.github/workflows/networkstorage-v1.6.yml`. Der bestehende v1.1.0 Freeze Build 490 und die bisherigen Workflows dürfen nicht überschrieben werden. Der Quellcode bleibt im privaten Repository `xSxLabs/ObsidianNetwork-Build`; der öffentliche Builder enthält nur Build-Anweisungen und diese Dokumentation.
 
@@ -44,10 +44,19 @@ Die folgende Liste dokumentiert **Anforderungen**, nicht bereits erfolgreich bes
 - **Korrektur:** Beide Assertions auf die tatsächlichen Tick-Ticket-Parameter angepasst (Commit `8b130a7fc7b76218508a326842411e17967fecd6`).
 - **Noch offen:** Folge-Build muss die Korrektur bestätigen; weitere Compiler-/GameTest-Fehler sind möglich.
 
+### 2026-10-09 — v1.6 Run #2: Build erfolgreich
+
+- [GitHub Actions Run 37955391053](https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/37955391053)
+- **Ergebnis:** SUCCESS. Rekonstruktion, Build-/Testschritt und Artefakt-Upload erfolgreich.
+- **Artefakt:** `xsxlabs-network-storage-v1.6-internal-1.1.1-ingame-test`, GitHub Artifact-ID `11628331015`, ZIP-Größe 1.280.668 Bytes; Aufbewahrung laut GitHub bis 2026-10-23.
+- **Einschränkung:** Noch kein tatsächlicher Ingame-Test; elf Anforderungen nicht als ingame bestätigt markieren.
+- **Build-Lock:** Push-Trigger im isolierten Branch entfernt (Commit `24e090381b74de96eb2d3d6f0799dd9ced3e4386`); manuelle Builds erst auf ausdrückliches Kommando `build`.
+- **Hinweis:** Dokumentations-Push löste Run #3 aus, bevor der Push-Trigger deaktiviert wurde. Dieser bereits gestartete Lauf kann weiterlaufen; danach keine automatischen Push-Builds.
+
 ### 2026-10-09 — Isolierter Push-Build
 
 - Commit `ed594d26cf397cebe7e7b3c1a425bd275aa2323b`: vollständigen v1.6-Workflow auf den isolierten Branch übernommen und Push-Trigger ergänzt.
-- Der Benutzer meldete einen laufenden Build. **Ergebnis noch nicht dokumentiert.** Nicht ohne Logs als bestanden markieren.
+- Run #2 ist erfolgreich; Run #3 wurde durch den README-Push gestartet und ist separat zu prüfen.
 
 ## Vorgehen bei neuen Problemen
 
