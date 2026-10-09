@@ -745,6 +745,8 @@ jobs:
                   new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "mixed_item_bridge_topology"),
                   new MixedCableTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_bundle_standalone_item"),
+                  new MixedStandaloneBundleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_item_and_fluid_transfer"),
                   new StandaloneTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
             }
@@ -812,6 +814,33 @@ jobs:
                     check(!fluidSplit.contains(b),"mixed FLUID bridge removal splits network");
                     helper.succeed();
                   });
+                });
+              }
+            }
+
+            private static final class MixedStandaloneBundleTest extends GameTestInstance {
+              MixedStandaloneBundleTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data){super(data);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Standalone-bundle-standalone ITEM transfer");}
+              @Override public void run(GameTestHelper h){
+                BlockPos source=h.absolutePos(new BlockPos(0,1,1)),input=h.absolutePos(new BlockPos(1,1,1)),middle=h.absolutePos(new BlockPos(2,1,1)),output=h.absolutePos(new BlockPos(3,1,1)),target=h.absolutePos(new BlockPos(4,1,1));
+                h.getLevel().setBlock(source,Blocks.CHEST.defaultBlockState(),3);
+                h.getLevel().setBlock(input,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(middle,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(output,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(target,Blocks.CHEST.defaultBlockState(),3);
+                var bundle=(ConduitBundleBlockEntity)h.getLevel().getBlockEntity(middle);
+                if(!bundle.has(ConduitBundleBlockEntity.Layer.ITEM)&&!bundle.add(ConduitBundleBlockEntity.Layer.ITEM))throw new IllegalStateException("BUILD151: bundle ITEM layer missing");
+                var in=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(input);
+                var out=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(output);
+                in.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                out.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT);
+                var from=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(source);
+                from.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
+                h.startSequence().thenExecuteAfter(40,()->{
+                  var to=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(target);
+                  if(to.getItem(0).getCount()<=0)throw new IllegalStateException("BUILD151: standalone-bundle-standalone ITEM transfer failed");
+                  h.succeed();
                 });
               }
             }
