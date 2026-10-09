@@ -98,6 +98,14 @@ Die folgende Liste dokumentiert **Anforderungen**, nicht bereits erfolgreich bes
 - **Vorgehen:** Originale Modell-/Blockstate-/Rendering-Implementierung mit v1.6 vergleichen, Regression gezielt beheben.
 - **Status:** Ingame gemeldet; Ursache und Code-Fix offen. Kein neuer Build ohne ausdrückliches `build`.
 
+
+### 2026-10-09 — Ingame-Befund: MultiCable-Kollision und Facades
+
+- **Fehler A (Kollision):** MultiCable ist ohne Facade nicht durchlaufbar. **Soll:** MultiCable ohne Facade hat keine spielerblockierende Kollision; erst eine montierte Facade erzeugt eine feste Kollision. Die Leitungstransportfunktion bleibt erhalten.
+- **Fehler B (Facade-Montage):** Facades lassen sich aktuell nicht am MultiCable anbringen. **Soll:** Facades an vorgesehenen Seiten montieren und entfernen, passende Blocktextur darstellen und den Kollisionszustand entsprechend aktualisieren.
+- **Technische Prüfung:** Interaktions-/Platzierungslogik, Facade-Speicherzustand, Block-/CollisionShape, Renderzustand und Synchronisation untersuchen; keine vorschnelle Annahme zur Ursache.
+- **Status:** Ingame gemeldet; Code-Fix und Nachtest offen. Kein neuer Build ohne ausdrückliches `build`.
+
 ## Ingame-Testprotokoll (noch auszufüllen)
 
 | Datum / JAR / Run | Bereich | Reproduktion / Beobachtung | Erwartet | Fix-Commit | Nachtest |
