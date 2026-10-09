@@ -460,6 +460,8 @@ jobs:
           assert 'LIVE.get(level.getServer())' in tesseract, 'Tesseract item discovery must be server-global'
           assert 'MinecraftItemStackCodec' in tesseract and 'ImporterRuntime' in tesseract, 'Tesseract item importer missing'
           assert 'src==be||src.isRemoved()||src.receiveMode' in tesseract, 'Tesseract sender safety guard missing'
+          block_src = (src / 'dev/obsidiannetwork/block/TesseractBlock.java').read_text()
+          assert 'TESSERACT_CHUNKS.forceChunk' in block_src and 'false,true' in block_src, 'Tesseract block removal must release its ticket'
           print('ORIGINAL FOUR-LAYER RUNTIME + CROSSDIM TESSERACT STATIC GATES PASS')
           PY
           echo '===== ORIGINAL MULTICABLE FULL BUILD (NO RELEASE UPLOAD) ====='
