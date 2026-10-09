@@ -701,6 +701,12 @@ jobs:
                   nether.removeBlock(b,false);
                   if(!nether.getBlockState(b).isAir())
                     throw new IllegalStateException("Stale ITEM endpoint fixture cleanup failed");
+                } else if(oldFixture.is(net.minecraft.world.level.block.Blocks.NETHERRACK)) {
+                  // Natural Nether terrain is expected at arbitrary remote coordinates.
+                  // Clear only this one fixture block; never load or force a chunk during assertions.
+                  nether.removeBlock(b,false);
+                  if(!nether.getBlockState(b).isAir())
+                    throw new IllegalStateException("Natural terrain fixture preparation failed");
                 } else if(!oldFixture.isAir()) {
                   throw new IllegalStateException("ITEM endpoint fixture occupied by "+oldFixture);
                 }
