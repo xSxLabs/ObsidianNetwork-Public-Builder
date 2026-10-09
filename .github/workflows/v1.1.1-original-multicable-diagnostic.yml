@@ -1,4 +1,4 @@
-name: Build 77 Retry 3 - ITEM FLUID Bundle Transport
+name: Build 78 - Cable Placement and Connections Test
 # Independent compile-only legacy restoration probe; never publish as a release.
 'on':
   workflow_dispatch:
