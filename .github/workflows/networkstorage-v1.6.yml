@@ -21,8 +21,7 @@ name: xSxLabs Network Storage v1.6
 # BUILD LOCK: automatic CI disabled after verified v1.1.1 in-game test JAR.
 # Re-enable only after the user explicitly requests "build".
 'on':
-  # BUILD LOCK: disabled until the user explicitly authorizes another build.
-  # workflow_dispatch:
+  workflow_dispatch:
 
 permissions: {contents: read}
 # Build 214 energy API trigger
@@ -34,6 +33,7 @@ permissions: {contents: read}
 # Build 236 inspect real Energy Cell API for capability-backed transfer GameTest
 jobs:
   inspect:
+    if: ${{ false }} # BUILD LOCK: no jobs run until explicitly unlocked.
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
