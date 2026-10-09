@@ -392,6 +392,7 @@ jobs:
           python3 private/v1.1.1/apply-build268-all-user-fixes.py
           python3 private/v1.1.1/apply-build271-bundle-io-input-collars.py
           python3 private/v1.1.1/apply-v16-ingame-collision.py
+          python3 private/v1.1.1/apply-run144-standalone-connection-types.py
           python3 - <<'PY'
           from pathlib import Path
           import re
