@@ -881,7 +881,15 @@ jobs:
                   if(to.getFluidInTank(0).getAmount()<=0)throw new IllegalStateException("BUILD152: standalone-bundle-standalone FLUID transfer failed");
                   if(from.getFluidInTank(0).getAmount()>=4000)throw new IllegalStateException("BUILD152: source did not drain");
                   if(from.getFluidInTank(0).getAmount()+to.getFluidInTank(0).getAmount()!=4000)throw new IllegalStateException("BUILD152: FLUID transfer lost or duplicated water");
-                  h.succeed();
+                  int delivered=to.getFluidInTank(0).getAmount();
+                  h.getLevel().setBlock(middle,Blocks.AIR.defaultBlockState(),3);
+                  from.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                  int sourceAfterDisconnect=from.getFluidInTank(0).getAmount();
+                  h.startSequence().thenExecuteAfter(40,()->{
+                    if(to.getFluidInTank(0).getAmount()!=delivered)throw new IllegalStateException("BUILD154: disconnected mixed FLUID bridge still transferred");
+                    if(from.getFluidInTank(0).getAmount()!=sourceAfterDisconnect)throw new IllegalStateException("BUILD154: disconnected mixed FLUID bridge drained source");
+                    h.succeed();
+                  });
                 });
               }
             }
