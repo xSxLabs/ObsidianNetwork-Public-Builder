@@ -1287,3 +1287,5 @@ jobs:
 # build281 validate mixed runtime after release gate checks corrected (private b9b7e9ff)
 
 # run145 retry Run144 Java parameter resolution e040d0b7
+
+# Build18: compile corrected NeoForge capability API references (private 35e4378)
