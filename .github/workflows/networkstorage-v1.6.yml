@@ -1293,3 +1293,5 @@ jobs:
 # Build18: compile corrected NeoForge capability API references (private 35e4378)
 
 # Build21: correct bundle renderer Layer enum (private 948c68dc)
+
+# Build23: relax Run148 EnergyCableBlock local variable assertion (private 5f14e7b)
