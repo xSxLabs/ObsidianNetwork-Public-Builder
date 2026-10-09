@@ -1290,3 +1290,5 @@ jobs:
 # run145 retry Run144 Java parameter resolution e040d0b7
 
 # Build18: compile corrected NeoForge capability API references (private 35e4378)
+
+# Build21: correct bundle renderer Layer enum (private 948c68dc)
