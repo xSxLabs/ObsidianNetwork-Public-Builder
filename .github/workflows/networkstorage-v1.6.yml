@@ -1,0 +1,35 @@
+name: xSxLabs Network Storage v1.6
+
+# Dedicated public Actions entry; internal mod version remains 1.1.1.
+# Sources stay private. This is an isolated prerequisite check, not a release build.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xsxlabs-network-storage-v1.6
+  cancel-in-progress: false
+
+jobs:
+  v16-baseline:
+    name: v1.6 | Private Freeze 490 prerequisite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout v1.6 development branch
+        uses: actions/checkout@v4
+        with:
+          ref: networkstorage-v1.6
+      - name: Check private source token is configured
+        env:
+          PRIVATE_SOURCE_TOKEN: ${{ secrets.PRIVATE_SOURCE_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$PRIVATE_SOURCE_TOKEN" ]; then
+            echo "::error::PRIVATE_SOURCE_TOKEN is missing. Private sources cannot be accessed."
+            exit 1
+          fi
+          echo "xSxLabs Network Storage v1.6 isolated Actions entry"
+          echo "Internal mod version: 1.1.1"
+          echo "Build not yet enabled: source reconstruction and feature changes must be integrated."
