@@ -1,0 +1,30 @@
+name: NetworkStorage v1.6
+
+# Isolated development workflow. Does not invoke legacy v1.1.1 workflows.
+# Freeze Build 490 remains the required source baseline; no replacement or
+# release is permitted until the original sources have been verified.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline-audit:
+    name: Freeze 490 source prerequisite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out isolated development branch
+        uses: actions/checkout@v4
+        with:
+          ref: networkstorage-v1.6
+      - name: Check for actual Freeze 490 sources
+        shell: bash
+        run: |
+          echo "NetworkStorage v1.6 isolated workflow"
+          echo "Required baseline: verified v1.1.0 Freeze Build 490"
+          if [ ! -d private/v1.1.0 ]; then
+            echo "::error::Original Freeze 490 source directory is missing. Refusing to substitute another source version."
+            exit 1
+          fi
+          echo "Source directory exists. Exact Build 490 provenance and full compile still require verification."
