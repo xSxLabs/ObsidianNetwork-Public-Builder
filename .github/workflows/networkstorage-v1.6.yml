@@ -1295,3 +1295,5 @@ jobs:
 # Build21: correct bundle renderer Layer enum (private 948c68dc)
 
 # Build23: relax Run148 EnergyCableBlock local variable assertion (private 5f14e7b)
+
+# Build24: compile Run148 BlockState scope fix private 260e80b
