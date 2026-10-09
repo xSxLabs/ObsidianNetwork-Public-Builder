@@ -600,7 +600,7 @@ jobs:
                   isolated[1]=dst.energy().getAmountAsLong();
                   // Leave the endpoints loaded and verify isolation over another relay window.
                   }).thenExecuteAfter(20,()->{
-                    int fluidAfter=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
+                    int fluidAfter=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dst.fluids()).drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
                     long energyAfter=dst.energy().getAmountAsLong();
                     if(fluidAfter!=isolated[0]||energyAfter!=isolated[1])throw new IllegalStateException("Crossdim channel isolation failed: fluid "+isolated[0]+"->"+fluidAfter+" energy "+isolated[1]+"->"+energyAfter);
                     overworld.removeBlock(a,false);nether.removeBlock(b,false);
