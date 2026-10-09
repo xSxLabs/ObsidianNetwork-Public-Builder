@@ -114,6 +114,13 @@ Die folgende Liste dokumentiert **Anforderungen**, nicht bereits erfolgreich bes
 - **Technische Prüfung:** Einzelkabel↔MultiCable-Netzwerkzuordnung, Anschluss-/Nachbarerkennung, gerichtete INPUT/OUTPUT-Pfade, Handler/Capabilities und Cache-Invalidierung; Fehlerursache noch nicht bestätigt. Bei NeoForge die zur tatsächlich verwendeten Minecraft-/NeoForge-Version passende Capability-API prüfen (offizielle Referenz: https://docs.neoforged.net/docs/1.21.1/inventories/capabilities/ ; Versionsunterschiede beachten).
 - **Status:** Ingame gemeldeter Transportfehler; Fix und Nachtest offen. Kein neuer Build ohne ausdrückliches `build`.
 
+
+### 2026-10-09 — Fix-Arbeit begonnen (noch kein neuer Build)
+
+- Isolierter privater Arbeitsbranch `networkstorage-v1.6-ingame-fixes` aus `v1.1.1-io-facades-teleporter` erstellt; Freeze und bestehende Branches bleiben unverändert.
+- **Code-Änderung:** In `v1.1.1/apply-multicable.py` behandelt `CableBlockItem.useOn` das Anklicken eines Kabels desselben Typs nicht mehr mit `InteractionResult.FAIL`, sondern über die normale `BlockItem`-Platzierung (`super.useOn(ctx)`). Commit `9c7d9f5d9ba7a6ab6b71afebc2314b352e41e9f0`.
+- **Status:** Nur dieser Teilfix ist bisher im privaten Patch umgesetzt. Noch nicht kompiliert oder ingame verifiziert. Weitere sechs Fehler offen. Keine neue Test-JAR und kein Build ausgelöst.
+
 ## Ingame-Testprotokoll (noch auszufüllen)
 
 | Datum / JAR / Run | Bereich | Reproduktion / Beobachtung | Erwartet | Fix-Commit | Nachtest |
