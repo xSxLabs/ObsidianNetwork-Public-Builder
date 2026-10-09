@@ -1323,3 +1323,5 @@ jobs:
 # Build 35: smaller sleeves and Polymorph selector; validate patch and compile
 
 # Build 36: NETWORK cable strict type isolation
+
+# Build 39: mixed conduit component endpoint scan once per network
