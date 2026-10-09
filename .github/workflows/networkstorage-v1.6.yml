@@ -1,5 +1,6 @@
-name: NetworkStorage v1.6
+name: xSxLabs Network Storage v1.6
 
+# Internal mod version: 1.1.1. Workflow version: 1.6.
 # Isolated development workflow. Does not invoke legacy v1.1.1 workflows.
 # Freeze Build 490 remains the required source baseline; no replacement or
 # release is permitted until the original sources have been verified.
@@ -21,7 +22,7 @@ jobs:
       - name: Check for actual Freeze 490 sources
         shell: bash
         run: |
-          echo "NetworkStorage v1.6 isolated workflow"
+          echo "xSxLabs Network Storage v1.6 isolated workflow (mod version 1.1.1)"
           echo "Required baseline: verified v1.1.0 Freeze Build 490"
           if [ ! -d private/v1.1.0 ]; then
             echo "::error::Original Freeze 490 source directory is missing. Refusing to substitute another source version."
