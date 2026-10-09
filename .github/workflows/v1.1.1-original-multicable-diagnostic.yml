@@ -939,3 +939,31 @@ jobs:
           echo 'ORIGINAL MULTICABLE NEOFORGE GAMETEST PASS'
           rm -rf work/src/main/java/dev/obsidiannetwork/legacytest
           rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
+      - name: Verify installable test JAR and publish CI artifact
+        if: success()
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile
+          jars=[p for p in Path('work/build/libs').glob('*.jar') if not any(x in p.name for x in ('-sources','-javadoc','-plain'))]
+          assert len(jars)==1, f'Expected exactly one test mod JAR, found: {jars}'
+          jar=jars[0]
+          with zipfile.ZipFile(jar) as z:
+              bad=z.testzip()
+              assert bad is None, f'Corrupt JAR entry: {bad}'
+              names=set(z.namelist())
+              assert 'META-INF/neoforge.mods.toml' in names, 'Missing NeoForge mod descriptor'
+              assert any(n.endswith('TesseractBlockEntity.class') for n in names), 'Missing Tesseract implementation'
+              assert any(n.endswith('MultiCableBlockEntity.class') for n in names), 'Missing MultiCable implementation'
+          print('VERIFIED TEST JAR:',jar,'bytes=',jar.stat().st_size)
+          PY
+      - name: Upload v1.1.1 TEST JAR (not a release)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ObsidianNetwork-v1.1.1-INGAME-TEST
+          path: work/build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 7
+
