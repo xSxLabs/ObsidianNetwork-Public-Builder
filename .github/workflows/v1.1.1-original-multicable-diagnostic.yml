@@ -722,9 +722,11 @@ jobs:
                     throw new IllegalStateException("Crossdim ITEM endpoint ticket lost in first 5 ticks: sourceRemoved="+src.isRemoved()+", targetRemoved="+dst.isRemoved()+", targetChunkLoaded="+nether.hasChunkAt(b)+", sourceBlock="+overworld.getBlockState(a)+", targetBlock="+nether.getBlockState(b)+", netherTick="+nether.getGameTime());
                   if(!("ci_item_endpoint_"+fixture).equals(src.channel(0))||!("ci_item_endpoint_"+fixture).equals(dst.channel(0))||src.receiveMode()||!dst.receiveMode())
                     throw new IllegalStateException("Crossdim ITEM endpoint configuration changed");
-                }).thenExecuteAfter(35,()->{
+                }).thenExecuteAfter(195,()->{
+                  // Extended remote-chunk retention: no explicit getChunkAt/forceChunk
+                  // between placement and this assertion.
                   if(src.isRemoved()||dst.isRemoved()||!nether.hasChunkAt(b))
-                    throw new IllegalStateException("Crossdim ITEM endpoint unloaded before 40 ticks: sourceRemoved="+src.isRemoved()+", targetRemoved="+dst.isRemoved()+", targetChunkLoaded="+nether.hasChunkAt(b)+", netherTick="+nether.getGameTime());
+                    throw new IllegalStateException("Crossdim ITEM endpoint unloaded before 200 ticks: sourceRemoved="+src.isRemoved()+", targetRemoved="+dst.isRemoved()+", targetChunkLoaded="+nether.hasChunkAt(b)+", netherTick="+nether.getGameTime());
                   dst.setChannel(0,"ci_item_isolated_"+fixture);
                   if(!("ci_item_endpoint_"+fixture).equals(src.channel(0))||!("ci_item_isolated_"+fixture).equals(dst.channel(0)))
                     throw new IllegalStateException("Crossdim ITEM channel isolation broken");
