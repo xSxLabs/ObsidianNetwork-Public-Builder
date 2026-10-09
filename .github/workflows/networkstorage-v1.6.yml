@@ -842,6 +842,7 @@ jobs:
                 h.startSequence().thenExecuteAfter(40,()->{
                   var to=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(target);
                   if(to.getItem(0).getCount()<=0)throw new IllegalStateException("BUILD151: standalone-bundle-standalone ITEM transfer failed");
+                  if(from.getItem(0).getCount()+to.getItem(0).getCount()!=8)throw new IllegalStateException("BUILD151: ITEM transfer lost or duplicated diamonds");
                   h.succeed();
                 });
               }
@@ -872,6 +873,7 @@ jobs:
                 h.startSequence().thenExecuteAfter(40,()->{
                   if(to.getFluidInTank(0).getAmount()<=0)throw new IllegalStateException("BUILD152: standalone-bundle-standalone FLUID transfer failed");
                   if(from.getFluidInTank(0).getAmount()>=4000)throw new IllegalStateException("BUILD152: source did not drain");
+                  if(from.getFluidInTank(0).getAmount()+to.getFluidInTank(0).getAmount()!=4000)throw new IllegalStateException("BUILD152: FLUID transfer lost or duplicated water");
                   h.succeed();
                 });
               }
