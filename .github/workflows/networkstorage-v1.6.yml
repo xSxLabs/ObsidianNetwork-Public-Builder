@@ -1307,3 +1307,5 @@ jobs:
 # Build 28: reject foreign cable capability endpoints at bundle faces
 
 # Build 29: repaired Python syntax for bundle endpoint isolation
+
+# Build 30: bundle renderer must not connect to foreign cable capability fallback
