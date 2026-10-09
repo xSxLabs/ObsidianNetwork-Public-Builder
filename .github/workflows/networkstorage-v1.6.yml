@@ -745,6 +745,8 @@ jobs:
                   new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "mixed_item_bridge_topology"),
                   new MixedCableTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_bundle_standalone_fluid"),
+                  new MixedStandaloneBundleFluidTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_bundle_standalone_item"),
                   new MixedStandaloneBundleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_item_and_fluid_transfer"),
@@ -840,6 +842,36 @@ jobs:
                 h.startSequence().thenExecuteAfter(40,()->{
                   var to=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(target);
                   if(to.getItem(0).getCount()<=0)throw new IllegalStateException("BUILD151: standalone-bundle-standalone ITEM transfer failed");
+                  h.succeed();
+                });
+              }
+            }
+
+            private static final class MixedStandaloneBundleFluidTest extends GameTestInstance {
+              MixedStandaloneBundleFluidTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data){super(data);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Standalone-bundle-standalone FLUID transfer");}
+              @Override public void run(GameTestHelper h){
+                BlockPos source=h.absolutePos(new BlockPos(0,1,1)),input=h.absolutePos(new BlockPos(1,1,1)),middle=h.absolutePos(new BlockPos(2,1,1)),output=h.absolutePos(new BlockPos(3,1,1)),target=h.absolutePos(new BlockPos(4,1,1));
+                h.getLevel().setBlock(source,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                h.getLevel().setBlock(input,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(middle,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(output,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(target,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                var bundle=(ConduitBundleBlockEntity)h.getLevel().getBlockEntity(middle);
+                if(!bundle.has(ConduitBundleBlockEntity.Layer.FLUID)&&!bundle.add(ConduitBundleBlockEntity.Layer.FLUID))throw new IllegalStateException("BUILD152: bundle FLUID layer missing");
+                var in=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(input);
+                var out=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(output);
+                in.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                out.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT);
+                var sourceTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(source);
+                var targetTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(target);
+                var from=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(sourceTank.tank());
+                var to=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(targetTank.tank());
+                if(from.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)!=4000)throw new IllegalStateException("BUILD152: source fill failed");
+                h.startSequence().thenExecuteAfter(40,()->{
+                  if(to.getFluidInTank(0).getAmount()<=0)throw new IllegalStateException("BUILD152: standalone-bundle-standalone FLUID transfer failed");
+                  if(from.getFluidInTank(0).getAmount()>=4000)throw new IllegalStateException("BUILD152: source did not drain");
                   h.succeed();
                 });
               }
@@ -1162,7 +1194,7 @@ jobs:
           set -e
           cat /tmp/build103-gametest.log
           if [ "$GT_RC" -ne 0 ]; then echo "Build103 GameTest server failed rc=$GT_RC"; exit "$GT_RC"; fi
-          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(4 tests\)" /tmp/build103-gametest.log
+          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(5 tests\)" /tmp/build103-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
           if grep -Eqi '[0-9]+ required tests failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
           echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST PASS ====='
