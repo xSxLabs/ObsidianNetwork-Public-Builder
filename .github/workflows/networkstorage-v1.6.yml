@@ -1299,3 +1299,5 @@ jobs:
 # Build24: compile Run148 BlockState scope fix private 260e80b
 
 # Build 25: verify standalone-to-bundle connection fix and slimmer input sleeves
+
+# Build 26: exclude foreign cables from mixed ITEM/FLUID endpoint scanning
