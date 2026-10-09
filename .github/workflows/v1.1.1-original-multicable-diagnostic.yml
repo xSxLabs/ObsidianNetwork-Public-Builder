@@ -685,9 +685,25 @@ jobs:
                 if(nether==null)throw new IllegalStateException("Nether unavailable for ITEM endpoint test");
                 var block=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("obsidiannetwork","network_tesseract"));
                 BlockPos a=helper.absolutePos(new BlockPos(5,1,5));
+                // Keep a deterministic per-fixture remote coordinate, but do not assume
+                // that a persisted GameTest world's Nether is pristine between CI runs.
+                // Only stale CI-owned Tesseracts may be cleaned up; all other blocks
+                // remain a hard fixture failure.
                 BlockPos b=new BlockPos(96+fixture*32,82,0);
                 nether.getChunkAt(b);
-                if(!nether.getBlockState(b).isAir())throw new IllegalStateException("ITEM endpoint fixture occupied");
+                var oldFixture=nether.getBlockState(b);
+                if(oldFixture.is(block)) {
+                  var oldEntity=nether.getBlockEntity(b);
+                  if(!(oldEntity instanceof dev.obsidiannetwork.blockentity.TesseractBlockEntity previous)
+                      || !("ci_item_endpoint_"+fixture).equals(previous.channel(0))
+                         && !("ci_item_isolated_"+fixture).equals(previous.channel(0)))
+                    throw new IllegalStateException("ITEM endpoint fixture occupied by unexpected Tesseract");
+                  nether.removeBlock(b,false);
+                  if(!nether.getBlockState(b).isAir())
+                    throw new IllegalStateException("Stale ITEM endpoint fixture cleanup failed");
+                } else if(!oldFixture.isAir()) {
+                  throw new IllegalStateException("ITEM endpoint fixture occupied by "+oldFixture);
+                }
                 overworld.setBlock(a,block.defaultBlockState(),3);
                 nether.setBlock(b,block.defaultBlockState(),3);
                 var src=(dev.obsidiannetwork.blockentity.TesseractBlockEntity)overworld.getBlockEntity(a);
