@@ -404,7 +404,7 @@ jobs:
           ts=tp.read_text()
           assert 'ObsidianNetwork.TESSERACT_CHUNKS.forceChunk' in ts
           assert 'LIVE.get(level.getServer())' in ts
-          assert 'true,false' in ts and 'false,false' in ts
+          assert 'true,true' in ts and 'false,true' in ts, 'Tesseract ticking ticket acquire/release contract missing'
           # Regression gates for the user-reported Tesseract and cable collar issues.
           assert 'WeakHashMap<MinecraftServer,Set<TesseractBlockEntity>> LIVE' in ts
           assert 'LIVE.get(level.getServer())' in ts, 'Tesseract partners must be server-global across dimensions'
