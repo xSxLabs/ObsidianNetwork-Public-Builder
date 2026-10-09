@@ -89,6 +89,15 @@ Die folgende Liste dokumentiert **Anforderungen**, nicht bereits erfolgreich bes
 - **Soll:** ITEM-Importer und -Exporter sollen dieselbe Darstellung der Operationsseite erhalten; andere Texturen beibehalten.
 - **Status:** Gemeldeter Ingame-Fehler, Ursache und Code-Fix noch offen.
 
+
+### 2026-10-09 — Ingame-Befund: INPUT-Kabelverdickung aus Freeze fehlt
+
+- **Referenz:** Im ursprünglichen v1.1.0 Freeze Build 490 war die INPUT-Seite eines Kabels sichtbar verdickt (Anschlusskragen, Pipez-ähnlich).
+- **Ist in v1.6:** Die INPUT-Seite zeigt diese Verdickung nicht mehr.
+- **Soll:** Ursprüngliche INPUT-Anschlussgeometrie aus dem Freeze-Stand wiederherstellen; OUTPUT nicht fälschlich verdicken und bestehende Kabeltexturen erhalten.
+- **Vorgehen:** Originale Modell-/Blockstate-/Rendering-Implementierung mit v1.6 vergleichen, Regression gezielt beheben.
+- **Status:** Ingame gemeldet; Ursache und Code-Fix offen. Kein neuer Build ohne ausdrückliches `build`.
+
 ## Ingame-Testprotokoll (noch auszufüllen)
 
 | Datum / JAR / Run | Bereich | Reproduktion / Beobachtung | Erwartet | Fix-Commit | Nachtest |
