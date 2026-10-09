@@ -620,6 +620,9 @@ jobs:
                 src.setChannel(1,"ci_crossdim_fluid");dst.setChannel(1,"ci_crossdim_fluid");
                 src.setChannel(2,"ci_crossdim_energy");dst.setChannel(2,"ci_crossdim_energy");
                 src.setReceiveMode(false);dst.setReceiveMode(true);
+                // Diagnose ticket ownership before the server can unload the remote fixture.
+                // A missing ticket is a real failure; never mask it with a test-owned forceChunk.
+                if(dst.isRemoved())throw new IllegalStateException("Crossdim target removed immediately after placement");
                 nether.getChunkAt(b); // Ensure target receives its first scheduled tick before waiting
                 var sf=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(src.fluids());
                 int filled=sf.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
@@ -629,7 +632,10 @@ jobs:
                   tx.commit();
                 }
                 final long[] isolated = new long[2];
-                helper.startSequence().thenExecuteAfter(40,()->{
+                helper.startSequence().thenExecuteAfter(5,()->{
+                  if(!nether.hasChunkAt(b)||dst.isRemoved())
+                    throw new IllegalStateException("Crossdim ticket lost during first 5 ticks: loaded="+nether.hasChunkAt(b)+" removed="+dst.isRemoved()+" netherTick="+nether.getGameTime());
+                }).thenExecuteAfter(35,()->{
                   var df=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dst.fluids());
                   int left=sf.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
                   int right=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
