@@ -1319,3 +1319,5 @@ jobs:
 # Build 34: ensure shared ITEM/FLUID conduit networks transfer only once per tick
 
 # Build 35: smaller sleeves and Polymorph selector; validate patch and compile
+
+# Build 36: NETWORK cable strict type isolation
