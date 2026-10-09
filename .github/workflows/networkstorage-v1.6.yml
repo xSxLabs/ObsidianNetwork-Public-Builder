@@ -1301,3 +1301,5 @@ jobs:
 # Build 25: verify standalone-to-bundle connection fix and slimmer input sleeves
 
 # Build 26: exclude foreign cables from mixed ITEM/FLUID endpoint scanning
+
+# Build 27: conduit-to-conduit continuity must not depend on machine IO face flags
