@@ -569,6 +569,10 @@ jobs:
                 new TesseractTwoLevelsTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_fluid_energy"),
                 new TesseractCrossdimTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,120,0,true,Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_fluid_energy_repeat_1"),
+                new TesseractCrossdimTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,120,0,true,Rotation.NONE),1));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","tesseract_crossdim_fluid_energy_repeat_2"),
+                new TesseractCrossdimTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,120,0,true,Rotation.NONE),2));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_item_transport"),
                 new StandaloneItemTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(env,STRUCTURE,100,0,true,Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork","standalone_fluid_transport"),
@@ -600,7 +604,9 @@ jobs:
               }
             }
             static final class TesseractCrossdimTransportTest extends GameTestInstance {
-              TesseractCrossdimTransportTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){super(d);}
+              final int fixture;
+              TesseractCrossdimTransportTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d){this(d,0);}
+              TesseractCrossdimTransportTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> d,int fixture){super(d);this.fixture=fixture;}
               @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only registered test");}
               @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Crossdim Tesseract fluid and FE conservation");}
               @Override public void run(GameTestHelper helper){
@@ -609,7 +615,7 @@ jobs:
                 if(nether==null||nether==overworld)throw new IllegalStateException("Nether dimension unavailable");
                 var block=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("obsidiannetwork","network_tesseract"));
                 BlockPos a=helper.absolutePos(new BlockPos(4,1,4));
-                BlockPos b=new BlockPos(0,82,0);
+                BlockPos b=new BlockPos(fixture*32,82,0);
                 nether.getChunkAt(b);
                 if(!nether.getBlockState(b).isAir())throw new IllegalStateException("Nether transfer fixture occupied");
                 overworld.setBlock(a,block.defaultBlockState(),3);
@@ -617,8 +623,8 @@ jobs:
                 var src=(dev.obsidiannetwork.blockentity.TesseractBlockEntity)overworld.getBlockEntity(a);
                 var dst=(dev.obsidiannetwork.blockentity.TesseractBlockEntity)nether.getBlockEntity(b);
                 if(src==null||dst==null)throw new IllegalStateException("Crossdim endpoints missing");
-                src.setChannel(1,"ci_crossdim_fluid");dst.setChannel(1,"ci_crossdim_fluid");
-                src.setChannel(2,"ci_crossdim_energy");dst.setChannel(2,"ci_crossdim_energy");
+                src.setChannel(1,"ci_crossdim_fluid_"+fixture);dst.setChannel(1,"ci_crossdim_fluid_"+fixture);
+                src.setChannel(2,"ci_crossdim_energy_"+fixture);dst.setChannel(2,"ci_crossdim_energy_"+fixture);
                 src.setReceiveMode(false);dst.setReceiveMode(true);
                 // Diagnose ticket ownership before the server can unload the remote fixture.
                 // A missing ticket is a real failure; never mask it with a test-owned forceChunk.
@@ -644,7 +650,7 @@ jobs:
                   if(left+right!=4000||ea+eb!=8000)throw new IllegalStateException("Crossdim conservation failed: "+left+"+"+right+" mB; "+ea+"+"+eb+" FE");
                   if(!nether.hasChunkAt(b)||dst.isRemoved())throw new IllegalStateException("Crossdim receiver unloaded despite forced test fixture");
                   // Batch negative cases: a wrong channel must never move fluid or energy.
-                  dst.setChannel(1,"ci_wrong_fluid");dst.setChannel(2,"ci_wrong_energy");
+                  dst.setChannel(1,"ci_wrong_fluid_"+fixture);dst.setChannel(2,"ci_wrong_energy_"+fixture);
                   isolated[0]=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
                   isolated[1]=dst.energy().getAmountAsLong();
                   // Leave the endpoints loaded and verify isolation over another relay window.
