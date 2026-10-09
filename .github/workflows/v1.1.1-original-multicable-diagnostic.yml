@@ -467,6 +467,36 @@ jobs:
           assert 'return return' not in block_src, 'Tesseract generated Java must not contain duplicate return'
           print('ORIGINAL FOUR-LAYER RUNTIME + CROSSDIM TESSERACT STATIC GATES PASS')
           PY
+          echo '===== BATCHED SURVIVAL RECIPE + LOOT + CABLE HARDNESS AUDIT ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          R=Path('work/src/main/resources/data/obsidiannetwork')
+          J=Path('work/src/main/java/dev/obsidiannetwork')
+          main=(J/'ObsidianNetwork.java').read_text()
+          blocks=('network_cable','item_cable','fluid_cable','energy_cable','multi_cable','network_tesseract')
+          for name in blocks:
+              assert '"'+name+'"' in main, 'Missing block registration '+name
+              loot=R/'loot_table/blocks'/f'{name}.json'
+              assert loot.is_file(), f'Missing survival self-drop loot: {name}'
+              data=json.loads(loot.read_text())
+              entries=[e for pool in data.get('pools',[]) for e in pool.get('entries',[])]
+              assert any(e.get('type')=='minecraft:item' and e.get('name')=='obsidiannetwork:'+name for e in entries), f'No self-drop for {name}'
+              if name!='multi_cable':
+                  recipe=R/'recipe'/f'{name}.json'
+                  assert recipe.is_file(), f'Missing crafting recipe: {name}'
+                  result=json.loads(recipe.read_text()).get('result',{})
+                  assert result.get('id')=='obsidiannetwork:'+name, f'Wrong crafting output: {name}'
+          for name in blocks[:5]:
+              at=main.index('"'+name+'"')
+              nearby=main[max(0,at-500):at+1500]
+              assert '.strength(0.05F)' in nearby, f'Expected fast empty-hand cable hardness: {name}'
+          t=(J/'blockentity/TesseractBlockEntity.java').read_text()
+          b=(J/'block/TesseractBlock.java').read_text()
+          assert 'TESSERACT_CHUNKS.forceChunk' in t and 'true,true' in t
+          assert 'TESSERACT_CHUNKS.forceChunk' in b and 'false,true' in b
+          print('BATCH SURVIVAL STATIC AUDIT PASS: recipes, self-drops, cable hardness, Tesseract tickets')
+          PY
           echo '===== ORIGINAL MULTICABLE FULL BUILD (NO RELEASE UPLOAD) ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           echo 'ORIGINAL MULTICABLE FULL BUILD PASS'
