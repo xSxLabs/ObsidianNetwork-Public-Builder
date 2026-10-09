@@ -1,3 +1,4 @@
+# User-authorized build including latest same-bundle transfer fix 94a7df6
 # Retry after fixing conduit ownership gate in private f4f3e03
 # User-authorized compile of additional mixed ITEM/FLUID fixes (e71b24e)
 # v1.6 compile retry: correct facade interaction variable names (private 70d7c46)
@@ -24,6 +25,9 @@ name: xSxLabs Network Storage v1.6
 # Re-enable only after the user explicitly requests "build".
 'on':
   workflow_dispatch:
+  push:
+    branches: [networkstorage-v1.6]
+    paths: ['.github/workflows/networkstorage-v1.6.yml']
 
 
 
@@ -37,7 +41,6 @@ permissions: {contents: read}
 # Build 236 inspect real Energy Cell API for capability-backed transfer GameTest
 jobs:
   inspect:
-    if: ${{ false }} # BUILD LOCK restored after run #8 dispatch.
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
