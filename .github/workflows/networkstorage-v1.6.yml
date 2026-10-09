@@ -1317,3 +1317,5 @@ jobs:
 # Build 33: fix renderer early neighbor state compile error
 
 # Build 34: ensure shared ITEM/FLUID conduit networks transfer only once per tick
+
+# Build 35: smaller sleeves and Polymorph selector; validate patch and compile
