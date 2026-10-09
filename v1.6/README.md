@@ -102,9 +102,9 @@ Die folgende Liste dokumentiert **Anforderungen**, nicht bereits erfolgreich bes
 ### 2026-10-09 — Ingame-Befund: MultiCable-Kollision und Facades
 
 - **Fehler A (Kollision):** MultiCable ist ohne Facade nicht durchlaufbar. **Soll:** MultiCable ohne Facade hat keine spielerblockierende Kollision; erst eine montierte Facade erzeugt eine feste Kollision. Die Leitungstransportfunktion bleibt erhalten.
-- **Korrektur durch Ingame-Test:** Facades **lassen sich bereits montieren**, allerdings mit gedrückter Shift-/Schleichen-Taste. Dieses Verhalten ist ausdrücklich akzeptiert und **kein Fehler**. Nicht auf Montage ohne Shift umstellen. Facade-Entfernung und Kollisionsänderung bei montierter Facade bleiben gesondert zu prüfen.
+- **Fehler B (Interaktion):** Facades lassen sich aktuell nur mit Shift/Schleichen anbringen. **Soll:** Mit einer Facade in der Hand genügt normaler Rechtsklick auf das MultiCable, um sie anzubringen (kein Shift nötig). Mit leerer Hand soll normaler Rechtsklick stattdessen die MultiCable-GUI öffnen. Die Interaktion muss nach gehaltenem Gegenstand unterscheiden. Facade-Entfernung und Kollisionsänderung bleiben gesondert zu prüfen.
 - **Technische Prüfung:** Interaktions-/Platzierungslogik, Facade-Speicherzustand, Block-/CollisionShape, Renderzustand und Synchronisation untersuchen; keine vorschnelle Annahme zur Ursache.
-- **Status:** MultiCable-Kollision ohne Facade als Fehler gemeldet; Facade-Montage mit Shift funktioniert und ist akzeptiert. Kollisionsänderung mit Facade und Entfernen noch zu prüfen. Kein neuer Build ohne ausdrückliches `build`.
+- **Status:** Zwei Fehler offen: falsche MultiCable-Kollision ohne Facade und falsche Rechtsklick-/Shift-Interaktion bei Facade-Montage. Kollisionsänderung mit Facade und Entfernen noch zu prüfen. Kein neuer Build ohne ausdrückliches `build`.
 
 ## Ingame-Testprotokoll (noch auszufüllen)
 
