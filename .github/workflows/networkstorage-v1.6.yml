@@ -395,6 +395,7 @@ jobs:
           python3 private/v1.1.1/apply-run144-standalone-connection-types.py
           python3 private/v1.1.1/apply-run146-bundle-visual-endpoints.py
           python3 private/v1.1.1/apply-run147-standalone-input-sleeves.py
+          python3 private/v1.1.1/apply-run148-energy-cable-types.py
           python3 - <<'PY'
           from pathlib import Path
           import re
