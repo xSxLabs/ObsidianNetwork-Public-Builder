@@ -593,7 +593,18 @@ jobs:
                   if(right<=0||eb<=0)throw new IllegalStateException("Crossdim Tesseract moved no water or FE: "+right+" mB, "+eb+" FE; source="+left+" mB/"+ea+" FE; sourceRemoved="+src.isRemoved()+" targetRemoved="+dst.isRemoved()+"; sourceLevel="+src.getLevel().dimension().identifier()+" targetLevel="+dst.getLevel().dimension().identifier()+"; overworldTick="+overworld.getGameTime()+" netherTick="+nether.getGameTime()+"; targetChunkLoaded="+nether.hasChunkAt(b)+"; receive="+dst.receiveMode()+"; fluidChannel="+dst.channel(1)+"; energyChannel="+dst.channel(2));
                   if(left+right!=4000||ea+eb!=8000)throw new IllegalStateException("Crossdim conservation failed: "+left+"+"+right+" mB; "+ea+"+"+eb+" FE");
                   if(!nether.hasChunkAt(b)||dst.isRemoved())throw new IllegalStateException("Crossdim receiver unloaded despite forced test fixture");
-                  overworld.removeBlock(a,false);nether.removeBlock(b,false);
+                  // Batch negative cases: a wrong channel must never move fluid or energy.
+                  dst.setChannel(1,"ci_wrong_fluid");dst.setChannel(2,"ci_wrong_energy");
+                  int fluidBefore=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
+                  long energyBefore=dst.energy().getAmountAsLong();
+                  // Leave the endpoints loaded and verify isolation over another relay window.
+                  helper.startSequence().thenExecuteAfter(20,()->{
+                    int fluidAfter=df.drain(64000,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount();
+                    long energyAfter=dst.energy().getAmountAsLong();
+                    if(fluidAfter!=fluidBefore||energyAfter!=energyBefore)throw new IllegalStateException("Crossdim channel isolation failed: fluid "+fluidBefore+"->"+fluidAfter+" energy "+energyBefore+"->"+energyAfter);
+                    overworld.removeBlock(a,false);nether.removeBlock(b,false);
+                  }).thenSucceed();
+
                 }).thenSucceed();
               }
             }
