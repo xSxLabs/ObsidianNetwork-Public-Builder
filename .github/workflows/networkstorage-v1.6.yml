@@ -1313,3 +1313,5 @@ jobs:
 # Build 31: enforce mixed conduit endpoint and self-feed regression assertions
 
 # Build 32: renderer early guard matches conduit layer before capability shortcuts
+
+# Build 33: fix renderer early neighbor state compile error
