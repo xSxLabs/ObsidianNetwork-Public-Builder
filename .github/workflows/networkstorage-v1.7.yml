@@ -587,6 +587,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-prebreak-world-read-rollback.py
           python3 private/v1.7/apply-v17-quarry-air-state-inspection-isolation.py
           python3 private/v1.7/apply-v17-quarry-integration-lifecycle-reset.py
+          python3 private/v1.7/apply-v17-quarry-server-stop-lifecycle.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
