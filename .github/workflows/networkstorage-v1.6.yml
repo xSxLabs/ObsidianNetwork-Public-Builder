@@ -400,6 +400,8 @@ jobs:
           python3 private/v1.1.1/apply-run149-polymorph-size.py
           python3 private/v1.1.1/apply-run150-mixed-endpoint-gate.py
           python3 private/v1.1.1/apply-run151-visual-cable-gate.py
+          python3 private/v1.1.1/apply-run152-mixed-standalone-import.py
+          python3 private/v1.1.1/apply-run153-final-standalone-collars.py
           python3 - <<'PY'
           from pathlib import Path
           import re
