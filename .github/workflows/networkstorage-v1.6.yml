@@ -1441,3 +1441,5 @@ jobs:
 # Complete v1.6 in-game fix batch; run155-run160 integrated before single validation build.
 
 # final combined codefix validation after private 862ae478
+
+# retry full validation after fluid blockstate gate fix 9e830221
