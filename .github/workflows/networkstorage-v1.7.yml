@@ -452,6 +452,8 @@ jobs:
           python3 private/v1.7/apply-v17-powered-crafter-recipe-safety.py
           python3 private/v1.7/apply-v17-battery-player-inventory.py
           python3 private/v1.7/apply-v17-battery-live-player-tick.py
+          python3 private/v1.7/apply-v17-battery-offhand-target.py
+          python3 private/v1.7/apply-v17-battery-curios-live.py
           python3 private/v1.7/apply-v17-machine-break-drops.py
           python3 private/v1.7/apply-v17-quarry-output-transfer.py
           python3 private/v1.7/apply-v17-quarry-network-tick.py
