@@ -476,6 +476,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-chest-round-robin.py
           python3 private/v1.7/apply-v17-quarry-adjacent-fairness.py
           python3 private/v1.7/apply-v17-quarry-adjacent-face-fairness.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-work-budget.py
           python3 private/v1.7/apply-v17-quarry-inventory-menu.py
           python3 private/v1.7/apply-v17-quarry-control-interaction.py
           python3 private/v1.7/apply-v17-quarry-upgrade-interaction.py
