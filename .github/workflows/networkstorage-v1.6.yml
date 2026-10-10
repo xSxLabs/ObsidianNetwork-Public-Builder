@@ -1447,3 +1447,5 @@ jobs:
 # validate CONNECTED standalone output fix ec08bbd6
 
 # User-authorized build: fluid importer/exporter missing texture fix (private 0a69f616).
+
+# User-authorized fluid blockstate network_facing repair (private 9715fdfe).
