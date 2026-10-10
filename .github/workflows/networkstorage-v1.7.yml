@@ -586,6 +586,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-unsafe-block-inspection-isolation.py
           python3 private/v1.7/apply-v17-quarry-prebreak-world-read-rollback.py
           python3 private/v1.7/apply-v17-quarry-prebreak-state-compare-rollback.py
+          python3 private/v1.7/apply-v17-quarry-scheduler-loaded-exception-isolation.py
           python3 private/v1.7/apply-v17-quarry-air-state-inspection-isolation.py
           python3 private/v1.7/apply-v17-quarry-integration-lifecycle-reset.py
           python3 private/v1.7/apply-v17-quarry-server-stop-lifecycle.py
