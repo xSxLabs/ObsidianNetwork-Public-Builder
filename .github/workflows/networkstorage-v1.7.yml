@@ -470,7 +470,6 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-export-fairness.py
           python3 private/v1.7/apply-v17-quarry-export-transaction-guards.py
           python3 private/v1.7/apply-v17-quarry-network-export-guard.py
-          python3 private/v1.7/apply-v17-quarry-export-reentrancy-lock.py
           python3 private/v1.7/apply-v17-builder-wand-undo.py
           python3 private/v1.7/apply-v17-builder-wand-shapes.py
           python3 private/v1.7/apply-v17-builder-wand-inventory-materials.py
@@ -512,6 +511,7 @@ jobs:
           python3 private/v1.7/apply-v17-powered-crafter-vanilla-recipes.py
           python3 private/v1.7/apply-v17-powered-crafter-ghost-controls.py
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
+          python3 private/v1.7/apply-v17-quarry-export-reentrancy-lock.py
           python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
           python3 private/v1.7/apply-v17-quarry-fortune-silk-loot.py
           python3 private/v1.7/apply-v17-quarry-loot-tool-selection.py
