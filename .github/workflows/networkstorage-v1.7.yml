@@ -579,6 +579,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-chest-idle-cursor.py
           python3 private/v1.7/apply-v17-quarry-chest-full-cycle-fairness.py
           python3 private/v1.7/apply-v17-quarry-network-full-cycle-fairness.py
+          python3 private/v1.7/apply-v17-quarry-world-chunk-check-fail-closed.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
