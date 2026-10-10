@@ -498,6 +498,7 @@ jobs:
           python3 private/v1.7/apply-v17-powered-crafter-item-capability.py
           python3 private/v1.7/apply-v17-powered-crafter-energy-capability.py
           python3 private/v1.7/apply-v17-battery-item-fe-capability.py
+          python3 private/v1.7/apply-v17-battery-settings-interaction.py
           python3 private/v1.7/apply-v17-powered-crafter-inventory-menu.py
           python3 private/v1.7/apply-v17-powered-crafter-vanilla-recipes.py
           python3 private/v1.7/apply-v17-powered-crafter-ghost-controls.py
