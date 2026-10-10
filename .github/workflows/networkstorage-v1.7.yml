@@ -512,6 +512,7 @@ jobs:
           python3 private/v1.7/apply-v17-battery-settings-interaction.py
           python3 private/v1.7/apply-v17-powered-crafter-inventory-menu.py
           python3 private/v1.7/apply-v17-powered-crafter-vanilla-recipes.py
+          python3 private/v1.7/apply-v17-powered-crafter-live-server-resolver.py
           python3 private/v1.7/apply-v17-powered-crafter-ghost-controls.py
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-quarry-export-reentrancy-lock.py
@@ -590,6 +591,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-scheduler-loaded-exception-isolation.py
           python3 private/v1.7/apply-v17-quarry-ticker-cursor-finally.py
           python3 private/v1.7/apply-v17-quarry-be-cursor-dirty-finally.py
+          python3 private/v1.7/apply-v17-quarry-invalid-saved-state-pause.py
           python3 private/v1.7/apply-v17-quarry-air-state-inspection-isolation.py
           python3 private/v1.7/apply-v17-quarry-integration-lifecycle-reset.py
           python3 private/v1.7/apply-v17-quarry-server-stop-lifecycle.py
