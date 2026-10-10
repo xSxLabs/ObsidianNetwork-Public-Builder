@@ -571,6 +571,8 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-network-precommit-source-isolation.py
           python3 private/v1.7/apply-v17-quarry-chest-invalid-simulation-isolation.py
           python3 private/v1.7/apply-v17-quarry-chest-source-precommit-guard.py
+          python3 private/v1.7/apply-v17-quarry-chest-capability-failure-isolation.py
+          python3 private/v1.7/apply-v17-quarry-chest-simulation-exception-isolation.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
