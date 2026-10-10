@@ -430,6 +430,8 @@ jobs:
           python3 private/v1.7/apply-v17-device-placement-runtime.py
           python3 private/v1.7/apply-v17-device-undo-runtime.py
           python3 private/v1.7/apply-v17-battery-transfer-core.py
+          python3 private/v1.7/apply-v17-quarry-upgrades.py
+          python3 private/v1.7/apply-v17-quarry-filter.py
           python3 private/v1.7/apply-v17-quarry-world-runtime.py
           python3 private/v1.7/apply-v17-battery-charge-coordinator.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
