@@ -431,6 +431,7 @@ jobs:
           python3 private/v1.7/apply-v17-device-undo-runtime.py
           python3 private/v1.7/apply-v17-battery-transfer-core.py
           python3 private/v1.7/apply-v17-quarry-world-runtime.py
+          python3 private/v1.7/apply-v17-battery-charge-coordinator.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/validate-v17-baseline.py
           python3 - <<'PY'
