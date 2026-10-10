@@ -458,6 +458,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-item-io.py
           python3 private/v1.7/apply-v17-quarry-chest-round-robin.py
           python3 private/v1.7/apply-v17-quarry-inventory-menu.py
+          python3 private/v1.7/apply-v17-cable-filters.py
           python3 private/v1.7/apply-v17-powered-crafter-sided-io.py
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
