@@ -513,10 +513,12 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-fortune-silk-loot.py
           python3 private/v1.7/apply-v17-quarry-loot-tool-selection.py
           python3 private/v1.7/apply-v17-quarry-mining-safety.py
+          python3 private/v1.7/apply-v17-quarry-drop-output-safety.py
           python3 private/v1.7/apply-v17-quarry-world-transaction-guard.py
           python3 private/v1.7/apply-v17-quarry-activate-tick.py
           python3 private/v1.7/apply-v17-quarry-machine-controls.py
           python3 private/v1.7/apply-v17-quarry-pause-status.py
+          python3 private/v1.7/apply-v17-quarry-energy-dirty-guard.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
