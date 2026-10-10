@@ -514,6 +514,7 @@ jobs:
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
+          python3 private/v1.7/apply-v17-machine-block-loot.py
           python3 private/v1.7/apply-v17-machine-localization.py
           python3 private/v1.7/validate-v17-baseline.py
           python3 - <<'PY'
