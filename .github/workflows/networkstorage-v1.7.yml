@@ -553,6 +553,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-loot-resolution-fail-closed.py
           python3 private/v1.7/apply-v17-quarry-direct-fe-escrow-guard.py
           python3 private/v1.7/apply-v17-quarry-loot-tool-fail-closed.py
+          python3 private/v1.7/apply-v17-quarry-network-provider-failure-isolation.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
