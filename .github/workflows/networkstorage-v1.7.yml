@@ -455,6 +455,7 @@ jobs:
           python3 private/v1.7/apply-v17-battery-offhand-target.py
           python3 private/v1.7/apply-v17-battery-curios-live.py
           python3 private/v1.7/apply-v17-battery-curios-slot-tag.py
+          python3 private/v1.7/apply-v17-battery-active-guard.py
           python3 private/v1.7/apply-v17-machine-break-drops.py
           python3 private/v1.7/apply-v17-quarry-output-transfer.py
           python3 private/v1.7/apply-v17-quarry-network-tick.py
