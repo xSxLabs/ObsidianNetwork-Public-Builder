@@ -422,6 +422,8 @@ jobs:
           python3 private/v1.7/apply-v17-builder-device-core.py
           python3 private/v1.7/apply-v17-quarry-runtime-core.py
           python3 private/v1.7/apply-v17-battery-charge-runtime.py
+          python3 private/v1.7/apply-v17-autocrafter-runtime.py
+          python3 private/v1.7/apply-v17-device-undo-core.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/validate-v17-baseline.py
           python3 - <<'PY'
