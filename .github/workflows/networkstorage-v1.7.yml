@@ -55,6 +55,8 @@ jobs:
           ref: networkstorage-v1.7
           token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
           path: private
+      - name: Preflight v1.7 generator syntax
+        run: python3 -m compileall -q private/v1.7
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
       - name: Reconstruct v1.0.5 baseline and inspect Importer
