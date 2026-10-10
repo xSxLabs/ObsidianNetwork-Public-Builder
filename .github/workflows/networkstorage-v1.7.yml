@@ -427,6 +427,7 @@ jobs:
           python3 private/v1.7/apply-v17-device-template-core.py
           python3 private/v1.7/apply-v17-quarry-frame-core.py
           python3 private/v1.7/apply-v17-device-shape-core.py
+          python3 private/v1.7/apply-v17-device-placement-runtime.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/validate-v17-baseline.py
           python3 - <<'PY'
