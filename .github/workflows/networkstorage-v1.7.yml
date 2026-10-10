@@ -412,6 +412,7 @@ jobs:
           python3 private/v1.1.1/apply-run158-standalone-bundle-transfer.py
           python3 private/v1.1.1/apply-run159-fluid-port-initial-render.py
           python3 private/v1.1.1/apply-run160-all-fix-prebuild-gate.py
+          python3 private/v1.7/apply-v17-topology-tick-cache.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/validate-v17-baseline.py
           python3 - <<'PY'
