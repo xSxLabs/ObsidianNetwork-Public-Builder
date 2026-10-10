@@ -592,6 +592,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-ticker-cursor-finally.py
           python3 private/v1.7/apply-v17-quarry-be-cursor-dirty-finally.py
           python3 private/v1.7/apply-v17-quarry-invalid-saved-state-pause.py
+          python3 private/v1.7/apply-v17-quarry-invalid-upgrade-deny-mining.py
           python3 private/v1.7/apply-v17-quarry-air-state-inspection-isolation.py
           python3 private/v1.7/apply-v17-quarry-integration-lifecycle-reset.py
           python3 private/v1.7/apply-v17-quarry-server-stop-lifecycle.py
