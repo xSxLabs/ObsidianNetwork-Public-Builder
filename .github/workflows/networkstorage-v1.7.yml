@@ -558,6 +558,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-output-simulation-fail-closed.py
           python3 private/v1.7/apply-v17-quarry-network-sink-count-validation.py
           python3 private/v1.7/apply-v17-quarry-network-simulation-exception-isolation.py
+          python3 private/v1.7/apply-v17-quarry-loot-reservation-copy-fail-closed.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
