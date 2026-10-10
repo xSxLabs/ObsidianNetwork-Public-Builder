@@ -464,7 +464,6 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-network-tick.py
           python3 private/v1.7/apply-v17-quarry-adjacent-export.py
           python3 private/v1.7/apply-v17-quarry-adjacent-export-hardening.py
-          python3 private/v1.7/apply-v17-quarry-adjacent-fairness.py
           python3 private/v1.7/apply-v17-quarry-export-fairness.py
           python3 private/v1.7/apply-v17-quarry-export-transaction-guards.py
           python3 private/v1.7/apply-v17-builder-wand-undo.py
@@ -473,6 +472,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-item-io.py
           python3 private/v1.7/apply-v17-quarry-energy-capability.py
           python3 private/v1.7/apply-v17-quarry-chest-round-robin.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-fairness.py
           python3 private/v1.7/apply-v17-quarry-inventory-menu.py
           python3 private/v1.7/apply-v17-quarry-control-interaction.py
           python3 private/v1.7/apply-v17-quarry-upgrade-interaction.py
@@ -498,7 +498,6 @@ jobs:
           python3 private/v1.7/apply-v17-powered-crafter-item-capability.py
           python3 private/v1.7/apply-v17-powered-crafter-energy-capability.py
           python3 private/v1.7/apply-v17-battery-item-fe-capability.py
-          python3 private/v1.7/apply-v17-battery-curios-equipment.py
           python3 private/v1.7/apply-v17-powered-crafter-inventory-menu.py
           python3 private/v1.7/apply-v17-powered-crafter-vanilla-recipes.py
           python3 private/v1.7/apply-v17-powered-crafter-ghost-controls.py
