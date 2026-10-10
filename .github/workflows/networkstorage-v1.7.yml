@@ -521,6 +521,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-drop-output-safety.py
           python3 private/v1.7/apply-v17-quarry-world-transaction-guard.py
           python3 private/v1.7/apply-v17-quarry-prebreak-reservation-recheck.py
+          python3 private/v1.7/apply-v17-quarry-block-removal-exception-guard.py
           python3 private/v1.7/apply-v17-quarry-activate-tick.py
           python3 private/v1.7/apply-v17-quarry-machine-controls.py
           python3 private/v1.7/apply-v17-quarry-pause-status.py
