@@ -451,6 +451,7 @@ jobs:
           python3 private/v1.7/apply-v17-battery-player-inventory.py
           python3 private/v1.7/apply-v17-machine-break-drops.py
           python3 private/v1.7/apply-v17-quarry-output-transfer.py
+          python3 private/v1.7/apply-v17-quarry-network-tick.py
           python3 private/v1.7/apply-v17-powered-crafter-sided-io.py
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
