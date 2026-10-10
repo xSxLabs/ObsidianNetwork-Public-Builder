@@ -494,6 +494,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
           python3 private/v1.7/apply-v17-quarry-fortune-silk-loot.py
+          python3 private/v1.7/apply-v17-quarry-mining-safety.py
           python3 private/v1.7/apply-v17-quarry-activate-tick.py
           python3 private/v1.7/apply-v17-quarry-machine-controls.py
           python3 private/v1.7/apply-v17-quarry-pause-status.py
