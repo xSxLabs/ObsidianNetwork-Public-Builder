@@ -447,6 +447,7 @@ jobs:
           python3 private/v1.7/apply-v17-powered-crafter-inventory.py
           python3 private/v1.7/apply-v17-powered-crafter-atomic-inventory.py
           python3 private/v1.7/apply-v17-powered-crafter-sided-io.py
+          python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/validate-v17-baseline.py
           python3 - <<'PY'
