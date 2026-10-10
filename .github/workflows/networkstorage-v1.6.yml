@@ -412,6 +412,8 @@ jobs:
           python3 private/v1.1.1/apply-run156-solar-arm-state.py
           python3 private/v1.1.1/apply-run157-fluid-port-models.py
           python3 private/v1.1.1/apply-run158-standalone-bundle-transfer.py
+          python3 private/v1.1.1/apply-run159-fluid-port-initial-render.py
+          python3 private/v1.1.1/apply-run160-all-fix-prebuild-gate.py
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1435,3 +1437,5 @@ jobs:
 # Build 42: accept modern standalone CONNECTED/IMPORT/EXPORT enum in regression gate
 
 # Build 47: validate own-type thin network cable visual connectivity guard
+
+# Complete v1.6 in-game fix batch; run155-run160 integrated before single validation build.
