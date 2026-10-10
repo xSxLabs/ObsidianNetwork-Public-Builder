@@ -460,6 +460,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-energy-capability.py
           python3 private/v1.7/apply-v17-quarry-chest-round-robin.py
           python3 private/v1.7/apply-v17-quarry-inventory-menu.py
+          python3 private/v1.7/apply-v17-quarry-control-interaction.py
           python3 private/v1.7/apply-v17-cable-filters.py
           python3 private/v1.7/apply-v17-cable-endpoint-filter.py
           python3 private/v1.7/apply-v17-cable-filter-tickers.py
