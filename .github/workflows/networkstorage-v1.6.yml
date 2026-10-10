@@ -895,7 +895,14 @@ jobs:
                   h.startSequence().thenExecuteAfter(40,()->{
                     if(to.getFluidInTank(0).getAmount()!=delivered)throw new IllegalStateException("BUILD154: disconnected mixed FLUID bridge still transferred");
                     if(from.getFluidInTank(0).getAmount()!=sourceAfterDisconnect)throw new IllegalStateException("BUILD154: disconnected mixed FLUID bridge drained source");
-                    h.succeed();
+                    h.getLevel().setBlock(middle,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    var rejoined=(ConduitBundleBlockEntity)h.getLevel().getBlockEntity(middle);
+                    if(!rejoined.has(ConduitBundleBlockEntity.Layer.FLUID)&&!rejoined.add(ConduitBundleBlockEntity.Layer.FLUID))throw new IllegalStateException("BUILD156: FLUID bridge restore failed");
+                    h.startSequence().thenExecuteAfter(40,()->{
+                      if(to.getFluidInTank(0).getAmount()<=delivered)throw new IllegalStateException("BUILD156: reconnected mixed FLUID bridge did not resume");
+                      if(from.getFluidInTank(0).getAmount()+to.getFluidInTank(0).getAmount()!=sourceAfterDisconnect+delivered)throw new IllegalStateException("BUILD156: FLUID reconnect lost or duplicated water");
+                      h.succeed();
+                    });
                   });
                 });
               }
