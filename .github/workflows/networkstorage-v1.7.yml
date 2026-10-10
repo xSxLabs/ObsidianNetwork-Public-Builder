@@ -564,6 +564,8 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-adjacent-simulation-failure-isolation.py
           python3 private/v1.7/apply-v17-quarry-adjacent-capability-lookup-isolation.py
           python3 private/v1.7/apply-v17-quarry-adjacent-slot-count-isolation.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-invalid-simulation-isolation.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-simulation-contract-isolation.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
