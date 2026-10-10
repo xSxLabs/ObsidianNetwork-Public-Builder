@@ -478,6 +478,7 @@ jobs:
           python3 private/v1.7/apply-v17-cable-filter-id-input.py
           python3 private/v1.7/apply-v17-powered-crafter-sided-io.py
           python3 private/v1.7/apply-v17-powered-crafter-item-capability.py
+          python3 private/v1.7/apply-v17-powered-crafter-energy-capability.py
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
           python3 private/v1.7/apply-v17-quarry-activate-tick.py
