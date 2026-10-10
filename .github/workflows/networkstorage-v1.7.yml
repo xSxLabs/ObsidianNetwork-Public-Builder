@@ -454,6 +454,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-network-tick.py
           python3 private/v1.7/apply-v17-quarry-export-fairness.py
           python3 private/v1.7/apply-v17-quarry-export-transaction-guards.py
+          python3 private/v1.7/apply-v17-builder-wand-undo.py
           python3 private/v1.7/apply-v17-powered-crafter-sided-io.py
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
