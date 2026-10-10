@@ -455,6 +455,7 @@ jobs:
           python3 private/v1.7/apply-v17-machine-break-drops.py
           python3 private/v1.7/apply-v17-quarry-output-transfer.py
           python3 private/v1.7/apply-v17-quarry-network-tick.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-export.py
           python3 private/v1.7/apply-v17-quarry-export-fairness.py
           python3 private/v1.7/apply-v17-quarry-export-transaction-guards.py
           python3 private/v1.7/apply-v17-builder-wand-undo.py
