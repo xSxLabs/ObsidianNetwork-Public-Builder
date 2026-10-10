@@ -582,6 +582,8 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-world-chunk-check-fail-closed.py
           python3 private/v1.7/apply-v17-quarry-reservation-world-read-isolation.py
           python3 private/v1.7/apply-v17-quarry-initial-protection-world-read-isolation.py
+          python3 private/v1.7/apply-v17-quarry-initial-reservation-chunk-isolation.py
+          python3 private/v1.7/apply-v17-quarry-unsafe-block-inspection-isolation.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
