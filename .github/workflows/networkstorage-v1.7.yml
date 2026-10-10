@@ -541,6 +541,8 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-energy-escrow-capability.py
           python3 private/v1.7/apply-v17-quarry-network-callback-isolation.py
           python3 private/v1.7/apply-v17-quarry-network-provider-output-check.py
+          python3 private/v1.7/apply-v17-quarry-export-reservation-gate.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-idle-cursor.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
