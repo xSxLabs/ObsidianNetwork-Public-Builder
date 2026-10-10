@@ -465,6 +465,7 @@ jobs:
           python3 private/v1.7/apply-v17-cable-filter-ticker-guards.py
           python3 private/v1.7/apply-v17-cable-filter-transfer-tests.py
           python3 private/v1.7/apply-v17-cable-filter-persistence-hardening.py
+          python3 private/v1.7/apply-v17-cable-filter-snapshots.py
           python3 private/v1.7/apply-v17-powered-crafter-sided-io.py
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
