@@ -469,6 +469,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-adjacent-export-hardening.py
           python3 private/v1.7/apply-v17-quarry-export-fairness.py
           python3 private/v1.7/apply-v17-quarry-export-transaction-guards.py
+          python3 private/v1.7/apply-v17-quarry-network-export-guard.py
           python3 private/v1.7/apply-v17-builder-wand-undo.py
           python3 private/v1.7/apply-v17-builder-wand-shapes.py
           python3 private/v1.7/apply-v17-builder-wand-inventory-materials.py
