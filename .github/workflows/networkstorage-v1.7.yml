@@ -538,7 +538,6 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-reservation-init-safety.py
           python3 private/v1.7/apply-v17-quarry-reservation-release-order.py
           python3 private/v1.7/apply-v17-quarry-missing-protection-status.py
-          python3 private/v1.7/apply-v17-quarry-escrow-cleanup.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
