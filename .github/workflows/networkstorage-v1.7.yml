@@ -546,6 +546,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-output-handler-slot-guards.py
           python3 private/v1.7/apply-v17-quarry-fe-settlement-finally.py
           python3 private/v1.7/apply-v17-quarry-top-chest-reservation-gate.py
+          python3 private/v1.7/apply-v17-autocrafter-ghost-pattern-isolation.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
