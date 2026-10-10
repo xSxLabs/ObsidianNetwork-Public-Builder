@@ -534,6 +534,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-external-stack-isolation.py
           python3 private/v1.7/apply-v17-quarry-mining-insert-isolation.py
           python3 private/v1.7/apply-v17-quarry-handler-contracts.py
+          python3 private/v1.7/apply-v17-quarry-recheck-pause-reasons.py
           python3 private/v1.7/apply-v17-quarry-escrow-cleanup.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
