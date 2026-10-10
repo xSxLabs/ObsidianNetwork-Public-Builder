@@ -849,7 +849,14 @@ jobs:
                   h.startSequence().thenExecuteAfter(40,()->{
                     if(to.getItem(0).getCount()!=delivered)throw new IllegalStateException("BUILD153: disconnected mixed ITEM bridge still transferred");
                     if(from.getItem(0).getCount()!=8)throw new IllegalStateException("BUILD153: disconnected mixed ITEM bridge consumed source");
-                    h.succeed();
+                    h.getLevel().setBlock(middle,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    var rejoined=(ConduitBundleBlockEntity)h.getLevel().getBlockEntity(middle);
+                    if(!rejoined.has(ConduitBundleBlockEntity.Layer.ITEM)&&!rejoined.add(ConduitBundleBlockEntity.Layer.ITEM))throw new IllegalStateException("BUILD155: ITEM bridge restore failed");
+                    h.startSequence().thenExecuteAfter(40,()->{
+                      if(to.getItem(0).getCount()<=delivered)throw new IllegalStateException("BUILD155: reconnected mixed ITEM bridge did not resume");
+                      if(from.getItem(0).getCount()+to.getItem(0).getCount()!=8+delivered)throw new IllegalStateException("BUILD155: ITEM reconnect lost or duplicated diamonds");
+                      h.succeed();
+                    });
                   });
                 });
               }
