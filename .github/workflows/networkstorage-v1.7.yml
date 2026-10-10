@@ -469,6 +469,7 @@ jobs:
           python3 private/v1.7/apply-v17-cable-filter-validation.py
           python3 private/v1.7/apply-v17-cable-filter-payload.py
           python3 private/v1.7/apply-v17-cable-filter-client-actions.py
+          python3 private/v1.7/apply-v17-cable-filter-gui-controls.py
           python3 private/v1.7/apply-v17-powered-crafter-sided-io.py
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
