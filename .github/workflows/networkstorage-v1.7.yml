@@ -57,6 +57,8 @@ jobs:
           path: private
       - name: Preflight v1.7 generator syntax
         run: python3 -m compileall -q private/v1.7
+      - name: Preflight v1.7 generator order and dependencies
+        run: python3 private/v1.7/validate-generator-chain.py
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
       - name: Reconstruct v1.0.5 baseline and inspect Importer
