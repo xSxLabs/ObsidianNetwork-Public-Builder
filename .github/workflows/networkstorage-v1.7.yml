@@ -462,6 +462,7 @@ jobs:
           python3 private/v1.7/apply-v17-battery-charge-fairness.py
           python3 private/v1.7/apply-v17-battery-no-self-charge.py
           python3 private/v1.7/apply-v17-machine-break-drops.py
+          python3 private/v1.7/apply-v17-machine-drop-move-guard.py
           python3 private/v1.7/apply-v17-quarry-output-transfer.py
           python3 private/v1.7/apply-v17-quarry-network-tick.py
           python3 private/v1.7/apply-v17-quarry-adjacent-export.py
