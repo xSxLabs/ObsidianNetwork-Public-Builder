@@ -462,6 +462,7 @@ jobs:
           python3 private/v1.7/apply-v17-cable-filter-tickers.py
           python3 private/v1.7/apply-v17-cable-filter-interaction.py
           python3 private/v1.7/apply-v17-cable-filter-legacy-io.py
+          python3 private/v1.7/apply-v17-cable-filter-ticker-guards.py
           python3 private/v1.7/apply-v17-powered-crafter-sided-io.py
           python3 private/v1.7/apply-v17-quarry-output-buffer.py
           python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
