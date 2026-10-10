@@ -1445,3 +1445,4 @@ jobs:
 # retry full validation after fluid blockstate gate fix 9e830221
 
 # validate CONNECTED standalone output fix ec08bbd6
+\n# User-authorized build: fluid importer/exporter missing texture fix (private 0a69f616).\n
