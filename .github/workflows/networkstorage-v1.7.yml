@@ -452,6 +452,7 @@ jobs:
           python3 private/v1.7/apply-v17-powered-crafter-atomic-inventory.py
           python3 private/v1.7/apply-v17-powered-crafter-live-tick.py
           python3 private/v1.7/apply-v17-powered-crafter-recipe-safety.py
+          python3 private/v1.7/apply-v17-powered-crafter-recipe-callback-isolation.py
           python3 private/v1.7/apply-v17-battery-player-inventory.py
           python3 private/v1.7/apply-v17-battery-live-player-tick.py
           python3 private/v1.7/apply-v17-battery-offhand-target.py
@@ -587,6 +588,8 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-prebreak-world-read-rollback.py
           python3 private/v1.7/apply-v17-quarry-prebreak-state-compare-rollback.py
           python3 private/v1.7/apply-v17-quarry-scheduler-loaded-exception-isolation.py
+          python3 private/v1.7/apply-v17-quarry-ticker-cursor-finally.py
+          python3 private/v1.7/apply-v17-quarry-be-cursor-dirty-finally.py
           python3 private/v1.7/apply-v17-quarry-air-state-inspection-isolation.py
           python3 private/v1.7/apply-v17-quarry-integration-lifecycle-reset.py
           python3 private/v1.7/apply-v17-quarry-server-stop-lifecycle.py
