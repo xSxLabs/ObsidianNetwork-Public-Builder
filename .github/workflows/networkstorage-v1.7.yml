@@ -441,6 +441,8 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-machine-ticker.py
           python3 private/v1.7/apply-v17-quarry-registration.py
           python3 private/v1.7/apply-v17-powered-crafter-registration.py
+          python3 private/v1.7/apply-v17-battery-items.py
+          python3 private/v1.7/apply-v17-battery-item-adapter.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/validate-v17-baseline.py
           python3 - <<'PY'
