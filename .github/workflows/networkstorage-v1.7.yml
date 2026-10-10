@@ -551,6 +551,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-adjacent-empty-skip.py
           python3 private/v1.7/apply-v17-quarry-protection-exception-fail-closed.py
           python3 private/v1.7/apply-v17-quarry-output-insert-validation.py
+          python3 private/v1.7/apply-v17-quarry-loot-resolution-fail-closed.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/apply-v17-machine-art-assets.py
           python3 private/v1.7/apply-v17-machine-crafting-recipes.py
