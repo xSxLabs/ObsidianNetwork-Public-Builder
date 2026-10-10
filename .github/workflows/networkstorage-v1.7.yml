@@ -437,6 +437,9 @@ jobs:
           python3 private/v1.7/apply-v17-autocrafter-recipes.py
           python3 private/v1.7/apply-v17-autocrafter-transaction.py
           python3 private/v1.7/apply-v17-autocrafter-coordinator.py
+          python3 private/v1.7/apply-v17-quarry-machine-state.py
+          python3 private/v1.7/apply-v17-quarry-machine-ticker.py
+          python3 private/v1.7/apply-v17-quarry-registration.py
           python3 private/v1.7/apply-v17-solar-upgrade.py
           python3 private/v1.7/validate-v17-baseline.py
           python3 - <<'PY'
