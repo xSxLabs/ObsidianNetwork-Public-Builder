@@ -414,6 +414,7 @@ jobs:
           python3 private/v1.1.1/apply-run158-standalone-bundle-transfer.py
           python3 private/v1.1.1/apply-run159-fluid-port-initial-render.py
           python3 private/v1.1.1/apply-run160-all-fix-prebuild-gate.py
+          python3 private/v1.1.1/apply-v16-item-edge-and-speed.py
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1449,3 +1450,5 @@ jobs:
 # User-authorized build: fluid importer/exporter missing texture fix (private 0a69f616).
 
 # User-authorized fluid blockstate network_facing repair (private 9715fdfe).
+
+# v1.6 user-authorized bugfix build: edge disconnect and item cadence; facade/RR follow-up pending
