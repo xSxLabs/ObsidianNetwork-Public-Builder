@@ -1487,3 +1487,5 @@ jobs:
 # v1.6 CI validation of indexed 18-slot cable filter prototype d2e4d008
 
 # Development-only CI: verify ordered 18-position filter persistence aad9851b
+
+# Development CI: verify import-only filter mutation guards 0dd86bbe
