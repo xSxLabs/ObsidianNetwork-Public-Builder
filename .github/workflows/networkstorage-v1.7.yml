@@ -1662,3 +1662,5 @@ jobs:
 # v1.7: qualified persistence method detection 6e095c25
 
 # v1.7: EventBusSubscriber automatic bus routing bb249ade
+
+# v1.7: execute event migration corrected 46eea400
