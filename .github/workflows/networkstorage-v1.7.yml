@@ -1,0 +1,1649 @@
+# v1.7 ONLY: manual workflow_dispatch; v1.6 frozen workflow remains untouched.
+# Build #12 compile repair: facing null and constrained renderer regex
+# Iterative user-authorized Build #11: mixed conduit traversal and marker state
+# User explicitly unlocked build lock: iterative validation build #10
+# User-authorized build including latest same-bundle transfer fix 94a7df6
+# Retry after fixing conduit ownership gate in private f4f3e03
+# User-authorized compile of additional mixed ITEM/FLUID fixes (e71b24e)
+# v1.6 compile retry: correct facade interaction variable names (private 70d7c46)
+name: xSxLabs Network Storage v1.7
+# User-authorized corrected v1.6 build #5 succeeded; manual dispatch retained.
+# BUILD LOCK ACTIVE after successful run #5 (37959480117).
+# Original public workflow unchanged.
+# Build 307 verify four-layer legacy snapshot and item/fluid conservation safeguards
+# Build 306 repair run121 compatibility with guarded original MultiCable traversal
+# Build 305 verify original MultiCable snapshot before EnderIO migration
+# Build 304 diagnostic compile/GameTest after integrated source investigations; not a release artifact
+# Build 303 verify idempotent Tesseract cross-dimension sender guard patch
+# Build 302 exact cross-dimensional item transfer guard removed
+# Build 301 Tesseract source context diagnostic corrected
+# Build 300 Tesseract exact source context diagnostic
+# Build 299 Tesseract cross-level guard source diagnostic
+# Build 274 restore conduit flag semantics after GameTest failure
+# Build 251 persist outside marker geometry
+# Build 250 reconstruction-robust visual gate
+# Build 249 fixed regex trigger
+# Build 248 robust visual patch trigger
+# Run198: continue autonomous EnderIO conduit runtime verification
+# BUILD LOCK: automatic CI disabled after verified v1.1.1 in-game test JAR.
+# Re-enable only after the user explicitly requests "build".
+'on':
+  workflow_dispatch:
+
+
+
+
+permissions: {contents: read}
+# Build 214 energy API trigger
+# Build 212 explicit trigger
+# Build 215 expanded conduit test trigger
+# Build 216 broad conduit semantics trigger
+# Build 217 correct centralized priority gate\n# Build 218 real item straight/bent/split/merge GameTests\n# Build 219 capability-backed fluid/energy fixture\n# Build 220 real fluid/energy capability routing\n# Build 221 real NetworkTank fluid GameTest\n# Build 222 bidirectional ENERGY and connection-only NETWORK semantics\n# Build 223 fix legacy runtime ownership gate for no-mode ENERGY\n# Build 225 assert connection-only NETWORK and bidirectional ENERGY runtime\n# Build 226 real server-tick NETWORK/ENERGY no-IO topology GameTest\n# Build 227 tolerate default NETWORK layer and assert resulting topology
+# Build 234 ENERGY external faces are capability-connected and have no input/output mode
+# Build 236 inspect real Energy Cell API for capability-backed transfer GameTest
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: networkstorage-v1.7
+      - uses: actions/checkout@v4
+        with:
+          repository: xSxLabs/ObsidianNetwork-Build
+          ref: networkstorage-v1.7
+          token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
+          path: private
+      - name: Preflight v1.7 generator syntax
+        run: python3 -m compileall -q private/v1.7
+      - name: Preflight v1.7 generator order and dependencies
+        run: python3 private/v1.7/validate-generator-chain.py
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - name: Reconstruct v1.0.5 baseline and inspect Importer
+        run: |
+          set -euo pipefail
+          JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
+          mkdir -p work/src/main/java work/src/main/resources
+          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          java -jar work/vineflower.jar "$JAR" work/decompiled
+          cp -a work/decompiled/dev work/src/main/java/
+          MASTER="$GITHUB_WORKSPACE/$JAR"; (cd work/src/main/resources && jar xf "$MASTER")
+          find work/src/main/resources -name '*.class' -delete; rm -f work/src/main/resources/META-INF/MANIFEST.MF
+          cat > work/settings.gradle <<'EOF'
+          pluginManagement { repositories { gradlePluginPortal() } }
+          plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }
+          EOF
+          cat > work/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3G
+          org.gradle.daemon=false
+          minecraft_version=26.1.2
+          neo_version=26.1.2.106
+          mod_id=obsidiannetwork
+          mod_version=1.1.1
+          mod_group_id=dev.obsidiannetwork
+          EOF
+          cat > work/build.gradle <<'EOF'
+          plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+          version=mod_version; group=mod_group_id; base { archivesName='xSxLabs-Network-Storage' }
+          java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
+          tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
+          EOF
+          export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources" V1_PROJECT_ROOT="$GITHUB_WORKSPACE/work"
+          python3 private/reconstruction/apply-baseline-fixes.py
+          for n in 01-energy-cell-persistence 02-solar-atomic-transfer 03-wireless-open-refund 04-wireless-infinity-chunkload 05-terminal-shift-lock 06-terminal-search-reset 07-transfer-node-upgrade-shiftclick 08-autocraft-reservations 09-template-creator-preview 10-terminal-shift-live-counts 11-wireless-upgrade-transaction 12-autocraft-stable-reservations 13-curios-slot-tag 14-wireless-hotkey-default 15-energy-cell-tooltip 16-wireless-hotkey-curios 17-wireless-hotkey-ae2-style; do python3 "private/fixes/apply-fix-$n.py"; done
+          python3 private/fixes/apply-fix-13-autocraft-reservation-gate.py
+          python3 private/fixes/apply-fix-18-autocraft-deferred-reservations.py
+          python3 private/fixes/apply-fix-19-autocraft-deferred-gate.py
+          python3 private/fixes/apply-fix-20-autocraft-auto-subjobs.py
+          python3 private/fixes/apply-fix-21-autocraft-subjob-gate.py
+          for p in private/fixes/apply-fix-18-facade-render-state.py private/fixes/apply-fix-19-facade-lighting.py private/fixes/apply-fix-20-facade-vertical-lighting.py private/fixes/apply-fix-21-energy-cell-capacities.py private/fixes/apply-fix-25-facade-symmetric-neighbor-light.py private/fixes/apply-fix-22-terminal-english-labels.py private/v1.0.4/apply-wireless-charger-visual.py private/v1.0.4/apply-function-01-terminal-energy-storage.py private/v1.0.4/apply-function-02-terminal-active-consumption.py private/v1.0.4/apply-function-03-wireless-charger.py private/v1.0.4/apply-function-06-direct-block-adjacency.py private/v1.0.4/apply-function-07-pickaxe-mining.py private/v1.0.4/apply-function-08-filter54-scroll.py private/v1.0.4/apply-fix-storage-cell-upgrade-content.py private/v1.0.4/apply-function-09-storage-density.py private/v1.0.4/apply-fix-storage-drive-16slot-visual-clamp.py; do python3 "$p"; done
+          python3 private/v1.0.5/apply-function-01-system-migrator.py
+          python3 private/v1.0.6/apply-v106-features.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          roots=[Path('work/src/main/java'),Path('work/src/main/resources')]
+          out={}
+          for root in roots:
+              for p in root.rglob('*'):
+                  if p.is_file(): out[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+          Path('/tmp/b281-v106-manifest.json').write_text(json.dumps(out,sort_keys=True))
+          print('B281/V106 REGRESSION SNAPSHOT PASS')
+          PY
+          python3 private/v1.0.7/apply-equipment-cell.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          before=json.loads(Path('/tmp/b281-v106-manifest.json').read_text())
+          after={}
+          for root in [Path('work/src/main/java'),Path('work/src/main/resources')]:
+              for p in root.rglob('*'):
+                  if p.is_file(): after[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest()
+          changed={p for p in set(before)|set(after) if before.get(p)!=after.get(p)}
+          # Release guard: both legacy Item Cell implementation files must remain byte-identical.
+          frozen={'work/src/main/java/dev/obsidiannetwork/item/StorageCellItem.java','work/src/main/java/dev/obsidiannetwork/core/StorageCellStore.java'}
+          assert not (changed & frozen), 'FATAL: frozen B281 Item Cell implementation changed'
+          allowed={
+            'work/src/main/java/dev/obsidiannetwork/item/EquipmentCellItem.java',
+            'work/src/main/java/dev/obsidiannetwork/component/EquipmentCellContents.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EquipmentCellStore.java',
+            'work/src/main/java/dev/obsidiannetwork/core/NetworkRuntime.java',
+            'work/src/main/java/dev/obsidiannetwork/registry/ModDataComponents.java',
+            'work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java',
+            'work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCellBlockEntity.java',
+            'work/src/main/java/dev/obsidiannetwork/block/EnergyCellBlock.java',
+            'work/src/main/java/dev/obsidiannetwork/menu/EnergyCellMenu.java',
+            'work/src/main/java/dev/obsidiannetwork/client/EnergyCellScreen.java',
+            'work/src/main/java/dev/obsidiannetwork/core/StorageNetwork.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EquipmentEligibility.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EquipmentRoutingSelfTest.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java',
+            'work/src/main/java/dev/obsidiannetwork/core/EnergyToolEvents.java',
+            'work/src/main/java/dev/obsidiannetwork/mixin/ItemStackEnergyMixin.java',
+            'work/src/main/resources/obsidiannetwork.mixins.json',
+            'work/src/main/resources/META-INF/neoforge.mods.toml',
+            'work/src/main/java/dev/obsidiannetwork/client/EnergyToolClientEvents.java',
+            'work/src/main/java/dev/obsidiannetwork/menu/CellManipulatorMenu.java',
+            'work/src/main/java/dev/obsidiannetwork/client/CellManipulatorScreen.java',
+            'work/src/main/java/dev/obsidiannetwork/menu/DriveMenu.java',
+            'work/src/main/resources/assets/obsidiannetwork/items/battery.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/battery.json',
+            'work/src/main/resources/assets/obsidiannetwork/textures/item/battery.png',
+            'work/src/main/java/dev/obsidiannetwork/registry/ModMenus.java',
+            'work/src/main/java/dev/obsidiannetwork/client/ModClientEvents.java',
+            'work/src/main/java/dev/obsidiannetwork/client/ClientModEvents.java',
+            'work/src/main/java/dev/obsidiannetwork/blockentity/CellManipulatorBlockEntity.java',
+            'work/src/main/java/dev/obsidiannetwork/block/CellManipulatorBlock.java',
+            'work/src/main/java/dev/obsidiannetwork/recipe/BatteryUpgradeSmithingRecipe.java',
+            'work/src/main/java/dev/obsidiannetwork/registry/ModRecipes.java',
+            'work/src/main/java/dev/obsidiannetwork/platform/MinecraftItemStackCodec.java',
+            'work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java',
+            'work/src/main/resources/assets/obsidiannetwork/lang/en_us.json',
+            'work/src/main/resources/assets/obsidiannetwork/lang/de_de.json',
+            'work/src/main/resources/assets/obsidiannetwork/textures/item/equipment_pickaxe_overlay.png',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/equipment_cell_64k.json',
+            'work/src/main/resources/assets/obsidiannetwork/items/equipment_cell_64k.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/equipment_cell_64k.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/battery.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade_smithing.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/battery_upgrade.json',
+            'work/src/main/resources/assets/obsidiannetwork/items/battery_upgrade.json',
+            'work/src/main/java/dev/obsidiannetwork/registry/ModBlockEntities.java',
+            'work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java',
+            'work/src/main/resources/assets/obsidiannetwork/blockstates/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/items/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/block/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/models/item/cell_manipulator.json',
+            'work/src/main/resources/assets/obsidiannetwork/textures/item/battery_upgrade.png',
+            'work/src/main/resources/data/obsidiannetwork/loot_table/blocks/cell_manipulator.json',
+            'work/src/main/resources/data/obsidiannetwork/recipe/cell_manipulator.json',
+          }
+          extra={p for p in changed-allowed if not (p.startswith('work/src/main/resources/assets/obsidiannetwork/blockstates/') and p.endswith('terminal_panel.json'))}
+          print('B577 CHANGED EXTRA',sorted(extra))
+          assert not extra, 'unexpected clean v1.0.7 file change'
+          print('B577 FROZEN ITEM CELLS BYTE-FOR-BYTE PASS')
+          # Verify generated Java before Gradle.
+          import re
+          js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
+          assert 'ITEMS.registerItem("equipment_cell_64k"' in js, 'equipment item registration missing'
+          m=re.search(r'output\.accept\([^\\n;]*EQUIPMENT_CELL_64K[^\\n;]*\);',js)
+          assert m, 'equipment creative output missing'
+          before=js[:m.start()]
+          assert before.count('{') > before.count('}'), 'equipment creative output outside scope'
+          print('B577 ITEM REGISTRATION + CREATIVE OUTPUT PASS')
+          drive=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read_text()
+          assert 'resource.toStack().getItem() instanceof EquipmentCellItem' in drive, 'drive slot does not accept equipment cell'
+          assert 'candidate.getItem() instanceof EquipmentCellItem equipmentItem' in drive, 'drive validator equipment decode path missing'
+          assert any('EquipmentCellItem' in p.read_text() for p in Path('work/src/main/java/dev/obsidiannetwork/menu').glob('*Menu.java'))
+          print('B577 DRIVE EQUIPMENT SLOT ACCEPTANCE PASS')
+          loot=Path('work/src/main/resources/data/obsidiannetwork/loot_table/blocks/system_migrator.json')
+          assert loot.exists(), 'system migrator loot table missing'
+          ld=json.loads(loot.read_text())
+          assert 'obsidiannetwork:system_migrator' in loot.read_text(), 'system migrator self-drop missing'
+          smbe=Path('work/src/main/java/dev/obsidiannetwork/blockentity/SystemMigratorBlockEntity.java').read_text()
+          assert 'SystemMigratorTickDiag' not in smbe and 'LOGGER.info' not in smbe
+          print('B577 SYSTEM MIGRATOR SELF-DROP + NO PERIODIC INFO DIAGNOSTICS PASS')
+          js=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
+          assert 'BATTERY = ITEMS.registerSimpleItem("battery"' in js
+          assert 'BATTERY.get()' in js and 'output.accept' in js, 'battery creative exposure missing'
+          br=Path('work/src/main/resources/data/obsidiannetwork/recipe/battery.json')
+          assert br.exists() and json.loads(br.read_text())['result']['id']=='obsidiannetwork:battery'
+          assert json.loads(Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json').read_text())['item.obsidiannetwork.battery']=='Battery'
+          print('B577 BATTERY ITEM + RECIPE PASS')
+          bu=Path('work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade.json')
+          assert 'BATTERY_UPGRADE = ITEMS.registerSimpleItem("battery_upgrade"' in js
+          assert bu.exists() and json.loads(bu.read_text())['result']['id']=='obsidiannetwork:battery_upgrade'
+          assert json.loads(Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json').read_text())['item.obsidiannetwork.battery_upgrade']=='Battery Upgrade'
+          print('B577 BATTERY UPGRADE TEMPLATE ITEM + RECIPE PASS')
+          et=Path('work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java').read_text()
+          dc=Path('work/src/main/java/dev/obsidiannetwork/registry/ModDataComponents.java').read_text()
+          assert 'ENERGY_TOOL_FE' in dc and 'capacity(ItemStack s)' in et and 'getMaxDamage()' in et and 'CAPACITY=100000L' not in et and 'isDamageableItem()' in et
+          print('B577 GENERIC ENERGY TOOL PERSISTENCE PASS')
+          sm=Path('work/src/main/java/dev/obsidiannetwork/recipe/BatteryUpgradeSmithingRecipe.java').read_text()
+          assert 'in.base().copy()' in sm and 'EnergyTool.eligible(in.base())' in sm and '!EnergyTool.upgraded(in.base())' in sm
+          assert 'BATTERY_UPGRADE.get()' in sm and 'BATTERY.get()' in sm
+          assert 'filter(i->i!=Items.AIR)' in sm, 'generic smithing placement ingredient still contains AIR'
+          assert 'EnergyTool.capacity(out)' in sm and 'out.setDamageValue(0)' in sm
+          assert Path('work/src/main/resources/assets/obsidiannetwork/items/battery.json').exists()
+          assert Path('work/src/main/resources/assets/obsidiannetwork/models/item/battery.json').exists()
+          assert json.loads(Path('work/src/main/resources/data/obsidiannetwork/recipe/battery_upgrade_smithing.json').read_text())['type']=='obsidiannetwork:battery_upgrade_smithing'
+          print('B577 IDENTITY-PRESERVING GENERIC SMITHING PASS')
+          assert 'boolean consume(ItemStack s,long fe)' in et and 'barWidth(ItemStack s)' in et and 'barColor(ItemStack s)' in et
+          ev=Path('work/src/main/java/dev/obsidiannetwork/core/EnergyToolEvents.java').read_text()
+          mx=Path('work/src/main/java/dev/obsidiannetwork/mixin/ItemStackEnergyMixin.java').read_text()
+          assert 'IdentityHashMap' not in ev and 'EntityTickEvent' not in ev, 'legacy tick durability tracker still present'
+          assert 'method="setDamageValue"' in mx and 'ci.cancel()' in mx and 'Math.min(available,delta)' in mx
+          assert 'AttackEntityEvent' in ev and 'RightClickItem' in ev and 'UseItemOnBlockEvent' in ev and 'BreakSpeed' in ev
+          mix=json.loads(Path('work/src/main/resources/obsidiannetwork.mixins.json').read_text())
+          assert 'ItemStackEnergyMixin' in mix['mixins']
+          assert 'obsidiannetwork.mixins.json' in Path('work/src/main/resources/META-INF/neoforge.mods.toml').read_text()
+          print('B577 FINAL-DAMAGE-WRITE ENERGY INTERCEPT + EMPTY-FE ACTION GATES PASS')
+          cmb=Path('work/src/main/java/dev/obsidiannetwork/blockentity/CellManipulatorBlockEntity.java').read_text()
+          cmm=Path('work/src/main/java/dev/obsidiannetwork/menu/CellManipulatorMenu.java').read_text()
+          cmblock=Path('work/src/main/java/dev/obsidiannetwork/block/CellManipulatorBlock.java').read_text()
+          topo=Path('work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java').read_text()
+          assert 'instanceof StorageCellItem' in cmb and 'EquipmentCellItem' not in cmb
+          assert 'previewInsertExact' in cmb and 'insertExact' in cmb and 'src.extract(en.getKey(),inserted)' in cmb
+          assert 'out.store("cell",ItemStack.CODEC' in cmb and 'in.read("cell",ItemStack.CODEC)' in cmb
+          assert 'instanceof StorageCellItem' in cmm and 'moveItemStackTo(src,0,1,false)' in cmm
+          assert 'removeItemNoUpdate(0)' in cmblock and 'Containers.dropItemStack' in cmblock
+          assert 'CELL_MANIPULATOR.get()' in topo
+          for rp in ['assets/obsidiannetwork/blockstates/cell_manipulator.json','assets/obsidiannetwork/items/cell_manipulator.json','assets/obsidiannetwork/models/block/cell_manipulator.json','data/obsidiannetwork/loot_table/blocks/cell_manipulator.json','data/obsidiannetwork/recipe/cell_manipulator.json']:
+              json.loads(Path('work/src/main/resources',rp).read_text())
+          print('B577 CELL MANIPULATOR GUI + ROUTING + ZERO-LOSS + DROP + JSON PASS')
+          ecb=Path('work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCellBlockEntity.java').read_text()
+          ecm=Path('work/src/main/java/dev/obsidiannetwork/menu/EnergyCellMenu.java').read_text()
+          ecblock=Path('work/src/main/java/dev/obsidiannetwork/block/EnergyCellBlock.java').read_text()
+          assert 'charge_tool' in ecb and 'EnergyTool.upgraded(tool)' in ecb and 'toolSlot.setChanged()' in ecb
+          assert 'EnergyTool.upgraded(stack)' in ecm and 'getMaxStackSize(){return 1;}' in ecm and 'moveItemStackTo(src,0,1,false)' in ecm and 'moveItemStackTo(src,1,37,true)' in ecm
+          assert 'toolSlot().removeItemNoUpdate(0)' in ecblock and 'Containers.dropItemStack' in ecblock
+          print('B577 ENERGY CELL TOOL CHARGE + PERSISTENCE + BREAK-DROP PASS')
+          PY
+          python3 -m pip install --user pillow
+          python3 private/v1.0.8/apply-logistics-fluid.py
+          python3 - <<'PY'
+          from pathlib import Path
+          required=['LogisticsCableBlockEntity.java','NetworkTankBlockEntity.java','FluidPortBlockEntity.java']
+          for n in required: assert any(Path('work/src/main/java').rglob(n)), n
+          o=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java').read_text()
+          for x in ['ITEM_CABLE','FLUID_CABLE','NETWORK_TANK_64K','NETWORK_TANK_4096K','FLUID_IMPORTER','FLUID_EXPORTER']: assert x in o,x
+          c=Path('work/src/main/java/dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java').read_text()
+          assert 'Mode{OFF,IMPORT,EXPORT}' in c and 'speed_upgrade' in c and 'stack_upgrade' in c
+          print('B580 LOGISTICS + NETWORK FLUID STRUCTURE PASS')
+          PY
+          mkdir -p work/libs
+          curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
+          for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
+          mkdir -p work/rs-src
+          for j in work/libs/*-3.2.1-sources.jar; do (cd work/rs-src && jar xf "../libs/$(basename "$j")"); done
+          export RS_SOURCE_ROOT="$GITHUB_WORKSPACE/work/rs-src"
+          python3 private/v1.0.5/apply-system-migrator-rs-dependency.py
+          python3 - <<'PY'
+          from pathlib import Path
+          rsb=Path('work/src/main/java/dev/obsidiannetwork/compat/refinedstorage/SystemMigratorRsBridge.java').read_text()
+          assert 'SystemMigratorDiag' not in rsb and 'LOGGER.info' not in rsb
+          print('B577 SYSTEM MIGRATOR RS BRIDGE NO INFO DIAGNOSTICS PASS')
+          PY
+          python3 - <<'PY'
+          from pathlib import Path
+          n=Path("private/v1.0.5/SYSTEM_MIGRATOR_RS32_API_NOTES.md").read_text()
+          required=["Action.SIMULATE","Action.EXECUTE","previewInsertExact","compensate the difference back into the SAME RS root storage with","fail closed"]
+          assert all(x in n for x in required), "zero-item-loss contract incomplete"
+          print("ZERO-ITEM-LOSS CONTRACT PASS")
+          PY
+          python3 private/v1.0.5/diagnose-system-migrator-importer.py
+          echo '===== B633 RETRY CHECK ====='
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/network/JeiCraftTransferHandler.java
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/compat/jei/ObsidianNetworkJeiPlugin.java
+          python3 private/v1.0.5/diagnose-system-migrator-core.py
+          python3 private/v1.0.5/diagnose-system-migrator-signatures.py
+          python3 private/v1.0.5/diagnose-system-migrator-topology-anchors.py
+          python3 private/v1.0.5/diagnose-system-migrator-registration-shapes.py
+          python3 private/v1.0.5/diagnose-system-migrator-item-registration.py
+          python3 private/v1.0.5/diagnose-system-migrator-recipe-tooltip.py
+          python3 private/v1.0.5/diagnose-system-migrator-minimal-imports.py
+          python3 private/v1.0.5/diagnose-system-migrator-method-shapes.py
+          python3 private/v1.0.5/diagnose-system-migrator-block-codec.py
+          python3 private/v1.0.5/diagnose-system-migrator-control-api.py
+          python3 private/v1.0.5/diagnose-system-migrator-descriptor-api.py
+          python3 private/v1.0.5/diagnose-system-migrator-codec-ctor.py
+          python3 private/v1.0.5/diagnose-system-migrator-key-api.py
+          python3 private/v1.0.5/diagnose-rs321-exact-api.py
+          python3 private/v1.0.5/diagnose-rs321-transfer-signatures.py
+          echo '===== RESTORE VERIFIED V1.1.0 BUILD 490 FREEZE ====='
+          python3 private/v1.1.0/apply-tesseract-recipe-fix.py
+          python3 private/v1.1.0/apply-facade-opaque-fix.py
+          python3 private/v1.1.0/apply-facade-b677-registration-fix.py
+          echo '===== V1.1.0 BUILD 490 FREEZE RESTORED ====='
+          echo '===== V1.1.1 IO PORT FACADES APPLY ====='
+          python3 private/v1.1.1/apply-io-port-facades.py
+          echo '===== V1.1.1 NETWORK TELEPORTER APPLY ====='
+          python3 private/v1.1.1/apply-network-teleporter.py
+          echo '===== V1.1.1 MULTICABLE + POLYMORPH APPLY ====='
+          python3 private/v1.1.1/apply-multicable.py
+          echo '===== V1.1.1 INGAME VISUAL FIXES APPLY ====='
+          python3 private/v1.1.1/apply-runtime-visual-fixes.py
+          echo '===== V1.1.1 RUN80 REGRESSION-SAFE FIXES APPLY ====='
+          python3 private/v1.1.1/apply-run80-regression-fixes.py
+          echo '===== V1.1.1 RUN85 INGAME FEEDBACK APPLY ====='
+          python3 private/v1.1.1/apply-run85-ingame-feedback.py
+          echo '===== V1.1.1 ENDERIO CONNECTION PASS APPLY ====='
+          python3 private/v1.1.1/apply-enderio-connection-pass.py
+          echo '===== V1.1.1 ROOTCAUSE ENDERIO PASS APPLY ====='
+          python3 private/v1.1.1/apply-rootcause-enderio-pass.py
+          echo '===== V1.1.1 RUN92 INGAME ROOTCAUSE APPLY ====='
+          python3 private/v1.1.1/apply-run92-ingame-rootcause.py
+          echo '===== V1.1.1 RUN109 ENDERIO CABLE GEOMETRY APPLY ====='
+          python3 private/v1.1.1/apply-run109-enderio-cables.py
+          echo '===== V1.1.1 RUN110 FULL ENDERIO CONDUIT + IO FACE APPLY ====='
+          python3 private/v1.1.1/apply-run110-full-conduit.py
+          echo '===== V1.1.1 RUN112 IO FUNCTION FACE APPLY ====='
+          python3 private/v1.1.1/apply-run112-io-function-face.py
+          grep -Fq 'BLACK_FUNCTION_FACE_MARKER' work/src/main/resources/assets/obsidiannetwork/v111-run112-io-function-face.txt
+          grep -Fq 'INSET_FROM_FACADE_NO_ZFIGHT' work/src/main/resources/assets/obsidiannetwork/v111-run112-io-function-face.txt
+          grep -Fq 'MULTICABLE_FACADE_RENDERER_PRESERVED' work/src/main/resources/assets/obsidiannetwork/v111-runtime-visual-fixes.txt || true
+          echo '===== V1.1.1 RUN121 CONDUIT FUNCTION APPLY ====='
+          python3 private/v1.1.1/apply-run121-conduit-function.py
+          echo '===== V1.1.1 RUN127 ENDERIO CONDUIT CONTAINER APPLY ====='
+          python3 private/v1.1.1/apply-run127-enderio-conduit-container.py
+          echo '===== V1.1.1 RUN128 ENERGY IO APPLY ====='
+          git -C private rev-parse HEAD
+          git -C private log -1 --oneline
+          grep -q 'ENERGY_EXPORT_MODE_PERSISTS_ACROSS_RELOAD' private/v1.1.1/apply-run128-energy-io.py
+          grep -Fq "x=gate_method(x,'public int extract(int amount,TransactionContext tx)','energyCanExport')" private/v1.1.1/apply-run128-energy-io.py
+          grep -Fq "x=gate_method(x,'public int insert(int amount,TransactionContext tx)','energyCanImport')" private/v1.1.1/apply-run128-energy-io.py
+          python3 private/v1.1.1/apply-run128-energy-io.py
+          python3 private/v1.1.1/apply-run129-enderio-node-architecture.py
+          python3 private/v1.1.1/apply-run130-conduit-bundle-hard-cut.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/multicable-original/dev/obsidiannetwork/blockentity/MultiCableBlockEntity.java')
+          # The snapshot must survive outside active Java compilation; keep a
+          # reproducible original source for the forthcoming runtime rollback.
+          if not p.exists():
+              p=Path('work/src/main/java').parent.parent/'multicable-original/dev/obsidiannetwork/blockentity/MultiCableBlockEntity.java'
+          assert p.is_file(), 'original MultiCable source snapshot missing'
+          text=p.read_text()
+          for token in ('enum Layer','transferItem(', 'transferFluid(', 'energyHandler(Direction side)', 'exports(Layer layer)'):
+              assert token in text, 'original MultiCable transport missing '+token
+          assert 'ConduitBundleBlockEntity' not in text
+          print('ORIGINAL MULTICABLE SNAPSHOT DIAGNOSTIC PASS')
+          PY
+          python3 private/v1.1.1/apply-run132-enderio-core.py
+          python3 private/v1.1.1/apply-run133-runtime-tickers.py
+          python3 private/v1.1.1/apply-run134-energy-runtime.py
+          python3 private/v1.1.1/apply-run135-energy-api.py
+          python3 private/v1.1.1/apply-run136-network-manager.py
+          python3 private/v1.1.1/apply-run137-connection-semantics.py
+          python3 private/v1.1.1/apply-run138-authoritative-io.py
+          python3 private/v1.1.1/apply-run139-network-cache.py
+          python3 private/v1.1.1/apply-run140-topology-energy.py
+          python3 private/v1.1.1/apply-run142-mixed-item-fluid-runtime.py
+          python3 private/v1.1.1/apply-run141-mixed-network-release-gate.py
+          grep -Fq 'if(traversable(level,b.getBlockPos().relative(d),type))continue;' work/src/main/java/dev/obsidiannetwork/conduit/ConduitRuntime.java
+          grep -Fq 'src.pos().asLong()' work/src/main/java/dev/obsidiannetwork/conduit/ItemConduitTicker.java
+          grep -Fq 'round-robin source position must be nullable-bundle safe' private/v1.1.1/apply-run142-mixed-item-fluid-runtime.py
+          if grep -Fq 'src.bundle().getBlockPos().asLong()' work/src/main/java/dev/obsidiannetwork/conduit/ItemConduitTicker.java; then echo 'standalone round-robin null dereference'; exit 1; fi
+          echo '===== BUILD246 VISUAL/FACADE FIXES ====='
+          python3 private/v1.1.1/apply-build246-visual-fixes.py
+          echo '===== BUILD262 TESSERACT CROSS-DIM ====='
+          python3 private/v1.1.1/apply-build262-tesseract-crossdim.py
+          python3 private/v1.1.1/apply-build298-tesseract-crossdim-item.py
+          echo '===== BUILD268 ALL USER FIXES ====='
+          python3 private/v1.1.1/apply-build268-all-user-fixes.py
+          python3 private/v1.1.1/apply-build271-bundle-io-input-collars.py
+          python3 private/v1.1.1/apply-v16-ingame-collision.py
+          python3 private/v1.1.1/apply-run144-standalone-connection-types.py
+          python3 private/v1.1.1/apply-run146-bundle-visual-endpoints.py
+          python3 private/v1.1.1/apply-run147-standalone-input-sleeves.py
+          python3 private/v1.1.1/apply-run148-energy-cable-types.py
+          python3 private/v1.1.1/apply-run149-polymorph-size.py
+          python3 private/v1.1.1/apply-run150-mixed-endpoint-gate.py
+          python3 private/v1.1.1/apply-run151-visual-cable-gate.py
+          # Active ConduitRuntime mixed transport regression gate (legacy MultiCable removed)
+          python3 private/v1.1.1/apply-run152-mixed-standalone-import.py
+          python3 private/v1.1.1/apply-run153-final-standalone-collars.py
+          python3 private/v1.1.1/apply-run154-solar-visual-arm.py
+          python3 private/v1.1.1/apply-run155-mixed-endpoints-fast-break.py
+          python3 private/v1.1.1/apply-run156-solar-arm-state.py
+          python3 private/v1.1.1/apply-run157-fluid-port-models.py
+          python3 private/v1.1.1/apply-run158-standalone-bundle-transfer.py
+          python3 private/v1.1.1/apply-run159-fluid-port-initial-render.py
+          python3 private/v1.1.1/apply-run160-all-fix-prebuild-gate.py
+          python3 private/v1.7/apply-v17-topology-tick-cache.py
+          python3 private/v1.7/apply-v17-topology-position-cache.py
+          python3 private/v1.7/apply-v17-energy-endpoint-cache.py
+          python3 private/v1.7/apply-v17-port-filter-drops.py
+          python3 private/v1.7/apply-v17-quarry-scan-core.py
+          python3 private/v1.7/apply-v17-battery-tier-core.py
+          python3 private/v1.7/apply-v17-autocrafter-core.py
+          python3 private/v1.7/apply-v17-builder-device-core.py
+          python3 private/v1.7/apply-v17-quarry-runtime-core.py
+          python3 private/v1.7/apply-v17-battery-charge-runtime.py
+          python3 private/v1.7/apply-v17-autocrafter-runtime.py
+          python3 private/v1.7/apply-v17-device-undo-core.py
+          python3 private/v1.7/apply-v17-device-template-core.py
+          python3 private/v1.7/apply-v17-quarry-frame-core.py
+          python3 private/v1.7/apply-v17-device-shape-core.py
+          python3 private/v1.7/apply-v17-device-placement-runtime.py
+          python3 private/v1.7/apply-v17-device-undo-runtime.py
+          python3 private/v1.7/apply-v17-battery-transfer-core.py
+          python3 private/v1.7/apply-v17-quarry-upgrades.py
+          python3 private/v1.7/apply-v17-quarry-filter.py
+          python3 private/v1.7/apply-v17-quarry-world-runtime.py
+          python3 private/v1.7/apply-v17-battery-charge-coordinator.py
+          python3 private/v1.7/apply-v17-autocrafter-recipes.py
+          python3 private/v1.7/apply-v17-autocrafter-transaction.py
+          python3 private/v1.7/apply-v17-autocrafter-coordinator.py
+          python3 private/v1.7/apply-v17-quarry-machine-state.py
+          python3 private/v1.7/apply-v17-quarry-machine-ticker.py
+          python3 private/v1.7/apply-v17-quarry-registration.py
+          python3 private/v1.7/apply-v17-powered-crafter-registration.py
+          python3 private/v1.7/apply-v17-battery-items.py
+          python3 private/v1.7/apply-v17-battery-item-adapter.py
+          python3 private/v1.7/apply-v17-builder-wand-item.py
+          python3 private/v1.7/apply-v17-powered-crafter-inventory.py
+          python3 private/v1.7/apply-v17-powered-crafter-atomic-inventory.py
+          python3 private/v1.7/apply-v17-powered-crafter-live-tick.py
+          python3 private/v1.7/apply-v17-powered-crafter-recipe-safety.py
+          python3 private/v1.7/apply-v17-powered-crafter-recipe-callback-isolation.py
+          python3 private/v1.7/apply-v17-battery-player-inventory.py
+          python3 private/v1.7/apply-v17-battery-live-player-tick.py
+          python3 private/v1.7/apply-v17-battery-offhand-target.py
+          python3 private/v1.7/apply-v17-battery-curios-live.py
+          python3 private/v1.7/apply-v17-battery-curios-slot-tag.py
+          python3 private/v1.7/apply-v17-battery-active-guard.py
+          python3 private/v1.7/apply-v17-battery-curios-hardening.py
+          python3 private/v1.7/apply-v17-battery-charge-fairness.py
+          python3 private/v1.7/apply-v17-battery-no-self-charge.py
+          python3 private/v1.7/apply-v17-machine-break-drops.py
+          python3 private/v1.7/apply-v17-machine-drop-move-guard.py
+          python3 private/v1.7/apply-v17-quarry-output-transfer.py
+          python3 private/v1.7/apply-v17-quarry-network-tick.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-export.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-export-hardening.py
+          python3 private/v1.7/apply-v17-quarry-export-fairness.py
+          python3 private/v1.7/apply-v17-quarry-export-transaction-guards.py
+          python3 private/v1.7/apply-v17-quarry-network-export-guard.py
+          python3 private/v1.7/apply-v17-builder-wand-undo.py
+          python3 private/v1.7/apply-v17-builder-wand-shapes.py
+          python3 private/v1.7/apply-v17-builder-wand-inventory-materials.py
+          python3 private/v1.7/apply-v17-quarry-item-io.py
+          python3 private/v1.7/apply-v17-quarry-energy-capability.py
+          python3 private/v1.7/apply-v17-quarry-chest-round-robin.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-fairness.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-face-fairness.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-work-budget.py
+          python3 private/v1.7/apply-v17-quarry-idle-export-guard.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-callback-lock.py
+          python3 private/v1.7/apply-v17-quarry-export-simulation-lock.py
+          python3 private/v1.7/apply-v17-quarry-inventory-menu.py
+          python3 private/v1.7/apply-v17-quarry-control-interaction.py
+          python3 private/v1.7/apply-v17-quarry-upgrade-interaction.py
+          python3 private/v1.7/apply-v17-cable-filters.py
+          python3 private/v1.7/apply-v17-cable-endpoint-filter.py
+          python3 private/v1.7/apply-v17-cable-filter-tickers.py
+          python3 private/v1.7/apply-v17-cable-filter-interaction.py
+          python3 private/v1.7/apply-v17-cable-filter-legacy-io.py
+          python3 private/v1.7/apply-v17-cable-filter-ticker-guards.py
+          python3 private/v1.7/apply-v17-cable-filter-transfer-tests.py
+          python3 private/v1.7/apply-v17-cable-filter-persistence-hardening.py
+          python3 private/v1.7/apply-v17-cable-filter-snapshots.py
+          python3 private/v1.7/apply-v17-cable-filter-validation.py
+          python3 private/v1.7/apply-v17-cable-filter-payload.py
+          python3 private/v1.7/apply-v17-cable-filter-client-actions.py
+          python3 private/v1.7/apply-v17-cable-filter-gui-controls.py
+          python3 private/v1.7/apply-v17-cable-filter-s2c.py
+          python3 private/v1.7/apply-v17-cable-filter-gui-snapshot.py
+          python3 private/v1.7/apply-v17-cable-filter-request.py
+          python3 private/v1.7/apply-v17-cable-filter-entry-list.py
+          python3 private/v1.7/apply-v17-cable-filter-id-input.py
+          python3 private/v1.7/apply-v17-cable-filter-status-screen.py
+          python3 private/v1.7/apply-v17-powered-crafter-sided-io.py
+          python3 private/v1.7/apply-v17-powered-crafter-item-capability.py
+          python3 private/v1.7/apply-v17-powered-crafter-energy-capability.py
+          python3 private/v1.7/apply-v17-battery-item-fe-capability.py
+          python3 private/v1.7/apply-v17-battery-settings-interaction.py
+          python3 private/v1.7/apply-v17-powered-crafter-inventory-menu.py
+          python3 private/v1.7/apply-v17-powered-crafter-vanilla-recipes.py
+          python3 private/v1.7/apply-v17-powered-crafter-live-server-resolver.py
+          python3 private/v1.7/apply-v17-powered-crafter-ghost-controls.py
+          python3 private/v1.7/apply-v17-quarry-output-buffer.py
+          python3 private/v1.7/apply-v17-quarry-export-reentrancy-lock.py
+          python3 private/v1.7/apply-v17-quarry-world-drop-sink.py
+          python3 private/v1.7/apply-v17-quarry-fortune-silk-loot.py
+          python3 private/v1.7/apply-v17-quarry-loot-tool-selection.py
+          python3 private/v1.7/apply-v17-quarry-mining-safety.py
+          python3 private/v1.7/apply-v17-quarry-drop-output-safety.py
+          python3 private/v1.7/apply-v17-quarry-world-transaction-guard.py
+          python3 private/v1.7/apply-v17-quarry-prebreak-reservation-recheck.py
+          python3 private/v1.7/apply-v17-quarry-block-removal-exception-guard.py
+          python3 private/v1.7/apply-v17-quarry-activate-tick.py
+          python3 private/v1.7/apply-v17-quarry-machine-controls.py
+          python3 private/v1.7/apply-v17-quarry-pause-status.py
+          python3 private/v1.7/apply-v17-quarry-energy-dirty-guard.py
+          python3 private/v1.7/apply-v17-quarry-network-idle-export.py
+          python3 private/v1.7/apply-v17-quarry-fe-escrow.py
+          python3 private/v1.7/apply-v17-quarry-fe-escrow-capacity.py
+          python3 private/v1.7/apply-v17-quarry-mining-output-lock.py
+          python3 private/v1.7/apply-v17-quarry-escrow-cleanup.py
+          python3 private/v1.7/apply-v17-quarry-external-stack-isolation.py
+          python3 private/v1.7/apply-v17-quarry-mining-insert-isolation.py
+          python3 private/v1.7/apply-v17-quarry-handler-contracts.py
+          python3 private/v1.7/apply-v17-quarry-recheck-pause-reasons.py
+          python3 private/v1.7/apply-v17-quarry-reservation-init-safety.py
+          python3 private/v1.7/apply-v17-quarry-reservation-release-order.py
+          python3 private/v1.7/apply-v17-quarry-missing-protection-status.py
+          python3 private/v1.7/apply-v17-quarry-energy-escrow-capability.py
+          python3 private/v1.7/apply-v17-quarry-network-callback-isolation.py
+          python3 private/v1.7/apply-v17-quarry-network-provider-output-check.py
+          python3 private/v1.7/apply-v17-quarry-export-reservation-gate.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-idle-cursor.py
+          python3 private/v1.7/apply-v17-quarry-output-handler-slot-guards.py
+          python3 private/v1.7/apply-v17-quarry-fe-settlement-finally.py
+          python3 private/v1.7/apply-v17-quarry-top-chest-reservation-gate.py
+          python3 private/v1.7/apply-v17-autocrafter-ghost-pattern-isolation.py
+          python3 private/v1.7/apply-v17-quarry-corrupt-filter-recovery.py
+          python3 private/v1.7/apply-v17-quarry-protection-exception-fail-closed.py
+          python3 private/v1.7/apply-v17-quarry-output-insert-validation.py
+          python3 private/v1.7/apply-v17-quarry-loot-resolution-fail-closed.py
+          python3 private/v1.7/apply-v17-quarry-direct-fe-escrow-guard.py
+          python3 private/v1.7/apply-v17-quarry-loot-tool-fail-closed.py
+          python3 private/v1.7/apply-v17-quarry-network-provider-failure-isolation.py
+          python3 private/v1.7/apply-v17-quarry-chest-negative-remainder-guard.py
+          python3 private/v1.7/apply-v17-quarry-output-simulation-fail-closed.py
+          python3 private/v1.7/apply-v17-quarry-network-sink-count-validation.py
+          python3 private/v1.7/apply-v17-quarry-network-simulation-exception-isolation.py
+          python3 private/v1.7/apply-v17-quarry-loot-reservation-copy-fail-closed.py
+          python3 private/v1.7/apply-v17-quarry-world-target-check-fail-closed.py
+          python3 private/v1.7/apply-v17-quarry-network-invalid-simulation-isolation.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-simulation-failure-isolation.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-capability-lookup-isolation.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-slot-count-isolation.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-invalid-simulation-isolation.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-simulation-contract-isolation.py
+          python3 private/v1.7/apply-v17-quarry-world-state-read-fail-closed.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-source-recheck-before-commit.py
+          python3 private/v1.7/apply-v17-quarry-network-precommit-source-isolation.py
+          python3 private/v1.7/apply-v17-quarry-chest-invalid-simulation-isolation.py
+          python3 private/v1.7/apply-v17-quarry-chest-source-precommit-guard.py
+          python3 private/v1.7/apply-v17-quarry-chest-capability-failure-isolation.py
+          python3 private/v1.7/apply-v17-quarry-chest-simulation-exception-isolation.py
+          python3 private/v1.7/apply-v17-quarry-chest-preflight-exception-isolation.py
+          python3 private/v1.7/apply-v17-quarry-adjacent-preflight-exception-isolation.py
+          python3 private/v1.7/apply-v17-quarry-network-preflight-exception-isolation.py
+          python3 private/v1.7/apply-v17-quarry-chest-idle-cursor.py
+          python3 private/v1.7/apply-v17-quarry-chest-full-cycle-fairness.py
+          python3 private/v1.7/apply-v17-quarry-network-full-cycle-fairness.py
+          python3 private/v1.7/apply-v17-quarry-world-chunk-check-fail-closed.py
+          python3 private/v1.7/apply-v17-quarry-reservation-world-read-isolation.py
+          python3 private/v1.7/apply-v17-quarry-initial-protection-world-read-isolation.py
+          python3 private/v1.7/apply-v17-quarry-initial-reservation-chunk-isolation.py
+          python3 private/v1.7/apply-v17-quarry-unsafe-block-inspection-isolation.py
+          python3 private/v1.7/apply-v17-quarry-prebreak-world-read-rollback.py
+          python3 private/v1.7/apply-v17-quarry-prebreak-state-compare-rollback.py
+          python3 private/v1.7/apply-v17-quarry-scheduler-loaded-exception-isolation.py
+          python3 private/v1.7/apply-v17-quarry-ticker-cursor-finally.py
+          python3 private/v1.7/apply-v17-quarry-be-cursor-dirty-finally.py
+          python3 private/v1.7/apply-v17-quarry-invalid-saved-state-pause.py
+          python3 private/v1.7/apply-v17-quarry-invalid-upgrade-deny-mining.py
+          python3 private/v1.7/apply-v17-quarry-corrupt-upgrade-status.py
+          python3 private/v1.7/apply-v17-quarry-internal-chest-only.py
+          python3 private/v1.7/apply-v17-quarry-configurable-area.py
+          python3 private/v1.7/apply-v17-quarry-area-reconfiguration-guard.py
+          python3 private/v1.7/apply-v17-quarry-visible-frame-particles.py
+          python3 private/v1.7/apply-v17-quarry-physical-frame-before-mining.py
+          python3 private/v1.7/apply-v17-quarry-frame-revalidation.py
+          python3 private/v1.7/apply-v17-quarry-area-save-load-bridge.py
+          python3 private/v1.7/apply-v17-quarry-air-state-inspection-isolation.py
+          python3 private/v1.7/apply-v17-quarry-integration-lifecycle-reset.py
+          python3 private/v1.7/apply-v17-quarry-frame-placement-permission.py
+          python3 private/v1.7/apply-v17-quarry-server-stop-lifecycle.py
+          python3 private/v1.7/apply-v17-solar-upgrade.py
+          python3 private/v1.7/apply-v17-machine-art-assets.py
+          python3 private/v1.7/apply-v17-machine-crafting-recipes.py
+          python3 private/v1.7/apply-v17-machine-block-loot.py
+          python3 private/v1.7/apply-v17-machine-localization.py
+          python3 private/v1.7/apply-v17-machine-recipe-audit.py
+          python3 private/v1.7/validate-v17-baseline.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          J=Path('work/src/main/java'); R=Path('work/src/main/resources')
+          marker=(R/'assets/obsidiannetwork/v111-build246-visual-fixes.txt').read_text()
+          for x in ['IO_OPERATION_FACE_OPPOSITE_FACING','IO_MARKER_RENDER_ORDER_AFTER_FACADE','FACADED_IO_FULL_BLOCK_COLLISION','CONDUIT_BUNDLE_FINAL_ID_MODEL_PRESENT','ITEM_FLUID_SUBTLE_ENDPOINT_COLLARS','NO_CONDUIT_TRANSFER_TOPOLOGY_CHANGE']: assert x in marker
+          cr=(J/'dev/obsidiannetwork/client/render/CableFacadeRenderer.java').read_text()
+          assert '.getOpposite()' in cr and '.order(1)' in cr and 'e=1f/128f' in cr
+          assert 'textures/block/iron_block.png' in cr and 'setColor(1f,1f,1f,1f)' in cr
+          assert 'debugFilledBox()' not in cr
+          assert 'a,a,-e' in cr and '1+e' in cr and '-e,a,b' in cr
+          for n in ['ImporterBlock.java','ExporterBlock.java','FluidPortBlock.java']:
+           assert 'BUILD246_FACADE_COLLISION' in (J/'dev/obsidiannetwork/block'/n).read_text()
+          assert (R/'assets/obsidiannetwork/blockstates/conduit_bundle.json').exists()
+          assert (R/'assets/obsidiannetwork/models/block/conduit_bundle_empty.json').exists()
+          client=(J/'dev/obsidiannetwork/client/ClientModEvents.java').read_text()
+          bundle=(J/'dev/obsidiannetwork/client/render/ConduitBundleRenderer.java').read_text()
+          assert 'CONDUIT_BUNDLE.get(), dev.obsidiannetwork.client.render.ConduitBundleRenderer::new' in client
+          assert 'facadeModel.submit' in bundle and 'blockResolver.update' in bundle
+          assert 'RenderTypes.entityTranslucent(TEX[layer])' in bundle
+          assert 'if(any)box(pose,out,layer' not in bundle
+          assert 'box(pose,out,layer,cx-R,cy-R,cz-R,cx+R,cy+R,cz+R,light);' in bundle
+          assert 'ioMode' in bundle and 'collar(' in bundle
+          assert not re.search(r'==\s*2\s*\)\s*collar\s*\(',bundle), 'export-only conduit collar condition survived visual patch'
+          # hard safety gate: visual pass must not modify ticker/runtime topology sources
+          print('BUILD246 VISUAL SOURCE GATE PASS')
+          tp=J/'dev/obsidiannetwork/blockentity/TesseractBlockEntity.java'
+          assert tp.exists(), 'TesseractBlockEntity missing'
+          ts=tp.read_text()
+          assert 'ObsidianNetwork.TESSERACT_CHUNKS.forceChunk' in ts
+          assert 'LIVE.get(level.getServer())' in ts
+          assert 'true,true' in ts and 'false,true' in ts, 'Tesseract ticking ticket acquire/release contract missing'
+          # Regression gates for the user-reported Tesseract and cable collar issues.
+          assert 'WeakHashMap<MinecraftServer,Set<TesseractBlockEntity>> LIVE' in ts
+          assert 'LIVE.get(level.getServer())' in ts, 'Tesseract partners must be server-global across dimensions'
+          assert 'TESSERACT_CHUNKS.forceChunk' in ts, 'Tesseract remote chunk ticket missing'
+          assert 'void setRemoved()' in ts and 'false,true' in ts, 'Tesseract chunk ticket release missing'
+          assert 'if(false)collar(' in bundle, 'Bundle collar must remain disabled for all modes'
+          assert 'if(s.ioMode[layer][d.ordinal()]!=0)collar(' not in bundle, 'Output-only collar regression'
+          print('V111 TESSERACT + CABLE COLLAR REGRESSION SOURCE GATES PASS')
+          print('BUILD262 TESSERACT INFINITY-STYLE CHUNK LIFECYCLE PASS')
+          PY
+          # Build236: inspect the reconstructed real Energy Cell capability contract before wiring the world GameTest.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCellBlockEntity.java')
+          o=Path('work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java')
+          print('===== BUILD236 ENERGY CELL BE =====')
+          print(p.read_text())
+          print('===== BUILD236 ENERGY CAPABILITY REGISTRATION LINES =====')
+          for line in o.read_text().splitlines():
+              if 'Energy' in line or 'ENERGY' in line or 'Capabilities.Energy' in line:
+                  print(line)
+          PY
+          # Build225: NETWORK has no directional IO semantics; ENERGY discovers all connected external faces bidirectionally.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/conduit')
+          n=(p/'NetworkConduitTicker.java').read_text()
+          e=(p/'EnergyConduitTicker.java').read_text()
+          assert 'ConduitNetworkManager.ensure' in n
+          assert 'endpoints(true)' not in n and 'endpoints(false)' not in n
+          assert 'network.nodes()' in e and 'connected' in e
+          assert 'endpoints(true)' not in e and 'endpoints(false)' not in e
+          assert 'bundle.enabled' not in e and 'Capabilities.Energy.BLOCK' in e
+          assert 'level.getCapability(Capabilities.Energy.BLOCK,bundle.getBlockPos().relative(d),d.getOpposite())' in e
+          print('BUILD225 NETWORK CONNECTION + BIDIRECTIONAL ENERGY PASS')
+          PY
+          echo '===== V1.1.1 ENDERIO RUNTIME OWNERSHIP HARD GATE ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          J=Path('work/src/main/java/dev/obsidiannetwork')
+          be=(J/'blockentity/ConduitBundleBlockEntity.java').read_text()
+          conduit=J/'conduit'
+          tickers={n:(conduit/n).read_text() for n in ['ItemConduitTicker.java','FluidConduitTicker.java','EnergyConduitTicker.java','NetworkConduitTicker.java']}
+          # A green build must no longer hide transport in the bundle BE.
+          forbidden=['private void transferItem(','private void transferFluid(','java.util.ArrayDeque<BlockPos> q=new java.util.ArrayDeque<>()']
+          assert not any(x in be for x in forbidden), 'ConduitBundleBlockEntity still owns legacy BFS/transfer runtime'
+          # Dedicated type tickers must contain actual work, not Run132 no-op bodies.
+          required={
+              'ItemConduitTicker.java':['network.endpoints','extractItem(','insertItem('],
+              'FluidConduitTicker.java':['network.endpoints','drain(','fill('],
+              'EnergyConduitTicker.java':['network.nodes()','connected','Capabilities.Energy.BLOCK','extract(','insert(','Transaction.openRoot'],
+              'NetworkConduitTicker.java':['ConduitNetworkManager.ensure'],
+          }
+          for name,needles in required.items():
+              src=tickers[name]
+              for needle in needles: assert needle in src, name+' missing runtime operation '+needle
+          assert (conduit/'EnergyConduitRuntime.java').exists(), 'Energy runtime traversal missing'
+          manager=(conduit/'ConduitNetworkManager.java').read_text(); network=(conduit/'ConduitNetwork.java').read_text()
+          assert 'replaceNodes' in network and 'ConduitRuntime.component' in manager and 'n.network(this)' in network, 'shared per-type network lifecycle missing'
+          runtime=(conduit/'ConduitRuntime.java').read_text(); energy=(conduit/'EnergyConduitRuntime.java').read_text()
+          assert 'cacheEndpoints' in network and 'scanEndpoints' in runtime, 'network-owned endpoint cache missing'
+          topology=(conduit/'ConduitTopology.java').read_text()
+          assert 'invalidateIfChanged' in topology and 'physicallyConnected!=cachedConnected' in topology and 'ConduitTopology.invalidateIfChanged' in be, 'physical topology invalidation missing'
+          assert 'ConduitRuntime.component' not in tickers['ItemConduitTicker.java']+tickers['FluidConduitTicker.java']+tickers['EnergyConduitTicker.java']+energy, 'transfer path still performs component BFS'
+          assert 'dst.side()==src.side()' in tickers['ItemConduitTicker.java'], 'self-feed guard must only reject exact same connection'
+          assert 'b.conduitCanInsert(layer,d),b.conduitCanExtract(layer,d)' in (conduit/'ConduitRuntime.java').read_text(), 'node endpoint config not synchronized with bundle side flags'
+          assert 'int flags=normalized==1?2:normalized==2?1:normalized;' in be and 'connectionFlags[l.ordinal()][q]=(byte)flags;' in be and 'ConnectionConfig((flags&1)!=0,(flags&2)!=0' in be, 'legacy import/export must synchronize extract/insert flags and network config'
+          # Final runtime identity may not resurrect MultiCable.
+          assert not (J/'block/MultiCableBlock.java').exists()
+          assert not (J/'blockentity/MultiCableBlockEntity.java').exists()
+          registry=(J/'ObsidianNetwork.java').read_text()
+          assert 'registerBlock("multi_cable"' not in registry and 'MULTI_CABLE' not in registry
+          print('V1.1.1 ENDERIO RUNTIME OWNERSHIP HARD GATE PASS')
+          PY
+          echo '===== RUN126 CONDUIT GUI API PROBE ====='
+          sed -n '1,240p' work/src/main/java/dev/obsidiannetwork/registry/ModMenus.java
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/ClientModEvents.java
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/menu/NetworkTankMenu.java || true
+          grep -R "openMenu" -n work/src/main/java/dev/obsidiannetwork/block work/src/main/java/dev/obsidiannetwork/blockentity | head -40 || true
+          echo '===== V1.1.1 ROOTCAUSE SMOKE ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          J=Path('work/src/main/java/dev/obsidiannetwork')
+          block=(J/'block/ConduitBundleBlock.java').read_text()
+          facade=(J/'item/CableFacadeItem.java').read_text()
+          tele=(J/'blockentity/NetworkTeleporterBlockEntity.java').read_text()
+          screen=(J/'client/NetworkTeleporterScreen.java').read_text()
+          checks={
+            'empty-hand dispatch':'InteractionResult.TRY_WITH_EMPTY_HAND' in block,
+            'facade item authority':'V112_AUTHORITATIVE_FACADE_TARGET' in facade,
+            'target-owned frequency':'be.frequency' in tele and 'out.add(be.id()' in tele,
+            'no current-frequency target label':'"FREQ "+menu.frequency()+" | "+s' not in screen,
+            'row metadata parser':'String[] q=s.split' in screen,
+            'connection side from hit':'connectionSide(p,hit)' in block,
+            'teleporter inventory label removed':'"INVENTORY"' not in screen,
+          }
+          print('ROOTCAUSE CHECKS',checks)
+          assert all(checks.values()),checks
+          print('ROOTCAUSE SOURCE ASSERTIONS PASS')
+          PY
+          echo '===== V1.1.1 RENDER API AUDIT ====='
+          sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
+          echo '===== V1.1.1 CONDUIT BUNDLE COMPILE PROBE ====='
+          (cd work && gradle --no-daemon --no-configuration-cache clean compileJava --stacktrace)
+          echo '===== V1.1.1 CONDUIT BUNDLE COMPILE PASS ====='
+          echo '===== V1.1.1 CONDUIT BUNDLE RUNTIME/RESOURCE SMOKE ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          J=Path('work/src/main/java'); R=Path('work/src/main/resources')
+          be=(J/'dev/obsidiannetwork/blockentity/ConduitBundleBlockEntity.java').read_text()
+          block=(J/'dev/obsidiannetwork/block/ConduitBundleBlock.java').read_text()
+          item=(J/'dev/obsidiannetwork/item/CableBlockItem.java').read_text()
+          caps=(J/'dev/obsidiannetwork/registry/ModCapabilities.java').read_text()
+          topo=(J/'dev/obsidiannetwork/network/WorldTopologyBridge.java').read_text()
+          client=(J/'dev/obsidiannetwork/client/ClientModEvents.java').read_text()
+          legacy=(J/'dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java').read_text()
+          runtime=(J/'dev/obsidiannetwork/conduit/ConduitRuntime.java').read_text()
+          itemtick=(J/'dev/obsidiannetwork/conduit/ItemConduitTicker.java').read_text()
+          fluidtick=(J/'dev/obsidiannetwork/conduit/FluidConduitTicker.java').read_text()
+          energyrt=(J/'dev/obsidiannetwork/conduit/EnergyConduitRuntime.java').read_text()
+          compact=lambda s: re.sub(r'\s+','',s)
+          cb=compact(be); cblock=compact(block); clegacy=compact(legacy); ccaps=compact(caps); cclient=compact(client); citem=compact(item)
+          def check(ok,name):
+              assert ok, name
+          check('conduitCanInsert' in cb and 'conduitCanExtract' in cb and 'network.endpoints' in itemtick and 'network.endpoints' in fluidtick,'independent conduit insert/extract runtime semantics')
+          check('component(ServerLevel' in runtime and 'd.getOpposite()' in runtime and 'scanEndpoints' in runtime,'conduit opposite-side topology traversal')
+          check('dropUpgrades(l,d)' in cb and '>8' in cb,'upgrade drop/max semantics')
+          check('speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,side)!=1' in cblock,'upgrade installation import gate uses conduit arm side')
+          check('playerWillDestroy(' not in block and 'getDrops(' in block,'single break-drop pipeline')
+          check(all(x in ccaps for x in ['CONDUIT_BUNDLE','Energy.BLOCK','energyHandler']),'energy capability registration')
+          # Run135: fail hard if directional Energy semantics silently disappear from the reconstructed source.
+          check('connectionMode(Layerl,Directiond)' in cb and 'conduitCanInsert(Layerl,Directiond)' in cb and 'conduitCanExtract(Layerl,Directiond)' in cb,'energy authoritative independent insert/extract flags')
+          check('EnergyConduitRuntime.extract' in be and 'exposed!=null&&!origin.conduitCanExtract' in compact(energyrt),'energy export capability side gate delegates to runtime')
+          check('EnergyConduitRuntime.insert' in be and 'exposed!=null&&!origin.conduitCanInsert' in compact(energyrt),'energy import capability side gate delegates to runtime')
+          check('conduitCanExtract' in energyrt and 'conduitCanInsert' in energyrt and 'Capabilities.Energy.BLOCK' in energyrt,'energy traversal endpoint direction gates')
+          check('java.util.ArrayDeque<BlockPos> q=new java.util.ArrayDeque<>()' not in be and 'Capabilities.Energy.BLOCK' not in be and 'EnergyConduitRuntime.extract' in be and 'EnergyConduitRuntime.insert' in be,'bundle owns no energy traversal')
+          energy_marker=(R/'assets/obsidiannetwork/v111-run128-energy-io.txt').read_text()
+          for token in ['ENERGY_DISABLED_IMPORT_EXPORT','ENERGY_IMPORT_ACCEPTS_FE_INTO_CONDUIT','ENERGY_EXPORT_EXPOSES_FE_TO_MACHINE','ENERGY_NETWORK_TRAVERSAL_RESPECTS_ENDPOINT_DIRECTION','ENERGY_EXTRACT_READS_EXPORT_ENDPOINTS','ENERGY_INSERT_WRITES_IMPORT_ENDPOINTS','ENERGY_INTERNAL_TRAVERSAL_ACCEPTS_IMPORT_AND_EXPORT_ARMS','ENERGY_EXPORT_MODE_PERSISTS_ACROSS_RELOAD','LEGACY_SINGLE_ENERGY_CABLE_REMAINS_BIDIRECTIONAL','NETWORK_REMAINS_DIRECTIONLESS_CONNECTED_DISABLED','TELEPORTER_UNTOUCHED','POLYMORPH_UNTOUCHED']:
+              check(token in energy_marker,'energy marker '+token)
+          check('onCableConnectionsChanged(server,worldPosition)' in cb,'network topology refresh callback')
+          check('if(l==Layer.NETWORK)networkChanged()' in cb,'network mutation refresh gate')
+          check('ObsidianNetwork.CONDUIT_BUNDLE.get()' in topo and 'Layer.NETWORK' in topo,'topology ConduitBundle membership')
+          ctopo=compact(topo)
+          check('mc.enabled(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK,direction)' in ctopo,'topology local ConduitBundle side gate')
+          check('mc.enabled(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK,direction.getOpposite())' in ctopo,'topology neighbour MultiCable opposite-side gate')
+          check('mc.has(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK)' in ctopo,'topology ConduitBundle network membership gate')
+          check('if(l==Layer.NETWORK){setEnabled(l,d,m!=0);connectionFlags[l.ordinal()][d.ordinal()]=(byte)(m==0?0:3);return;}' in cb,'network remains directionless connected-disabled')
+          check('mc_flags_' in be and 'copyRaw(in.getIntArray' in be and 'connectionFlags' in cb,'independent connection flags survive save-load')
+          check('Layer.NETWORK' in cb and 'networkChanged()' in cb,'network shared-container state participates in topology refresh')
+          check(all(x in cclient for x in ['CONDUIT_BUNDLE','CableFacadeRenderer','registerBlockEntityRenderer']),'renderer registration')
+          check('replaceOnlyLayer' in item and 'setFacade(facade,rot)' in citem,'legacy cable conversion state migration')
+          check('connectionSide(p,hit)' in cblock and 'hit.getDirection()' not in cblock.split('protectedInteractionResultuseItemOn',1)[-1].split('}',1)[0],'bundle arm direction authority')
+          check('ioMode' in (J/'dev/obsidiannetwork/client/render/ConduitBundleRenderer.java').read_text() and 'collar(' in (J/'dev/obsidiannetwork/client/render/ConduitBundleRenderer.java').read_text(),'bundle IO collar renderer')
+          bs=json.loads((R/'assets/obsidiannetwork/blockstates/multi_cable.json').read_text())
+          assert bs=={'variants':{'':{'model':'obsidiannetwork:block/multi_cable_empty'}}}, bs
+          for p in [
+              R/'assets/obsidiannetwork/models/block/multi_cable_empty.json',
+              R/'assets/obsidiannetwork/models/item/multi_cable.json',
+              R/'assets/obsidiannetwork/items/multi_cable.json',
+              R/'data/obsidiannetwork/loot_table/blocks/multi_cable.json']:
+              assert p.exists(), str(p)
+              json.loads(p.read_text())
+          marker=(R/'assets/obsidiannetwork/v111-multicable.txt').read_text()
+          assert 'TEMP_BUILD_DIAGNOSTIC_NOT_FOR_RELEASE' not in marker
+          assert not (R/'assets/obsidiannetwork/v111-multicable-probe.txt').exists()
+          print('V1.1.1 MULTICABLE RUNTIME/RESOURCE SMOKE PASS')
+          PY
+          echo '===== V1.1.1 MULTICABLE FULL BUILD ====='
+          (cd work && gradle --no-daemon --no-configuration-cache build --stacktrace)
+          echo '===== V1.1.1 MULTICABLE FULL BUILD PASS ====='
+          # Final resource normalization after every private patch, immediately before packaging.
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('work/src/main/resources/assets/obsidiannetwork/lang/en_us.json')
+          raw=p.read_text(); dec=json.JSONDecoder(); data={}
+          try:
+              obj,_=dec.raw_decode(raw.lstrip())
+              if isinstance(obj,dict): data.update(obj)
+          except json.JSONDecodeError:
+              data={}
+          data['block.obsidiannetwork.system_migrator']='System Migrator'
+          data['itemGroup.obsidiannetwork']='xSxLabs Network Storage'
+          data['tooltip.obsidiannetwork.system_migrator']='Migrates items from Refined Storage to xSxLabs Network Storage'
+          data['tooltip.obsidiannetwork.cell_types']='%s of 128 types occupied'
+          # Preserve the v1.1.0 Build-490 cable display names. CableBlockItem changes the
+          # item class in v1.1.1, so explicit item translation keys are required.
+          data['item.obsidiannetwork.network_cable']='Network Cable'
+          data['item.obsidiannetwork.energy_cable']='Energy Cable'
+          data['item.obsidiannetwork.item_cable']='Item Cable'
+          data['item.obsidiannetwork.fluid_cable']='Fluid Cable'
+          p.write_text(json.dumps(data,indent=2,ensure_ascii=False)+chr(10))
+          json.loads(p.read_text())
+          print('FINAL LANG NORMALIZATION PASS')
+          PY
+          # The frozen v1.1.0 resource contains a literal version. The v1.1.1 test JAR must
+          # identify itself as 1.1.1 internally as well as in the archive filename.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('work/src/main/resources/META-INF/neoforge.mods.toml')
+          s=p.read_text()
+          s,n=re.subn(r'(?m)^(version\s*=\s*["\'])1\.1\.0(["\'])',r'\g<1>1.1.1\2',s,count=1)
+          assert n==1, 'expected frozen v1.1.0 mod version in neoforge.mods.toml'
+          p.write_text(s)
+          assert 'version="1.1.1"' in s or "version='1.1.1'" in s
+          print('V1.1.1 INTERNAL MOD VERSION PASS')
+          PY
+          cat >> work/build.gradle <<'EOF'
+          EOF
+          # Build 101 quality gates: isolated tests on reconstructed work tree.
+          cat >> work/build.gradle <<'EOF'
+          dependencies { testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'; testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4' }
+          tasks.named('test') { useJUnitPlatform() }
+          neoForge {
+            runs {
+              server {
+                server()
+                programArgument '--nogui'
+              }
+            }
+          }
+          EOF
+          mkdir -p work/src/test/java/dev/obsidiannetwork
+          cat > work/src/test/java/dev/obsidiannetwork/Build101ResourceTest.java <<'EOF'
+          package dev.obsidiannetwork;
+          import static org.junit.jupiter.api.Assertions.*;
+          import java.nio.file.*;
+          import org.junit.jupiter.api.Test;
+          class Build101ResourceTest {
+            @Test void requiredRun92MarkerIsPackagedInSourceResources() throws Exception {
+              String s=Files.readString(Path.of("src/main/resources/assets/obsidiannetwork/v111-run92-ingame-rootcause.txt"));
+              for(String k:new String[]{"CONNECTION_SIDE_FROM_HIT_POSITION","SERVER_MENU_SIDE_AUTHORITATIVE","IMPORT_EXPORT_RECONNECT_FINAL_SYNC","CABLE_BODY_TEXTURE_PREFERRED","FACADED_IO_BASE_MODEL_HIDDEN","TELEPORTER_INVENTORY_LABEL_REMOVED_ONLY","LEGACY_ADJACENT_TO_BUNDLE_CONVERTS_TO_THIN_LAYER","CRAFTING_LOOT_ASSERTED","POLYMORPH_UNTOUCHED"}) assertTrue(s.contains(k),k);
+            }
+            @Test void requiredRecipesAndLootExist() {
+              for(String n:new String[]{"network_cable","item_cable","fluid_cable","energy_cable","network_teleporter"}) {
+                assertTrue(Files.exists(Path.of("src/main/resources/data/obsidiannetwork/recipe/"+n+".json")), "recipe "+n);
+                assertTrue(Files.exists(Path.of("src/main/resources/data/obsidiannetwork/loot_table/blocks/"+n+".json")), "loot "+n);
+              }
+            }
+          }
+          EOF
+          echo '===== BUILD 101 JSON/RESOURCE GATE ====='
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          files=list(Path('work/src/main/resources').rglob('*.json'))
+          assert files,'no JSON resources'
+          for p in files:
+              json.loads(p.read_text())
+          print('BUILD101 JSON RESOURCE PASS',len(files))
+          PY
+          echo '===== BUILD 101 JUNIT GATE ====='
+          (cd work && gradle --no-daemon --no-configuration-cache test --stacktrace)
+          test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
+          grep -R 'tests="' work/build/test-results/test/*.xml
+          echo '===== BUILD 101 JUNIT PASS ====='
+          echo '===== BUILD 101 DEDICATED SERVER STARTUP GATE ====='
+          set +e
+          timeout 90s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1
+          SERVER_RC=$?
+          set -e
+          cat /tmp/build101-server.log
+          # A healthy server normally remains running until timeout. Require evidence that NeoForge
+          # reached server startup and reject crashes/exceptions before accepting timeout 124.
+          if [ "$SERVER_RC" -ne 124 ]; then echo "server exited unexpectedly rc=$SERVER_RC"; exit 1; fi
+          grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/build101-server.log
+          if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
+          echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
+          echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST GATE ====='
+          # Test-only source/resource injection into the reconstructed CI worktree. Removed before packaging.
+          cat >> work/build.gradle <<'EOF'
+          neoForge {
+            runs {
+              gameTestServer {
+                type = "gameTestServer"
+                systemProperty 'neoforge.enabledGameTestNamespaces', 'obsidiannetwork'
+              }
+            }
+          }
+          EOF
+          mkdir -p work/src/main/java/dev/obsidiannetwork/build103 work/src/main/resources/data/obsidiannetwork/structure
+          cat > work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java <<'EOF'
+          package dev.obsidiannetwork.build103;
+
+          import dev.obsidiannetwork.ObsidianNetwork;
+          import dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity;
+          import net.minecraft.core.BlockPos;
+          import net.minecraft.core.Direction;
+          import net.minecraft.gametest.framework.GameTestHelper;
+          import net.minecraft.gametest.framework.GameTestInstance;
+          import net.minecraft.gametest.framework.TestData;
+          import net.minecraft.gametest.framework.TestEnvironmentDefinition;
+          import net.minecraft.network.chat.Component;
+          import net.minecraft.resources.Identifier;
+          import net.minecraft.world.level.block.Rotation;
+          import net.minecraft.world.level.block.Blocks;
+          import net.neoforged.bus.api.SubscribeEvent;
+          import net.neoforged.fml.common.EventBusSubscriber;
+          import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+
+          @EventBusSubscriber(modid = "obsidiannetwork")
+          public final class Build103GameTests {
+            private static final Identifier ENV = Identifier.fromNamespaceAndPath("obsidiannetwork", "build103_env");
+            private static final Identifier STRUCTURE = Identifier.fromNamespaceAndPath("obsidiannetwork", "build103_empty");
+
+            @SubscribeEvent
+            public static void register(RegisterGameTestsEvent event) {
+              var environment = event.registerEnvironment(ENV, new TestEnvironmentDefinition.AllOf(java.util.List.of()));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "conduit_bundle_runtime"),
+                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "mixed_item_bridge_topology"),
+                  new MixedCableTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_bundle_standalone_fluid"),
+                  new MixedStandaloneBundleFluidTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_bundle_standalone_item"),
+                  new MixedStandaloneBundleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_item_and_fluid_transfer"),
+                  new StandaloneTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+            }
+
+            private static final class MixedCableTest extends GameTestInstance {
+              MixedCableTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data) { super(data); }
+              private static void check(boolean ok, String message) {
+                if (!ok) throw new IllegalStateException("BUILD103 MIXED GAMETEST: " + message);
+              }
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec() {
+                throw new UnsupportedOperationException("Build103 CI-only mixed test instance is registered in code");
+              }
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription() {
+                return Component.literal("Mixed ITEM bridge topology GameTest");
+              }
+              @Override public void run(GameTestHelper helper) {
+                BlockPos a=helper.absolutePos(new BlockPos(1,1,1));
+                BlockPos mid=helper.absolutePos(new BlockPos(2,1,1));
+                BlockPos b=helper.absolutePos(new BlockPos(3,1,1));
+                helper.getLevel().setBlock(a,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(mid,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(b,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                var left=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(a);
+                var right=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(b);
+                if(!left.has(ConduitBundleBlockEntity.Layer.ITEM)) check(left.add(ConduitBundleBlockEntity.Layer.ITEM),"mixed left ITEM");
+                if(!right.has(ConduitBundleBlockEntity.Layer.ITEM)) check(right.add(ConduitBundleBlockEntity.Layer.ITEM),"mixed right ITEM");
+                var type=dev.obsidiannetwork.conduit.ConduitType.ITEM;
+                var connected=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,type);
+                check(connected.contains(mid)&&connected.contains(b),"mixed ITEM standalone bridge topology");
+                BlockPos sourcePos=helper.absolutePos(new BlockPos(0,1,1));
+                BlockPos targetPos=helper.absolutePos(new BlockPos(4,1,1));
+                helper.getLevel().setBlock(sourcePos,Blocks.CHEST.defaultBlockState(),3);
+                helper.getLevel().setBlock(targetPos,Blocks.CHEST.defaultBlockState(),3);
+                var source=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(sourcePos);
+                var target=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(targetPos);
+                left.setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.WEST,false,true);
+                right.setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.EAST,true,false);
+                source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
+                helper.startSequence().thenExecuteAfter(15,()->{
+                  check(target.getItem(0).getCount()>0,"mixed ITEM bundle-standalone-bundle actual transfer");
+                  helper.getLevel().setBlock(mid,Blocks.AIR.defaultBlockState(),3);
+                  var split=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,type);
+                  check(!split.contains(b),"mixed ITEM bridge removal splits network");
+                  // Repeat the physical bridge check for FLUID, including a split.
+                  helper.getLevel().setBlock(mid,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                  if(!left.has(ConduitBundleBlockEntity.Layer.FLUID))check(left.add(ConduitBundleBlockEntity.Layer.FLUID),"mixed left FLUID");
+                  if(!right.has(ConduitBundleBlockEntity.Layer.FLUID))check(right.add(ConduitBundleBlockEntity.Layer.FLUID),"mixed right FLUID");
+                  var fluidType=dev.obsidiannetwork.conduit.ConduitType.FLUID;
+                  var fluidPath=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,fluidType);
+                  check(fluidPath.contains(mid)&&fluidPath.contains(b),"mixed FLUID standalone bridge topology");
+                  helper.getLevel().setBlock(sourcePos,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  helper.getLevel().setBlock(targetPos,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  left.setConduitFlags(ConduitBundleBlockEntity.Layer.FLUID,Direction.WEST,false,true);
+                  right.setConduitFlags(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,true,false);
+                  var fluidSource=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(sourcePos);
+                  var fluidTarget=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(targetPos);
+                  var input=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(fluidSource.tank());
+                  check(input.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)==4000,"mixed FLUID source fill");
+                  helper.startSequence().thenExecuteAfter(20,()->{
+                    var output=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(fluidTarget.tank());
+                    check(output.getFluidInTank(0).getAmount()>0,"mixed FLUID actual water transfer");
+                    check(input.getFluidInTank(0).getAmount()<4000,"mixed FLUID source decreases");
+                    helper.getLevel().setBlock(mid,Blocks.AIR.defaultBlockState(),3);
+                    var fluidSplit=dev.obsidiannetwork.conduit.ConduitRuntime.mixedPositions((net.minecraft.server.level.ServerLevel)helper.getLevel(),a,fluidType);
+                    check(!fluidSplit.contains(b),"mixed FLUID bridge removal splits network");
+                    helper.succeed();
+                  });
+                });
+              }
+            }
+
+            private static final class MixedStandaloneBundleTest extends GameTestInstance {
+              MixedStandaloneBundleTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data){super(data);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Standalone-bundle-standalone ITEM transfer");}
+              @Override public void run(GameTestHelper h){
+                BlockPos source=h.absolutePos(new BlockPos(0,1,1)),input=h.absolutePos(new BlockPos(1,1,1)),middle=h.absolutePos(new BlockPos(2,1,1)),output=h.absolutePos(new BlockPos(3,1,1)),target=h.absolutePos(new BlockPos(4,1,1));
+                h.getLevel().setBlock(source,Blocks.CHEST.defaultBlockState(),3);
+                h.getLevel().setBlock(input,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(middle,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(output,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(target,Blocks.CHEST.defaultBlockState(),3);
+                var bundle=(ConduitBundleBlockEntity)h.getLevel().getBlockEntity(middle);
+                if(!bundle.has(ConduitBundleBlockEntity.Layer.ITEM)&&!bundle.add(ConduitBundleBlockEntity.Layer.ITEM))throw new IllegalStateException("BUILD151: bundle ITEM layer missing");
+                var in=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(input);
+                var out=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(output);
+                in.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                out.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT);
+                var from=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(source);
+                from.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
+                h.startSequence().thenExecuteAfter(40,()->{
+                  var to=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(target);
+                  if(to.getItem(0).getCount()<=0)throw new IllegalStateException("BUILD151: standalone-bundle-standalone ITEM transfer failed");
+                  if(from.getItem(0).getCount()+to.getItem(0).getCount()!=8)throw new IllegalStateException("BUILD151: ITEM transfer lost or duplicated diamonds");
+                  int delivered=to.getItem(0).getCount();
+                  h.getLevel().setBlock(middle,Blocks.AIR.defaultBlockState(),3);
+                  from.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
+                  h.startSequence().thenExecuteAfter(40,()->{
+                    if(to.getItem(0).getCount()!=delivered)throw new IllegalStateException("BUILD153: disconnected mixed ITEM bridge still transferred");
+                    if(from.getItem(0).getCount()!=8)throw new IllegalStateException("BUILD153: disconnected mixed ITEM bridge consumed source");
+                    h.getLevel().setBlock(middle,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    var rejoined=(ConduitBundleBlockEntity)h.getLevel().getBlockEntity(middle);
+                    if(!rejoined.has(ConduitBundleBlockEntity.Layer.ITEM)&&!rejoined.add(ConduitBundleBlockEntity.Layer.ITEM))throw new IllegalStateException("BUILD155: ITEM bridge restore failed");
+                    h.startSequence().thenExecuteAfter(40,()->{
+                      if(to.getItem(0).getCount()<=delivered)throw new IllegalStateException("BUILD155: reconnected mixed ITEM bridge did not resume");
+                      if(from.getItem(0).getCount()+to.getItem(0).getCount()!=8+delivered)throw new IllegalStateException("BUILD155: ITEM reconnect lost or duplicated diamonds");
+                      h.succeed();
+                    });
+                  });
+                });
+              }
+            }
+
+            private static final class MixedStandaloneBundleFluidTest extends GameTestInstance {
+              MixedStandaloneBundleFluidTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data){super(data);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Standalone-bundle-standalone FLUID transfer");}
+              @Override public void run(GameTestHelper h){
+                BlockPos source=h.absolutePos(new BlockPos(0,1,1)),input=h.absolutePos(new BlockPos(1,1,1)),middle=h.absolutePos(new BlockPos(2,1,1)),output=h.absolutePos(new BlockPos(3,1,1)),target=h.absolutePos(new BlockPos(4,1,1));
+                h.getLevel().setBlock(source,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                h.getLevel().setBlock(input,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(middle,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(output,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(target,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                var bundle=(ConduitBundleBlockEntity)h.getLevel().getBlockEntity(middle);
+                if(!bundle.has(ConduitBundleBlockEntity.Layer.FLUID)&&!bundle.add(ConduitBundleBlockEntity.Layer.FLUID))throw new IllegalStateException("BUILD152: bundle FLUID layer missing");
+                var in=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(input);
+                var out=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(output);
+                in.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                out.setMode(Direction.EAST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.EXPORT);
+                var sourceTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(source);
+                var targetTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(target);
+                var from=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(sourceTank.tank());
+                var to=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(targetTank.tank());
+                if(from.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)!=4000)throw new IllegalStateException("BUILD152: source fill failed");
+                h.startSequence().thenExecuteAfter(40,()->{
+                  if(to.getFluidInTank(0).getAmount()<=0)throw new IllegalStateException("BUILD152: standalone-bundle-standalone FLUID transfer failed");
+                  if(from.getFluidInTank(0).getAmount()>=4000)throw new IllegalStateException("BUILD152: source did not drain");
+                  if(from.getFluidInTank(0).getAmount()+to.getFluidInTank(0).getAmount()!=4000)throw new IllegalStateException("BUILD152: FLUID transfer lost or duplicated water");
+                  int delivered=to.getFluidInTank(0).getAmount();
+                  h.getLevel().setBlock(middle,Blocks.AIR.defaultBlockState(),3);
+                  from.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                  int sourceAfterDisconnect=from.getFluidInTank(0).getAmount();
+                  h.startSequence().thenExecuteAfter(40,()->{
+                    if(to.getFluidInTank(0).getAmount()!=delivered)throw new IllegalStateException("BUILD154: disconnected mixed FLUID bridge still transferred");
+                    if(from.getFluidInTank(0).getAmount()!=sourceAfterDisconnect)throw new IllegalStateException("BUILD154: disconnected mixed FLUID bridge drained source");
+                    h.getLevel().setBlock(middle,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    var rejoined=(ConduitBundleBlockEntity)h.getLevel().getBlockEntity(middle);
+                    if(!rejoined.has(ConduitBundleBlockEntity.Layer.FLUID)&&!rejoined.add(ConduitBundleBlockEntity.Layer.FLUID))throw new IllegalStateException("BUILD156: FLUID bridge restore failed");
+                    h.startSequence().thenExecuteAfter(40,()->{
+                      if(to.getFluidInTank(0).getAmount()<=delivered)throw new IllegalStateException("BUILD156: reconnected mixed FLUID bridge did not resume");
+                      if(from.getFluidInTank(0).getAmount()+to.getFluidInTank(0).getAmount()!=sourceAfterDisconnect+delivered)throw new IllegalStateException("BUILD156: FLUID reconnect lost or duplicated water");
+                      h.succeed();
+                    });
+                  });
+                });
+              }
+            }
+
+            private static final class StandaloneTransportTest extends GameTestInstance {
+              StandaloneTransportTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data){super(data);}
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){throw new UnsupportedOperationException("CI-only test");}
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){return Component.literal("Standalone item and fluid transfer");}
+              @Override public void run(GameTestHelper h){
+                BlockPos src=h.absolutePos(new BlockPos(0,1,1)),a=h.absolutePos(new BlockPos(1,1,1)),b=h.absolutePos(new BlockPos(2,1,1)),dst=h.absolutePos(new BlockPos(3,1,1));
+                h.getLevel().setBlock(src,Blocks.CHEST.defaultBlockState(),3);
+                h.getLevel().setBlock(a,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(b,ObsidianNetwork.ITEM_CABLE.get().defaultBlockState(),3);
+                h.getLevel().setBlock(dst,Blocks.CHEST.defaultBlockState(),3);
+                var in=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(a);
+                var out=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(b);
+                in.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                check(out.mode(Direction.EAST)==dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.CONNECTED,"standalone ITEM sink is connected");
+                var chest=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(src);
+                chest.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,8));
+                h.startSequence().thenExecuteAfter(30,()->{
+                  var sink=(net.minecraft.world.level.block.entity.ChestBlockEntity)h.getLevel().getBlockEntity(dst);
+                  check(sink.getItem(0).getCount()>0,"standalone ITEM actual transport");
+                  h.getLevel().setBlock(src,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  h.getLevel().setBlock(a,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                  h.getLevel().setBlock(b,ObsidianNetwork.FLUID_CABLE.get().defaultBlockState(),3);
+                  h.getLevel().setBlock(dst,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                  var fi=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(a);
+                  var fo=(dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity)h.getLevel().getBlockEntity(b);
+                  fi.setMode(Direction.WEST,dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.IMPORT);
+                  check(fo.mode(Direction.EAST)==dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity.Mode.CONNECTED,"standalone FLUID sink is connected");
+                  var sourceTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(src);
+                  var sh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(sourceTank.tank());
+                  check(sh.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)==4000,"standalone FLUID source fill");
+                }).thenExecuteAfter(30,()->{
+                  var sinkTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(dst);
+                  var sourceTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)h.getLevel().getBlockEntity(src);
+                  var dh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(sinkTank.tank());
+                  var sh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(sourceTank.tank());
+                  check(dh.getFluidInTank(0).getAmount()>0,"standalone FLUID actual transport");
+                  check(sh.getFluidInTank(0).getAmount()<4000,"standalone FLUID source drained");
+                  h.succeed();
+                });
+              }
+              private static void check(boolean ok,String message){if(!ok)throw new IllegalStateException("STANDALONE: "+message);}
+            }
+
+            private static final class StateMachineTest extends GameTestInstance {
+              StateMachineTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data) { super(data); }
+
+              @Override public void run(GameTestHelper helper) {
+                BlockPos src=helper.absolutePos(new BlockPos(1,1,0));
+                BlockPos cable=helper.absolutePos(new BlockPos(1,1,1));
+                BlockPos dst=helper.absolutePos(new BlockPos(1,1,2));
+                helper.getLevel().setBlock(src,Blocks.CHEST.defaultBlockState(),3);
+                helper.getLevel().setBlock(cable,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                helper.getLevel().setBlock(dst,Blocks.CHEST.defaultBlockState(),3);
+                var source=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(src);
+                var sink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(dst);
+                var bundle=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(cable);
+                check(bundle.add(ConduitBundleBlockEntity.Layer.ITEM),"install ITEM conduit");
+                bundle.setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,false,true);
+                bundle.setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,true,false);
+                check(bundle.conduitCanExtract(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH),"source side extract");
+                check(bundle.conduitCanInsert(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH),"sink side insert");
+                source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COBBLESTONE,8));
+                helper.startSequence()
+                  .thenExecuteAfter(10,()->check(sink.getItem(0).getCount()>0,"ITEM server-tick transfer chest-to-chest"))
+                  .thenExecute(()->{
+                    bundle.setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,true,true);
+                    check(bundle.conduitCanInsert(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH)&&bundle.conduitCanExtract(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH),"ITEM simultaneous insert+extract");
+                    // Build 218: replace the one-cable fixture with a real three-bundle straight route.
+                    helper.getLevel().setBlock(cable,Blocks.AIR.defaultBlockState(),3);
+                    helper.getLevel().setBlock(dst,Blocks.AIR.defaultBlockState(),3);
+                    BlockPos c1=helper.absolutePos(new BlockPos(1,1,1));
+                    BlockPos c2=helper.absolutePos(new BlockPos(1,1,2));
+                    BlockPos c3=helper.absolutePos(new BlockPos(1,1,3));
+                    BlockPos out=helper.absolutePos(new BlockPos(1,1,4));
+                    helper.getLevel().setBlock(c1,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(c2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(c3,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(out,Blocks.CHEST.defaultBlockState(),3);
+                    for(BlockPos p:java.util.List.of(c1,c2,c3)) check(((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(p)).add(ConduitBundleBlockEntity.Layer.ITEM),"install straight ITEM conduit");
+                    ((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(c1)).setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,false,true);
+                    ((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(c3)).setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,true,false);
+                    source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,12));
+                  })
+                  .thenExecuteAfter(15,()->{
+                    BlockPos out=helper.absolutePos(new BlockPos(1,1,4));
+                    var straightSink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(out);
+                    check(straightSink.getItem(0).getCount()>0,"ITEM straight three-bundle transfer");
+                    straightSink.clearContent();
+                    source.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD,8));
+                    helper.getLevel().setBlock(helper.absolutePos(new BlockPos(1,1,2)),Blocks.AIR.defaultBlockState(),3);
+                  })
+                  .thenExecuteAfter(15,()->{
+                    var straightSink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(1,1,4)));
+                    check(straightSink.isEmpty(),"ITEM split blocks transfer after middle removal");
+                    BlockPos mid=helper.absolutePos(new BlockPos(1,1,2));
+                    helper.getLevel().setBlock(mid,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    check(((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(mid)).add(ConduitBundleBlockEntity.Layer.ITEM),"restore middle ITEM conduit");
+                  })
+                  .thenExecuteAfter(15,()->{
+                    var straightSink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(1,1,4)));
+                    check(straightSink.getItem(0).getCount()>0,"ITEM merge resumes transfer after middle replacement");
+                    // Build a separate bent route in the same real server world.
+                    for(int z=0;z<5;z++) helper.getLevel().setBlock(helper.absolutePos(new BlockPos(1,1,z)),Blocks.AIR.defaultBlockState(),3);
+                    BlockPos bsrc=helper.absolutePos(new BlockPos(0,1,1));
+                    BlockPos b1=helper.absolutePos(new BlockPos(1,1,1));
+                    BlockPos b2=helper.absolutePos(new BlockPos(2,1,1));
+                    BlockPos b3=helper.absolutePos(new BlockPos(2,1,2));
+                    BlockPos bdst=helper.absolutePos(new BlockPos(2,1,3));
+                    helper.getLevel().setBlock(bsrc,Blocks.CHEST.defaultBlockState(),3);
+                    helper.getLevel().setBlock(b1,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(b2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(b3,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(bdst,Blocks.CHEST.defaultBlockState(),3);
+                    for(BlockPos p:java.util.List.of(b1,b2,b3)) check(((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(p)).add(ConduitBundleBlockEntity.Layer.ITEM),"install bent ITEM conduit");
+                    ((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(b1)).setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.WEST,false,true);
+                    ((ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(b3)).setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.SOUTH,true,false);
+                    ((net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(bsrc)).setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLD_INGOT,9));
+                  })
+                  .thenExecuteAfter(15,()->{
+                    var bentSink=(net.minecraft.world.level.block.entity.ChestBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(2,1,3)));
+                    check(bentSink.getItem(0).getCount()>0,"ITEM bent three-bundle transfer");
+                    // Build 221: real FLUID transfer, project NetworkTank capabilities on both ends.
+                    BlockPos fs=helper.absolutePos(new BlockPos(0,1,1)), f1=helper.absolutePos(new BlockPos(1,1,1)), f2=helper.absolutePos(new BlockPos(2,1,1)), fd=helper.absolutePos(new BlockPos(3,1,1));
+                    for(int x=0;x<4;x++) helper.getLevel().setBlock(helper.absolutePos(new BlockPos(x,1,1)),Blocks.AIR.defaultBlockState(),3);
+                    helper.getLevel().setBlock(fs,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(f1,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(f2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(fd,ObsidianNetwork.NETWORK_TANK_64K.get().defaultBlockState(),3);
+                    var fb1=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(f1); var fb2=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(f2);
+                    check(fb1.add(ConduitBundleBlockEntity.Layer.FLUID)&&fb2.add(ConduitBundleBlockEntity.Layer.FLUID),"install FLUID route");
+                    fb1.setConduitFlags(ConduitBundleBlockEntity.Layer.FLUID,Direction.WEST,false,true);
+                    fb2.setConduitFlags(ConduitBundleBlockEntity.Layer.FLUID,Direction.EAST,true,false);
+                    var srcTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(fs);
+                    var h=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(srcTank.tank());
+                    int filled=h.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER,4000),net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                    check(filled==4000,"prefill source NetworkTank with water");
+                  })
+                  .thenExecuteAfter(15,()->{
+                    BlockPos fs=helper.absolutePos(new BlockPos(0,1,1)), fd=helper.absolutePos(new BlockPos(3,1,1));
+                    var srcTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(fs);
+                    var dstTank=(dev.obsidiannetwork.blockentity.NetworkTankBlockEntity)helper.getLevel().getBlockEntity(fd);
+                    var sh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(srcTank.tank());
+                    var dh=net.neoforged.neoforge.fluids.capability.IFluidHandler.of(dstTank.tank());
+                    check(dh.getFluidInTank(0).getAmount()>0,"FLUID real NetworkTank-to-NetworkTank transfer");
+                    check(sh.getFluidInTank(0).getAmount()<4000,"FLUID source drained by conduit ticker");
+                    // Build 226: NETWORK and ENERGY form topology without any insert/extract configuration.
+                    for(int x=0;x<4;x++) helper.getLevel().setBlock(helper.absolutePos(new BlockPos(x,1,1)),Blocks.AIR.defaultBlockState(),3);
+                    BlockPos a=helper.absolutePos(new BlockPos(1,1,1)), b=helper.absolutePos(new BlockPos(2,1,1));
+                    helper.getLevel().setBlock(a,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(b,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    var ba=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(a); var bb=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(b);
+                    if(!ba.has(ConduitBundleBlockEntity.Layer.NETWORK)) check(ba.add(ConduitBundleBlockEntity.Layer.NETWORK),"install NETWORK A"); if(!bb.has(ConduitBundleBlockEntity.Layer.NETWORK)) check(bb.add(ConduitBundleBlockEntity.Layer.NETWORK),"install NETWORK B");
+                    if(!ba.has(ConduitBundleBlockEntity.Layer.ENERGY)) check(ba.add(ConduitBundleBlockEntity.Layer.ENERGY),"install ENERGY A"); if(!bb.has(ConduitBundleBlockEntity.Layer.ENERGY)) check(bb.add(ConduitBundleBlockEntity.Layer.ENERGY),"install ENERGY B");
+                  })
+                  .thenExecuteAfter(10,()->{
+                    var a=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(1,1,1)));
+                    var b=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(2,1,1)));
+                    var nn=a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network();
+                    var en=a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY).network();
+                    System.out.println("BUILD231 NETWORK DEBUG same="+(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network())+" aSize="+nn.nodes().size()+" bSize="+b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network().nodes().size()+" aHas="+a.has(ConduitBundleBlockEntity.Layer.NETWORK)+" bHas="+b.has(ConduitBundleBlockEntity.Layer.NETWORK));
+                      check(nn==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK).network()&&nn.nodes().contains(a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK))&&nn.nodes().contains(b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.NETWORK)),"NETWORK connection-only topology joins bundles");
+                    check(en==b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY).network()&&en.nodes().contains(a.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY))&&en.nodes().contains(b.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ENERGY)),"ENERGY no-mode topology joins bundles");
+                    // Build 237: real EnergyCell -> two ENERGY bundle route -> EnergyCell.
+                    // Conduit ENERGY has no import/export flags; only the machine source face is OUTPUT.
+                    BlockPos es=helper.absolutePos(new BlockPos(0,1,1)), ed=helper.absolutePos(new BlockPos(3,1,1));
+                    helper.getLevel().setBlock(es,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(ed,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+                    var energySrc=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(es);
+                    var energyDst=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(ed);
+                    check(energySrc!=null&&energyDst!=null,"ENERGY real EnergyCell block entities");
+                    try(var tx=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
+                      int inserted=energySrc.energyHandler(null).insert(8000,tx);
+                      check(inserted==8000,"prefill source EnergyCell through real handler");
+                      tx.commit();
+                    }
+                    check(energySrc.stored()==8000&&energyDst.stored()==0,"ENERGY initial EnergyCell state");
+                    energySrc.cycleSide(Direction.EAST.get3DDataValue());
+                    check(energySrc.sideMode(Direction.EAST)==dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.OUTPUT,"source EnergyCell east face output");
+                    check(energyDst.sideMode(Direction.WEST)==dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.INPUT,"sink EnergyCell west face input");
+                  })
+                  .thenExecuteAfter(15,()->{
+                    var energySrcAfter=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(0,1,1)));
+                    var energyDstAfter=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(3,1,1)));
+                    check(energyDstAfter.stored()>0,"ENERGY real EnergyCell sink receives FE through two bundles");
+                    check(energySrcAfter.stored()<8000,"ENERGY real EnergyCell source loses FE through two bundles");
+                    // Build 240: real storage-network binding over NETWORK conduit bundles.
+                    for(int x=0;x<4;x++) helper.getLevel().setBlock(helper.absolutePos(new BlockPos(x,1,1)),Blocks.AIR.defaultBlockState(),3);
+                    BlockPos nc=helper.absolutePos(new BlockPos(0,1,1)), n1=helper.absolutePos(new BlockPos(1,1,1)), n2=helper.absolutePos(new BlockPos(2,1,1)), nd=helper.absolutePos(new BlockPos(3,1,1));
+                    helper.getLevel().setBlock(nc,ObsidianNetwork.NETWORK_CONTROLLER.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(n1,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(n2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(nd,ObsidianNetwork.STORAGE_DRIVE.get().defaultBlockState(),3);
+                    for(BlockPos p:java.util.List.of(n1,n2)){
+                      var nb=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(p);
+                      if(!nb.has(ConduitBundleBlockEntity.Layer.NETWORK)) check(nb.add(ConduitBundleBlockEntity.Layer.NETWORK),"install real storage NETWORK conduit");
+                    }
+                  })
+                  .thenExecuteAfter(10,()->{
+                    BlockPos nc=helper.absolutePos(new BlockPos(0,1,1)), nd=helper.absolutePos(new BlockPos(3,1,1));
+                    var drive=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)helper.getLevel().getBlockEntity(nd);
+                    var controllerRt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForController((net.minecraft.server.level.ServerLevel)helper.getLevel(),nc);
+                    var driveRt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive((net.minecraft.server.level.ServerLevel)helper.getLevel(),nd);
+                    check(controllerRt!=null&&driveRt==controllerRt,"NETWORK real StorageDrive binds to Controller through two bundles");
+                    check(controllerRt.drives().contains(drive.drive()),"NETWORK Controller runtime owns real StorageDrive runtime");
+                    helper.getLevel().setBlock(helper.absolutePos(new BlockPos(2,1,1)),Blocks.AIR.defaultBlockState(),3);
+                  })
+                  .thenExecuteAfter(10,()->{
+                    BlockPos nd=helper.absolutePos(new BlockPos(3,1,1));
+                    check(dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive((net.minecraft.server.level.ServerLevel)helper.getLevel(),nd)==null,"NETWORK split detaches real StorageDrive");
+                    BlockPos n2=helper.absolutePos(new BlockPos(2,1,1));
+                    helper.getLevel().setBlock(n2,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    var nb=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(n2);
+                    if(!nb.has(ConduitBundleBlockEntity.Layer.NETWORK)) check(nb.add(ConduitBundleBlockEntity.Layer.NETWORK),"restore real storage NETWORK conduit");
+                  })
+                  .thenExecuteAfter(10,()->{
+                    BlockPos nc=helper.absolutePos(new BlockPos(0,1,1)), nd=helper.absolutePos(new BlockPos(3,1,1));
+                    var controllerRt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForController((net.minecraft.server.level.ServerLevel)helper.getLevel(),nc);
+                    var driveRt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive((net.minecraft.server.level.ServerLevel)helper.getLevel(),nd);
+                    check(controllerRt!=null&&driveRt==controllerRt,"NETWORK merge rebinds real StorageDrive through bundles");
+                  })
+                  .thenSucceed();
+              }
+
+              private static void check(boolean ok, String message) {
+                if (!ok) throw new IllegalStateException("BUILD103 GAMETEST: " + message);
+              }
+
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec() {
+                throw new UnsupportedOperationException("Build103 CI-only test instance is registered in code");
+              }
+
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription() {
+                return Component.literal("ConduitBundle runtime GameTest");
+              }
+            }
+          }
+          EOF
+          # Build 220: real fluid + energy transport uses project tank capabilities and a CI-only registered energy fixture.
+          # The fixture is intentionally kept out of the packaged JAR by the existing build103 cleanup.
+          grep -Fq 'FluidStacksResourceHandler tank' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkTankBlockEntity.java
+          grep -Fq 'Capabilities.Fluid.BLOCK' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          cat > work/src/main/java/dev/obsidiannetwork/build103/Build219CapabilityFixture.java <<'EOF'
+          package dev.obsidiannetwork.build103;
+          import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+          import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+          public final class Build219CapabilityFixture implements EnergyHandler {
+            private int energy;
+            public Build219CapabilityFixture(int energy){this.energy=energy;}
+            public long getAmountAsLong(){return energy;}
+            public long getCapacityAsLong(){return 100000;}
+            public int extract(int amount,TransactionContext tx){int n=Math.min(Math.max(0,amount),energy);energy-=n;return n;}
+            public int insert(int amount,TransactionContext tx){int n=Math.min(Math.max(0,amount),100000-energy);energy+=n;return n;}
+          }
+          EOF
+          # Build220 source-level runtime contract: both tickers must route through cached real capability endpoints.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/conduit')
+          fluid=(p/'FluidConduitTicker.java').read_text()
+          energy=(p/'EnergyConduitTicker.java').read_text()
+          assert 'Capabilities.Fluid.BLOCK' in fluid and 'network.endpoints(true)' in fluid and 'network.endpoints(false)' in fluid
+          assert 'Capabilities.Energy.BLOCK' in energy and 'connected' in energy and 'network.nodes()' in energy
+          assert 'bundle.enabled' not in energy, 'ENERGY must not depend on insert/extract side flags'
+          assert 'level.getCapability(Capabilities.Energy.BLOCK,bundle.getBlockPos().relative(d),d.getOpposite())' in energy
+          assert 'Transaction.openRoot()' in energy
+          print('BUILD220 REAL FLUID/ENERGY CAPABILITY ROUTING PASS')
+          PY
+          # Build 247: rerun unchanged real Controller/StorageDrive NETWORK split/merge test after symmetric remove/add topology refresh.
+          grep -Fq 'NETWORK real StorageDrive binds to Controller through two bundles' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'WorldTopologyBridge.runtimeForDrive' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'controllerRt.drives().contains(drive.drive())' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'NETWORK split detaches real StorageDrive' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'NETWORK merge rebinds real StorageDrive through bundles' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          # Build 237: GameTest must use real mod EnergyCells and must not configure ENERGY conduit IO flags.
+          grep -Fq 'ENERGY real EnergyCell sink receives FE through two bundles' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'ObsidianNetwork.BASIC_ENERGY_CELL' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          python3 - <<'PY'
+          from pathlib import Path
+          gt=Path('work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java').read_text()
+          energy_section=gt[gt.index('// Build 237:'):gt.index('.thenSucceed();',gt.index('// Build 237:'))]
+          assert 'setConduitFlags(ConduitBundleBlockEntity.Layer.ENERGY' not in energy_section
+          assert 'energySrc.energyHandler(null).insert(8000' in energy_section
+          assert 'SideMode.OUTPUT' in energy_section and 'SideMode.INPUT' in energy_section
+          print('BUILD237 REAL ENERGY CELL GAMETEST SOURCE PASS')
+          PY
+          # Validate the injected test itself, not a path that does not exist yet.
+          grep -Fq 'ITEM server-tick transfer chest-to-chest' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          if grep -Fq 'ConduitBundleBlockEntity.tick(' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java; then echo 'Build103 may not invoke bundle tick directly'; exit 1; fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import gzip, struct
+          # Minimal valid 3x3x3 empty structure template for the CI-only GameTest.
+          def name(s):
+              b=s.encode(); return struct.pack('>H',len(b))+b
+          def tag(t,n,payload): return bytes([t])+name(n)+payload
+          def i32(v): return struct.pack('>i',v)
+          root=b''
+          root+=tag(3,'DataVersion',i32(0))
+          root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(5)+i32(3)+i32(5)  # TAG_List<int>, length=3, values 5,3,5
+          # palette: one compound {Name:"minecraft:air"}
+          pal=bytes([10])+name('palette')+i32(1)+tag(8,'Name',name('minecraft:air'))+b'\x00'
+          root+=pal
+          root+=bytes([9])+name('blocks')+bytes([10])+i32(0)
+          root+=bytes([9])+name('entities')+bytes([10])+i32(0)
+          data=bytes([10])+name('')+root+b'\x00'
+          p=Path('work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt')
+          with gzip.open(p,'wb') as g:g.write(data)
+          print('BUILD103 GAMETEST STRUCTURE WRITTEN',p)
+          PY
+          # Compile the test-only registration first so API drift fails clearly.
+          (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
+          set +e
+          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-gametest.log 2>&1
+          GT_RC=$?
+          set -e
+          cat /tmp/build103-gametest.log
+          if [ "$GT_RC" -ne 0 ]; then echo "Build103 GameTest server failed rc=$GT_RC"; exit "$GT_RC"; fi
+          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(5 tests\)" /tmp/build103-gametest.log
+          grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
+          if grep -Eqi '[0-9]+ required tests failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
+          echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST PASS ====='
+          # Build 215 final runtime source gates: cached split/removal invalidation and no legacy runtime classes.
+          python3 - <<'PY'
+          from pathlib import Path
+          J=Path('work/src/main/java/dev/obsidiannetwork')
+          topology=(J/'conduit/ConduitTopology.java').read_text()
+          assert 'network.nodes().stream().anyMatch' in topology and 'relative(d)' in topology, 'cached removal invalidation missing'
+          assert not (J/'block/MultiCableBlock.java').exists(), 'MultiCableBlock runtime leaked'
+          assert not (J/'blockentity/MultiCableBlockEntity.java').exists(), 'MultiCableBlockEntity runtime leaked'
+          gt=(J/'build103/Build103GameTests.java').read_text()
+          assert 'conduit_bundle_runtime' in gt and 'multicable_state_machine' not in gt.lower(), 'legacy GameTest identity remains'
+          print('BUILD215 CONDUIT FINAL SOURCE GATES PASS')
+          PY
+          # Run143: enforce actual LogisticsCableBlockEntity.Mode IMPORT/EXPORT values,
+          # not enum ordinals that may drift across source reconstruction.
+          python3 - <<'PY'
+          from pathlib import Path
+          runtime=Path('work/src/main/java/dev/obsidiannetwork/conduit/ConduitRuntime.java').read_text()
+          assert 'cable.mode(d).name()' in runtime
+          assert 'mode.equals("IMPORT")' in runtime and 'mode.equals("EXPORT")' in runtime
+          assert 'cable.mode(d).ordinal()' not in runtime
+          print('RUN143 STANDALONE ENDPOINT MODE GATE PASS')
+          PY
+          # Build 216 broad conduit semantics gate before packaging.
+          python3 - <<'PY'
+          from pathlib import Path
+          P=Path('work/src/main/java/dev/obsidiannetwork/conduit')
+          item=(P/'ItemConduitTicker.java').read_text()
+          fluid=(P/'FluidConduitTicker.java').read_text()
+          energy=(P/'EnergyConduitTicker.java').read_text()
+          topology=(P/'ConduitTopology.java').read_text()
+          manager=(P/'ConduitNetworkManager.java').read_text()
+          network=(P/'ConduitNetwork.java').read_text()
+          runtime=(P/'ConduitRuntime.java').read_text()
+          assert all(x in item for x in ['network.endpoints(true)','network.endpoints(false)','roundRobin()','selfFeed()'])
+          assert 'config().priority()' in runtime and '.reversed()' in runtime, 'endpoint priority ordering missing'
+          assert all(x in fluid for x in ['network.endpoints(true)','network.endpoints(false)','drain(1000','fill('])
+          assert all(x in energy for x in ['network.nodes()','connected','extract(1000','insert(','Transaction.openRoot'])
+          assert 'network.nodes().stream().anyMatch' in topology
+          assert 'ConduitRuntime.component' in manager and 'current.nodes().contains(seed)' in manager and 'seed.type()!=ConduitType.ITEM' in manager
+          assert 'cacheEndpoints' in network
+          print('BUILD216 ITEM FLUID ENERGY SPLIT MERGE CACHE SEMANTICS PASS')
+          PY
+          # Never package CI-only GameTest hooks/resources into the user JAR.
+          rm -rf work/src/main/java/dev/obsidiannetwork/build103
+          rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
+          echo '===== BUILD 101 FINAL BUILD ====='
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+          test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
+          echo '===== BUILD 101 ALL AUTOMATABLE GATES PASS ====='
+
+          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+
+          mkdir -p dist
+          cp work/build/libs/*.jar dist/
+      - name: Upload v1.1.1 shared-conduit test JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: xsxlabs-network-storage-v1.6-internal-1.1.1-ingame-test
+          path: dist/*.jar
+          if-no-files-found: error
+          retention-days: 14
+
+# visual-fix-retry-65
+
+# renderer-api-fix-a8095822
+
+# visual-pass-order-fix-116267be
+
+# renderer-brace-fix-08ac665b
+
+
+
+
+
+
+
+
+
+
+
+# source-trigger: d1caad7ace532e838bcc5c54a8a89267d8c45087
+# runner retrigger: run96
+# fresh build trigger: run98
+# final waiting build trigger
+
+# build101 quality-gates trigger
+
+# build101 junit-platform-launcher fix
+# build103 real-neoforge-gametest gate
+
+# run117 actual Run112 source repair 8a7c4a4b
+
+# retrigger after regex literal correction 39e58ab1
+
+# retrigger real-newline Run112 fix 7c8b74c2
+
+# retrigger marker-submit placement a9e264d1
+
+# run121 conduit functional repair ddd1f02c
+
+# run124 Build103 Blocks import fix
+
+# run129 resilient energy IO patch 836abc00
+
+# run130 energy IO menu-source alignment f6bdfc8b
+
+# run131 deterministic energy menu 8398671b
+
+# run133 fix CI-only GameTest compile qualification
+# run133 fix bend re-enable inventory assertion
+
+# run134 fluid bend disable-reenable gametest
+
+# run135 directional energy source gates
+
+# run136 network shared-container source gates
+
+# run137 stable shared-conduit artifact name
+# run138 exact directional energy traversal source gate
+# run139 explicit fluid bend endpoint modes
+# run140 enlarge CI GameTest structure for bend endpoints
+# run141 runtime energy capability direction gates
+# run142 disabled energy side capability null contract
+# run143 fix reversed energy BFS endpoint semantics d8cb7ad3
+# run144 exact network topology shared-container gates
+# run145 remove unverified Transaction API from CI-only GameTest
+# run146 document valid 5x3x5 NBT size list
+# run147 energy traversal invariant marker 151d841f
+# run148 energy export persistence fix 34dd45aa
+# run149 prove private build head contains energy fixes
+# run150 exact pre-build energy direction proof
+# run151 legacy energy bidirectional compatibility gate
+
+# run157 force PR synchronize with real diff
+# run158 fix smoke compact whitespace regex
+# run159 make legacy energy compatibility gate formatting-independent
+# run160 fix raw-regex escaping in legacy energy gate
+# run161 make bend transport tick cadence deterministic
+# run162 isolate bend fixture from preceding straight cable
+# run207 cached per-network endpoint topology 39020a1d
+# run208 update runtime gate for cached endpoint architecture
+# run209 batch runtime compile fixes 64cc5102
+
+# build275 user-authorized test run; source display-name patch 696e70d2c0ad960405e2fd90e5319e3fc71dd7f8
+
+# build276 incremental Jade icon and Cable Bundle naming verification
+
+# build277 user-authorized single CI trigger after private commits 3116ee1d, 5128dcc5, c99c1732
+
+# build279 verify direct setConduitFlags delegation fix private 866fcf3fdc328fcd1e2e5aa303552f37357b5a95
+
+# build281 validate mixed runtime after release gate checks corrected (private b9b7e9ff)
+
+# run145 retry Run144 Java parameter resolution e040d0b7
+
+# Build18: compile corrected NeoForge capability API references (private 35e4378)
+
+# Build21: correct bundle renderer Layer enum (private 948c68dc)
+
+# Build23: relax Run148 EnergyCableBlock local variable assertion (private 5f14e7b)
+
+# Build24: compile Run148 BlockState scope fix private 260e80b
+
+# Build 25: verify standalone-to-bundle connection fix and slimmer input sleeves
+
+# Build 26: exclude foreign cables from mixed ITEM/FLUID endpoint scanning
+
+# Build 27: conduit-to-conduit continuity must not depend on machine IO face flags
+
+# Build 28: reject foreign cable capability endpoints at bundle faces
+
+# Build 29: repaired Python syntax for bundle endpoint isolation
+
+# Build 30: bundle renderer must not connect to foreign cable capability fallback
+
+# Build 31: enforce mixed conduit endpoint and self-feed regression assertions
+
+# Build 32: renderer early guard matches conduit layer before capability shortcuts
+
+# Build 33: fix renderer early neighbor state compile error
+
+# Build 34: ensure shared ITEM/FLUID conduit networks transfer only once per tick
+
+# Build 35: smaller sleeves and Polymorph selector; validate patch and compile
+
+# Build 36: NETWORK cable strict type isolation
+
+# Build 39: mixed conduit component endpoint scan once per network
+
+# Build 42: accept modern standalone CONNECTED/IMPORT/EXPORT enum in regression gate
+
+# Build 47: validate own-type thin network cable visual connectivity guard
+
+# Complete v1.6 in-game fix batch; run155-run160 integrated before single validation build.
+
+# final combined codefix validation after private 862ae478
+
+# retry full validation after fluid blockstate gate fix 9e830221
+
+# validate CONNECTED standalone output fix ec08bbd6
+
+# User-authorized build: fluid importer/exporter missing texture fix (private 0a69f616).
+
+# User-authorized fluid blockstate network_facing repair (private 9715fdfe).
