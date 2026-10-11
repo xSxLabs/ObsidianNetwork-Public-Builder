@@ -1674,3 +1674,5 @@ jobs:
 # v1.7: rerun corrected player message and recipe migration 7518723c
 
 # v1.7: corrected generator regex and recipe API f0375d26
+
+# v1.7: rerun after crafting resolver validator migration (2026-10-11)
