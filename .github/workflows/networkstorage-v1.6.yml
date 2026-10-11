@@ -1464,3 +1464,5 @@ jobs:
 # v1.6 requested build 71: upgrade capacity source patch
 
 # Retry Build 74 round-robin patch after private feb85fc
+
+# Build 76: user-authorized validation of three Build 75 bug fixes
