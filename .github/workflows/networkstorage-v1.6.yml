@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: freeze/v1.6-stable-build76-source
+          ref: networkstorage-v1.6-ingame-fixes
           token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
           path: private
       - uses: actions/setup-java@v4
@@ -1297,7 +1297,7 @@ jobs:
           # Never package CI-only GameTest hooks/resources into the user JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
           rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
-          echo '===== BUILD 101 FINAL BUILD ====='
+          # User-authorized diagnostic compile: apply v1.6 features before Gradle.\n          python3 private/v1.1.1/apply-v16-final-features.py\n          echo '===== BUILD 101 FINAL BUILD ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
           echo '===== BUILD 101 ALL AUTOMATABLE GATES PASS ====='
@@ -1470,3 +1470,5 @@ jobs:
 # Stable v1.6: pin master source to isolated, Build-76-tested commit
 
 # Build 78: xSxLabs Network Storage v1.6 STABLE FREEZE; tested Build 76 source pinned
+
+# User-authorized v1.6 diagnostic testbuild: private ingame-fixes source and feature patch gate.
