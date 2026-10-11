@@ -597,6 +597,7 @@ jobs:
           python3 private/v1.7/apply-v17-quarry-internal-chest-only.py
           python3 private/v1.7/apply-v17-quarry-configurable-area.py
           python3 private/v1.7/apply-v17-quarry-area-reconfiguration-guard.py
+          python3 private/v1.7/apply-v17-quarry-visible-frame-particles.py
           python3 private/v1.7/apply-v17-quarry-air-state-inspection-isolation.py
           python3 private/v1.7/apply-v17-quarry-integration-lifecycle-reset.py
           python3 private/v1.7/apply-v17-quarry-server-stop-lifecycle.py
