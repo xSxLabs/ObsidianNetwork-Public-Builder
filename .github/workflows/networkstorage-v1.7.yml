@@ -1664,3 +1664,5 @@ jobs:
 # v1.7: EventBusSubscriber automatic bus routing bb249ade
 
 # v1.7: execute event migration corrected 46eea400
+
+# v1.7: batch migrate player feedback and recipe manager f997acb2
