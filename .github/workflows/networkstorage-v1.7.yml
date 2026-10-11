@@ -1,4 +1,5 @@
-# v1.7 ONLY: manual workflow_dispatch; v1.6 frozen workflow remains untouched.
+# v1.7 ONLY: workflow_dispatch and branch push CI; v1.6 frozen workflow remains untouched.
+# Build iteration: validate private quarry cursor/energy fix 997ce9c1.
 # Build #12 compile repair: facing null and constrained renderer regex
 # Iterative user-authorized Build #11: mixed conduit traversal and marker state
 # User explicitly unlocked build lock: iterative validation build #10
