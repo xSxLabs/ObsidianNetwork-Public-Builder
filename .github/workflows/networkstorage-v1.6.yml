@@ -1477,3 +1477,5 @@ jobs:
 # User-authorized v1.6 diagnostic testbuild: private ingame-fixes source and feature patch gate.
 
 # User-authorized retry: fix cable patch Java signature regex at private 2bc73a9.
+
+# Compile retry: fix Identifier migration and Optional<byte[]> from Build 82 errors.
