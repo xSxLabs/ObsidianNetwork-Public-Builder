@@ -1,5 +1,5 @@
 # v1.7 ONLY: workflow_dispatch and branch push CI; v1.6 frozen workflow remains untouched.
-# Build iteration: validate transactional quarry FE charging 569f3fa5.
+# Build iteration: validate builder placement baseline e1f377bb.
 # Build #12 compile repair: facing null and constrained renderer regex
 # Iterative user-authorized Build #11: mixed conduit traversal and marker state
 # User explicitly unlocked build lock: iterative validation build #10
