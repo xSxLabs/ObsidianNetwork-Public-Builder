@@ -1503,3 +1503,5 @@ jobs:
 # Build 94: validate legacy ghost-button guard with current performance patches.
 
 # Build 95: verify corrected ghost menu patch syntax and performance changes.
+
+# Build 96: validate single block-entity lookup in mixed network endpoint scan.
