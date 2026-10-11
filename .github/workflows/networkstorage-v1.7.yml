@@ -29,6 +29,9 @@ name: xSxLabs Network Storage v1.7
 # Re-enable only after the user explicitly requests "build".
 'on':
   workflow_dispatch:
+  push:
+    branches: [networkstorage-v1.7]
+    paths: ['.github/workflows/networkstorage-v1.7.yml']
 
 
 
