@@ -1,5 +1,5 @@
 # v1.7 ONLY: workflow_dispatch and branch push CI; v1.6 frozen workflow remains untouched.
-# Build iteration: battery duplicate tier fix 468c51ac.
+# Build iteration: v1.7 full compiler diagnostics after run 38134843640.
 # Build #12 compile repair: facing null and constrained renderer regex
 # Iterative user-authorized Build #11: mixed conduit traversal and marker state
 # User explicitly unlocked build lock: iterative validation build #10
@@ -95,7 +95,7 @@ jobs:
           repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
           neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
           dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
-          tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
+          tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8'; options.compilerArgs += ['-Xmaxerrs', '1000'] }
           EOF
           export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources" V1_PROJECT_ROOT="$GITHUB_WORKSPACE/work"
           python3 private/reconstruction/apply-baseline-fixes.py
