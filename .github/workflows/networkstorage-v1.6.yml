@@ -1515,3 +1515,5 @@ jobs:
 # Build 100: consolidated enum endpoint mode regression gate updates.
 
 # Build 101: bundled mixed traversable/open block entity lookup reductions.
+
+# Build 102: bundled mixed cable single-lookup release gate fixes.
