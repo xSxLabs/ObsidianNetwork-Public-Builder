@@ -417,6 +417,9 @@ jobs:
           python3 private/v1.1.1/apply-v16-item-edge-and-speed.py
           python3 private/v1.1.1/apply-v16-upgrade-stack74.py
           python3 private/v1.1.1/apply-v16-upgrade-capacity.py
+          python3 private/v1.1.1/apply-v16-strict-edges.py
+          python3 private/v1.1.1/apply-v16-facade-refresh.py
+          python3 private/v1.1.1/apply-v16-round-robin.py
           python3 - <<'PY'
           from pathlib import Path
           import re
