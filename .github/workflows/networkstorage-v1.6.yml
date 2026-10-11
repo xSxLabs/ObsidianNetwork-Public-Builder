@@ -1493,3 +1493,5 @@ jobs:
 # CI development validation: solar item tooltip 8x correction private 2105235b
 
 # Development CI: full ghost slot sync and terminal shift view cache (private 0794cc4c)
+
+# Dev CI run: fix 1.21 ContainerInput and final screen dimensions; preserve 18 indexed slots cb292e12
