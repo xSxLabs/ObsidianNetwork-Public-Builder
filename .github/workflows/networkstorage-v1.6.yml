@@ -1509,3 +1509,5 @@ jobs:
 # Build 97: remove duplicate mixed network visited-set allocation.
 
 # Build 98: verify enum-mode fast path for mixed cable endpoints.
+
+# Build 99: enum mode mapping plus mixed endpoint regression checks.
