@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: networkstorage-v1.6-ingame-fixes
+          ref: freeze/v1.6-stable-build76-source
           token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
           path: private
       - uses: actions/setup-java@v4
@@ -1466,3 +1466,5 @@ jobs:
 # Retry Build 74 round-robin patch after private feb85fc
 
 # Build 76: user-authorized validation of three Build 75 bug fixes
+
+# Stable v1.6: pin master source to isolated, Build-76-tested commit
