@@ -1473,3 +1473,5 @@ jobs:
 # Build 78: xSxLabs Network Storage v1.6 STABLE FREEZE; tested Build 76 source pinned
 
 # User-authorized v1.6 diagnostic testbuild: private ingame-fixes source and feature patch gate.
+
+# User-authorized retry: fix cable patch Java signature regex at private 2bc73a9.
