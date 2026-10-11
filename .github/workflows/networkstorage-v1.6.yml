@@ -1491,3 +1491,5 @@ jobs:
 # Development CI: verify import-only filter mutation guards 0dd86bbe
 
 # CI development validation: solar item tooltip 8x correction private 2105235b
+
+# Development CI: full ghost slot sync and terminal shift view cache (private 0794cc4c)
