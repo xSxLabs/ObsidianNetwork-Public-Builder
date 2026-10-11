@@ -1651,3 +1651,5 @@ jobs:
 # User-authorized build: fluid importer/exporter missing texture fix (private 0a69f616).
 
 # User-authorized fluid blockstate network_facing repair (private 9715fdfe).
+
+# v1.7 validation iteration: port component persistence gate 73e4ed5f
