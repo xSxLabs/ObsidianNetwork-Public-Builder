@@ -1501,3 +1501,5 @@ jobs:
 # Build 93: regression compile after filter allocation optimization.
 
 # Build 94: validate legacy ghost-button guard with current performance patches.
+
+# Build 95: verify corrected ghost menu patch syntax and performance changes.
