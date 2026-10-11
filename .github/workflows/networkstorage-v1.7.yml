@@ -1670,3 +1670,5 @@ jobs:
 # v1.7: batch message signature and recipe assemble corrections fe17936a
 
 # v1.7: rerun after regex migration correction ffddb2c4
+
+# v1.7: rerun corrected player message and recipe migration 7518723c
