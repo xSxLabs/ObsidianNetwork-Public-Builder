@@ -1497,3 +1497,5 @@ jobs:
 # Dev CI run: fix 1.21 ContainerInput and final screen dimensions; preserve 18 indexed slots cb292e12
 
 # Authorized performance build: five-tick item cadence, verify JEI next.
+
+# Build 93: regression compile after filter allocation optimization.
