@@ -1511,3 +1511,5 @@ jobs:
 # Build 98: verify enum-mode fast path for mixed cable endpoints.
 
 # Build 99: enum mode mapping plus mixed endpoint regression checks.
+
+# Build 100: consolidated enum endpoint mode regression gate updates.
