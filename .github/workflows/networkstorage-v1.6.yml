@@ -1489,3 +1489,5 @@ jobs:
 # Development-only CI: verify ordered 18-position filter persistence aad9851b
 
 # Development CI: verify import-only filter mutation guards 0dd86bbe
+
+# CI development validation: solar item tooltip 8x correction private 2105235b
