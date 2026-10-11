@@ -1672,3 +1672,5 @@ jobs:
 # v1.7: rerun after regex migration correction ffddb2c4
 
 # v1.7: rerun corrected player message and recipe migration 7518723c
+
+# v1.7: corrected generator regex and recipe API f0375d26
