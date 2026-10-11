@@ -1499,3 +1499,5 @@ jobs:
 # Authorized performance build: five-tick item cadence, verify JEI next.
 
 # Build 93: regression compile after filter allocation optimization.
+
+# Build 94: validate legacy ghost-button guard with current performance patches.
