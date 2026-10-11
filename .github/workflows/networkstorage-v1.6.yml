@@ -1517,3 +1517,5 @@ jobs:
 # Build 101: bundled mixed traversable/open block entity lookup reductions.
 
 # Build 102: bundled mixed cable single-lookup release gate fixes.
+
+# Build 103: preserve disabled cable face topology with optimized open lookup.
