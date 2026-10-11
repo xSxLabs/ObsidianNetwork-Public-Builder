@@ -1481,3 +1481,5 @@ jobs:
 # Compile retry: fix Identifier migration and Optional<byte[]> from Build 82 errors.
 
 # Authorized v1.6 development CI validation after private cable-menu Java newline fix 1aea551c
+
+# v1.6 development CI retry: solar patch idempotency repair private 1a3167fb
