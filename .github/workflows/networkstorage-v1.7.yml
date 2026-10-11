@@ -1654,3 +1654,5 @@ jobs:
 # User-authorized fluid blockstate network_facing repair (private 9715fdfe).
 
 # v1.7 validation iteration: port component persistence gate 73e4ed5f
+
+# v1.7: rerun after Identifier baseline assertion fixes 57ed174e
