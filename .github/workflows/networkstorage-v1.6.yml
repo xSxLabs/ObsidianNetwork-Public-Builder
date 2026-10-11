@@ -1507,3 +1507,5 @@ jobs:
 # Build 96: validate single block-entity lookup in mixed network endpoint scan.
 
 # Build 97: remove duplicate mixed network visited-set allocation.
+
+# Build 98: verify enum-mode fast path for mixed cable endpoints.
