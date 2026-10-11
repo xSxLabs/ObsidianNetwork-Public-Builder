@@ -1658,3 +1658,5 @@ jobs:
 # v1.7: rerun after Identifier baseline assertion fixes 57ed174e
 
 # v1.7: validate logistics cable persistence imports 3743f068
+
+# v1.7: qualified persistence method detection 6e095c25
