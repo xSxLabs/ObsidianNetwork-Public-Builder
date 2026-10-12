@@ -1,0 +1,14 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="All Rights Reserved"
+[[mods]]
+modId="stressfixture"
+version="1.0"
+displayName="Build 106 External Stress Fixture"
+description="CI-only runtime transfer measurements, not a Network Storage build"
+[[dependencies.stressfixture]]
+modId="obsidiannetwork"
+type="required"
+versionRange="[1,)"
+ordering="AFTER"
+side="SERVER"
