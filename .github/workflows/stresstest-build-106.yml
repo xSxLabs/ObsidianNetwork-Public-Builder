@@ -43,7 +43,15 @@ jobs:
           shutil.copyfile(jar,'server/mods/network-storage-build-106.jar')
           print('Build 106 SHA256:',hashlib.sha256(jar.read_bytes()).hexdigest())
           PY
-      - name: Install NeoForge 26.1.2.106 server (no mod compilation)
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compile separate stress fixture only (frozen mod JAR untouched)
+        run: |
+          set -euo pipefail
+          mkdir -p .github/stresstest-build-106/fixture/libs
+          cp server/mods/network-storage-build-106.jar .github/stresstest-build-106/fixture/libs/
+          gradle -p .github/stresstest-build-106/fixture build --no-daemon
+          cp .github/stresstest-build-106/fixture/build/libs/build106-stress-fixture-1.0.jar server/mods/
+      - name: Install NeoForge 26.1.2.106 server (no Network Storage compilation)
         run: |
           set -euo pipefail
           curl --fail --location --retry 4 -o /tmp/neoforge-installer.jar https://maven.neoforged.net/releases/net/neoforged/neoforge/26.1.2.106/neoforge-26.1.2.106-installer.jar
@@ -66,7 +74,9 @@ jobs:
           set -euo pipefail
           (cd server && bash run.sh nogui > server.log 2>&1) &
           echo $! > /tmp/stress-server.pid
-          python3 .github/stresstest-build-106/extended-benchmark.py | tee stress-results.txt
+          timeout 900 bash -c 'while [ ! -s transport-results.json ]; do if grep -q BUILD106_ACTIVE_TRANSPORT_PASS server/server.log; then break; fi; if grep -Eq "Exception in server tick loop|BUILD106 ACTIVE STRESS|ModLoadingException|LoadingFailedException" server/server.log; then tail -n 150 server/server.log; exit 1; fi; sleep 3; done'
+          test -s transport-results.json
+          cat transport-results.json | tee stress-results.txt
       - name: Require independently verified active item and fluid transfers
         run: |
           set -euo pipefail
@@ -85,5 +95,6 @@ jobs:
             stress-results.json
             extended-stress-results.json
             transport-results.json
+            active-transport-diagnostic.json
             server/server.log
           if-no-files-found: warn
