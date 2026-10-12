@@ -47,6 +47,7 @@ public final class ActiveStressFixture {
     }
     private static int fluidCount(ServerLevel l,BlockPos p){return tank(l,p).getFluidInTank(0).getAmount();}
     private void setup(ServerLevel l){
+        for(int chunkZ=0;chunkZ<=8;chunkZ++)l.setChunkForced(0,chunkZ,true);
         for(int lane=0;lane<LANES;lane++){
             BlockPos source=pos(lane,0,false),in=pos(lane,1,false),mid=pos(lane,2,false),out=pos(lane,3,false),dest=pos(lane,4,false);
             l.setBlock(source,Blocks.CHEST.defaultBlockState(),3);
