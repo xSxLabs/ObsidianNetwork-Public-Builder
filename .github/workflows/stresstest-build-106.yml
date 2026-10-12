@@ -1,6 +1,11 @@
 name: Stresstest Build 106
 on:
   workflow_dispatch:
+  push:
+    branches: [stresstest-build-106]
+    paths:
+      - '.github/workflows/stresstest-build-106.yml'
+      - '.github/stresstest-build-106/**'
 permissions:
   actions: read
   contents: read
@@ -66,5 +71,6 @@ jobs:
           name: stresstest-build-106-results
           path: |
             stress-results.txt
+            stress-results.json
             server/server.log
           if-no-files-found: warn
