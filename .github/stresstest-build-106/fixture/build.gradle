@@ -1,0 +1,7 @@
+plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
+version='1.0'; group='dev.xsxlabs.stress'
+base { archivesName='build106-stress-fixture' }
+java.toolchain.languageVersion=JavaLanguageVersion.of(25)
+neoForge { version=project.neo_version; mods { stressfixture { sourceSet(sourceSets.main) } } }
+dependencies { compileOnly files('libs/network-storage-build-106.jar') }
+tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
