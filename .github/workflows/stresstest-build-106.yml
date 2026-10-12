@@ -1,0 +1,37 @@
+name: Stresstest Build 106
+on:
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  stress-test:
+    name: Stresstest Build 106 (existing JAR only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Download frozen Build 106 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/stress106
+          gh run download 38216688328 --repo xSxLabs/ObsidianNetwork-Public-Builder --dir /tmp/stress106
+          find /tmp/stress106 -type f -maxdepth 4 -print
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile
+          files=list(Path('/tmp/stress106').rglob('*.jar'))
+          assert len(files)==1, f'Expected exactly one Build 106 mod JAR, found {files}'
+          with zipfile.ZipFile(files[0]) as jar:
+              names=set(jar.namelist())
+              assert any(x.endswith('LogisticsCableGhostJeiPlugin.class') for x in names), 'Not the JEI-enabled Build 106 JAR'
+              assert any(x.endswith('ConduitRuntime.class') for x in names), 'Missing conduit runtime'
+          Path('/tmp/stress106/build106-jar.txt').write_text(str(files[0]))
+          print('FROZEN BUILD 106 JAR VERIFIED:',files[0])
+          PY
+      - name: Guard against fabricated benchmark results
+        run: |
+          echo 'The frozen JAR is verified. A real automated world workload and MSPT sampler must be installed before a benchmark can be reported.'
+          echo 'No TPS/MSPT measurements were made. This job intentionally fails rather than claim a server stress test.'
+          exit 1
