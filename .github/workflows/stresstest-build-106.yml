@@ -6,32 +6,65 @@ permissions:
   contents: read
 jobs:
   stress-test:
-    name: Stresstest Build 106 (existing JAR only)
+    name: Stresstest Build 106 (frozen JAR, real NeoForge)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
     steps:
-      - name: Download frozen Build 106 artifact
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Download and validate frozen Build 106 artifact
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p /tmp/stress106
-          gh run download 38216688328 --repo xSxLabs/ObsidianNetwork-Public-Builder --dir /tmp/stress106
-          find /tmp/stress106 -type f -maxdepth 4 -print
+          mkdir -p server/mods
+          gh run download 38216688328 --repo xSxLabs/ObsidianNetwork-Public-Builder --dir /tmp/build106
           python3 - <<'PY'
           from pathlib import Path
-          import zipfile
-          files=list(Path('/tmp/stress106').rglob('*.jar'))
-          assert len(files)==1, f'Expected exactly one Build 106 mod JAR, found {files}'
-          with zipfile.ZipFile(files[0]) as jar:
-              names=set(jar.namelist())
-              assert any(x.endswith('LogisticsCableGhostJeiPlugin.class') for x in names), 'Not the JEI-enabled Build 106 JAR'
-              assert any(x.endswith('ConduitRuntime.class') for x in names), 'Missing conduit runtime'
-          Path('/tmp/stress106/build106-jar.txt').write_text(str(files[0]))
-          print('FROZEN BUILD 106 JAR VERIFIED:',files[0])
+          import zipfile,shutil,hashlib
+          jars=list(Path('/tmp/build106').rglob('*.jar'))
+          assert len(jars)==1, f'Expected one JAR: {jars}'
+          jar=jars[0]
+          with zipfile.ZipFile(jar) as z:
+              names=z.namelist()
+              assert any(n.endswith('LogisticsCableGhostJeiPlugin.class') for n in names)
+              assert any(n.endswith('ConduitRuntime.class') for n in names)
+          shutil.copyfile(jar,'server/mods/network-storage-build-106.jar')
+          print('Build 106 SHA256:',hashlib.sha256(jar.read_bytes()).hexdigest())
           PY
-      - name: Guard against fabricated benchmark results
+      - name: Install NeoForge 26.1.2.106 server (no mod compilation)
         run: |
-          echo 'The frozen JAR is verified. A real automated world workload and MSPT sampler must be installed before a benchmark can be reported.'
-          echo 'No TPS/MSPT measurements were made. This job intentionally fails rather than claim a server stress test.'
-          exit 1
+          set -euo pipefail
+          curl --fail --location --retry 4 -o /tmp/neoforge-installer.jar https://maven.neoforged.net/releases/net/neoforged/neoforge/26.1.2.106/neoforge-26.1.2.106-installer.jar
+          (cd server && java -jar /tmp/neoforge-installer.jar --installServer)
+          echo 'eula=true' > server/eula.txt
+          cat > server/server.properties <<'EOF'
+          online-mode=false
+          enable-rcon=true
+          rcon.password=stress106localonly
+          rcon.port=25575
+          server-port=25565
+          max-tick-time=-1
+          view-distance=3
+          simulation-distance=3
+          spawn-protection=0
+          difficulty=peaceful
+          EOF
+      - name: Start server and execute growing-network benchmark
+        run: |
+          set -euo pipefail
+          (cd server && bash run.sh nogui > server.log 2>&1) &
+          echo $! > /tmp/stress-server.pid
+          python3 .github/stresstest-build-106/benchmark.py | tee stress-results.txt
+      - name: Upload raw results and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stresstest-build-106-results
+          path: |
+            stress-results.txt
+            server/server.log
+          if-no-files-found: warn
