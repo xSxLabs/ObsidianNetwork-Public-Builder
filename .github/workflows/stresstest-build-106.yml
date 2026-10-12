@@ -74,13 +74,14 @@ jobs:
           set -euo pipefail
           (cd server && bash run.sh nogui > server.log 2>&1) &
           echo $! > /tmp/stress-server.pid
-          timeout 900 bash -c 'while [ ! -s transport-results.json ]; do if grep -q BUILD106_ACTIVE_TRANSPORT_PASS server/server.log; then break; fi; if grep -Eq "Exception in server tick loop|BUILD106 ACTIVE STRESS|ModLoadingException|LoadingFailedException" server/server.log; then tail -n 150 server/server.log; exit 1; fi; sleep 3; done'
-          test -s transport-results.json
+          timeout 900 bash -c 'while [ ! -s server/transport-results.json ]; do if grep -q BUILD106_ACTIVE_TRANSPORT_PASS server/server.log; then break; fi; if grep -Eq "Exception in server tick loop|BUILD106 ACTIVE STRESS|ModLoadingException|LoadingFailedException" server/server.log; then tail -n 150 server/server.log; exit 1; fi; sleep 3; done'
+          test -s server/transport-results.json
+          cp server/transport-results.json transport-results.json
           cat transport-results.json | tee stress-results.txt
       - name: Require independently verified active item and fluid transfers
         run: |
           set -euo pipefail
-          if [ ! -s transport-results.json ]; then
+          if [ ! -s server/transport-results.json ]; then
             echo 'FAIL: No active item/fluid transport measurements produced; passive topology benchmarks are insufficient.' >&2
             exit 1
           fi
@@ -94,7 +95,7 @@ jobs:
             stress-results.txt
             stress-results.json
             extended-stress-results.json
-            transport-results.json
+            server/transport-results.json
             active-transport-diagnostic.json
             server/server.log
           if-no-files-found: warn
