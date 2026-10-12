@@ -1523,3 +1523,5 @@ jobs:
 # Build 104: JEI direct item/fluid ingredient ghost drop to 18 cable filter slots.
 
 # Build 105: AE2-inspired conservative mixed component scan dedup, mode-first IO and regression gate.
+
+# Build 106: avoid per-node enum direction array allocations in mixed network BFS.
