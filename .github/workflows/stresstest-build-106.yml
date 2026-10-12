@@ -63,7 +63,7 @@ jobs:
           set -euo pipefail
           (cd server && bash run.sh nogui > server.log 2>&1) &
           echo $! > /tmp/stress-server.pid
-          python3 .github/stresstest-build-106/benchmark.py | tee stress-results.txt
+          python3 .github/stresstest-build-106/extended-benchmark.py | tee stress-results.txt
       - name: Upload raw results and logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -72,5 +72,6 @@ jobs:
           path: |
             stress-results.txt
             stress-results.json
+            extended-stress-results.json
             server/server.log
           if-no-files-found: warn
