@@ -1519,3 +1519,5 @@ jobs:
 # Build 102: bundled mixed cable single-lookup release gate fixes.
 
 # Build 103: preserve disabled cable face topology with optimized open lookup.
+
+# Build 104: JEI direct item/fluid ingredient ghost drop to 18 cable filter slots.
