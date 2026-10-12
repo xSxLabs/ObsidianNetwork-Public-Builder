@@ -69,9 +69,9 @@ for cables,barrels in scenarios:
  samples=[]
  for _ in range(6):
   response=r.cmd('tick query')
-  match=re.search(r'Average time per tick:\\s*([0-9]+(?:[.,][0-9]+)?)',response,re.I)
+  match=re.search(r'Average time per tick:\s*([0-9]+(?:[.,][0-9]+)?)',response,re.I)
   if not match:
-   match=re.search(r'([0-9]+(?:[.,][0-9]+)?)\\s*ms(?:pt)?',response,re.I)
+   match=re.search(r'([0-9]+(?:[.,][0-9]+)?)\s*ms(?:pt)?',response,re.I)
   if not match:raise RuntimeError('Unable to parse server MSPT from /tick query: '+response)
   samples.append(float(match.group(1).replace(',','.')))
   time.sleep(5)
