@@ -37,6 +37,9 @@ jobs:
               names=z.namelist()
               assert any(n.endswith('LogisticsCableGhostJeiPlugin.class') for n in names)
               assert any(n.endswith('ConduitRuntime.class') for n in names)
+          expected='38d9e6ddf7d252af07b84a39012deecf6c98ab0d6101512027c298e4455f42f8'
+          actual=hashlib.sha256(jar.read_bytes()).hexdigest()
+          assert actual==expected, f'Frozen Build 106 JAR SHA256 mismatch: {actual}'
           shutil.copyfile(jar,'server/mods/network-storage-build-106.jar')
           print('Build 106 SHA256:',hashlib.sha256(jar.read_bytes()).hexdigest())
           PY
@@ -64,6 +67,14 @@ jobs:
           (cd server && bash run.sh nogui > server.log 2>&1) &
           echo $! > /tmp/stress-server.pid
           python3 .github/stresstest-build-106/extended-benchmark.py | tee stress-results.txt
+      - name: Require independently verified active item and fluid transfers
+        run: |
+          set -euo pipefail
+          if [ ! -s transport-results.json ]; then
+            echo 'FAIL: No active item/fluid transport measurements produced; passive topology benchmarks are insufficient.' >&2
+            exit 1
+          fi
+          python3 .github/stresstest-build-106/verify-active-transfers.py
       - name: Upload raw results and logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -73,5 +84,6 @@ jobs:
             stress-results.txt
             stress-results.json
             extended-stress-results.json
+            transport-results.json
             server/server.log
           if-no-files-found: warn
