@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: networkstorage-v1.6
+          ref: perf-terminal-bulk-insert-after-106
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
@@ -1305,15 +1305,16 @@ jobs:
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
           echo '===== BUILD 101 ALL AUTOMATABLE GATES PASS ====='
 
-          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
-
           mkdir -p dist
           cp work/build/libs/*.jar dist/
+          sha256sum dist/*.jar > dist/SHA256SUMS.txt
+          test -s /tmp/xsxlabs-perf-hotpaths.json
+          cp /tmp/xsxlabs-perf-hotpaths.json dist/perf-hotpaths.json
       - name: Upload v1.1.1 shared-conduit test JAR
         uses: actions/upload-artifact@v4
         with:
-          name: xsxlabs-network-storage-v1.6-internal-1.1.1-ingame-test
-          path: dist/*.jar
+          name: xsxlabs-network-storage-v1.6-performance-candidate
+          path: dist/
           if-no-files-found: error
           retention-days: 14
 
