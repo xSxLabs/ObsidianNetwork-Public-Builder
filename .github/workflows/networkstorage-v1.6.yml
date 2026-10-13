@@ -1525,3 +1525,5 @@ jobs:
 # Build 105: AE2-inspired conservative mixed component scan dedup, mode-first IO and regression gate.
 
 # Build 106: avoid per-node enum direction array allocations in mixed network BFS.
+
+# Performance CI iteration: storage mutation audit and recipe comparison gates.
