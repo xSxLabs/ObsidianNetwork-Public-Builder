@@ -29,7 +29,7 @@ name: xSxLabs Network Storage v1.6
 'on':
   workflow_dispatch:
   push:
-    branches: [networkstorage-v1.6]
+    branches: [perf-terminal-bulk-insert-after-106]
     paths: ['.github/workflows/networkstorage-v1.6.yml']
 
 
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: networkstorage-v1.6-ingame-fixes
+          ref: perf-terminal-bulk-insert-after-106
           token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
           path: private
       - uses: actions/setup-java@v4
