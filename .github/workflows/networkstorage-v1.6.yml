@@ -1,3 +1,4 @@
+# inspect actual coal-block bulk-crafting hotpaths 0db8a1c
 # round2 item-count crafting buckets 502230c
 # round2 count-first recipe dedup optimization test 21d192e
 # perf recipe signature fix rerun 1ef5d3f
