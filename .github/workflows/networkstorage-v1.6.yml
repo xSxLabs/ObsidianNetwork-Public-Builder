@@ -31,7 +31,7 @@ name: xSxLabs Network Storage v1.6
 'on':
   workflow_dispatch:
   push:
-    branches: [perf-terminal-bulk-insert-after-106]
+    branches: [perf-round2-bulk-crafting-after-111]
     paths: ['.github/workflows/networkstorage-v1.6.yml']
 
 
@@ -52,11 +52,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: perf-terminal-bulk-insert-after-106
+          ref: perf-round2-bulk-crafting-after-111
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
-          ref: perf-terminal-bulk-insert-after-106
+          ref: perf-round2-bulk-crafting-after-111
           token: '${{ secrets.PRIVATE_SOURCE_TOKEN }}'
           path: private
       - uses: actions/setup-java@v4
