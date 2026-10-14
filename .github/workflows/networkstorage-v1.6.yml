@@ -1,3 +1,4 @@
+# round2 count-first recipe dedup optimization test 21d192e
 # perf recipe signature fix rerun 1ef5d3f
 # perf diagnostic retry adb8128: inspect recipe signature without changing fail-closed behavior
 # Build #12 compile repair: facing null and constrained renderer regex
