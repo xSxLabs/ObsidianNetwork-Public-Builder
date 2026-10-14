@@ -1,3 +1,4 @@
+# retry whitespace-tolerant craft patch e0e369f
 # shift-craft copy elision ee5f629
 # inspect shift craft transaction full method e818417
 # inspect actual coal-block bulk-crafting hotpaths 0db8a1c
