@@ -951,6 +951,24 @@ jobs:
                         if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L)
                           throw new IllegalStateException("50-drive post-reconnect churn lost stone");
                         System.out.println("REAL_50_DRIVE_POST_RECONNECT_CHURN operations=2000 elapsed_ns="+elapsedNanos+" no_TPS_claim=true");
+                        // Force all 800 physical cells to participate in the transfer test.
+                        int populated=0;
+                        long bulkStart=System.nanoTime();
+                        for(var cell:rt.storage().cells()){
+                          long accepted=cell.insert(iron,1L);
+                          if(accepted!=1L)throw new IllegalStateException("50-drive per-cell write failed at "+populated);
+                          populated++;
+                        }
+                        if(populated!=800)throw new IllegalStateException("Expected 800 real cell writes");
+                        int drained=0;
+                        for(var cell:rt.storage().cells()){
+                          long removed=cell.extract(iron,1L);
+                          if(removed!=1L)throw new IllegalStateException("50-drive per-cell extraction failed at "+drained);
+                          drained++;
+                        }
+                        if(drained!=800||rt.storage().cells().stream().mapToLong(c->c.amount(iron)).sum()!=22655L)
+                          throw new IllegalStateException("50-drive per-cell conservation failed");
+                        System.out.println("REAL_50_DRIVE_ALL_CELLS operations=1600 cells=800 elapsed_ns="+(System.nanoTime()-bulkStart));
                         // Sample elapsed wall time across real server tick boundaries.
                         final long[] tickWall={System.nanoTime()};
                         final int[] tickSamples={0};
