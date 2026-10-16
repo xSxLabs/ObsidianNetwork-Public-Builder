@@ -775,6 +775,8 @@ jobs:
             @SubscribeEvent
             public static void register(RegisterGameTestsEvent event) {
               var environment = event.registerEnvironment(ENV, new TestEnvironmentDefinition.AllOf(java.util.List.of()));
+              event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "fifty_real_storage_drives"),
+                  new FiftyDriveTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "conduit_bundle_runtime"),
                   new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "mixed_item_bridge_topology"),
@@ -785,6 +787,44 @@ jobs:
                   new MixedStandaloneBundleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_item_and_fluid_transfer"),
                   new StandaloneTransportTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+            }
+
+            private static final class FiftyDriveTest extends GameTestInstance {
+              FiftyDriveTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data) { super(data); }
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec() { throw new UnsupportedOperationException("CI-only 50-drive test"); }
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription() { return Component.literal("50 real storage drives and controller network"); }
+              @Override public void run(GameTestHelper h) {
+                var level=(net.minecraft.server.level.ServerLevel)h.getLevel();
+                BlockPos controller=h.absolutePos(new BlockPos(1,1,0));
+                level.setBlock(controller,ObsidianNetwork.NETWORK_CONTROLLER.get().defaultBlockState(),3);
+                for(int z=1;z<=10;z++)for(int x=1;x<=6;x++){
+                  BlockPos cable=h.absolutePos(new BlockPos(x,1,z));
+                  level.setBlock(cable,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                  var bundle=(ConduitBundleBlockEntity)level.getBlockEntity(cable);
+                  if(!bundle.has(ConduitBundleBlockEntity.Layer.NETWORK)&&!bundle.add(ConduitBundleBlockEntity.Layer.NETWORK))
+                    throw new IllegalStateException("50-drive NETWORK cable layer setup");
+                  if(x>1){
+                    BlockPos drivePos=h.absolutePos(new BlockPos(x,2,z));
+                    level.setBlock(drivePos,ObsidianNetwork.STORAGE_DRIVE.get().defaultBlockState(),3);
+                  }
+                }
+                h.startSequence().thenExecuteAfter(50,()->{
+                  var rt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForController(level,controller);
+                  if(rt==null)throw new IllegalStateException("50-drive controller runtime missing");
+                  int attached=0;
+                  for(int z=1;z<=10;z++)for(int x=2;x<=6;x++){
+                    BlockPos p=h.absolutePos(new BlockPos(x,2,z));
+                    var drive=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)level.getBlockEntity(p);
+                    if(drive==null)throw new IllegalStateException("50-drive block entity missing at "+x+","+z);
+                    var driveRt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive(level,p);
+                    if(driveRt!=rt||!rt.drives().contains(drive.drive()))
+                      throw new IllegalStateException("50-drive runtime binding failed at "+x+","+z);
+                    attached++;
+                  }
+                  if(attached!=50)throw new IllegalStateException("Expected 50 real drives, got "+attached);
+                  h.succeed();
+                });
+              }
             }
 
             private static final class MixedCableTest extends GameTestInstance {
@@ -1233,14 +1273,14 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import gzip, struct
-          # Minimal valid 3x3x3 empty structure template for the CI-only GameTest.
+          # Minimal valid 16x4x16 empty structure template for the CI-only GameTest.
           def name(s):
               b=s.encode(); return struct.pack('>H',len(b))+b
           def tag(t,n,payload): return bytes([t])+name(n)+payload
           def i32(v): return struct.pack('>i',v)
           root=b''
           root+=tag(3,'DataVersion',i32(0))
-          root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(5)+i32(3)+i32(5)  # TAG_List<int>, length=3, values 5,3,5
+          root+=bytes([9])+name('size')+bytes([3])+i32(3)+i32(16)+i32(4)+i32(16)  # TAG_List<int>, length=3, values 16,4,16
           # palette: one compound {Name:"minecraft:air"}
           pal=bytes([10])+name('palette')+i32(1)+tag(8,'Name',name('minecraft:air'))+b'\x00'
           root+=pal
@@ -1259,7 +1299,7 @@ jobs:
           set -e
           cat /tmp/build103-gametest.log
           if [ "$GT_RC" -ne 0 ]; then echo "Build103 GameTest server failed rc=$GT_RC"; exit "$GT_RC"; fi
-          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(5 tests\)" /tmp/build103-gametest.log
+          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(6 tests\)" /tmp/build103-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
           if grep -Eqi '[0-9]+ required tests failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
           echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST PASS ====='
