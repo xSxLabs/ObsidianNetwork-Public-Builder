@@ -1546,3 +1546,5 @@ jobs:
 # Round2 validation: eliminate redundant autocraft first refill, private 98b4fe8.
 
 # Round2 grouped validation: single refill + lazy snapshot assertions; private 7306f13, 4a83664.
+
+# Round2 grouped validation: nested subjob gate updated for single-refill hotpath private 4d43c32.
