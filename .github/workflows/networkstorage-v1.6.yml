@@ -822,7 +822,23 @@ jobs:
                     attached++;
                   }
                   if(attached!=50)throw new IllegalStateException("Expected 50 real drives, got "+attached);
-                  h.succeed();
+                  // Repeated server-side lookups on real block entities across
+                  // successive ticks: no simulated network topology here.
+                  final int[] rounds={0};
+                  h.startSequence().thenExecuteAfter(20,()->{
+                    for(int repeat=0;repeat<100;repeat++){
+                      for(int z=1;z<=10;z++)for(int x=2;x<=6;x++){
+                        BlockPos p=h.absolutePos(new BlockPos(x,2,z));
+                        var drive=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)level.getBlockEntity(p);
+                        var current=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive(level,p);
+                        if(drive==null||current!=rt||!rt.drives().contains(drive.drive()))
+                          throw new IllegalStateException("50-drive repeated real runtime lookup drift");
+                        rounds[0]++;
+                      }
+                    }
+                    if(rounds[0]!=5000)throw new IllegalStateException("Expected 5000 real drive lookups");
+                    h.succeed();
+                  });
                 });
               }
             }
