@@ -951,7 +951,25 @@ jobs:
                         if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L)
                           throw new IllegalStateException("50-drive post-reconnect churn lost stone");
                         System.out.println("REAL_50_DRIVE_POST_RECONNECT_CHURN operations=2000 elapsed_ns="+elapsedNanos+" no_TPS_claim=true");
-                        h.succeed();
+                        // Sample elapsed wall time across real server tick boundaries.
+                        final long[] tickWall={System.nanoTime()};
+                        final int[] tickSamples={0};
+                        var sampleSequence=h.startSequence();
+                        for(int tick=0;tick<20;tick++){
+                          sampleSequence.thenExecuteAfter(1,()->{
+                            long now=System.nanoTime();
+                            long delta=now-tickWall[0];
+                            if(delta<0)throw new IllegalStateException("Non-monotonic server tick clock");
+                            tickWall[0]=now;
+                            tickSamples[0]++;
+                            System.out.println("REAL_50_DRIVE_SERVER_TICK_SAMPLE sample="+tickSamples[0]+" elapsed_ns="+delta+" wall_clock_not_MSPT=true");
+                          });
+                        }
+                        sampleSequence.thenExecute(()->{
+                          if(tickSamples[0]!=20)throw new IllegalStateException("Expected 20 server tick samples");
+                          h.succeed();
+                        });
+
                       });
                     });
 
