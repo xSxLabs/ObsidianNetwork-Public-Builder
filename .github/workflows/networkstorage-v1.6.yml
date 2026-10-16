@@ -1560,3 +1560,5 @@ jobs:
 # Round2: exhaustive short-sequence item/component/count dedup equivalence private 5cf7638.
 
 # Round2: adversarial component-heavy recipe dedup test private cd5391b.
+
+# Round2: high-cardinality recipe comparison regression gate private 9739a2b.
