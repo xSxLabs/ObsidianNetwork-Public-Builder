@@ -747,6 +747,17 @@ jobs:
             }
           }
           EOF
+          # REAL_ITEM_KEY_DIAGNOSTIC_V2: inspect actual key creation and cell limits.
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          for rel in ['core/ItemKey.java','core/StorageCellStore.java','core/StorageDriveRuntime.java','item/StorageCellItem.java']:
+              p=root/rel
+              print('REAL_ITEM_KEY FILE',rel,'exists',p.exists())
+              if p.exists():
+                  for n,line in enumerate(p.read_text(errors='replace').splitlines()[:230],1):
+                      print(f'REAL_ITEM_KEY {rel}:{n}: {line[:250]}')
+          PY
           # REAL_DRIVE_API_DIAGNOSTIC_V1: CI-only inspection of reconstructed runtime APIs.
           python3 - <<'PY'
           from pathlib import Path
