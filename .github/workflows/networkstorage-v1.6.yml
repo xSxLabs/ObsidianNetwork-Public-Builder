@@ -1539,3 +1539,5 @@ jobs:
 # Build 106: avoid per-node enum direction array allocations in mixed network BFS.
 
 # Performance CI iteration: storage mutation audit and recipe comparison gates.
+
+# Validate autocraft reservation allocation and count-bucket benchmark on round2 branch.
