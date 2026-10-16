@@ -1,3 +1,4 @@
+# validate autocraft reservation snapshot reuse 10354e0
 # rerun linear-time shift craft patch e1fa3a1
 # rerun cancelled #118; validate shift-craft fix
 # retry whitespace-tolerant craft patch e0e369f
