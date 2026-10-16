@@ -1542,3 +1542,5 @@ jobs:
 # Performance CI iteration: storage mutation audit and recipe comparison gates.
 
 # Validate autocraft reservation allocation and count-bucket benchmark on round2 branch.
+
+# Round2 validation: eliminate redundant autocraft first refill, private 98b4fe8.
