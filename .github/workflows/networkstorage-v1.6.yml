@@ -1558,3 +1558,5 @@ jobs:
 # Round2: validate empty/mixed recipe-output lazy-index model private 33f6ec6.
 
 # Round2: exhaustive short-sequence item/component/count dedup equivalence private 5cf7638.
+
+# Round2: adversarial component-heavy recipe dedup test private cd5391b.
