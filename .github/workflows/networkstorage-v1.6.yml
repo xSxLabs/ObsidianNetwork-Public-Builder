@@ -939,6 +939,18 @@ jobs:
                         if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L||
                            rt.storage().cells().stream().mapToLong(c->c.amount(iron)).sum()!=22655L)
                           throw new IllegalStateException("50-drive reconnect item conservation failed");
+                        // Exercise real network mutations after physical topology recovery.
+                        long beginNanos=System.nanoTime();
+                        for(int i=0;i<1000;i++){
+                          long added=rt.storage().insert(stone,64L);
+                          long removed=rt.storage().extract(stone,64L);
+                          if(added!=64L||removed!=64L)
+                            throw new IllegalStateException("50-drive post-reconnect transfer drift at "+i);
+                        }
+                        long elapsedNanos=System.nanoTime()-beginNanos;
+                        if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L)
+                          throw new IllegalStateException("50-drive post-reconnect churn lost stone");
+                        System.out.println("REAL_50_DRIVE_POST_RECONNECT_CHURN operations=2000 elapsed_ns="+elapsedNanos+" no_TPS_claim=true");
                         h.succeed();
                       });
                     });
