@@ -1552,3 +1552,5 @@ jobs:
 # Round2 performance candidate: guarded shift-result copy elision private 5d65560.
 
 # Safety regression recovery: remove unverified shift guard patch; private d62ab42.
+
+# Round2: validate lazy recipe-output dedup index with full CI; private 55bda9f ae2302d.
