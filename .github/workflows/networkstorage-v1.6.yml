@@ -852,14 +852,14 @@ jobs:
                   var drive=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)
                       level.getBlockEntity(h.absolutePos(new BlockPos(x,2,z)));
                   if(drive==null)throw new IllegalStateException("Drive missing before cell insertion");
-                  for(int slot=0;slot<8;slot++){
+                  for(int slot=0;slot<dev.obsidiannetwork.core.StorageDriveRuntime.SLOTS;slot++){
                     if(!drive.insertCellAt(slot,new net.minecraft.world.item.ItemStack(cellItem)))
                       throw new IllegalStateException("Real cell insertion failed at "+x+","+z+" slot "+slot);
                     insertedCells++;
                   }
-                  if(drive.occupiedSlots()!=8)throw new IllegalStateException("Drive not fully populated");
+                  if(drive.occupiedSlots()!=dev.obsidiannetwork.core.StorageDriveRuntime.SLOTS)throw new IllegalStateException("Drive not fully populated");
                 }
-                if(insertedCells!=400)throw new IllegalStateException("Expected 400 real cells");
+                if(insertedCells!=800)throw new IllegalStateException("Expected 800 real cells");
                 h.startSequence().thenExecuteAfter(50,()->{
                   var rt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForController(level,controller);
                   if(rt==null)throw new IllegalStateException("50-drive controller runtime missing");
@@ -874,6 +874,23 @@ jobs:
                     attached++;
                   }
                   if(attached!=50)throw new IllegalStateException("Expected 50 real drives, got "+attached);
+                  if(rt.storage().cells().size()!=800)
+                    throw new IllegalStateException("Expected 800 attached real cells, got "+rt.storage().cells().size());
+                  var stone=dev.obsidiannetwork.core.ItemKey.simple("minecraft:stone");
+                  var iron=dev.obsidiannetwork.core.ItemKey.simple("minecraft:iron_ingot");
+                  long insertedStone=rt.storage().insert(stone,50000L);
+                  long insertedIron=rt.storage().insert(iron,25000L);
+                  if(insertedStone!=50000L||insertedIron!=25000L)
+                    throw new IllegalStateException("Real network item insertion failed: "+insertedStone+","+insertedIron);
+                  if(rt.storage().index().count(stone)!=50000L||rt.storage().index().count(iron)!=25000L)
+                    throw new IllegalStateException("Real network index totals wrong after insertion");
+                  long extractedStone=rt.storage().extract(stone,12345L);
+                  long extractedIron=rt.storage().extract(iron,2345L);
+                  if(extractedStone!=12345L||extractedIron!=2345L)
+                    throw new IllegalStateException("Real network extraction failed");
+                  if(rt.storage().index().count(stone)!=37655L||rt.storage().index().count(iron)!=22655L)
+                    throw new IllegalStateException("Real network index totals wrong after extraction");
+
                   // Repeated server-side lookups on real block entities across
                   // successive ticks: no simulated network topology here.
                   final int[] rounds={0};
