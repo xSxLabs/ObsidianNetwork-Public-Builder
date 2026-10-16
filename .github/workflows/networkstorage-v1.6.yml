@@ -1550,3 +1550,5 @@ jobs:
 # Round2 grouped validation: nested subjob gate updated for single-refill hotpath private 4d43c32.
 
 # Round2 performance candidate: guarded shift-result copy elision private 5d65560.
+
+# Safety regression recovery: remove unverified shift guard patch; private d62ab42.
