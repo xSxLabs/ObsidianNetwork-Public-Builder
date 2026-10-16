@@ -906,7 +906,43 @@ jobs:
                       }
                     }
                     if(rounds[0]!=5000)throw new IllegalStateException("Expected 5000 real drive lookups");
-                    h.succeed();
+                    // Disconnect the ten-drive columns from the controller spine.
+                    for(int z=1;z<=10;z++){
+                      BlockPos bridge=h.absolutePos(new BlockPos(1,1,z));
+                      level.removeBlock(bridge,false);
+                    }
+                    h.startSequence().thenExecuteAfter(30,()->{
+                      int disconnected=0;
+                      for(int z=1;z<=10;z++)for(int x=2;x<=6;x++){
+                        BlockPos p=h.absolutePos(new BlockPos(x,2,z));
+                        if(dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive(level,p)!=rt)
+                          disconnected++;
+                      }
+                      if(disconnected!=50)throw new IllegalStateException("50-drive detach failed: "+disconnected);
+                      for(int z=1;z<=10;z++){
+                        BlockPos bridge=h.absolutePos(new BlockPos(1,1,z));
+                        level.setBlock(bridge,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                        var bundle=(ConduitBundleBlockEntity)level.getBlockEntity(bridge);
+                        if(!bundle.has(ConduitBundleBlockEntity.Layer.NETWORK)&&!bundle.add(ConduitBundleBlockEntity.Layer.NETWORK))
+                          throw new IllegalStateException("50-drive reconnect cable layer setup");
+                      }
+                      h.startSequence().thenExecuteAfter(50,()->{
+                        int reconnected=0;
+                        for(int z=1;z<=10;z++)for(int x=2;x<=6;x++){
+                          BlockPos p=h.absolutePos(new BlockPos(x,2,z));
+                          if(dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive(level,p)==rt)
+                            reconnected++;
+                        }
+                        if(reconnected!=50)throw new IllegalStateException("50-drive reconnect failed: "+reconnected);
+                        if(rt.storage().cells().size()!=800)
+                          throw new IllegalStateException("50-drive cell count after reconnect: "+rt.storage().cells().size());
+                        if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L||
+                           rt.storage().cells().stream().mapToLong(c->c.amount(iron)).sum()!=22655L)
+                          throw new IllegalStateException("50-drive reconnect item conservation failed");
+                        h.succeed();
+                      });
+                    });
+
                   });
                 });
               }
