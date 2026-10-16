@@ -827,6 +827,28 @@ jobs:
                     level.setBlock(drivePos,ObsidianNetwork.STORAGE_DRIVE.get().defaultBlockState(),3);
                   }
                 }
+                // Populate every real drive slot using an actual registered StorageCellItem.
+                net.minecraft.world.item.Item cellItem=null;
+                for(var candidate:net.minecraft.core.registries.BuiltInRegistries.ITEM){
+                  if(candidate instanceof dev.obsidiannetwork.item.StorageCellItem){
+                    cellItem=candidate;
+                    break;
+                  }
+                }
+                if(cellItem==null)throw new IllegalStateException("No registered real StorageCellItem");
+                int insertedCells=0;
+                for(int z=1;z<=10;z++)for(int x=2;x<=6;x++){
+                  var drive=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)
+                      level.getBlockEntity(h.absolutePos(new BlockPos(x,2,z)));
+                  if(drive==null)throw new IllegalStateException("Drive missing before cell insertion");
+                  for(int slot=0;slot<8;slot++){
+                    if(!drive.insertCellAt(slot,new net.minecraft.world.item.ItemStack(cellItem)))
+                      throw new IllegalStateException("Real cell insertion failed at "+x+","+z+" slot "+slot);
+                    insertedCells++;
+                  }
+                  if(drive.occupiedSlots()!=8)throw new IllegalStateException("Drive not fully populated");
+                }
+                if(insertedCells!=400)throw new IllegalStateException("Expected 400 real cells");
                 h.startSequence().thenExecuteAfter(50,()->{
                   var rt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForController(level,controller);
                   if(rt==null)throw new IllegalStateException("50-drive controller runtime missing");
