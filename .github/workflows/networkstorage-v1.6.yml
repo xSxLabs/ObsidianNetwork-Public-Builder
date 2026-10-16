@@ -747,6 +747,25 @@ jobs:
             }
           }
           EOF
+          # REAL_DRIVE_API_DIAGNOSTIC_V1: CI-only inspection of reconstructed runtime APIs.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          targets=['blockentity/StorageDriveBlockEntity.java','core/StorageNetwork.java','core/NetworkRuntime.java','network/WorldTopologyBridge.java','ObsidianNetwork.java']
+          for rel in targets:
+              p=root/rel
+              print('REAL_DRIVE_API FILE',rel,'exists',p.exists())
+              if not p.exists(): continue
+              lines=p.read_text(errors='replace').splitlines()
+              patterns=[r'\b(public|protected)\b.*\(',r'\bSLOT',r'\bslot',r'\bCELL',r'\bDISK',r'\bdrive\(',r'\binsert',r'\bextract']
+              hits=[i for i,line in enumerate(lines) if any(re.search(pattern,line,re.I) for pattern in patterns)]
+              selected=set()
+              for i in hits[:110]:
+                  selected.update(range(max(0,i-1),min(len(lines),i+3)))
+              for i in sorted(selected):
+                  print(f'REAL_DRIVE_API {rel}:{i+1}: {lines[i][:260]}')
+          PY
           mkdir -p work/src/main/java/dev/obsidiannetwork/build103 work/src/main/resources/data/obsidiannetwork/structure
           cat > work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java <<'EOF'
           package dev.obsidiannetwork.build103;
