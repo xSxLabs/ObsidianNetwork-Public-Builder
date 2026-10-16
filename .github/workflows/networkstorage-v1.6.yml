@@ -882,13 +882,13 @@ jobs:
                   long insertedIron=rt.storage().insert(iron,25000L);
                   if(insertedStone!=50000L||insertedIron!=25000L)
                     throw new IllegalStateException("Real network item insertion failed: "+insertedStone+","+insertedIron);
-                  if(rt.storage().index().count(stone)!=50000L||rt.storage().index().count(iron)!=25000L)
+                  if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=50000L||rt.storage().cells().stream().mapToLong(c->c.amount(iron)).sum()!=25000L)
                     throw new IllegalStateException("Real network index totals wrong after insertion");
                   long extractedStone=rt.storage().extract(stone,12345L);
                   long extractedIron=rt.storage().extract(iron,2345L);
                   if(extractedStone!=12345L||extractedIron!=2345L)
                     throw new IllegalStateException("Real network extraction failed");
-                  if(rt.storage().index().count(stone)!=37655L||rt.storage().index().count(iron)!=22655L)
+                  if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L||rt.storage().cells().stream().mapToLong(c->c.amount(iron)).sum()!=22655L)
                     throw new IllegalStateException("Real network index totals wrong after extraction");
 
                   // Repeated server-side lookups on real block entities across
