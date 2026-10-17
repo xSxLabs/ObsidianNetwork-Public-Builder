@@ -29,7 +29,7 @@ class WirelessNetworkContractTests(unittest.TestCase):
   for needle in ('WeakReference<WirelessNetworkBlockEntity>','TransactionContext tx',
       'private final Journal journal=new Journal()', 'journal.updateSnapshots(tx)',
       'protected void revertToSnapshot(Long before)', 'if(accepted==withdrawn)tx.commit();',
-      'server.hasChunkAt(neighbor)', 'level.getCapability(Capabilities.Energy.BLOCK,neighbor',
+      'server.hasChunkAt(neighbor)', 'server.getCapability(Capabilities.Energy.BLOCK,neighbor',
       'if(wanted<=0||IN_TRANSFER.get()', 'if(transmitter)WirelessEnergyRuntime.unregister(this)',
       'server.getGameTime()%5!=0'):
    self.assertIn(needle,CORE)
