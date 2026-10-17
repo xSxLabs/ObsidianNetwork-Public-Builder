@@ -15,3 +15,12 @@ Für `projekt-performance` zurückstellen:
 4. Stabiler Rückfallstand: CI Build #232 https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39074849743
 
 **Nicht vergessen:** Performance-Branch bleibt für Performance; Wireless Feature zuerst, erst danach Burst-Lag-Fixes.
+
+## Zusätzliche Nutzerbefunde vom 18.10.2026 (priorisiert nach Wireless)
+
+- Beim **Öffnen der Autocrafter-GUI** steigen die durchschnittlichen Server-Tickzeiten ruckartig an. Noch **keine gesicherte Ursachenanalyse**. Prüfen: Menu-Open, Rezept-/Lager-Queries, wiederholter Refresh, Slot-/Packet-Sync, Controller-Snapshots, nicht bloß Render-FPS. Nachgelagert Spark-Profilauswertung auf `projekt-performance`.
+- Bei großem/schnellem Craften und Masseneinlagern über Crafting Terminal gibt es weiter Hänger.
+- Jobbezogene Zutatenreservierung fehlt sichtbar: am Start eines Autocrafting-Jobs exakt notwendige freie Items reservieren; solange nicht mehr frei verfügbar/auszahlbar, nach Abbruch noch nicht verbrauchte Mengen korrekt zurückbuchen; dauerhafter Reservierungszustand und konkurrierende Jobs.
+- Gewünschter **Antenna-Look**: beide neuen Blöcke sollen echte Modelle/Texturen als zur existierenden `wireless_antenna` passende Antennen erhalten, optisch unterschieden durch Sende- und Empfangsdetails, nicht nur normale Würfeltexturen.
+
+**Keine Vermischung:** diese drei bestehenden Autocrafting-/Terminal-Probleme ausschließlich als Backlog in `projekt-performance`. Der Feature-Branch behält seine zwei Wireless-Blöcke als erstes Entwicklungsziel. Ingame-Spark-Profil nach Nutzerbelastung dient zur Identifikation der konkreten GUI-Hotspot-Methoden.
