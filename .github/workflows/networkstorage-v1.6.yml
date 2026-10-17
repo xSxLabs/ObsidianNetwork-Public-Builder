@@ -64,7 +64,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: projekt-performance
+          # Build exactly the triggering revision, not a later branch HEAD.
+          ref: ${{ github.sha }}
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
@@ -1758,6 +1759,7 @@ jobs:
           grep -Fq 'EQUIPMENT_DIRTY_SERIALIZATION_MUTATION_GAMETEST PASS' /tmp/build103-gametest.log
           grep -Fq 'REAL_AUTOCRAFT_RESERVATION_CONSERVATION_V1 PASS' /tmp/build103-gametest.log
           grep -Fq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 samples=9' /tmp/build103-gametest.log
+          grep -Eq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 .*optimized_required=false' /tmp/build103-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
           if grep -Eqi '[0-9]+ required tests failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
           echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST PASS ====='
@@ -2007,6 +2009,7 @@ jobs:
           grep -Fq 'EQUIPMENT_DIRTY_SERIALIZATION_MUTATION_GAMETEST PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_AUTOCRAFT_RESERVATION_CONSERVATION_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 samples=9' /tmp/build103-postpatch-gametest.log
+          grep -Eq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 .*optimized_required=true' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_STORAGE_BULK_DEPOSIT_NS' /tmp/build103-postpatch-gametest.log
           echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
           # Tests must never be shipped in the distributable JAR.
@@ -2044,6 +2047,10 @@ jobs:
               'baseline_before_final_patches':numbers_in(baseline_log,'REAL_STORAGE_BULK_DEPOSIT_NS'),
               'measurements':numbers('REAL_STORAGE_BULK_DEPOSIT_NS'),
               'coverage':'runtime insert/extract benchmark; not rapid GUI deposit stress'},
+            'autocraft_idle_reservations':{
+              'baseline_pre_patch':numbers_in(baseline_log,'REAL_AUTOCRAFT_IDLE_RESERVATION_V1'),
+              'after_final_patches':numbers('REAL_AUTOCRAFT_IDLE_RESERVATION_V1'),
+              'coverage':'real service / 50-drive runtime, 9 samples x 500 reflective idle calls per phase; not a GUI test, no TPS claim'},
             'crafting':{
               'terminal_source_found':bool(terminal),
               'markers':[line.strip()[:250] for line in log.splitlines() if 'CRAFT' in line.upper() and ('_NS ' in line or '_SUMMARY ' in line)][:30],
@@ -2065,6 +2072,8 @@ jobs:
           print('FOUR_ISSUE_DIAGNOSTIC_REPORT_V1 '+p.read_text())
           assert reports['equipment_64k']['phase_measurements'],'equipment performance marker missing'
           assert reports['bulk_storage']['measurements'],'bulk performance marker missing'
+          assert reports['autocraft_idle_reservations']['baseline_pre_patch'],'autocraft baseline missing'
+          assert reports['autocraft_idle_reservations']['after_final_patches'],'autocraft patched samples missing'
           PY
           # CI-only: stop and restart two actual dedicated-server JVMs on
           # the same saved world. Do not repackage the temporary subscriber.
