@@ -16,7 +16,7 @@ anchor = 'System.out.println("FULL_EQUIPMENT_CELL_REINSERT_NS "+elapsed+" cycles
 assert source.count(anchor) == 1, "64k GameTest anchor changed; fail closed"
 after_anchor = source.split(anchor, 1)[1]
 import re
-assert re.match(r'\\s*h\\.succeed\\(\\);', after_anchor), "GameTest success anchor moved"
+assert re.match(r'\s*h\.succeed\(\);', after_anchor), "GameTest success anchor moved"
 injection = """                // Test-only: a committed snapshot must remain correct across live
                 // mutations and repeated materialization. This guards against
                 // stale NBT / lost items from the dirty-serialization optimization.
