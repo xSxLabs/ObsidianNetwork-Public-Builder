@@ -44,3 +44,13 @@ Status: Baseline und Reproduktion noch nicht vollständig nachgewiesen. Diese Da
 - `ItemConduitTicker.tick` bricht außerhalb der Tick-Phase `gameTime % 5 == 0` sofort ab. Die darin liegende Bedingung `dirty || gameTime % 5 == 0` ist daher bei jedem tatsächlich ausgeführten Transfertick wahr: Der Endpoint-Cache wird alle fünf Ticks neu aufgebaut. Das ist ein möglicher weiterer Scan-Hotpath, **noch kein validierter Änderungskandidat**.
 - Der zuvor ersetzte Refresh-Ausdruck `Math.floorMod(System.identityHashCode(network), 1) * 5` ist mathematisch immer 0. Seine Ersetzung durch `0` ist äquivalent und beweist daher allein **keine** Behebung des ITEM-Conduit-Neustartfehlers.
 - Conduit-Caching nicht aggressiv verlängern, bevor ein echter Neustart-/Persistenztest existiert.
+
+## Erfolgreicher Post-Patch-Test #198
+- Lauf: https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39042938373
+- **Ergebnis: erfolgreich.** Sowohl vor als auch nach den finalen Patches alle 8 erforderlichen GameTests bestanden. `EQUIPMENT_REDUNDANT_RECONCILE_ELISION_V1 PASS`, `EQUIPMENT_RECONCILE_FALLBACK_GATE PASS`, `POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS`.
+- Im selben CI-Lauf: 25 Zyklen / 257 Descriptoren **vor finalen Patches** Gesamt 1.584.452.918 ns, Insert 1.134.225.652 ns, Remove 301.604.711 ns, Decode 148.091.332 ns.
+- **Nach finalen Patches** Gesamt 947.192.084 ns, Insert 777.954.492 ns, Remove 2.685.478 ns, Decode 166.027.577 ns.
+- Das entspricht ~40 % niedrigerer Laufzeit im Test. Vergleich nicht isoliert: zusätzliche Patches und zweiter JVM-Testlauf (Warm-up/GC-Effekte) können die Differenz beeinflussen. **Keine** p95/p99-MSPT- oder GUI-Werte.
+- Bulk-Test vor finalen Patches 4.467.672 ns, nach finalen Patches 4.656.886 ns (100 Zyklen); keine statistisch gesicherte Differenz.
+- Weiterer Kandidat: `patches/item-conduit-duplicate-scan-elision.py` verschiebt die bereits vorhandene Same-Tick-Transfer-Sperre vor den Endpoint-Scan. Testläufe noch ausstehend.
+- GameTest-Härtung: Prüfung aller 256 Einzeldescriptoren in jedem der 25 Zyklen zusätzlich zum Hauptbestand von 63.744 und der Typanzahl 257.
