@@ -1671,6 +1671,41 @@ jobs:
           with gzip.open(p,'wb') as g:g.write(data)
           print('BUILD103 GAMETEST STRUCTURE WRITTEN',p)
           PY
+          # EQUIPMENT_CELL_ATTACH_SNAPSHOT_REUSE_V1: one descriptor clone per attach.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/core/NetworkRuntime.java')
+          s=p.read_text()
+          marker='XSXLABS_EQUIPMENT_ATTACH_SINGLE_SNAPSHOT_V1'
+          if marker not in s:
+              anchor='public void attachEquipmentCell(EquipmentCellStore cell) {'
+              assert s.count(anchor)==1, 'equipment attach method anchor changed'
+              s=s.replace(anchor,anchor+chr(10)+'       // '+marker+chr(10)+'       var equipmentDescriptors = cell.descriptorSnapshot();',1)
+              old='for (Entry<ItemKey, byte[]> e : cell.descriptorSnapshot().entrySet())'
+              assert s.count(old)==1, 'equipment validation anchor changed'
+              s=s.replace(old,'for (Entry<ItemKey, byte[]> e : equipmentDescriptors.entrySet())',1)
+              old='for (Entry<ItemKey,byte[]> e:cell.descriptorSnapshot().entrySet())'
+              assert s.count(old)==1, 'equipment registration anchor changed'
+              s=s.replace(old,'for (Entry<ItemKey,byte[]> e:equipmentDescriptors.entrySet())',1)
+              p.write_text(s)
+          assert s.count('equipmentDescriptors.entrySet()')==2
+          print('EQUIPMENT_ATTACH_SINGLE_SNAPSHOT_GATE PASS')
+          PY
+          # Profile the attach hot path in the actual reconstructed runtime.
+          # This separates descriptor snapshot cost from validation/index registration.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/core/NetworkRuntime.java')
+          s=p.read_text()
+          anchor='var equipmentDescriptors = cell.descriptorSnapshot();'
+          assert s.count(anchor)==1, 'single-snapshot attach anchor changed'
+          s=s.replace(anchor,'long equipmentAttachStartNs=System.nanoTime(); '+anchor+' long equipmentSnapshotNs=System.nanoTime()-equipmentAttachStartNs;',1)
+          anchor='for (Entry<ItemKey,byte[]> e:equipmentDescriptors.entrySet())'
+          assert s.count(anchor)==1, 'registration loop anchor changed'
+          s=s.replace(anchor,'if (equipmentDescriptors.size()>=200) System.out.println("EQUIPMENT_ATTACH_PRE_REGISTER_NS "+(System.nanoTime()-equipmentAttachStartNs)+" snapshot_ns="+equipmentSnapshotNs+" types="+equipmentDescriptors.size()); '+anchor,1)
+          p.write_text(s)
+          print('EQUIPMENT_ATTACH_PHASE_PROFILING_V1 PASS')
+          PY
           # Compile the test-only registration first so API drift fails clearly.
           (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
           set +e
@@ -1800,41 +1835,6 @@ jobs:
           p.write_text(s)
           assert s.count('XSXLABS_EQUIPMENT_INSERT_DECODE_ELISION_V1')==1
           print('EQUIPMENT_INSERT_DECODE_ELISION_GATE PASS')
-          PY
-          # EQUIPMENT_CELL_ATTACH_SNAPSHOT_REUSE_V1: one descriptor clone per attach.
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('work/src/main/java/dev/obsidiannetwork/core/NetworkRuntime.java')
-          s=p.read_text()
-          marker='XSXLABS_EQUIPMENT_ATTACH_SINGLE_SNAPSHOT_V1'
-          if marker not in s:
-              anchor='public void attachEquipmentCell(EquipmentCellStore cell) {'
-              assert s.count(anchor)==1, 'equipment attach method anchor changed'
-              s=s.replace(anchor,anchor+chr(10)+'       // '+marker+chr(10)+'       var equipmentDescriptors = cell.descriptorSnapshot();',1)
-              old='for (Entry<ItemKey, byte[]> e : cell.descriptorSnapshot().entrySet())'
-              assert s.count(old)==1, 'equipment validation anchor changed'
-              s=s.replace(old,'for (Entry<ItemKey, byte[]> e : equipmentDescriptors.entrySet())',1)
-              old='for (Entry<ItemKey,byte[]> e:cell.descriptorSnapshot().entrySet())'
-              assert s.count(old)==1, 'equipment registration anchor changed'
-              s=s.replace(old,'for (Entry<ItemKey,byte[]> e:equipmentDescriptors.entrySet())',1)
-              p.write_text(s)
-          assert s.count('equipmentDescriptors.entrySet()')==2
-          print('EQUIPMENT_ATTACH_SINGLE_SNAPSHOT_GATE PASS')
-          PY
-          # Profile the attach hot path in the actual reconstructed runtime.
-          # This separates descriptor snapshot cost from validation/index registration.
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('work/src/main/java/dev/obsidiannetwork/core/NetworkRuntime.java')
-          s=p.read_text()
-          anchor='var equipmentDescriptors = cell.descriptorSnapshot();'
-          assert s.count(anchor)==1, 'single-snapshot attach anchor changed'
-          s=s.replace(anchor,'long equipmentAttachStartNs=System.nanoTime(); '+anchor+' long equipmentSnapshotNs=System.nanoTime()-equipmentAttachStartNs;',1)
-          anchor='for (Entry<ItemKey,byte[]> e:equipmentDescriptors.entrySet())'
-          assert s.count(anchor)==1, 'registration loop anchor changed'
-          s=s.replace(anchor,'if (equipmentDescriptors.size()>=200) System.out.println("EQUIPMENT_ATTACH_PRE_REGISTER_NS "+(System.nanoTime()-equipmentAttachStartNs)+" snapshot_ns="+equipmentSnapshotNs+" types="+equipmentDescriptors.size()); '+anchor,1)
-          p.write_text(s)
-          print('EQUIPMENT_ATTACH_PHASE_PROFILING_V1 PASS')
           PY
           # Restart regression gate: ITEM endpoints must revalidate on every transfer tick,
           # even when topology remains unchanged and the visible input mode persists.
