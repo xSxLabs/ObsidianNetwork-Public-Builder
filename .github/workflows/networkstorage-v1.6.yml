@@ -965,6 +965,22 @@ jobs:
                         if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L)
                           throw new IllegalStateException("50-drive post-reconnect churn lost stone");
                         System.out.println("REAL_50_DRIVE_POST_RECONNECT_CHURN operations=2000 elapsed_ns="+elapsedNanos+" no_TPS_claim=true");
+                        // Multi-sample measured throughput; each sample conserves all items.
+                        long[] samples=new long[9];
+                        for(int trial=0;trial<samples.length;trial++){
+                          long sampleStart=System.nanoTime();
+                          for(int operation=0;operation<1000;operation++){
+                            if(rt.storage().insert(stone,64L)!=64L||rt.storage().extract(stone,64L)!=64L)
+                              throw new IllegalStateException("50-drive benchmark transfer failed at trial "+trial);
+                          }
+                          samples[trial]=System.nanoTime()-sampleStart;
+                        }
+                        java.util.Arrays.sort(samples);
+                        System.out.println("REAL_50_DRIVE_BENCHMARK_V1 cells=800 drives=50 trials=9 operations_per_trial=2000"+
+                            " median_ns="+samples[4]+" p90_ns="+samples[8]+
+                            " min_ns="+samples[0]+" total_operations=18000");
+                        if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L)
+                          throw new IllegalStateException("50-drive benchmark item conservation failed");
                         // Force all 800 physical cells to participate in the transfer test.
                         int populated=0;
                         long bulkStart=System.nanoTime();
