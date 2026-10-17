@@ -1769,7 +1769,7 @@ jobs:
           from pathlib import Path
           J=Path('work/src/main/java/dev/obsidiannetwork')
           topology=(J/'conduit/ConduitTopology.java').read_text()
-          assert 'network.nodes().stream().anyMatch' in topology and 'relative(d)' in topology, 'cached removal invalidation missing'
+          assert 'network.containsPosition' in topology and 'relative(d)' in topology and 'indexedPositions.contains(pos)' in (J/'conduit/ConduitNetwork.java').read_text(), 'indexed cached removal invalidation missing'
           assert not (J/'block/MultiCableBlock.java').exists(), 'MultiCableBlock runtime leaked'
           assert not (J/'blockentity/MultiCableBlockEntity.java').exists(), 'MultiCableBlockEntity runtime leaked'
           gt=(J/'build103/Build103GameTests.java').read_text()
@@ -1830,6 +1830,8 @@ jobs:
           python3 patches/spark-energy-bfs-loop-invariants.py
           # Spark: live ENERGY endpoint handlers resolved once per dispatch, not per pair.
           python3 patches/spark-energy-ephemeral-endpoint-handlers.py
+          # Spark: constant-time connected node membership on each physical topology check.
+          python3 patches/spark-conduit-topology-position-index.py
           grep -Fq 'XSXLABS_SPARK_ENERGY_BFS_LOOP_INVARIANTS_V2' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           python3 - <<'PY'
           from pathlib import Path
