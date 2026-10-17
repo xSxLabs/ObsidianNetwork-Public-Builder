@@ -1836,6 +1836,17 @@ jobs:
           assert s.count('XSXLABS_EQUIPMENT_INSERT_DECODE_ELISION_V1')==1
           print('EQUIPMENT_INSERT_DECODE_ELISION_GATE PASS')
           PY
+          # Commit already triggers onContentsChanged; do not decode/attach the same full cell twice.
+          python3 patches/equipment-redundant-reconcile-elision.py
+          # Keep the optimization fail-closed when source/handler behavior changes.
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java').read_text()
+          assert s.count('Handler onContentsChanged already reconciles committed equipment changes.')==1
+          assert s.count('StorageDriveBlockEntity.this.reconcileRuntimeSlot(index);')==1
+          assert 'this.equipmentCells[slot] == null' in s
+          print('EQUIPMENT_RECONCILE_FALLBACK_GATE PASS')
+          PY
           # Fail closed on the known ITEM cache refresh defect: a cache refresh
           # cannot depend on identityHashCode(network), which changes on JVM restart.
           # Verify the refresh cadence is derived only from world game time.
