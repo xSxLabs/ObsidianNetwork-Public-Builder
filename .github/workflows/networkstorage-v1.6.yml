@@ -43,7 +43,7 @@ name: xSxLabs Network Storage v1.6
 'on':
   workflow_dispatch:
   push:
-    branches: [perf-round2-bulk-crafting-after-111]
+    branches: [projekt-performance]
     paths: ['.github/workflows/networkstorage-v1.6.yml']
 
 
