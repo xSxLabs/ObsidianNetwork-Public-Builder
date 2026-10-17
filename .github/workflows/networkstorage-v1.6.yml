@@ -1841,6 +1841,16 @@ jobs:
           # Spark batch: immutable enum directions reused in solar ticks and ENERGY conduit scans.
           # Both source files are validated before either source is touched.
           python3 patches/spark-solar-conduit-direction-arrays.py
+          # Spark bundled build 226: Solar cache with NeoForge invalidation.
+          python3 patches/spark-solar-block-capability-cache.py
+          # Reuse already immutable BlockPos in all three energy BFS walks.
+          python3 patches/spark-energy-bfs-position-reuse.py
+          # Hoist enum direction clones from conduit validation hot paths.
+          python3 patches/spark-conduit-validation-direction-hoist.py
+          grep -Fq 'XSXLABS_SOLAR_BLOCK_CAPABILITY_CACHE_V1' work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java
+          grep -Fq 'XSXLABS_SPARK_BFS_POSITION_REUSE_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
+          grep -Fq 'XSXLABS_SPARK_TOPOLOGY_DIRECTIONS_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitTopology.java
+          grep -Fq 'XSXLABS_SPARK_MANAGER_DIRECTIONS_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitNetworkManager.java
           grep -Fq 'XSXLABS_SPARK_SOLAR_STATIC_DIRECTIONS_V1' work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java
           grep -Fq 'XSXLABS_SPARK_CONDUIT_STATIC_DIRECTIONS_V1' work/src/main/java/dev/obsidiannetwork/conduit/EnergyConduitTicker.java
           grep -Fq 'XSXLABS_SPARK_ENERGY_NONBUNDLE_FAST_REJECT_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
