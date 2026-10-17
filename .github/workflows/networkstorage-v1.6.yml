@@ -1309,6 +1309,10 @@ jobs:
                     check(before.config(Direction.NORTH).extract(),"pre-reload source node extract");
                     check(before.config(Direction.SOUTH).insert(),"pre-reload sink node insert");
                     var tag=bundle.saveWithFullMetadata(level.registryAccess());
+                    // Reproduce older worlds: mode is saved but mc_flags_item is absent.
+                    // Input must remain extract and output must remain insert.
+                    check(tag.contains("mc_item_mode"),"ITEM legacy mode persisted before reload");
+                    tag.remove("mc_flags_item");
                     level.removeBlockEntity(cable);
                     var restored=net.minecraft.world.level.block.entity.BlockEntity.loadStatic(cable,level.getBlockState(cable),tag,level.registryAccess());
                     check(restored instanceof ConduitBundleBlockEntity,"ITEM deserialization block entity type");
