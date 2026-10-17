@@ -54,3 +54,10 @@ Status: Baseline und Reproduktion noch nicht vollständig nachgewiesen. Diese Da
 - Bulk-Test vor finalen Patches 4.467.672 ns, nach finalen Patches 4.656.886 ns (100 Zyklen); keine statistisch gesicherte Differenz.
 - Weiterer Kandidat: `patches/item-conduit-duplicate-scan-elision.py` verschiebt die bereits vorhandene Same-Tick-Transfer-Sperre vor den Endpoint-Scan. Testläufe noch ausstehend.
 - GameTest-Härtung: Prüfung aller 256 Einzeldescriptoren in jedem der 25 Zyklen zusätzlich zum Hauptbestand von 63.744 und der Typanzahl 257.
+
+## Nachprüfung am 17.10.2026: Builds #199 und #200
+- [Build #199](https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39043327992): `success`; `ITEM_CONDUIT_DUPLICATE_SCAN_ELISION_V1 PASS`, `ITEM_DUPLICATE_SCAN_ELISION_SOURCE_GATE PASS`, `POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS`; vor/nach finalen Patches je 8/8 GameTests bestanden. Equipment-Gesamttest 1.859.649.083 ns vor, 1.091.091.560 ns nach finalen Patches.
+- [Build #200](https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39043428820): `success`; zusätzlich 256 individuelle Equipment-Descriptoren pro Zyklus geprüft, zusammen mit den 63.744 Items des Hauptdescriptors. Vor/nach finalen Patches je 8/8 GameTests bestanden. Equipment-Gesamttest 3.018.368.439 ns vor, 1.817.697.773 ns nach finalen Patches.
+- Die Gegenüberstellungen sind **keine statistisch kontrollierten Performance-Benchmarks**. Sie enthalten JIT/GC- und Warm-up-Effekte. Relative Einsparung innerhalb #199 ca. 41 % und innerhalb #200 ca. 40 %, ohne belastbaren isolierten TPS-/MSPT-Beweis.
+- Der ITEM-Conduit-Patch besteht Quelltextgates und vorhandene Conduit-GameTests. Ein Prozess-Neustart mit derselben gespeicherten Serverwelt und anschließendem tatsächlichen ITEM-Transfer wurde weiterhin **nicht** getestet.
+- Codex-Kontingent ist keine notwendige Voraussetzung für GitHub-Codeprüfung und GitHub-Actions-Validierung über die bestehende Repository-Verbindung.
