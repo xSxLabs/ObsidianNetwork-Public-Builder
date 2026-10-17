@@ -31,6 +31,11 @@ assert s.count(reconcile)==1,"reconcile equipment mutation hook changed"
 s=s.replace(reconcile,"next.setMutationListener(() -> { this.equipmentSerializationDirty[slot]=true; this.setChanged(); }); this.equipmentCells[slot]=next;",1)
 assert s.count("setMutationListener(")==len(hits)+1,"untracked equipment mutation listener: unsafe cache"
 s=re.sub(pattern,lambda m:m.group(1)+"() -> { this.equipmentSerializationDirty["+m.group(2)+"]=true; this.setChanged(); });",s)
+# The rebuild loop mutates `slot`; Java lambdas cannot capture that loop variable.
+# Capture its value once per iteration before installing the listener.
+loop_listener="this.equipmentCells[slot].setMutationListener(() -> { this.equipmentSerializationDirty[slot]=true; this.setChanged(); });"
+assert s.count(loop_listener)==1,"expected exactly one rebuild-loop listener"
+s=s.replace(loop_listener,"final int dirtySlot = slot; this.equipmentCells[slot].setMutationListener(() -> { this.equipmentSerializationDirty[dirtySlot]=true; this.setChanged(); });",1)
 # Avoid expensive component encoding when the last materialized stack still
 # represents the live cell. The mutation listener guarantees invalidation.
 needle="if (equipment != null && !shell.isEmpty() && shell.getItem() instanceof EquipmentCellItem item) {"
