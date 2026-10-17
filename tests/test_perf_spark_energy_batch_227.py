@@ -94,6 +94,17 @@ class SparkEnergyBatch227Tests(unittest.TestCase):
   for original in ("Transaction.openRoot()","from.extract(1000,tx)","to.insert(got,tx)","from.insert(got-put,tx)","tx.commit();return;"):
    self.assertIn(original,ticker)
 
+ def test_multiple_independent_invalidation_sites_preserved(self):
+  # Real reconstructed topology contains more than one network.nodeChanged(node).
+  src=TOPOLOGY.replace(" void validate(){",
+      " void unrelatedDirtySignal(){network.nodeChanged(node);}\n void validate(){")
+  runs,_,files=apply({"conduit/ConduitTopology.java":src})
+  self.assertTrue(all(run.returncode==0 for run in runs),str([run.stderr for run in runs]))
+  topology=files["conduit/ConduitTopology.java"]
+  self.assertEqual(topology.count("network.nodeChanged(node)"),2)
+  self.assertIn("network.containsPosition(neighborPos)",topology)
+  self.assertIn("physicallyConnected!=cachedConnected",topology)
+
  def test_reapplication_refused_for_all_patches(self):
   first,second,_=apply(repeat=True)
   self.assertTrue(all(run.returncode==0 for run in first))
