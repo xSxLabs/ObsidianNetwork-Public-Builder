@@ -114,6 +114,7 @@ class SparkEnergyBatch227Tests(unittest.TestCase):
  def test_10000_packed_position_equivalence_within_world_border(self):
   rng=random.Random(20261017)
   values=set()
+  packed=set()
   def encoded(x,y,z):
    return ((x&0x3ffffff)<<38) | ((z&0x3ffffff)<<12) | (y&0xfff)
   for _ in range(10000):
@@ -122,8 +123,9 @@ class SparkEnergyBatch227Tests(unittest.TestCase):
    z=rng.randint(-30000000,30000000)
    p=(x,y,z)
    key=encoded(*p)
-   self.assertEqual(p in values,key in {encoded(*q) for q in values})
+   self.assertEqual(p in values,key in packed)
    values.add(p)
+   packed.add(key)
 
 if __name__=="__main__":
  unittest.main()
