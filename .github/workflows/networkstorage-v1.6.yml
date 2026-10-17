@@ -1777,6 +1777,10 @@ jobs:
           assert 'cacheEndpoints' in network
           print('BUILD216 ITEM FLUID ENERGY SPLIT MERGE CACHE SEMANTICS PASS')
           PY
+          # Preserve the test fixture for a second GameTest run after all final patches.
+          mkdir -p /tmp/obsidian-perf-gametest
+          cp work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java /tmp/obsidian-perf-gametest/
+          cp work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt /tmp/obsidian-perf-gametest/
           # Never package CI-only GameTest hooks/resources into the user JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
           rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
@@ -1910,6 +1914,27 @@ jobs:
           assert 'level.getGameTime()%20 == (Math.floorMod(System.identityHashCode(network),4)*5)' in fluid
           print('ITEM_RESTART_CACHE_REFRESH_SOURCE_GATE PASS')
           PY
+          # Test the FINAL patched runtime, not only the intermediate pre-patch sources.
+          # The standalone benchmark above runs before equipment and ITEM restart fixes.
+          mkdir -p work/src/main/java/dev/obsidiannetwork/build103
+          mkdir -p work/src/main/resources/data/obsidiannetwork/structure
+          cp /tmp/obsidian-perf-gametest/Build103GameTests.java work/src/main/java/dev/obsidiannetwork/build103/
+          cp /tmp/obsidian-perf-gametest/build103_empty.nbt work/src/main/resources/data/obsidiannetwork/structure/
+          # Separate the second GameTest server from the first CI-only test universe.
+          rm -rf work/run/gametestserver
+          set +e
+          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-postpatch-gametest.log 2>&1
+          POST_GT_RC=$?
+          set -e
+          cat /tmp/build103-postpatch-gametest.log
+          if [ "$POST_GT_RC" -ne 0 ]; then echo "Post-patch GameTest failed rc=$POST_GT_RC"; exit "$POST_GT_RC"; fi
+          grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'FULL_EQUIPMENT_CELL_PHASE_NS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'REAL_STORAGE_BULK_DEPOSIT_NS' /tmp/build103-postpatch-gametest.log
+          echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
+          # Tests must never be shipped in the distributable JAR.
+          rm -rf work/src/main/java/dev/obsidiannetwork/build103
+          rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
           # Consolidated, machine-readable four-issue diagnostic for this run.
           # This reports missing coverage explicitly rather than treating green
           # source checks as a real dedicated-server restart or UI stress test.
@@ -1917,10 +1942,13 @@ jobs:
           from pathlib import Path
           import json,re
           root=Path('work/src/main/java/dev/obsidiannetwork')
-          log=Path('/tmp/build103-gametest.log').read_text(errors='replace')
-          def numbers(marker):
-              lines=[line for line in log.splitlines() if marker in line and 'System.out.println' not in line]
+          baseline_log=Path('/tmp/build103-gametest.log').read_text(errors='replace')
+          log=Path('/tmp/build103-postpatch-gametest.log').read_text(errors='replace')
+          def numbers_in(source_log,marker):
+              lines=[line for line in source_log.splitlines() if marker in line and 'System.out.println' not in line]
               return [dict((k,int(v)) for k,v in re.findall(r'([a-z_]+)=(\\d+)',line)) for line in lines]
+          def numbers(marker):
+              return numbers_in(log,marker)
           def source(rel):
               p=root/rel
               return p.read_text() if p.exists() else ''
@@ -1930,11 +1958,13 @@ jobs:
           terminal=source('menu/StorageTerminalMenu.java')
           reports={
             'equipment_64k':{
+              'baseline_before_final_patches':numbers_in(baseline_log,'FULL_EQUIPMENT_CELL_PHASE_NS'),
               'phase_measurements':numbers('FULL_EQUIPMENT_CELL_PHASE_NS'),
               'total_measurements':numbers('FULL_EQUIPMENT_CELL_REINSERT_NS'),
               'attach_pre_registration':numbers('EQUIPMENT_ATTACH_PRE_REGISTER_NS'),
               'coverage':'real GameTest insert/remove; not a client menu close/reopen stress test'},
             'bulk_storage':{
+              'baseline_before_final_patches':numbers_in(baseline_log,'REAL_STORAGE_BULK_DEPOSIT_NS'),
               'measurements':numbers('REAL_STORAGE_BULK_DEPOSIT_NS'),
               'coverage':'runtime insert/extract benchmark; not rapid GUI deposit stress'},
             'crafting':{
