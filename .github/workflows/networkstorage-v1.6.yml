@@ -949,6 +949,12 @@ jobs:
                   var decoded=item.readStore(removed);
                   long elapsedDecode=System.nanoTime()-t; decodeNs+=elapsedDecode; maxDecodeNs=Math.max(maxDecodeNs,elapsedDecode);
                   if(decoded.amount(key)!=63744L||decoded.types()!=257)throw new IllegalStateException("Equipment cell data lost cycle="+cycle);
+                  // Conservation: inspect every distinct descriptor, not just type count.
+                  for(int descriptorIndex=0;descriptorIndex<256;descriptorIndex++){
+                    byte[] expectedDescriptor=java.nio.ByteBuffer.allocate(4).putInt(descriptorIndex).array();
+                    var expectedKey=dev.obsidiannetwork.core.ItemKey.ofCanonicalComponents("minecraft:diamond_sword",expectedDescriptor);
+                    if(decoded.amount(expectedKey)!=1L)throw new IllegalStateException("Equipment descriptor content lost cycle="+cycle+" index="+descriptorIndex);
+                  }
                   stack=removed;
                 }
                 long elapsed=System.nanoTime()-start;
