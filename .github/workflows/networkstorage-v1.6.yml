@@ -1836,6 +1836,20 @@ jobs:
           assert s.count('XSXLABS_EQUIPMENT_INSERT_DECODE_ELISION_V1')==1
           print('EQUIPMENT_INSERT_DECODE_ELISION_GATE PASS')
           PY
+          # Fail closed on the known ITEM cache refresh defect: a cache refresh
+          # cannot depend on identityHashCode(network), which changes on JVM restart.
+          # Verify the refresh cadence is derived only from world game time.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/conduit/ItemConduitTicker.java')
+          s=p.read_text()
+          old='level.getGameTime()%5 == (Math.floorMod(System.identityHashCode(network),1)*5)'
+          assert s.count(old)==1, 'ITEM refresh cadence anchor changed'
+          s=s.replace(old,'level.getGameTime()%5 == 0',1)
+          p.write_text(s)
+          assert old not in p.read_text()
+          print('ITEM_RESTART_STABLE_REFRESH_CADENCE_V1 PASS')
+          PY
           # Restart regression gate: ITEM endpoints must revalidate on every transfer tick,
           # even when topology remains unchanged and the visible input mode persists.
           python3 - <<'PY'
@@ -1843,7 +1857,7 @@ jobs:
           item=(Path('work/src/main/java/dev/obsidiannetwork/conduit')/'ItemConduitTicker.java').read_text()
           fluid=(Path('work/src/main/java/dev/obsidiannetwork/conduit')/'FluidConduitTicker.java').read_text()
           assert 'XSXLABS_BUNDLE_TPS_CACHE_V1' in item
-          assert 'level.getGameTime()%5 == (Math.floorMod(System.identityHashCode(network),1)*5)' in item, 'ITEM restart endpoint refresh not installed'
+          assert 'level.getGameTime()%5 == 0' in item, 'ITEM restart endpoint refresh not installed'
           assert 'network.cacheEndpoints(ConduitRuntime.scanEndpoints(level,network,true),ConduitRuntime.scanEndpoints(level,network,false))' in item
           assert 'level.getGameTime()%20 == (Math.floorMod(System.identityHashCode(network),4)*5)' in fluid
           print('ITEM_RESTART_CACHE_REFRESH_SOURCE_GATE PASS')
