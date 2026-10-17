@@ -770,7 +770,7 @@ jobs:
               selected=set()
               for i in hits[:90]:selected.update(range(max(0,i-2),min(len(lines),i+4)))
               for i in sorted(selected):
-                  print('ITEM_RESTART_DIAGNOSTIC',rel,i+1,lines[i][:300])
+                  print('ITEM_RESTART_DIAGNOSTIC',rel,i+1,lines[i][:6000])
           PY
           # REAL_ITEM_KEY_DIAGNOSTIC_V2: inspect actual key creation and cell limits.
           python3 - <<'PY'
