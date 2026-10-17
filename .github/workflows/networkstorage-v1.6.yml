@@ -1854,6 +1854,11 @@ jobs:
           # Reuse identical neighboring BlockPos in topology and ticker.
           python3 patches/spark-topology-neighbor-position-reuse.py
           python3 patches/spark-energy-ticker-neighbor-position-reuse.py
+          # Spark #232: one neighbor position per active mixed conduit endpoint face;
+          # cache only immutable enum array, never world/endpoint/transaction state.
+          python3 patches/spark-conduit-runtime-neighbor-direction-reuse.py
+          grep -Fq 'XSXLABS_SPARK_CONDUIT_RUNTIME_REUSE_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitRuntime.java
+          grep -Fq 'XSXLABS_SPARK_RUNTIME_DIRECTIONS_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitRuntime.java
           grep -Fq 'XSXLABS_SPARK_BFS_PRIMITIVE_VISITED_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           grep -Fq 'XSXLABS_SPARK_TOPOLOGY_NEIGHBOR_POS_REUSE_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitTopology.java
           grep -Fq 'XSXLABS_SPARK_TICKER_NEIGHBOR_POS_REUSE_V1' work/src/main/java/dev/obsidiannetwork/conduit/EnergyConduitTicker.java
