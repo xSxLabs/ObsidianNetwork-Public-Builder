@@ -64,7 +64,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: perf-round2-bulk-crafting-after-111
+          ref: projekt-performance
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
