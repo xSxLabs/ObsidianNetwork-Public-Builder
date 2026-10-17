@@ -26,7 +26,10 @@ import re
 pattern=r'(this\.equipmentCells\[(\w+)\]\.setMutationListener\()this::setChanged(\);)'
 hits=list(re.finditer(pattern,s))
 assert len(hits)>=1,"equipment mutation listener not found"
-assert s.count("setMutationListener(")==len(hits),"untracked equipment mutation listener: unsafe cache"
+reconcile="next.setMutationListener(this::setChanged); this.equipmentCells[slot]=next;"
+assert s.count(reconcile)==1,"reconcile equipment mutation hook changed"
+s=s.replace(reconcile,"next.setMutationListener(() -> { this.equipmentSerializationDirty[slot]=true; this.setChanged(); }); this.equipmentCells[slot]=next;",1)
+assert s.count("setMutationListener(")==len(hits)+1,"untracked equipment mutation listener: unsafe cache"
 s=re.sub(pattern,lambda m:m.group(1)+"() -> { this.equipmentSerializationDirty["+m.group(2)+"]=true; this.setChanged(); });",s)
 # Avoid expensive component encoding when the last materialized stack still
 # represents the live cell. The mutation listener guarantees invalidation.
