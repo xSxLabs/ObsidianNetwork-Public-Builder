@@ -1868,6 +1868,25 @@ jobs:
                   print('ITEM_RESTART_LIFECYCLE_LINE',rel,i+1,' '.join(lines[max(0,i-2):min(len(lines),i+5)]).strip()[:650])
           print('ITEM_RESTART_LIFECYCLE_DIAGNOSTIC_V1 PASS')
           PY
+          # Capture complete restart-critical methods, not only truncated
+          # context snippets, so topology reuse and saved-side semantics can
+          # be reviewed before a behavioral change.
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          for rel in ('conduit/ConduitNetworkManager.java','conduit/ItemConduitTicker.java','conduit/ConduitRuntime.java','blockentity/ConduitBundleBlockEntity.java'):
+              lines=(root/rel).read_text().splitlines()
+              if rel.endswith('ConduitBundleBlockEntity.java'):
+                  ranges=[(45,79)]
+              elif rel.endswith('ConduitRuntime.java'):
+                  ranges=[(70,100)]
+              else:
+                  ranges=[(1,min(75,len(lines)))]
+              for a,b in ranges:
+                  for i in range(a-1,min(b,len(lines))):
+                      print('ITEM_RESTART_SOURCE',rel,i+1,lines[i][:1300])
+          print('ITEM_RESTART_SOURCE_DUMP_V1 PASS')
+          PY
           # Restart regression gate: ITEM endpoints must revalidate on every transfer tick,
           # even when topology remains unchanged and the visible input mode persists.
           python3 - <<'PY'
