@@ -747,6 +747,20 @@ jobs:
             }
           }
           EOF
+          # Restart bug diagnostic: inspect persisted ITEM side flags and cache initialization.
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          for rel in ['blockentity/ConduitBundleBlockEntity.java','conduit/ConduitNetwork.java','conduit/ConduitNetworkManager.java','conduit/ItemConduitTicker.java']:
+              p=root/rel
+              lines=p.read_text().splitlines()
+              needles=('loadAdditional','load(', 'readAdditionalSaveData','connectionFlags','logisticsMode','cacheEndpoints','dirty()','scanEndpoints','tick(')
+              hits=[i for i,line in enumerate(lines) if any(n in line for n in needles)]
+              selected=set()
+              for i in hits[:90]:selected.update(range(max(0,i-2),min(len(lines),i+4)))
+              for i in sorted(selected):
+                  print('ITEM_RESTART_DIAGNOSTIC',rel,i+1,lines[i][:300])
+          PY
           # REAL_ITEM_KEY_DIAGNOSTIC_V2: inspect actual key creation and cell limits.
           python3 - <<'PY'
           from pathlib import Path
