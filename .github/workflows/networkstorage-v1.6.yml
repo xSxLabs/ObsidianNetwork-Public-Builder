@@ -45,7 +45,7 @@ name: xSxLabs Network Storage v1.6
 'on':
   workflow_dispatch:
   push:
-    branches: [projekt-performance]
+    branches: [feature-wireless-energy-networks]
     paths: ['.github/workflows/networkstorage-v1.6.yml']
 
 
@@ -90,6 +90,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_item_cable_empty_filter_load.py' -v
           # Project Performance #209: validate fail-closed bulk + autocraft patches first.
           python3 -m unittest discover -s tests -p 'test_perf_*.py' -v
+          python3 -m unittest discover -s tests -p 'test_wireless_*.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           mkdir -p work/src/main/java work/src/main/resources
           curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
@@ -1857,6 +1858,16 @@ jobs:
           # Spark #232: one neighbor position per active mixed conduit endpoint face;
           # cache only immutable enum array, never world/endpoint/transaction state.
           python3 patches/spark-conduit-runtime-neighbor-direction-reuse.py
+          # Feature branch: install the two wireless antenna blocks on top of green perf #232.
+          python3 features/wireless-energy/apply-wireless-runtime.py
+          python3 features/wireless-energy/apply-antenna-assets.py
+          grep -Fq 'XSXLABS_WIRELESS_NETWORKS_V1' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          test -f work/src/main/java/dev/obsidiannetwork/wireless/WirelessNetworkData.java
+          test -f work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java
+          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_transmitter.json
+          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_receiver.json
+          test -f work/src/main/resources/data/obsidiannetwork/recipe/network_transmitter.json
+          test -f work/src/main/resources/data/obsidiannetwork/recipe/network_receiver.json
           grep -Fq 'XSXLABS_SPARK_CONDUIT_RUNTIME_REUSE_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitRuntime.java
           grep -Fq 'XSXLABS_SPARK_RUNTIME_DIRECTIONS_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitRuntime.java
           grep -Fq 'XSXLABS_SPARK_BFS_PRIMITIVE_VISITED_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
