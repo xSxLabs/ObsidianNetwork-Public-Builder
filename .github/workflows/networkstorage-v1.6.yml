@@ -767,6 +767,30 @@ jobs:
           assert 'return m==0?0:m==1?1:2;' not in s, 'inverted legacy IO fallback remains'
           print('ITEM_RESTART_LEGACY_IO_FALLBACK_FIX: already applied upstream; mapping verified')
           PY
+          # Restore runtime-side IO config after deserializing persistent flags.
+          # The GUI reads logisticsMode, but endpoint scanning reads conduitNode config.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/ConduitBundleBlockEntity.java')
+          s=p.read_text()
+          old='facadeRotation=facade.isAir()?0:in.getIntOr("facade_rotation",0)&3;}'
+          new='''facadeRotation=facade.isAir()?0:in.getIntOr("facade_rotation",0)&3;
+          for(Layer layer:new Layer[]{Layer.ITEM,Layer.FLUID}){
+            if(!has(layer))continue;
+            var type=layer==Layer.ITEM?dev.obsidiannetwork.conduit.ConduitType.ITEM:dev.obsidiannetwork.conduit.ConduitType.FLUID;
+            var node=conduitNode(type);
+            for(Direction side:Direction.values()){
+              int flags=conduitFlags(layer,side);
+              var cfg=node.config(side);
+              node.config(side,new dev.obsidiannetwork.conduit.ConnectionConfig((flags&1)!=0,(flags&2)!=0,cfg.priority(),cfg.roundRobin(),cfg.selfFeed()));
+            }
+          }}'''
+          assert s.count(old)==1,'restart node config restoration anchor changed'
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          assert 'for(Layer layer:new Layer[]{Layer.ITEM,Layer.FLUID})' in s
+          print('ITEM_RESTART_RUNTIME_CONFIG_RESTORE_GATE PASS')
+          PY
           # Restart bug diagnostic: inspect persisted ITEM side flags and cache initialization.
           python3 - <<'PY'
           from pathlib import Path
