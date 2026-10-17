@@ -1982,6 +1982,18 @@ jobs:
           mkdir -p work/src/main/resources/data/obsidiannetwork/structure
           cp /tmp/obsidian-perf-gametest/Build103GameTests.java work/src/main/java/dev/obsidiannetwork/build103/
           cp /tmp/obsidian-perf-gametest/build103_empty.nbt work/src/main/resources/data/obsidiannetwork/structure/
+          # The first GameTest covers baseline behavior. Only the post-patch
+          # GameTest demands that an idle request retains object identity.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java')
+          s=p.read_text()
+          old='private static final boolean XSXLABS_REQUIRE_IDLE_REUSE = false;'
+          assert s.count(old)==1, 'Live autocraft baseline/optimized toggle absent'
+          s=s.replace(old,'private static final boolean XSXLABS_REQUIRE_IDLE_REUSE = true;',1)
+          p.write_text(s)
+          print('REAL_AUTOCRAFT_OPTIMIZED_IDENTITY_GATE_ENABLED PASS')
+          PY
           # Separate the second GameTest server from the first CI-only test universe.
           rm -rf work/run/gametestserver
           set +e
