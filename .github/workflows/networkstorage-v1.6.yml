@@ -2020,13 +2020,12 @@ jobs:
           # source checks as a real dedicated-server restart or UI stress test.
           python3 - <<'PY'
           from pathlib import Path
-          import json,re
+          import json,sys
+          sys.path.insert(0,str(Path.cwd()/'performance'))
+          from metric_parser import numbers_in,require_metrics
           root=Path('work/src/main/java/dev/obsidiannetwork')
           baseline_log=Path('/tmp/build103-gametest.log').read_text(errors='replace')
           log=Path('/tmp/build103-postpatch-gametest.log').read_text(errors='replace')
-          def numbers_in(source_log,marker):
-              lines=[line for line in source_log.splitlines() if marker in line and 'System.out.println' not in line]
-              return [dict((k,int(v)) for k,v in re.findall(r'([a-z_]+)=(\\d+)',line)) for line in lines]
           def numbers(marker):
               return numbers_in(log,marker)
           def source(rel):
@@ -2070,10 +2069,13 @@ jobs:
           p.parent.mkdir(exist_ok=True)
           p.write_text(json.dumps(reports,indent=2,ensure_ascii=False))
           print('FOUR_ISSUE_DIAGNOSTIC_REPORT_V1 '+p.read_text())
-          assert reports['equipment_64k']['phase_measurements'],'equipment performance marker missing'
-          assert reports['bulk_storage']['measurements'],'bulk performance marker missing'
-          assert reports['autocraft_idle_reservations']['baseline_pre_patch'],'autocraft baseline missing'
-          assert reports['autocraft_idle_reservations']['after_final_patches'],'autocraft patched samples missing'
+          require_metrics(reports['equipment_64k']['baseline_before_final_patches'],'insert','remove','decode','cycles')
+          require_metrics(reports['equipment_64k']['phase_measurements'],'insert','remove','decode','cycles')
+          require_metrics(reports['bulk_storage']['baseline_before_final_patches'],'elapsed_ns','cycles','operations')
+          require_metrics(reports['bulk_storage']['measurements'],'elapsed_ns','cycles','operations')
+          require_metrics(reports['autocraft_idle_reservations']['baseline_pre_patch'],'median_ns','p90_ns','samples','calls_per_sample')
+          require_metrics(reports['autocraft_idle_reservations']['after_final_patches'],'median_ns','p90_ns','samples','calls_per_sample')
+          print('PERFORMANCE_MACHINE_READABLE_METRICS_GATE PASS')
           PY
           # CI-only: stop and restart two actual dedicated-server JVMs on
           # the same saved world. Do not repackage the temporary subscriber.
