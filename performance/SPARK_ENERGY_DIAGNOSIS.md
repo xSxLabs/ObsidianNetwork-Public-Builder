@@ -36,3 +36,5 @@ adjacent block/capability replacement, chunks unloading/reloading, and
 transactions. Prefer NeoForge BlockCapabilityCache to raw handler
 caching, and require controlled real Powah+Obsidian energy benchmarking.
 Do not publish to stable until user GUI and mixed-network tests pass.
+
+Recorded platform statistics (profile tail, not CI): TPS 1m 16.53436, 5m 18.54112, 15m 19.10758 (target 20); MSPT last-minute mean 58.7203 ms, median 44.8774 ms, p95 110.2987 ms, maximum 688.9704 ms; 5m MSPT p95 92.8817 ms; two players. These are real in-profile measurements, not performance gains from our patch.

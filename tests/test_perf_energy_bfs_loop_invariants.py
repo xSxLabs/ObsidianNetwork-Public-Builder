@@ -9,6 +9,7 @@ def example():
     for name in ["getAmountAsLong()","extract(int amount, TransactionContext transaction)","insert(int amount, TransactionContext transaction)"]:
         s+="public int "+name+" { ArrayDeque queue = new ArrayDeque();\n"
         s+="HashSet visited = new HashSet(); int cableBudget=4096;\n"
+        if name=="getAmountAsLong()":s+="int available = source.getAmountAsLong();\n"
         s+="while (!queue.isEmpty() && cableBudget-- > 0) {\n"
         s+="for (Direction side : Direction.values()) {\n"
         s+="if (nextState.is((Block)ObsidianNetwork.ENERGY_CABLE.get())) {\n"

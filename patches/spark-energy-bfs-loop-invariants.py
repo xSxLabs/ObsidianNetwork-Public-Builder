@@ -17,7 +17,7 @@ for name,what,count in (
     ("fallback capability","server.getCapability(Energy.BLOCK, next, null)",3),
     ("BFS bound","cableBudget-- > 0",3),
     ("queue","new ArrayDeque()",3),
-    ("amount method","getAmountAsLong()",1),
+    ("amount method","getAmountAsLong() {",1),
     ("extract method","extract(int amount, TransactionContext transaction)",1),
     ("insert method","insert(int amount, TransactionContext transaction)",1)):
     assert s.count(what)==count, "Unsafe source drift: "+name+" expected "+str(count)+" found "+str(s.count(what))
