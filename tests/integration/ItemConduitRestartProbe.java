@@ -67,6 +67,9 @@ public final class ItemConduitRestartProbe {
                         chest(level, source(lane)).setItem(1, new ItemStack(Items.REDSTONE, 9));
                     }
                 }
+                // Preserve explicit sparse filter slots as well as empty
+                // ghost positions across both dedicated-server JVMs.
+                verifyFilterFixture(level);
                 // Snapshot the actual world-derived connection state before any
                 // post-restart transfer. This distinguishes lost NBT / broken
                 // connectivity from a non-running standalone block-entity ticker.
@@ -148,6 +151,15 @@ public final class ItemConduitRestartProbe {
                 cable.setMode(side, end == 0 ? LogisticsCableBlockEntity.Mode.IMPORT : LogisticsCableBlockEntity.Mode.EXPORT);
             } else throw new IllegalStateException("Missing endpoint block entity");
         }
+        // A sparse, legitimate filter on an unused upward-facing IMPORT port
+        // must persist without activating the unfiltered WEST source port.
+        if (lane == 1) {
+            var mid = (LogisticsCableBlockEntity) level.getBlockEntity(cable(lane, 1));
+            mid.setMode(Direction.UP, LogisticsCableBlockEntity.Mode.IMPORT);
+            check(mid.setCableFilterSlot(Direction.UP, 7,
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath("minecraft", "diamond")),
+                    "Cannot configure sparse saved ghost slot");
+        }
         chest(level, target(lane)).setItem(0, new ItemStack(Items.COBBLESTONE, 37));
         chest(level, source(lane)).setItem(0, new ItemStack(Items.DIAMOND, 5));
         chest(level, source(lane)).setItem(1, new ItemStack(Items.EMERALD, 3));
@@ -177,6 +189,28 @@ public final class ItemConduitRestartProbe {
                 check(cable.mode(side) == (end == 0 ? LogisticsCableBlockEntity.Mode.IMPORT : LogisticsCableBlockEntity.Mode.EXPORT), "Standalone persisted mode changed");
             } else throw new IllegalStateException("Saved endpoint block entity missing at " + cable(lane, end));
         }
+    }
+
+    private static void verifyFilterFixture(ServerLevel level) {
+        // Lane 1 WEST is a deliberately unfiltered source; blank 18-slot
+        // serialized placeholders must never become an implicit whitelist.
+        var sourceCable = (LogisticsCableBlockEntity) level.getBlockEntity(cable(1, 0));
+        check(sourceCable.cableFilters(Direction.WEST).isEmpty(),
+                "Unconfigured standalone source became filtered after reload");
+        var mid = (LogisticsCableBlockEntity) level.getBlockEntity(cable(1, 1));
+        check(mid.mode(Direction.UP) == LogisticsCableBlockEntity.Mode.IMPORT,
+                "Sparse filter side mode not persisted");
+        var expected = net.minecraft.resources.Identifier.fromNamespaceAndPath("minecraft", "diamond");
+        check(expected.equals(mid.cableFilterAt(Direction.UP, 7)),
+                "Sparse filter slot 7 was not preserved");
+        check(mid.cableFilters(Direction.UP).size() == 1 &&
+              mid.cableFilters(Direction.UP).contains(expected),
+                "Explicit whitelist was not preserved");
+        for (int i = 0; i < 18; ++i)
+            if (i != 7)
+                check(mid.cableFilterAt(Direction.UP, i) == null,
+                        "Empty ghost position became a filter: slot=" + i);
+        System.out.println("ITEM_STANDALONE_SPARSE_FILTER_PERSISTENCE_GATE PASS phase=" + PHASE);
     }
 
     private static Map<String, Object> diagnoseStandaloneTransfer(ServerLevel level) throws ReflectiveOperationException {
