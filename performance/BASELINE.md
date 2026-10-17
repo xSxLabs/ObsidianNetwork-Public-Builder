@@ -71,3 +71,13 @@ Status: Baseline und Reproduktion noch nicht vollständig nachgewiesen. Diese Da
 - Neustarttest `tests/integration/item_conduit_restart.py` und `ItemConduitRestartProbe.java` aus dem #201-Teststand in den isolierten Performance-Branch übernommen. Zwei eigenständige Dedicated-Server-JVMs, dieselbe gespeicherte Welt, vier ITEM-Topologien, reale Chests, konservierter Inhalt und Moduskonfiguration; der Harness sucht jetzt **eindeutig** nach `level.dat` unter dem dedizierten Testverzeichnis, statt eine unbestätigte Weltpfadposition anzunehmen. Tests bleiben fail-closed.
 - #203 wurde durch die erste Workflow-Integration angestoßen, #204 durch die direkte Korrektur eines JSON-Newline-Escapes. Diese neuen Runs sind **nicht** als bestanden dokumentiert, solange ihre Ergebnisse nicht geprüft sind.
 - Nicht als Release freigeben, bis vor allem Prozess-Neustarttest und realistische GUI-/p95/p99-MSPT-Tests bestätigt sind.
+
+
+## Diagnose der roten Builds #202, #203 und #204
+
+- **#202**: Nur Python-Testfixture-Anchor fehlgeschlagen (YAML-Heredoc-Einrückung), keine Java-Regression. Testfixture später korrigiert.
+- **#203 und #204**: 8/8 GameTests sowohl vor als auch nach den Performance-Patches bestanden; neuer Mutations-/Persistenztest für Equipment Cell ebenfalls in beiden Durchläufen bestanden. Der nachgeschaltete echte Server-Reboot-Test stoppte nach der ersten erfolgreichen JVM, weil der Harness `level.dat` **und** mindestens ein `world/region/*.mca` direkt am angenommenen Pfad verlangte.
+- **Evidenz #201** (Fehlerartefakt `12105370401`): `item-conduit-restart-before.json` beweist ersten Dedicated-Server-Prozess mit vier realen ITEM-Topologien, 60 Transfer-Ticks, vier leeren Source-Chests und exakt gefüllten Destination-Chests mit 37 Cobblestone, 5 Diamonds und 3 Emeralds; die Logdatei meldet normalen Shutdown und `All dimensions are saved`. Der Test kam **nicht** zum zweiten JVM-Prozess; über Persistenz beim Neustart ist deshalb noch nichts bewiesen.
+- **Korrektur #205**: Kein blinder Pass bei fehlender `.mca`: ein nichtleeres `level.dat` bleibt Pflicht, die Region-Dateisuche ist rekursiv und wird protokolliert. Entscheidend ist, dass die **zweite unabhängige JVM** die alten Chests samt exakten Inventaren und Kabelkonfiguration tatsächlich lädt, dann weitere Items transportiert, eine Unterbrechung übersteht und die Bestände prüft. Wenn dies fehlschlägt, bleibt die CI rot und zusätzliche JSON-/Textlogs werden als Fehlerartefakt hochgeladen.
+- Vor dem teuren Workflow laufen drei Python-Unit-Tests für Level-/Regiondatei-Invarianten. Alle drei wurden im laufenden #205-Log als `ok` bestätigt.
+- **#205**: gestartet, Auswertung noch ausstehend. Ohne bestandene zweite JVM weiterhin keine Freigabe.
