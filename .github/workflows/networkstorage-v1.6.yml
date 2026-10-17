@@ -84,6 +84,7 @@ jobs:
           grep -Fq 'ITEM_STANDALONE_FAILURE_DIRECT_INVOCATION_DIAGNOSTIC' tests/integration/ItemConduitRestartProbe.java
           python3 -m py_compile tests/integration/item_conduit_restart.py
           python3 -m unittest discover -s tests -p 'test_item_conduit_restart_manifest.py' -v
+          python3 -m unittest discover -s tests -p 'test_item_cable_empty_filter_load.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           mkdir -p work/src/main/java work/src/main/resources
           curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
@@ -1803,6 +1804,9 @@ jobs:
           rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
           # User-authorized diagnostic compile: apply v1.6 features before Gradle.
           python3 private/v1.1.1/apply-v16-final-features.py
+          # Empty persisted 18-slot ghost positions must NOT become whitelist entries.
+          python3 patches/item-cable-empty-filter-load.py
+          grep -Fq 'if (storedFilterId == null || storedFilterId.isEmpty()) continue;' work/src/main/java/dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java
           # Reduce needless 800-cell capacity probes in exact storage preflight and commit.
           python3 private/v1.1.1/apply-perf-full-cell-fast-reject.py
           python3 patches/equipment-full-fast-reject.py
