@@ -1586,6 +1586,23 @@ jobs:
           GT_RC=$?
           set -e
           cat /tmp/build103-gametest.log
+          # Locate server overload warnings relative to the storage workload.
+          # Do not misattribute GameTest startup stalls to player crafting.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          lines=Path('/tmp/build103-gametest.log').read_text(errors='replace').splitlines()
+          starts=[i for i,line in enumerate(lines) if 'REAL_50_DRIVE_BENCHMARK_V1 cells=' in line]
+          sustained=[i for i,line in enumerate(lines) if 'REAL_50_DRIVE_SUSTAINED_SUMMARY ticks=' in line]
+          warnings=[(i,line.strip()) for i,line in enumerate(lines) if "Can't keep up!" in line]
+          for i,line in warnings:
+              phase=('before_storage_benchmark' if not starts or i<starts[0]
+                     else 'during_storage_benchmark_or_sustained_test' if not sustained or i<sustained[-1]
+                     else 'after_storage_sustained_test')
+              print(f'SERVER_LAG_PHASE phase={phase} line={i+1} warning={line}')
+          print(f'SERVER_LAG_PHASE_SUMMARY warnings={len(warnings)} benchmark_markers={len(starts)} sustained_markers={len(sustained)}')
+          if not sustained: raise SystemExit('Missing sustained storage summary; cannot classify server lag')
+          PY
           if [ "$GT_RC" -ne 0 ]; then echo "Build103 GameTest server failed rc=$GT_RC"; exit "$GT_RC"; fi
           grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(6 tests\)" /tmp/build103-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
