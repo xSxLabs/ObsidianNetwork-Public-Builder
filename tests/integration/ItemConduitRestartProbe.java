@@ -70,6 +70,13 @@ public final class ItemConduitRestartProbe {
                 // Preserve explicit sparse filter slots as well as empty
                 // ghost positions across both dedicated-server JVMs.
                 verifyFilterFixture(level);
+                // This fixture never configures an item whitelist. A blank
+                // eighteen-slot saved filter must still behave as unrestricted
+                // after the same world is loaded by the second JVM.
+                var standaloneSource = (LogisticsCableBlockEntity) level.getBlockEntity(cable(1,0));
+                check(standaloneSource.cableFilters(Direction.WEST).isEmpty(),
+                    "Empty standalone filter ghost slots loaded as nonempty allowlist: "
+                    + standaloneSource.cableFilters(Direction.WEST));
                 // Snapshot the actual world-derived connection state before any
                 // post-restart transfer. This distinguishes lost NBT / broken
                 // connectivity from a non-running standalone block-entity ticker.
@@ -222,6 +229,7 @@ public final class ItemConduitRestartProbe {
         var cable = (LogisticsCableBlockEntity) entity;
         observation.put("source_fluid", cable.isFluid());
         observation.put("source_west_mode", cable.mode(Direction.WEST).name());
+        observation.put("source_west_filters", cable.cableFilters(Direction.WEST).toString());
         observation.put("filter_allows_gold", cable.cableAllows(Direction.WEST, BuiltInRegistries.ITEM.getKey(Items.GOLD_INGOT)));
         observation.put("filter_allows_redstone", cable.cableAllows(Direction.WEST, BuiltInRegistries.ITEM.getKey(Items.REDSTONE)));
         var exports = LogisticsCableBlockEntity.class.getDeclaredMethod("exports");
