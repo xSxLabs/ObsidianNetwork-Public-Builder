@@ -79,6 +79,7 @@ probe = """
                     throw new IllegalStateException("Idle reservation changed storage");
                   System.out.println("REAL_AUTOCRAFT_IDLE_RESERVATION_V1 samples=9 calls_per_sample=500 inputs=12"+
                       " median_ns="+measurements[4]+" p90_ns="+measurements[8]+
+                      " optimized_required="+XSXLABS_REQUIRE_IDLE_REUSE+
                       " no_TPS_claim=true");
 
                   // A real successful reservation must allocate a new request,
