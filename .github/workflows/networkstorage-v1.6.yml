@@ -1018,14 +1018,14 @@ jobs:
                   if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L||rt.storage().cells().stream().mapToLong(c->c.amount(iron)).sum()!=22655L)
                     throw new IllegalStateException("Real network index totals wrong after extraction");
 
-                  long bulkStart=System.nanoTime();
+                  long depositCyclesStart=System.nanoTime();
                   for(int cycle=0;cycle<100;cycle++){
                     long deposited=rt.storage().insert(stone,4096L);
                     if(deposited!=4096L)throw new IllegalStateException("Bulk deposit incomplete cycle="+cycle);
                     long withdrawn=rt.storage().extract(stone,4096L);
                     if(withdrawn!=4096L)throw new IllegalStateException("Bulk withdrawal incomplete cycle="+cycle);
                   }
-                  System.out.println("REAL_STORAGE_BULK_DEPOSIT_NS "+(System.nanoTime()-bulkStart)+" cycles=100 operations=200 amount_per_cycle=4096");
+                  System.out.println("REAL_STORAGE_BULK_DEPOSIT_NS "+(System.nanoTime()-depositCyclesStart)+" cycles=100 operations=200 amount_per_cycle=4096");
                   if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L)
                     throw new IllegalStateException("Bulk storage conservation failed");
 
