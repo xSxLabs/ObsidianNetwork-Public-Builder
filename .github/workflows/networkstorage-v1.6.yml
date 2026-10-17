@@ -1605,6 +1605,8 @@ jobs:
             }
           }
           EOF
+          # Test-only mutation/persistence regression; applied before both GameTest passes.
+          python3 patches/equipment-dirty-serialization-gametest.py
           # Build 220: real fluid + energy transport uses project tank capabilities and a CI-only registered energy fixture.
           # The fixture is intentionally kept out of the packaged JAR by the existing build103 cleanup.
           grep -Fq 'FluidStacksResourceHandler tank' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkTankBlockEntity.java
@@ -1738,6 +1740,7 @@ jobs:
           PY
           if [ "$GT_RC" -ne 0 ]; then echo "Build103 GameTest server failed rc=$GT_RC"; exit "$GT_RC"; fi
           grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(7 tests\)" /tmp/build103-gametest.log
+          grep -Fq 'EQUIPMENT_DIRTY_SERIALIZATION_MUTATION_GAMETEST PASS' /tmp/build103-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
           if grep -Eqi '[0-9]+ required tests failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
           echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST PASS ====='
@@ -1948,6 +1951,7 @@ jobs:
           if [ "$POST_GT_RC" -ne 0 ]; then echo "Post-patch GameTest failed rc=$POST_GT_RC"; exit "$POST_GT_RC"; fi
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-postpatch-gametest.log
           grep -Fq 'FULL_EQUIPMENT_CELL_PHASE_NS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'EQUIPMENT_DIRTY_SERIALIZATION_MUTATION_GAMETEST PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_STORAGE_BULK_DEPOSIT_NS' /tmp/build103-postpatch-gametest.log
           echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
           # Tests must never be shipped in the distributable JAR.
