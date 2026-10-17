@@ -2071,6 +2071,10 @@ jobs:
           p.write_text(s)
           print('REAL_AUTOCRAFT_OPTIMIZED_IDENTITY_GATE_ENABLED PASS')
           PY
+          # Wireless: extra REAL Energy Cell -> ENERGY bundle -> transmitter
+          # ... air gap ... receiver -> Energy Cell; exact FE conservation/rollback.
+          python3 features/wireless-energy/inject-wireless-gametest.py
+          grep -Fq 'WIRELESS_CROSSDIM_READY_FE_GAMETEST_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Separate the second GameTest server from the first CI-only test universe.
           rm -rf work/run/gametestserver
           set +e
@@ -2086,6 +2090,7 @@ jobs:
           grep -Fq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 samples=9' /tmp/build103-postpatch-gametest.log
           grep -Eq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 .*optimized_required=true' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_STORAGE_BULK_DEPOSIT_NS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
           # Tests must never be shipped in the distributable JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
