@@ -1847,6 +1847,14 @@ jobs:
           python3 patches/spark-energy-bfs-position-reuse.py
           # Hoist enum direction clones from conduit validation hot paths.
           python3 patches/spark-conduit-validation-direction-hoist.py
+          # Spark #227 batch: packed primitive BFS visitation (same traversal).
+          python3 patches/spark-energy-bfs-primitive-visited.py
+          # Reuse identical neighboring BlockPos in topology and ticker.
+          python3 patches/spark-topology-neighbor-position-reuse.py
+          python3 patches/spark-energy-ticker-neighbor-position-reuse.py
+          grep -Fq 'XSXLABS_SPARK_BFS_PRIMITIVE_VISITED_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
+          grep -Fq 'XSXLABS_SPARK_TOPOLOGY_NEIGHBOR_POS_REUSE_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitTopology.java
+          grep -Fq 'XSXLABS_SPARK_TICKER_NEIGHBOR_POS_REUSE_V1' work/src/main/java/dev/obsidiannetwork/conduit/EnergyConduitTicker.java
           grep -Fq 'XSXLABS_SOLAR_BLOCK_CAPABILITY_CACHE_V1' work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java
           grep -Fq 'XSXLABS_SPARK_BFS_POSITION_REUSE_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           grep -Fq 'XSXLABS_SPARK_TOPOLOGY_DIRECTIONS_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitTopology.java
