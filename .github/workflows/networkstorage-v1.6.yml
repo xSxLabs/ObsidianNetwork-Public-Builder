@@ -758,6 +758,18 @@ jobs:
           assert 'copyRaw(in.getIntArray("mc_flags_"' in s, 'persisted conduit flags load missing'
           print('ITEM_RESTART_PERSISTED_INPUT_MAPPING_GATE PASS')
           PY
+          # Restore legacy ITEM/FLUID input semantics when old worlds lack explicit flags.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/ConduitBundleBlockEntity.java')
+          s=p.read_text()
+          old='return m==0?0:m==1?1:2;'
+          new='return m==0?0:(l==Layer.ITEM||l==Layer.FLUID)?(m==1?2:1):(m==1?1:2);'
+          assert s.count(old)==1,'legacy IO fallback anchor changed'
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          print('ITEM_RESTART_LEGACY_IO_FALLBACK_FIX: input=extract bit 2, output=insert bit 1')
+          PY
           # Restart bug diagnostic: inspect persisted ITEM side flags and cache initialization.
           python3 - <<'PY'
           from pathlib import Path
