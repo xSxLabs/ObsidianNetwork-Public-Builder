@@ -21,3 +21,20 @@ Ausgangscommit: `b86b00aaaeb356ecfdf1065576b995f42169fe2e` (`perf-round2-bulk-cr
 - Vorher/Nachher unter identischer Last vergleichen und Regressionen zurücknehmen.
 
 Status: Baseline und Reproduktion noch nicht vollständig nachgewiesen. Diese Datei dokumentiert Kriterien, keine bestandenen Tests.
+
+## Verifizierte Ausgangsbasis (GitHub Actions #195)
+- Workflow: https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39041948828
+- Ergebnis: CI erfolgreich; **8/8 GameTests bestanden**.
+- Volle Equipment Cell (64.000 Einheiten, 257 Descriptoren, 25 Einsetz-/Entnahmezyklen): Gesamt 1.778.226.697 ns, Insert 1.238.784.288 ns, Remove 381.643.027 ns, Decode 157.210.333 ns. Maximale einzelne Insert-Phase 152.560.406 ns.
+- Bulk Storage (100 Zyklen, 200 Operationen à 4.096): 6.605.112 ns.
+- **Einschränkung:** Der ursprüngliche GameTest läuft vor einigen finalen Performance-Patches. Diese Zahlen sind daher eine Zwischenquellen-Baseline, kein Nachweis für die final gebaute JAR.
+- #196 scheiterte, weil der öffentliche Checkout noch auf den alten Branch zeigte; dies war ein Workflow-Fehler, keine bewiesene Java-Regression. Korrigiert in `758c7645aa9f0578abf51b491138f8ec6dc3bc6e`.
+- Neuer Ansatz: `patches/equipment-redundant-reconcile-elision.py` verhindert einen doppelten Reconcile nach erfolgreichem Inventory-Commit, behält den expliziten Fallback bei.
+- Zusätzlicher Post-Patch-GameTest wurde eingefügt; seine Resultate sind noch nicht als bestanden bestätigt.
+- Ein GameTest ist kein Client-GUI-Stresstest und keine persistenzgeprüfte, echte Dedicated-Server-Neustartsequenz.
+
+## Offene Release-Blocker
+1. Reproduzierbarer Ingame-GUI-Test mit wiederholtem Schließen/Öffnen und 64k Equipment Cell.
+2. Schnelle GUI-Crafting- und Bulk-Deposit-Belastung mit Ergebnis-/Bestandsprüfung.
+3. ITEM-Conduit: serverübergreifender Prozess-Neustart mit **derselben gespeicherten Welt** und nachgewiesenem echtem Itemtransfer.
+4. Vergleichbare p95/p99-MSPT- und GC-Messungen vor/nach Optimierung.
