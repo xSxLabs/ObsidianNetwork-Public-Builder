@@ -1687,6 +1687,37 @@ jobs:
           python3 private/v1.1.1/apply-perf-shift-craft-copy-elision.py
           python3 private/v1.1.1/bench-perf-recipe-comparisons.py
           python3 private/v1.1.1/apply-v16-bundle-tps-cache.py
+          # EQUIPMENT_CELL_SAVE_CACHE_V1: serialize only when the live cell has mutated.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java')
+          s=p.read_text()
+          # Dirty is conservative: every inventory change and every equipment mutation invalidates.
+          anchor='private void materializeSlot(int index) {'
+          assert s.count(anchor)==1
+          s=s.replace(anchor,'''private final boolean[] equipmentMaterializedDirty = new boolean[dev.obsidiannetwork.core.StorageDriveRuntime.SLOTS];
+          private void materializeSlot(int index) {''',1)
+          old='EquipmentCellStore equipment = StorageDriveBlockEntity.this.equipmentCells[index];'
+          assert s.count(old)==1
+          s=s.replace(old,old+'''
+          if (equipment != null && !equipmentMaterializedDirty[index]) return;''',1)
+          old='this.stacks.set(index,copy); long equipmentSaveNs='
+          assert s.count(old)==1
+          s=s.replace(old,'this.stacks.set(index,copy); equipmentMaterializedDirty[index]=false; long equipmentSaveNs=',1)
+          old='StorageDriveBlockEntity.this.reconcileRuntimeSlot(index);'
+          assert s.count(old)==1
+          s=s.replace(old,'equipmentMaterializedDirty[index]=true; '+old,1)
+          old='next.setMutationListener(this::setChanged);'
+          assert s.count(old)==1
+          s=s.replace(old,'next.setMutationListener(()->{ this.cellInventory.equipmentMaterializedDirty[slot]=true; this.setChanged(); });',1)
+          # Inventory load and rebuild must never assume a materialized snapshot is current.
+          anchor='this.rebuildRuntimeFromInventory();'
+          assert s.count(anchor)==1
+          s=s.replace(anchor,'java.util.Arrays.fill(this.cellInventory.equipmentMaterializedDirty,true); '+anchor,1)
+          p.write_text(s)
+          assert s.count('equipmentMaterializedDirty')>=6
+          print('EQUIPMENT_CELL_SAVE_CACHE_GATE PASS')
+          PY
           # EQUIPMENT_DRIVE_SAVE_DIRTY_CACHE_V1: avoid re-encoding unchanged equipment cells on every save.
           python3 - <<'PY'
           from pathlib import Path
