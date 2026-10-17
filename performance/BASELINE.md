@@ -38,3 +38,9 @@ Status: Baseline und Reproduktion noch nicht vollständig nachgewiesen. Diese Da
 2. Schnelle GUI-Crafting- und Bulk-Deposit-Belastung mit Ergebnis-/Bestandsprüfung.
 3. ITEM-Conduit: serverübergreifender Prozess-Neustart mit **derselben gespeicherten Welt** und nachgewiesenem echtem Itemtransfer.
 4. Vergleichbare p95/p99-MSPT- und GC-Messungen vor/nach Optimierung.
+
+## Zusätzliche Hotpath-Befunde (aus #195-Quellendumps)
+- `StorageDriveBlockEntity.onContentsChanged(index)` ruft bereits `reconcileRuntimeSlot(index)`. `insertCellAt(slot,...)` rief nach `tx.commit()` nochmals `reconcileRuntimeSlot(slot)`. Der neue Patch überspringt bei bereits initialisierter Equipment-Zelle den zweiten Durchlauf und behält das explizite Reconcile bei fehlender Initialisierung als Fallback.
+- `ItemConduitTicker.tick` bricht außerhalb der Tick-Phase `gameTime % 5 == 0` sofort ab. Die darin liegende Bedingung `dirty || gameTime % 5 == 0` ist daher bei jedem tatsächlich ausgeführten Transfertick wahr: Der Endpoint-Cache wird alle fünf Ticks neu aufgebaut. Das ist ein möglicher weiterer Scan-Hotpath, **noch kein validierter Änderungskandidat**.
+- Der zuvor ersetzte Refresh-Ausdruck `Math.floorMod(System.identityHashCode(network), 1) * 5` ist mathematisch immer 0. Seine Ersetzung durch `0` ist äquivalent und beweist daher allein **keine** Behebung des ITEM-Conduit-Neustartfehlers.
+- Conduit-Caching nicht aggressiv verlängern, bevor ein echter Neustart-/Persistenztest existiert.
