@@ -46,7 +46,7 @@ class WirelessNetworkContractTests(unittest.TestCase):
        'WirelessNetworkData.HOTBAR', 'WirelessNetworkData.INVENTORY',
        'WirelessNetworkData.ARMOR', 'WirelessNetworkData.OFFHAND',
        'WirelessNetworkData.CURIOS', 'ModList.get().isLoaded("curios")',
-       'CuriosApi.getCuriosInventory(player)', 'stack.getCapability(Capabilities.Energy.ITEM)',
+       'CuriosApi.getCuriosInventory(player)', 'ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM)',
        'WirelessEnergyRuntime.pull(player.level().getServer(),network,requested,tx)',
        'if(drawn>0&&drawn==received){tx.commit();return received;}'):
    self.assertIn(needle,UI)
