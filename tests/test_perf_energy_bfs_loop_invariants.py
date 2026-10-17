@@ -51,4 +51,25 @@ class EnergyCableHoistTests(unittest.TestCase):
         rerun,output=run(changed)
         self.assertNotEqual(rerun.returncode,0)
         self.assertEqual(output,changed)
+    def test_helper_based_energy_source_hoists_only_directions(self):
+        old=example()
+        old=old.replace("nextState.is((Block)ObsidianNetwork.ENERGY_CABLE.get())",
+                        "energyCable(next) && energyOpen(next, side)")
+        # The helper-based shape still dynamically checks world state and all
+        # external capabilities on each transfer; it must not be simplified.
+        old=old.replace("return 0; }", "return 0; }", 1)
+        result,updated=run(old)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(updated.count("ENERGY_SCAN_DIRECTIONS = Direction.values()"),1)
+        self.assertEqual(updated.count("for (Direction side : ENERGY_SCAN_DIRECTIONS)"),3)
+        self.assertEqual(updated.count("energyCable(next) && energyOpen(next, side)"),3)
+        self.assertEqual(updated.count("server.getCapability(Energy.BLOCK, next, null)"),3)
+
+    def test_unknown_new_source_shape_refuses_without_mutating(self):
+        original=example().replace("nextState.is((Block)ObsidianNetwork.ENERGY_CABLE.get())",
+            "canConnect(next)")
+        result,updated=run(original)
+        self.assertNotEqual(result.returncode,0)
+        self.assertEqual(updated,original)
+
 if __name__=="__main__":unittest.main()
