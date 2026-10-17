@@ -1294,6 +1294,25 @@ jobs:
                 helper.startSequence()
                   .thenExecuteAfter(10,()->check(sink.getItem(0).getCount()>0,"ITEM server-tick transfer chest-to-chest"))
                   .thenExecute(()->{
+                    // Simulate deserialization of the saved ITEM side flags into a fresh
+                    // runtime node and verify that transport still works after reload.
+                    var level=(net.minecraft.server.level.ServerLevel)helper.getLevel();
+                    var before=bundle.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ITEM);
+                    check(before.config(Direction.NORTH).extract(),"pre-reload source node extract");
+                    check(before.config(Direction.SOUTH).insert(),"pre-reload sink node insert");
+                    var tag=bundle.saveWithFullMetadata(level.registryAccess());
+                    level.removeBlockEntity(cable);
+                    var restored=net.minecraft.world.level.block.entity.BlockEntity.loadStatic(cable,level.getBlockState(cable),tag,level.registryAccess());
+                    check(restored instanceof ConduitBundleBlockEntity,"ITEM deserialization block entity type");
+                    level.setBlockEntity(restored);
+                    var loaded=(ConduitBundleBlockEntity)level.getBlockEntity(cable);
+                    check(loaded.conduitCanExtract(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH),"ITEM loaded input flag");
+                    check(loaded.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ITEM).config(Direction.NORTH).extract(),"ITEM loaded runtime source extract");
+                    check(loaded.conduitNode(dev.obsidiannetwork.conduit.ConduitType.ITEM).config(Direction.SOUTH).insert(),"ITEM loaded runtime sink insert");
+                    source.setItem(1,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,3));
+                  })
+                  .thenExecuteAfter(15,()->check(sink.getItem(1).is(net.minecraft.world.item.Items.DIAMOND)||sink.getItem(0).is(net.minecraft.world.item.Items.DIAMOND),"ITEM actual transfer after NBT block entity reload"))
+                  .thenExecute(()->{
                     bundle.setConduitFlags(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH,true,true);
                     check(bundle.conduitCanInsert(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH)&&bundle.conduitCanExtract(ConduitBundleBlockEntity.Layer.ITEM,Direction.NORTH),"ITEM simultaneous insert+extract");
                     // Build 218: replace the one-cable fixture with a real three-bundle straight route.
