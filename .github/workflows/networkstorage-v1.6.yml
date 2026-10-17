@@ -1557,6 +1557,18 @@ jobs:
           python3 private/v1.1.1/apply-perf-full-cell-fast-reject.py
           python3 private/v1.1.1/bench-perf-recipe-comparisons.py
           python3 private/v1.1.1/apply-v16-bundle-tps-cache.py
+          # Restart regression gate: ITEM endpoints must revalidate on every transfer tick,
+          # even when topology remains unchanged and the visible input mode persists.
+          python3 - <<'PY'
+          from pathlib import Path
+          item=(Path('work/src/main/java/dev/obsidiannetwork/conduit')/'ItemConduitTicker.java').read_text()
+          fluid=(Path('work/src/main/java/dev/obsidiannetwork/conduit')/'FluidConduitTicker.java').read_text()
+          assert 'XSXLABS_BUNDLE_TPS_CACHE_V1' in item
+          assert 'level.getGameTime()%5 == (Math.floorMod(System.identityHashCode(network),1)*5)' in item, 'ITEM restart endpoint refresh not installed'
+          assert 'network.cacheEndpoints(ConduitRuntime.scanEndpoints(level,network,true),ConduitRuntime.scanEndpoints(level,network,false))' in item
+          assert 'level.getGameTime()%20 == (Math.floorMod(System.identityHashCode(network),4)*5)' in fluid
+          print('ITEM_RESTART_CACHE_REFRESH_SOURCE_GATE PASS')
+          PY
           echo '===== BUILD 101 FINAL BUILD ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
