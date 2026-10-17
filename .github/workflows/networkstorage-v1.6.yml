@@ -763,12 +763,9 @@ jobs:
           from pathlib import Path
           p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/ConduitBundleBlockEntity.java')
           s=p.read_text()
-          old='return m==0?0:m==1?1:2;'
-          new='return m==0?0:(l==Layer.ITEM||l==Layer.FLUID)?(m==1?2:1):(m==1?1:2);'
-          assert s.count(old)==1,'legacy IO fallback anchor changed'
-          s=s.replace(old,new,1)
-          p.write_text(s)
-          print('ITEM_RESTART_LEGACY_IO_FALLBACK_FIX: input=extract bit 2, output=insert bit 1')
+          assert 'return m==0?0:m==1?2:1;' in s, 'legacy ITEM/FLUID input=extract fallback missing'
+          assert 'return m==0?0:m==1?1:2;' not in s, 'inverted legacy IO fallback remains'
+          print('ITEM_RESTART_LEGACY_IO_FALLBACK_FIX: already applied upstream; mapping verified')
           PY
           # Restart bug diagnostic: inspect persisted ITEM side flags and cache initialization.
           python3 - <<'PY'
