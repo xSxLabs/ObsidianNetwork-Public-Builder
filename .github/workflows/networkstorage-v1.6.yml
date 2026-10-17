@@ -85,6 +85,8 @@ jobs:
           python3 -m py_compile tests/integration/item_conduit_restart.py
           python3 -m unittest discover -s tests -p 'test_item_conduit_restart_manifest.py' -v
           python3 -m unittest discover -s tests -p 'test_item_cable_empty_filter_load.py' -v
+          # Project Performance #209: validate fail-closed bulk + autocraft patches first.
+          python3 -m unittest discover -s tests -p 'test_perf_*.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           mkdir -p work/src/main/java work/src/main/resources
           curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
@@ -1810,6 +1812,27 @@ jobs:
           # Reduce needless 800-cell capacity probes in exact storage preflight and commit.
           python3 private/v1.1.1/apply-perf-full-cell-fast-reject.py
           python3 patches/equipment-full-fast-reject.py
+          # Read-only bulk preview: don't allocate a snapshot on every capacity probe.
+          python3 patches/perf-bulk-preview-snapshot-elision.py
+          # Autocrafting: don't allocate unchanged reservations on idle refill ticks.
+          python3 patches/perf-autocraft-idle-reservation-elision.py
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          storage=(root/'core/StorageNetwork.java').read_text()
+          preflight=storage.split('public long previewInsertExact(',1)[1].split('public long insertExact(',1)[0]
+          commit=storage.split('public long insertExact(',1)[1].split('public long extract(',1)[0]
+          assert preflight.count('XSXLABS_BULK_READONLY_PREVIEW_NO_SNAPSHOT_V1') == 1
+          assert 'for (StorageCellStore cell : existing)' in preflight
+          assert 'for (StorageCellStore cell : List.copyOf(existing))' in commit
+          service=(root/'platform/MinecraftAutocraftingService.java').read_text()
+          method=service.split('reserveAvailable(',1)[1].split('private long bufferedCrafts(',1)[0]
+          assert method.count('XSXLABS_AUTOCRAFT_IDLE_RESERVATION_ELISION_V1') == 1
+          assert 'out == null ? r :' in method
+          assert 'out.addAll(r.inputs().subList(0, visited));' in method
+          assert service.count('inputs = List.copyOf(inputs);') >= 1
+          print('BULK_AUTOCRAFT_SAFE_FASTPATH_SOURCE_GATE PASS')
+          PY
           # Reduce copies in rapid shift-crafting; fail closed if source differs.
           python3 private/v1.1.1/apply-perf-shift-craft-copy-elision.py
           python3 private/v1.1.1/bench-perf-recipe-comparisons.py
