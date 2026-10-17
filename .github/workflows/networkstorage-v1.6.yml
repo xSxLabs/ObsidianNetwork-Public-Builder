@@ -1523,6 +1523,8 @@ jobs:
           rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
           # User-authorized diagnostic compile: apply v1.6 features before Gradle.
           python3 private/v1.1.1/apply-v16-final-features.py
+          # Reduce needless 800-cell capacity probes in exact storage preflight and commit.
+          python3 private/v1.1.1/apply-perf-full-cell-fast-reject.py
           python3 private/v1.1.1/bench-perf-recipe-comparisons.py
           python3 private/v1.1.1/apply-v16-bundle-tps-cache.py
           echo '===== BUILD 101 FINAL BUILD ====='
