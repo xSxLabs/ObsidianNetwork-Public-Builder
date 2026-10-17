@@ -1,3 +1,4 @@
+# verify captured equipment dirty-slot lambda; CI rerun after 994374ac
 # validate both equipment mutation listeners 015b27c
 # validate mixed ITEM/FLUID endpoint single-scan patch 44df70dc
 # validate autocraft reservation snapshot reuse 10354e0
