@@ -935,15 +935,24 @@ jobs:
                 var stack=new net.minecraft.world.item.ItemStack(cellItem);
                 item.writeStore(stack,store);
                 long start=System.nanoTime();
+                long insertNs=0L,removeNs=0L,decodeNs=0L;
+                long maxInsertNs=0L,maxRemoveNs=0L,maxDecodeNs=0L;
                 for(int cycle=0;cycle<25;cycle++){
+                  long t=System.nanoTime();
                   if(!drive.insertCellAt(0,stack))throw new IllegalStateException("Full equipment cell insert failed cycle="+cycle);
+                  long elapsedInsert=System.nanoTime()-t; insertNs+=elapsedInsert; maxInsertNs=Math.max(maxInsertNs,elapsedInsert);
+                  t=System.nanoTime();
                   var removed=drive.removeCellAt(0);
+                  long elapsedRemove=System.nanoTime()-t; removeNs+=elapsedRemove; maxRemoveNs=Math.max(maxRemoveNs,elapsedRemove);
                   if(removed.isEmpty())throw new IllegalStateException("Full equipment cell removal failed cycle="+cycle);
+                  t=System.nanoTime();
                   var decoded=item.readStore(removed);
+                  long elapsedDecode=System.nanoTime()-t; decodeNs+=elapsedDecode; maxDecodeNs=Math.max(maxDecodeNs,elapsedDecode);
                   if(decoded.amount(key)!=63744L||decoded.types()!=257)throw new IllegalStateException("Equipment cell data lost cycle="+cycle);
                   stack=removed;
                 }
                 long elapsed=System.nanoTime()-start;
+                System.out.println("FULL_EQUIPMENT_CELL_PHASE_NS insert="+insertNs+" remove="+removeNs+" decode="+decodeNs+" max_insert="+maxInsertNs+" max_remove="+maxRemoveNs+" max_decode="+maxDecodeNs+" cycles=25 types=257");
                 System.out.println("FULL_EQUIPMENT_CELL_REINSERT_NS "+elapsed+" cycles=25 count=64000 types=257");
                 h.succeed();
               }
