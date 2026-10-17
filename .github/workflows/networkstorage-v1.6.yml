@@ -77,6 +77,9 @@ jobs:
         run: |
           set -euo pipefail
           # Verify the restart harness before an expensive source reconstruction.
+          # #206: capture raw standalone cable face modes and BFS positions on both JVMs.
+          grep -Fq 'initial_cable_topology' tests/integration/ItemConduitRestartProbe.java
+          grep -Fq 'mixed_component_positions' tests/integration/ItemConduitRestartProbe.java
           python3 -m py_compile tests/integration/item_conduit_restart.py
           python3 -m unittest discover -s tests -p 'test_item_conduit_restart_manifest.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
