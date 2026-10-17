@@ -81,3 +81,12 @@ Status: Baseline und Reproduktion noch nicht vollständig nachgewiesen. Diese Da
 - **Korrektur #205**: Kein blinder Pass bei fehlender `.mca`: ein nichtleeres `level.dat` bleibt Pflicht, die Region-Dateisuche ist rekursiv und wird protokolliert. Entscheidend ist, dass die **zweite unabhängige JVM** die alten Chests samt exakten Inventaren und Kabelkonfiguration tatsächlich lädt, dann weitere Items transportiert, eine Unterbrechung übersteht und die Bestände prüft. Wenn dies fehlschlägt, bleibt die CI rot und zusätzliche JSON-/Textlogs werden als Fehlerartefakt hochgeladen.
 - Vor dem teuren Workflow laufen drei Python-Unit-Tests für Level-/Regiondatei-Invarianten. Alle drei wurden im laufenden #205-Log als `ok` bestätigt.
 - **#205**: gestartet, Auswertung noch ausstehend. Ohne bestandene zweite JVM weiterhin keine Freigabe.
+
+
+## Build #205: reproduzierter ITEM-Transferdefekt nach echtem Prozess-Neustart
+
+- [#205](https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39046458721) scheiterte **nicht** mehr an der Weltdatei-Prüfung. Zwei eigenständige Java-Prozesse wurden gestartet, und die erste Welt wurde normal gespeichert und durch den zweiten Prozess geladen.
+- Alle drei Python-Manifest-Unit-Tests bestanden; die acht erforderlichen GameTests bestanden sowohl vor als auch nach den Runtime-Patches, inklusive Mutations- und Serialisierungstest der Equipment Cell.
+- **Echter funktionaler Befund:** Von vier ITEM-Kabelwegen liefen nach Neustart drei korrekt (nur Bundles, Bundle–Standalone–Bundle, Standalone–Bundle–Standalone). Die reine Verbindung aus drei Standalone-ITEM-Kabeln transportierte nach Neustart die neu eingefüllten **7 Goldbarren und 9 Redstone** nicht; die Quelle behielt beide Stacks über 1200 Ticks. Vor Neustart transportierte dieselbe Route alle 5 Diamonds und 3 Emeralds.
+- Log/JSON-Evidenz im Fehlerartefakt [#205 – `xsxlabs-performance-failure-evidence`](https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39046458721/artifacts/12106137387). Quell- und Ziel-Chunks sowie Item-Capabilities waren verfügbar; der gespeicherte IMPORT/EXPORT-Modus der Endkabel war intakt.
+- **Nicht** als Performance-/Save-Gate-Problem abtun und **nicht** als Release freigeben. Weder Produktions-Ticker-Frequenz noch Cache-Intervalle auf Verdacht ändern. Nächster Schritt #206: test-only genaue Diagnostik aller drei Kabelsegmente (west-/ostseitiger Mode) und gemischte BFS-Erreichbarkeit vor/nach Neustart; dann minimalen ursächlichen Patch.
