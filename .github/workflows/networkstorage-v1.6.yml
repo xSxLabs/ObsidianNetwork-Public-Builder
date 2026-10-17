@@ -747,6 +747,17 @@ jobs:
             }
           }
           EOF
+          # Server-restart regression: persisted legacy mode 1 must recover
+          # extract/INPUT semantics even when old worlds lack mc_flags.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/ConduitBundleBlockEntity.java')
+          s=p.read_text()
+          assert 'return m==0?0:m==1?2:1;' in s, 'legacy INPUT flags reverse after server restart'
+          assert 'return m==0?0:m==1?1:2;' not in s, 'inverted legacy mode fallback remains'
+          assert 'copyRaw(in.getIntArray("mc_flags_"' in s, 'persisted conduit flags load missing'
+          print('ITEM_RESTART_PERSISTED_INPUT_MAPPING_GATE PASS')
+          PY
           # Restart bug diagnostic: inspect persisted ITEM side flags and cache initialization.
           python3 - <<'PY'
           from pathlib import Path
