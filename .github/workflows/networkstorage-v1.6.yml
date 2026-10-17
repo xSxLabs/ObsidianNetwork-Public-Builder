@@ -1620,6 +1620,7 @@ jobs:
           # CI-only live reservation proof in the existing 50-drive/800-cell GameTest.
           # It probes the actual immutable request path, exact debit/restore and idle reuse.
           python3 patches/perf-real-autocraft-reservation-gametest.py
+          python3 patches/perf-real-server-ticks-gc-gametest.py
           grep -Fq 'REAL_AUTOCRAFT_RESERVATION_CONSERVATION_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Test-only mutation/persistence regression; applied before both GameTest passes.
           python3 patches/equipment-dirty-serialization-gametest.py
@@ -2022,7 +2023,7 @@ jobs:
           from pathlib import Path
           import json,sys
           sys.path.insert(0,str(Path.cwd()/'performance'))
-          from metric_parser import numbers_in,require_metrics,validated_sustained_tick_work
+          from metric_parser import numbers_in,require_metrics,validated_sustained_tick_work,validated_server_observations
           root=Path('work/src/main/java/dev/obsidiannetwork')
           baseline_log=Path('/tmp/build103-gametest.log').read_text(errors='replace')
           log=Path('/tmp/build103-postpatch-gametest.log').read_text(errors='replace')
@@ -2046,6 +2047,10 @@ jobs:
               'baseline_before_final_patches':numbers_in(baseline_log,'REAL_STORAGE_BULK_DEPOSIT_NS'),
               'measurements':numbers('REAL_STORAGE_BULK_DEPOSIT_NS'),
               'coverage':'runtime insert/extract benchmark; not rapid GUI deposit stress'},
+            'server_tick_gc_observations':{
+              'baseline_before_final_patches':validated_server_observations(baseline_log),
+              'after_final_patches':validated_server_observations(log),
+              'coverage':'real MinecraftServer recent tick ring + GC MXBeans; includes neighboring GameTests, NOT a controlled paired MSPT/GC benchmark'},
             'sustained_storage_tick_work':{
               'baseline_before_final_patches':validated_sustained_tick_work(baseline_log),
               'after_final_patches':validated_sustained_tick_work(log),

@@ -5,7 +5,7 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "performance"))
-from metric_parser import numbers_in, require_metrics, validated_sustained_tick_work
+from metric_parser import numbers_in, require_metrics, validated_sustained_tick_work, validated_server_observations
 
 
 class MetricParserTests(unittest.TestCase):
@@ -105,6 +105,39 @@ class MetricParserTests(unittest.TestCase):
             with self.subTest(altered=altered[-100:]):
                 with self.assertRaises(ValueError):
                     validated_sustained_tick_work(altered)
+
+
+    @staticmethod
+    def _real_server_metrics_fixture():
+        return ("REAL_SERVER_TICK_RING_V1 samples=100 p95_ns=1000 p99_ns=2000 worst_ns=3000 "
+                "ring_scope=true uncontrolled=true\n"
+                "REAL_SERVER_GC_WINDOW_V1 beans=2 collections_delta=0 time_ms_delta=0 "
+                "approximate_gc_accounting=true uncontrolled=true\n")
+
+    def test_real_server_observations_allow_no_gc_during_short_window(self):
+        actual=validated_server_observations(self._real_server_metrics_fixture())
+        self.assertEqual(actual["ticks"]["p99_ns"],2000)
+        self.assertEqual(actual["gc"]["collections_delta"],0)
+
+    def test_real_server_observations_reject_quantile_and_scope_mismatch(self):
+        original=self._real_server_metrics_fixture()
+        for changed in (original.replace("p95_ns=1000","p95_ns=4000"),
+                        original.replace("p99_ns=2000","p99_ns=4000"),
+                        original.replace("samples=100","samples=10"),
+                        original.replace("ring_scope=true","ring_scope=false"),
+                        original.replace("uncontrolled=true","uncontrolled=false")):
+            with self.subTest(changed=changed[:65]):
+                with self.assertRaises(ValueError):
+                    validated_server_observations(changed)
+
+    def test_real_server_observations_reject_missing_gc(self):
+        original=self._real_server_metrics_fixture()
+        for changed in (original.splitlines(keepends=True)[0], original+original,
+                        original.replace("beans=2","beans=0"),
+                        original.replace("approximate_gc_accounting=true","approximate_gc_accounting=false")):
+            with self.subTest(changed=changed[:65]):
+                with self.assertRaises(ValueError):
+                    validated_server_observations(changed)
 
 
 if __name__ == "__main__":
