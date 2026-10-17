@@ -920,7 +920,7 @@ jobs:
                 if(cellItem==null)throw new IllegalStateException("Equipment cell not registered");
                 var item=(dev.obsidiannetwork.item.EquipmentCellItem)cellItem;
                 var store=new dev.obsidiannetwork.core.EquipmentCellStore();
-                var key=dev.obsidiannetwork.core.ItemKey.simple("minecraft:diamond_sword");
+                var key=dev.obsidiannetwork.core.ItemKey.ofCanonicalComponents("minecraft:diamond_sword",new byte[0]);
                 long filled=store.insertExact(key,new byte[0],64000L);
                 if(filled!=64000L||store.free()!=0)throw new IllegalStateException("Equipment cell not full");
                 var stack=new net.minecraft.world.item.ItemStack(cellItem);
