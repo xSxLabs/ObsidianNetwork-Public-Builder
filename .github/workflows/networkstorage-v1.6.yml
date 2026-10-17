@@ -2011,6 +2011,24 @@ jobs:
           assert reports['equipment_64k']['phase_measurements'],'equipment performance marker missing'
           assert reports['bulk_storage']['measurements'],'bulk performance marker missing'
           PY
+          # CI-only: stop and restart two actual dedicated-server JVMs on
+          # the same saved world. Do not repackage the temporary subscriber.
+          python3 tests/integration/item_conduit_restart.py --project work --output dist/item-conduit-restart.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          report=json.loads(Path('dist/item-conduit-restart.json').read_text())
+          assert report['status']=='passed' and report['same_saved_world'] and report['distinct_server_jvms']
+          assert report['phases']['after']['configuration_preserved']
+          assert report['phases']['after']['item_conservation']
+          diagnostics=Path('dist/diagnostic-report.json')
+          d=json.loads(diagnostics.read_text())
+          d['item_conduit_restart']['real_process_restart_test']=True
+          d['item_conduit_restart']['coverage']='four real chest/conduit topologies across dedicated-server process restart; live GUI untested'
+          d['missing_release_gates']=[x for x in d['missing_release_gates'] if x!='real dedicated-server stop/start item transport']
+          diagnostics.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\\n')
+          print('ITEM_CONDUIT_RESTART_DIAGNOSTIC_GATE PASS')
+          PY
           echo '===== BUILD 101 FINAL BUILD ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
