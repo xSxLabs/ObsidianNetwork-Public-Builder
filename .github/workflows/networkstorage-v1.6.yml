@@ -816,6 +816,32 @@ jobs:
                   for n,line in enumerate(p.read_text(errors='replace').splitlines()[:230],1):
                       print(f'REAL_ITEM_KEY {rel}:{n}: {line[:250]}')
           PY
+          # EQUIPMENT_CELL_LAG_DIAGNOSTIC_V1: inspect the equipment-only
+          # insert/remove and menu-close paths without changing runtime behavior.
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          targets=['blockentity/StorageDriveBlockEntity.java',
+                   'core/EquipmentCellStore.java',
+                   'core/NetworkRuntime.java',
+                   'component/EquipmentCellContents.java']
+          terms=('EquipmentCell','equipment','setChanged','onContentsChanged',
+                 'invalidate','rebuild','serialize','saveAdditional','loadAdditional',
+                 'removed','onClose','close','setItem','setStackInSlot')
+          for rel in targets:
+              p=root/rel
+              if not p.exists():
+                  print('EQUIPMENT_LAG_DIAG_MISSING',rel)
+                  continue
+              lines=p.read_text(errors='replace').splitlines()
+              matches=[i for i,line in enumerate(lines) if any(t in line for t in terms)]
+              selected=set()
+              for i in matches:
+                  selected.update(range(max(0,i-2),min(len(lines),i+4)))
+              print('EQUIPMENT_LAG_DIAG_FILE',rel,'lines',len(lines),'matches',len(matches))
+              for i in sorted(selected):
+                  print('EQUIPMENT_LAG_DIAG',rel,i+1,lines[i][:500])
+          PY
           # REAL_DRIVE_API_DIAGNOSTIC_V1: CI-only inspection of reconstructed runtime APIs.
           python3 - <<'PY'
           from pathlib import Path
