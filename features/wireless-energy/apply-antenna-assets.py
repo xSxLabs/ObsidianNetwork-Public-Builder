@@ -61,6 +61,23 @@ for slug,label,color,details in configs:
     item={"model":{"type":"minecraft:model","model":f"obsidiannetwork:item/{slug}"}}
     (root/f"items/{slug}.json").write_text(json.dumps(item,indent=2)+"\n")
     (root/f"textures/block/{slug}_signal.png").write_bytes(signal_png(color))
+    # Every new block is obtainable and drops itself.
+    lootdir=root.parent.parent/"data/obsidiannetwork/loot_table/blocks"
+    recipedir=root.parent.parent/"data/obsidiannetwork/recipe"
+    lootdir.mkdir(parents=True,exist_ok=True)
+    recipedir.mkdir(parents=True,exist_ok=True)
+    (lootdir/f"{slug}.json").write_text(json.dumps({
+        "type":"minecraft:block",
+        "pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":f"obsidiannetwork:{slug}"}],
+          "conditions":[{"condition":"minecraft:survives_explosion"}]}]
+    },indent=2)+"\n")
+    (recipedir/f"{slug}.json").write_text(json.dumps({
+        "type":"minecraft:crafting_shaped",
+        "pattern":["IRI","RCR","IEI"],
+        "key":{"I":"minecraft:iron_ingot","R":"minecraft:redstone",
+               "C":"obsidiannetwork:wireless_antenna","E":"obsidiannetwork:energy_cable"},
+        "result":{"id":f"obsidiannetwork:{slug}","count":1}
+    },indent=2)+"\n")
     lang[f"block.obsidiannetwork.{slug}"]=label
     lang[f"item.obsidiannetwork.{slug}"]=label
 langpath.write_text(json.dumps(lang,ensure_ascii=False,indent=2)+"\n")
