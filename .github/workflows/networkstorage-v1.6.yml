@@ -2026,7 +2026,7 @@ jobs:
           d['item_conduit_restart']['real_process_restart_test']=True
           d['item_conduit_restart']['coverage']='four real chest/conduit topologies across dedicated-server process restart; live GUI untested'
           d['missing_release_gates']=[x for x in d['missing_release_gates'] if x!='real dedicated-server stop/start item transport']
-          diagnostics.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\\n')
+          diagnostics.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\n')
           print('ITEM_CONDUIT_RESTART_DIAGNOSTIC_GATE PASS')
           PY
           echo '===== BUILD 101 FINAL BUILD ====='
