@@ -5,6 +5,7 @@ import dev.obsidiannetwork.ObsidianNetwork;
 import dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity;
 import dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity;
 import dev.obsidiannetwork.conduit.ConduitNetworkManager;
+import dev.obsidiannetwork.conduit.ConduitRuntime;
 import dev.obsidiannetwork.conduit.ConduitType;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,6 +67,10 @@ public final class ItemConduitRestartProbe {
                         chest(level, source(lane)).setItem(1, new ItemStack(Items.REDSTONE, 9));
                     }
                 }
+                // Snapshot the actual world-derived connection state before any
+                // post-restart transfer. This distinguishes lost NBT / broken
+                // connectivity from a non-running standalone block-entity ticker.
+                report.put("initial_cable_topology", diagnostics(level));
                 stage = 1;
                 stageStart = ticks;
             }
@@ -184,8 +189,19 @@ public final class ItemConduitRestartProbe {
                     row.put(prefix + "mode", cable.mode(side).name());
                 }
             }
+            row.put("mixed_component_positions",
+                    ConduitRuntime.mixedPositions(level, cable(lane, 0), ConduitType.ITEM).toString());
             for (int i = 0; i < 3; i++) {
-                if (level.getBlockEntity(cable(lane, i)) instanceof ConduitBundleBlockEntity bundle) {
+                var segment = level.getBlockEntity(cable(lane, i));
+                row.put("cable_" + i + "_block", BuiltInRegistries.BLOCK.getKey(level.getBlockState(cable(lane, i)).getBlock()).toString());
+                if (segment instanceof LogisticsCableBlockEntity standalone) {
+                    row.put("cable_" + i + "_west", standalone.mode(Direction.WEST).name());
+                    row.put("cable_" + i + "_east", standalone.mode(Direction.EAST).name());
+                } else if (segment instanceof ConduitBundleBlockEntity b) {
+                    row.put("cable_" + i + "_west", b.conduitFlags(ConduitBundleBlockEntity.Layer.ITEM, Direction.WEST));
+                    row.put("cable_" + i + "_east", b.conduitFlags(ConduitBundleBlockEntity.Layer.ITEM, Direction.EAST));
+                }
+                if (segment instanceof ConduitBundleBlockEntity bundle) {
                     var network = ConduitNetworkManager.ensure(level, bundle.conduitNode(ConduitType.ITEM));
                     row.put("nodes", network.nodes().size());
                     row.put("extract_endpoints", network.endpoints(true).size());
