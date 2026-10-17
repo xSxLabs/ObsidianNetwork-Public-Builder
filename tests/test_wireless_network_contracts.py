@@ -36,7 +36,7 @@ class WirelessNetworkContractTests(unittest.TestCase):
   for forbidden in ('forceChunk(', 'getServer().getAllLevels()', 'getChunkSource().getChunk('):
    self.assertNotIn(forbidden,CORE)
  def test_gui_is_server_authoritative_and_named_networks_exist(self):
-  for needle in ('clickMenuButton(Player player,int button)', 'server-authoritative',
+  for needle in ('clickMenuButton(Player player,int button)', 'if(!(player instanceof ServerPlayer p)||device==null||!stillValid(player))return false;',
        'storage.create(p,"Network "', 'storage.setCharging(p,current.id(),current.chargingMask()^bit)',
        'Commands.literal("wirelessnet")', 'StringArgumentType.greedyString()',
        'WirelessNetworkMenu', 'WirelessNetworkScreen'):
