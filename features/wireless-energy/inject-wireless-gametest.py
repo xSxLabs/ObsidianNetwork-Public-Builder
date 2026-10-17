@@ -21,10 +21,16 @@ addition=r'''.thenExecuteAfter(2,()->{
                     // use exactly the same cross-dimension server source registry.
                     for(int x=0;x<10;x++)helper.getLevel().setBlock(helper.absolutePos(new BlockPos(x,1,1)),Blocks.AIR.defaultBlockState(),3);
                     BlockPos source=helper.absolutePos(new BlockPos(0,1,1));
-                    BlockPos transmitter=helper.absolutePos(new BlockPos(1,1,1));
+                    BlockPos energyBridge=helper.absolutePos(new BlockPos(1,1,1));
+                    BlockPos transmitter=helper.absolutePos(new BlockPos(2,1,1));
                     BlockPos receiver=helper.absolutePos(new BlockPos(7,1,1));
                     BlockPos destination=helper.absolutePos(new BlockPos(8,1,1));
                     helper.getLevel().setBlock(source,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+                    helper.getLevel().setBlock(energyBridge,ObsidianNetwork.CONDUIT_BUNDLE.get().defaultBlockState(),3);
+                    var bridge=(ConduitBundleBlockEntity)helper.getLevel().getBlockEntity(energyBridge);
+                    check(bridge!=null,"WIRELESS real energy conduit bridge");
+                    if(!bridge.has(ConduitBundleBlockEntity.Layer.ENERGY))
+                     check(bridge.add(ConduitBundleBlockEntity.Layer.ENERGY),"WIRELESS conduit ENERGY layer installed");
                     helper.getLevel().setBlock(transmitter,ObsidianNetwork.NETWORK_TRANSMITTER.get().defaultBlockState(),3);
                     helper.getLevel().setBlock(receiver,ObsidianNetwork.NETWORK_RECEIVER.get().defaultBlockState(),3);
                     helper.getLevel().setBlock(destination,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
@@ -50,7 +56,7 @@ addition=r'''.thenExecuteAfter(2,()->{
                    .thenExecuteAfter(35,()->{
                     var send=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(0,1,1)));
                     var sink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(8,1,1)));
-                    var txBe=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(1,1,1)));
+                    var txBe=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(2,1,1)));
                     check(send!=null&&sink!=null&&txBe!=null,"WIRELESS runtime remains present");
                     check(sink.stored()>0,"WIRELESS FE reached separated machine through named wireless network");
                     check(send.stored()+txBe.stored()+sink.stored()==8000,"WIRELESS FE conservation exactly 8000 after transport");
