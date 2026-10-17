@@ -34,6 +34,9 @@ for name in ("energyCable","energyOpen"):
     body=s[m.end():pos-1]
     for required in ("getBlockEntity(","ConduitBundleBlockEntity","ObsidianNetwork.ENERGY_CABLE.get()"):
         assert required in body,f"Missing {name} safety guard: {required}"
+    # A registry enum reference alone is not evidence of a bundle BE type;
+    # validate the real instanceof gate before optimizing either helper.
+    assert re.search(r"instanceof\\s+(?:dev\\.obsidiannetwork\\.blockentity\\.)?ConduitBundleBlockEntity\\b",body), f"Missing {name} bundle BE type gate"
     state=m.group(1)
     early=("\n      // "+marker+"\n"
            "      if(!"+state+".is((Block)ObsidianNetwork.ENERGY_CABLE.get()) && !"

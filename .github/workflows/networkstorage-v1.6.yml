@@ -1833,6 +1833,7 @@ jobs:
           # Spark: constant-time connected node membership on each physical topology check.
           python3 patches/spark-conduit-topology-position-index.py
           # Spark: short-circuit non-energy/non-bundle neighbor block entities.
+          # Strict negative gate: bundled BE instanceof must remain authoritative.
           python3 patches/spark-energy-fast-reject-nonbundle.py
           # NeoForge 26.1: reuse nextState in all three ENERGY capability traversals.
           python3 patches/spark-energy-reuse-known-blockstate.py
