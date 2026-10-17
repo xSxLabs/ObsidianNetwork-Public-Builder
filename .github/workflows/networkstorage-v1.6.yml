@@ -1865,6 +1865,18 @@ jobs:
           assert old not in p.read_text()
           print('ITEM_RESTART_STABLE_REFRESH_CADENCE_V1 PASS')
           PY
+          # De-duplicate endpoint scans for the same ITEM network/tick.
+          python3 patches/item-conduit-duplicate-scan-elision.py
+          python3 - <<'PY'
+          from pathlib import Path
+          item=Path('work/src/main/java/dev/obsidiannetwork/conduit/ItemConduitTicker.java').read_text()
+          guard='Long previous=lastTransferTick.put(network,level.getGameTime());'
+          scan='network.cacheEndpoints(ConduitRuntime.scanEndpoints(level,network,true),ConduitRuntime.scanEndpoints(level,network,false));'
+          assert item.count(guard)==1 and item.count(scan)==1
+          assert item.index(guard)<item.index(scan), 'duplicate-tick guard must precede endpoint scanning'
+          assert 'if(network.type()!=ConduitType.ITEM||level.getGameTime()%5!=0)return;' in item
+          print('ITEM_DUPLICATE_SCAN_ELISION_SOURCE_GATE PASS')
+          PY
           # Inspect actual conduit lifecycle hooks and endpoint cache construction.
           # Source diagnostics are deliberately read-only until the safe reload hook
           # can be established from the reconstructed Java code.
