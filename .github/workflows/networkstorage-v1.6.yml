@@ -1832,6 +1832,9 @@ jobs:
           python3 patches/spark-energy-ephemeral-endpoint-handlers.py
           # Spark: constant-time connected node membership on each physical topology check.
           python3 patches/spark-conduit-topology-position-index.py
+          # Spark: short-circuit non-energy/non-bundle neighbor block entities.
+          python3 patches/spark-energy-fast-reject-nonbundle.py
+          grep -Fq 'XSXLABS_SPARK_ENERGY_NONBUNDLE_FAST_REJECT_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           # Post-optimization assertion, after the prepatch legacy topology gate.
           python3 - <<'PY'
           from pathlib import Path
