@@ -50,12 +50,14 @@ def main():
     for file in args.reports:
         report = json.loads(file.read_text(encoding="utf-8"))
         print(f"\n=== {file} ===")
+        # The existing bulk log uses an *unnamed* nanosecond value. Older
+        # JSON diagnostics retained cycles but omitted that elapsed value.
+        # Do not invent it from unrelated fields or call cycles elapsed time.
         display("Real bulk storage / 100 cycles",
-                sample(report, "bulk_storage", "baseline_before_final_patches", "cycles") and
                 sample(report, "bulk_storage", "baseline_before_final_patches", "elapsed_ns"),
                 sample(report, "bulk_storage", "measurements", "elapsed_ns"))
-        # Diagnostic reports may use a bare unnamed integer marker in their
-        # original log; absence must remain visible, never impute a zero.
+        # Missing bulk timings remain explicitly unavailable until the
+        # CI report schema captures the named duration.
         before = sample(report, "equipment_64k", "baseline_before_final_patches", "insert")
         after = sample(report, "equipment_64k", "phase_measurements", "insert")
         display("64k equipment insert phase", before, after)
