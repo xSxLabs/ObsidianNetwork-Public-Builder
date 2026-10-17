@@ -1860,7 +1860,11 @@ jobs:
           python3 patches/spark-conduit-runtime-neighbor-direction-reuse.py
           # Feature branch: install the two wireless antenna blocks on top of green perf #232.
           python3 features/wireless-energy/apply-wireless-runtime.py
+          python3 features/wireless-energy/apply-wireless-ui-charging.py
           python3 features/wireless-energy/apply-antenna-assets.py
+          test -f work/src/main/java/dev/obsidiannetwork/menu/WirelessNetworkMenu.java
+          test -f work/src/main/java/dev/obsidiannetwork/client/WirelessNetworkScreen.java
+          test -f work/src/main/java/dev/obsidiannetwork/wireless/WirelessPlayerCharging.java
           grep -Fq 'XSXLABS_WIRELESS_NETWORKS_V1' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           test -f work/src/main/java/dev/obsidiannetwork/wireless/WirelessNetworkData.java
           test -f work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java
