@@ -119,7 +119,7 @@ public final class WirelessNetworkData extends SavedData {
  public Entry find(String id){return networks.get(id);}
  public boolean canAccess(ServerPlayer p,String id){
   Entry e=networks.get(id);
-  return e!=null&&(e.owner().isEmpty()||e.owner().equals(p.getUUID().toString())||p.hasPermissions(2));
+  return e!=null&&(e.owner().isEmpty()||e.owner().equals(p.getUUID().toString()));
  }
  public List<Entry> available(ServerPlayer p){
   return networks.values().stream().filter(e->canAccess(p,e.id())).toList();
@@ -135,7 +135,7 @@ public final class WirelessNetworkData extends SavedData {
  public boolean setCharging(ServerPlayer p,String id,int mask){
   if(!canAccess(p,id)||mask<0||(mask&~ALL_CATEGORIES)!=0)return false;
   Entry old=networks.get(id);
-  if(!old.owner().isEmpty()&&!old.owner().equals(p.getUUID().toString())&&!p.hasPermissions(2))return false;
+  if(!old.owner().isEmpty()&&!old.owner().equals(p.getUUID().toString()))return false;
   if(old.chargingMask()==mask)return true;
   networks.put(id,new Entry(old.id(),old.name(),old.owner(),mask));
   setDirty();return true;
