@@ -2022,7 +2022,7 @@ jobs:
           from pathlib import Path
           import json,sys
           sys.path.insert(0,str(Path.cwd()/'performance'))
-          from metric_parser import numbers_in,require_metrics
+          from metric_parser import numbers_in,require_metrics,validated_sustained_tick_work
           root=Path('work/src/main/java/dev/obsidiannetwork')
           baseline_log=Path('/tmp/build103-gametest.log').read_text(errors='replace')
           log=Path('/tmp/build103-postpatch-gametest.log').read_text(errors='replace')
@@ -2046,6 +2046,10 @@ jobs:
               'baseline_before_final_patches':numbers_in(baseline_log,'REAL_STORAGE_BULK_DEPOSIT_NS'),
               'measurements':numbers('REAL_STORAGE_BULK_DEPOSIT_NS'),
               'coverage':'runtime insert/extract benchmark; not rapid GUI deposit stress'},
+            'sustained_storage_tick_work':{
+              'baseline_before_final_patches':validated_sustained_tick_work(baseline_log),
+              'after_final_patches':validated_sustained_tick_work(log),
+              'coverage':'20 real server-tick-triggered 50-drive storage workloads per phase; storage-work p95 only, NOT whole-server MSPT/p99/GC'},
             'autocraft_idle_reservations':{
               'baseline_pre_patch':numbers_in(baseline_log,'REAL_AUTOCRAFT_IDLE_RESERVATION_V1'),
               'after_final_patches':numbers('REAL_AUTOCRAFT_IDLE_RESERVATION_V1'),
@@ -2064,7 +2068,7 @@ jobs:
           }
           lag=[line.strip()[-350:] for line in log.splitlines() if "Can't keep up!" in line]
           reports['server_tick_warnings']=lag
-          reports['missing_release_gates']=['real dedicated-server stop/start item transport','realistic full-cell menu close/reinsert profiling','rapid crafting terminal GUI stress','rapid bulk deposit GUI stress']
+          reports['missing_release_gates']=['real dedicated-server stop/start item transport','realistic full-cell menu close/reinsert profiling','rapid crafting terminal GUI stress','rapid bulk deposit GUI stress','controlled p95/p99 server MSPT and GC before/after comparison']
           p=Path('dist/diagnostic-report.json')
           p.parent.mkdir(exist_ok=True)
           p.write_text(json.dumps(reports,indent=2,ensure_ascii=False))

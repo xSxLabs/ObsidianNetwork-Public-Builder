@@ -5,7 +5,7 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "performance"))
-from metric_parser import numbers_in, require_metrics
+from metric_parser import numbers_in, require_metrics, validated_sustained_tick_work
 
 
 class MetricParserTests(unittest.TestCase):
@@ -51,6 +51,60 @@ class MetricParserTests(unittest.TestCase):
                "2026-10-17T18:01:39Z REAL_STORAGE_BULK_DEPOSIT_NS 8135282 cycles=100")
         parsed = numbers_in(log, "REAL_STORAGE_BULK_DEPOSIT_NS")
         self.assertEqual([v["elapsed_ns"] for v in parsed], [7659603, 8135282])
+
+
+    @staticmethod
+    def _sustained_fixture():
+        rows = [
+            f"LOG REAL_50_DRIVE_SUSTAINED_TICK sample={i} operations=200 "
+            f"storage_work_ns={1000 + i} tick_wall_ns={50000000 + i} "
+            "wall_clock_not_MSPT=true"
+            for i in range(1, 21)
+        ]
+        rows.append("REAL_50_DRIVE_SUSTAINED_SUMMARY ticks=20 operations=4000 "
+                    "p95_storage_work_ns=1019 worst_storage_work_ns=1020 not_server_MSPT=true")
+        return "\n".join(rows)
+
+    def test_sustained_ticks_are_real_and_consistent(self):
+        actual = validated_sustained_tick_work(self._sustained_fixture())
+        self.assertEqual(len(actual["samples"]), 20)
+        self.assertEqual(actual["summary"]["p95_storage_work_ns"], 1019)
+        self.assertIn("not whole-server MSPT", actual["scope"])
+
+    def test_sustained_ticks_reject_missing_duplicate_or_shuffled_samples(self):
+        fixture = self._sustained_fixture()
+        for altered in (
+            fixture.replace("sample=8 operations=200", "sample=7 operations=200"),
+            fixture.replace("sample=8 operations=200", "sample=28 operations=200"),
+            fixture.replace("LOG REAL_50_DRIVE_SUSTAINED_TICK sample=8", "OTHER sample=8"),
+        ):
+            with self.subTest(altered=altered[:60]):
+                with self.assertRaises(ValueError):
+                    validated_sustained_tick_work(altered)
+
+    def test_sustained_ticks_reject_fabricated_quantiles(self):
+        fixture = self._sustained_fixture()
+        for altered in (
+            fixture.replace("p95_storage_work_ns=1019", "p95_storage_work_ns=1020"),
+            fixture.replace("worst_storage_work_ns=1020", "worst_storage_work_ns=1019"),
+            fixture.replace("operations=4000", "operations=3900"),
+            fixture.replace("operations=200", "operations=199"),
+        ):
+            with self.subTest(altered=altered[-100:]):
+                with self.assertRaises(ValueError):
+                    validated_sustained_tick_work(altered)
+
+    def test_sustained_ticks_reject_false_mspt_or_zero_durations(self):
+        fixture = self._sustained_fixture()
+        for altered in (
+            fixture.replace("wall_clock_not_MSPT=true", "wall_clock_not_MSPT=false"),
+            fixture.replace("not_server_MSPT=true", "not_server_MSPT=false"),
+            fixture.replace("storage_work_ns=1001", "storage_work_ns=0"),
+            fixture.replace("tick_wall_ns=50000001", "tick_wall_ns=0"),
+        ):
+            with self.subTest(altered=altered[-100:]):
+                with self.assertRaises(ValueError):
+                    validated_sustained_tick_work(altered)
 
 
 if __name__ == "__main__":
