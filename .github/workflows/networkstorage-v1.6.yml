@@ -1687,27 +1687,22 @@ jobs:
           python3 private/v1.1.1/apply-perf-shift-craft-copy-elision.py
           python3 private/v1.1.1/bench-perf-recipe-comparisons.py
           python3 private/v1.1.1/apply-v16-bundle-tps-cache.py
-          # EQUIPMENT_CELL_ATTACH_SNAPSHOT_REUSE_V1: avoid cloning all equipment
-          # descriptors twice when a full cell is attached to a drive.
-          # Preserve validation, registration order, and rollback behavior.
+          # EQUIPMENT_CELL_ATTACH_SNAPSHOT_REUSE_V1: one descriptor clone per attach.
           python3 - <<'PY'
           from pathlib import Path
           p=Path('work/src/main/java/dev/obsidiannetwork/core/NetworkRuntime.java')
           s=p.read_text()
           marker='XSXLABS_EQUIPMENT_ATTACH_SINGLE_SNAPSHOT_V1'
           if marker not in s:
-              old='''   public void attachEquipmentCell(EquipmentCellStore cell) {
-       for (Entry<ItemKey, byte[]> e : cell.descriptorSnapshot().entrySet()) {'''
-              new='''   public void attachEquipmentCell(EquipmentCellStore cell) {
-       // XSXLABS_EQUIPMENT_ATTACH_SINGLE_SNAPSHOT_V1
-       var equipmentDescriptors = cell.descriptorSnapshot();
-       for (Entry<ItemKey, byte[]> e : equipmentDescriptors.entrySet()) {'''
-              assert s.count(old)==1, 'equipment attach method anchor changed'
-              s=s.replace(old,new)
-              old2='try { for (Entry<ItemKey,byte[]> e:cell.descriptorSnapshot().entrySet()) this.descriptors.registerKnown(e.getKey(),e.getValue()); }'
-              new2='try { for (Entry<ItemKey,byte[]> e:equipmentDescriptors.entrySet()) this.descriptors.registerKnown(e.getKey(),e.getValue()); }'
-              assert s.count(old2)==1, 'equipment registration anchor changed'
-              s=s.replace(old2,new2)
+              anchor='public void attachEquipmentCell(EquipmentCellStore cell) {'
+              assert s.count(anchor)==1, 'equipment attach method anchor changed'
+              s=s.replace(anchor,anchor+'\\n       // '+marker+'\\n       var equipmentDescriptors = cell.descriptorSnapshot();',1)
+              old='for (Entry<ItemKey, byte[]> e : cell.descriptorSnapshot().entrySet())'
+              assert s.count(old)==1, 'equipment validation anchor changed'
+              s=s.replace(old,'for (Entry<ItemKey, byte[]> e : equipmentDescriptors.entrySet())',1)
+              old='for (Entry<ItemKey,byte[]> e:cell.descriptorSnapshot().entrySet())'
+              assert s.count(old)==1, 'equipment registration anchor changed'
+              s=s.replace(old,'for (Entry<ItemKey,byte[]> e:equipmentDescriptors.entrySet())',1)
               p.write_text(s)
           assert s.count('equipmentDescriptors.entrySet()')==2
           print('EQUIPMENT_ATTACH_SINGLE_SNAPSHOT_GATE PASS')
