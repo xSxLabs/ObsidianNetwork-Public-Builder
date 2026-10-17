@@ -191,3 +191,12 @@ Status: Baseline und Reproduktion noch nicht vollständig nachgewiesen. Diese Da
 - Ziel nach Wireless-Feature: Autocrafter-Menü **ohne teure Vollindex-/Craftability-Neuberechnung je Bildschirmaktualisierung**; gezielte invalidierungsbasierte Aktualisierung, paginierte/gebündelte Synchronisierung nur bei echten Änderungen, kurze Serverthread-Operationen; keine veralteten Verfügbarkeitsanzeigen oder Dupe-/Reserve-Regressionsfälle.
 - Testgates: 20× GUI öffnen/schließen auf belegtem Controller, 60 Sekunden offen/idle, paralleles Autocrafting, 50 Drives/800 Zellen, Save-/Reload, andere Spieler, gemischte Rezeptbäume, getrennte Profile mit/ohne GUI. Alle Tests nur soweit mit reproduzierbarer realer Last aussagekräftig.
 - Bisher **nur dokumentiert**. Keine Implementierung oder falsche Aussage zu der Ursache; `projekt-performance` bleibt bis zum Wireless-Abschluss code-seitig unverändert.
+
+## Storage-Drive-GUI verursacht sprunghaften Tickzeit-Anstieg (Nutzermeldung 18.10.2026)
+
+- Nutzerbeobachtung: Auch beim **Öffnen des Storage-Drive-GUIs** steigt die angezeigte durchschnittliche Server-Tickzeit abrupt. Keine konkrete Messreihe oder Stacktrace vorliegend; keine Ursache vorwegnehmen.
+- Als **eigenständigen** GUI-Lastfall erfassen, getrennt vom zuvor gemeldeten Autocrafter-GUI-Anstieg. Gemeinsame Hotspots möglich, jedoch noch nicht belegt.
+- Spark-Profil je getrennt mit geschlossener GUI, unmittelbar nach Öffnen und 30–60 Sekunden offen; mit einem bzw. vielen gefüllten Laufwerken. Unterscheiden: einmalige vollständige Slot-/Nbt-/Datensatzaufnahme beim Öffnen, wiederholtes `broadcastChanges`/Menü-Sync im Tick, Materialisierung großer Equipment-/Storage-Cell-Inhalte, `StorageDriveBlockEntity` und `DriveMenu`, serverseitige Daten-Serialisierung sowie rein clientseitiges Rendering.
+- Nach abgeschlossenem Wireless-Feature in `projekt-performance` optimieren; **keine** pauschale Unterdrückung von Aktualisierungen oder Persistenz, keine Vollbestandskopien je Tick, nur validierte inkrementelle/differenzielle Snapshots und bedarfsorientierte Synchronisierung.
+- Regressionen: volles Drive mit hohen Slotzahlen und vollen Item-/Equipment-Cells, wiederholtes Öffnen/Schließen, Mehrspielersicht, Slotwechsel während offener GUI, Laden/Neustart, Entnahme und Sortierung, Vergleich Server-MSPT-p95/p99 statt nur Durchschnitt.
+- Bis dahin **nur dokumentiert; keine Implementierung**. Bestehende grüne Build-#232-JAR bleibt Ausgangspunkt.
