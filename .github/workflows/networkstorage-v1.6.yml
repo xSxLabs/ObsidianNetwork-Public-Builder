@@ -73,9 +73,11 @@ jobs:
           path: private
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
-      - name: Reconstruct v1.0.5 baseline and inspect Importer
+      - name: Reconstruct sources and validate performance candidate
+        id: validate
         run: |
           set -euo pipefail
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           mkdir -p work/src/main/java work/src/main/resources
           curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
@@ -726,18 +728,6 @@ jobs:
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
           grep -R 'tests="' work/build/test-results/test/*.xml
           echo '===== BUILD 101 JUNIT PASS ====='
-          echo '===== BUILD 101 DEDICATED SERVER STARTUP GATE ====='
-          set +e
-          timeout 90s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1
-          SERVER_RC=$?
-          set -e
-          cat /tmp/build101-server.log
-          # A healthy server normally remains running until timeout. Require evidence that NeoForge
-          # reached server startup and reject crashes/exceptions before accepting timeout 124.
-          if [ "$SERVER_RC" -ne 124 ]; then echo "server exited unexpectedly rc=$SERVER_RC"; exit 1; fi
-          grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/build101-server.log
-          if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
-          echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
           echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST GATE ====='
           # Test-only source/resource injection into the reconstructed CI worktree. Removed before packaging.
           cat >> work/build.gradle <<'EOF'
@@ -746,10 +736,133 @@ jobs:
               gameTestServer {
                 type = "gameTestServer"
                 systemProperty 'neoforge.enabledGameTestNamespaces', 'obsidiannetwork'
+                systemProperty 'obsidiannetwork.profileEquipmentAttach', 'true'
               }
             }
           }
           EOF
+          # Apply every release runtime patch before any runtime validation.
+          # User-authorized diagnostic compile: apply v1.6 features before Gradle.
+          python3 private/v1.1.1/apply-v16-final-features.py
+          # Reduce needless 800-cell capacity probes in exact storage preflight and commit.
+          python3 private/v1.1.1/apply-perf-full-cell-fast-reject.py
+          python3 patches/equipment-full-fast-reject.py
+          # Reduce copies in rapid shift-crafting; fail closed if source differs.
+          python3 private/v1.1.1/apply-perf-shift-craft-copy-elision.py
+          python3 private/v1.1.1/bench-perf-recipe-comparisons.py
+          python3 private/v1.1.1/apply-v16-bundle-tps-cache.py
+          # EQUIPMENT_RECONCILE_DECODE_ELISION_V2: avoid duplicate validation decode on successful insert.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java')
+          s=p.read_text()
+          # Keep the original mutation listeners and persistence guarantees intact.
+          assert 'private void materializeSlot(int index)' in s
+          assert 'this.materializeAllSlots()' in s
+          print('EQUIPMENT_PERSISTENCE_INVARIANT_GATE PASS')
+          PY
+          # EQUIPMENT_DRIVE_SAVE_DIRTY_CACHE_V1: avoid re-encoding unchanged equipment cells on every save.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java')
+          s=p.read_text()
+          anchor='private void materializeSlot(int index) {'
+          assert s.count(anchor)==1
+          # Each equipment mutation invalidates its own materialized snapshot; replacing
+          # an inventory slot also invalidates the cached payload.
+          print('EQUIPMENT_DRIVE_SAVE_DIAGNOSTIC materializeSlot=',s.count(anchor),
+                'equipment_encode=',s.count('item.writeStore(copy,equipment)'),
+                'save_all=',s.count('this.materializeAllSlots()'))
+          assert s.count('item.writeStore(copy,equipment)')==1
+          assert s.count('this.materializeAllSlots()')>=1
+          # Instrument only; avoid unsafe caching without full mutation coverage.
+          s=s.replace('ItemStack copy=shell.copyWithCount(1); item.writeStore(copy,equipment); this.stacks.set(index,copy); return;',
+                      'long equipmentSaveStart=System.nanoTime(); ItemStack copy=shell.copyWithCount(1); item.writeStore(copy,equipment); this.stacks.set(index,copy); long equipmentSaveNs=System.nanoTime()-equipmentSaveStart; if(equipmentSaveNs>50000000L)System.err.println("EQUIPMENT_CELL_SLOW_SAVE_NS "+equipmentSaveNs+" slot="+index+" types="+equipment.types()); return;',1)
+          assert 'EQUIPMENT_CELL_SLOW_SAVE_NS' in s
+          p.write_text(s)
+          print('EQUIPMENT_SAVE_TIMING_INSTRUMENTATION_GATE PASS')
+          PY
+          # Skip equipment-cell serialization when no mutation has occurred.
+          python3 patches/equipment-dirty-serialization.py
+          # EQUIPMENT_INSERT_DECODE_ELISION_V1: staged item is validated inside the transaction.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java')
+          s=p.read_text()
+          old='((EquipmentCellItem)stack.getItem()).readStore(stack);'
+          assert s.count(old)==1, 'equipment preflight decode anchor changed'
+          # The staged stack is validated with readStore(staged) before tx.commit().
+          assert s.count('else if (staged.getItem() instanceof EquipmentCellItem e) e.readStore(staged);')==1
+          s=s.replace(old,'// XSXLABS_EQUIPMENT_INSERT_DECODE_ELISION_V1: validate staged copy in transaction below.',1)
+          p.write_text(s)
+          assert s.count('XSXLABS_EQUIPMENT_INSERT_DECODE_ELISION_V1')==1
+          print('EQUIPMENT_INSERT_DECODE_ELISION_GATE PASS')
+          PY
+          # Simplify the equivalent ITEM refresh expression. The former modulo-1
+          # expression already refreshed every five ticks; this is not a restart fix.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/conduit/ItemConduitTicker.java')
+          s=p.read_text()
+          old='level.getGameTime()%5 == (Math.floorMod(System.identityHashCode(network),1)*5)'
+          assert s.count(old)==1, 'ITEM refresh cadence anchor changed'
+          s=s.replace(old,'level.getGameTime()%5 == 0',1)
+          p.write_text(s)
+          assert old not in p.read_text()
+          print('ITEM_RESTART_STABLE_REFRESH_CADENCE_V1 PASS')
+          PY
+          # Inspect actual conduit lifecycle hooks and endpoint cache construction.
+          # Source diagnostics are deliberately read-only until the safe reload hook
+          # can be established from the reconstructed Java code.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          for rel in ('blockentity/ConduitBundleBlockEntity.java','conduit/ConduitNetworkManager.java','conduit/ItemConduitTicker.java','conduit/ConduitRuntime.java'):
+              p=root/rel
+              assert p.exists(), 'missing conduit source '+rel
+              lines=p.read_text().splitlines()
+              print('ITEM_RESTART_LIFECYCLE_FILE',rel)
+              patterns=('onLoad(', 'loadAdditional(', 'setLevel(', 'setRemoved(', 'onChunkUnloaded(', 'ensure(', 'scanEndpoints(', 'cacheEndpoints(', 'invalidateCapabilities(', 'setConduitFlags(')
+              matches=[i for i,line in enumerate(lines) if any(token in line for token in patterns)]
+              for i in matches[:24]:
+                  print('ITEM_RESTART_LIFECYCLE_LINE',rel,i+1,' '.join(lines[max(0,i-2):min(len(lines),i+5)]).strip()[:650])
+          print('ITEM_RESTART_LIFECYCLE_DIAGNOSTIC_V1 PASS')
+          PY
+          # Capture complete restart-critical methods, not only truncated
+          # context snippets, so topology reuse and saved-side semantics can
+          # be reviewed before a behavioral change.
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          for rel in ('conduit/ConduitNetworkManager.java','conduit/ItemConduitTicker.java','conduit/ConduitRuntime.java','blockentity/ConduitBundleBlockEntity.java'):
+              lines=(root/rel).read_text().splitlines()
+              if rel.endswith('ConduitBundleBlockEntity.java'):
+                  ranges=[(45,79)]
+              elif rel.endswith('ConduitRuntime.java'):
+                  ranges=[(70,100)]
+              else:
+                  ranges=[(1,min(75,len(lines)))]
+              for a,b in ranges:
+                  for i in range(a-1,min(b,len(lines))):
+                      print('ITEM_RESTART_SOURCE',rel,i+1,lines[i][:1300])
+          print('ITEM_RESTART_SOURCE_DUMP_V1 PASS')
+          PY
+          # Source invariant only: ITEM endpoint cache has a periodic refresh.
+          # Successful stop/start transport is verified by the integration test below.
+          python3 - <<'PY'
+          from pathlib import Path
+          item=(Path('work/src/main/java/dev/obsidiannetwork/conduit')/'ItemConduitTicker.java').read_text()
+          fluid=(Path('work/src/main/java/dev/obsidiannetwork/conduit')/'FluidConduitTicker.java').read_text()
+          assert 'XSXLABS_BUNDLE_TPS_CACHE_V1' in item
+          assert 'level.getGameTime()%5 == 0' in item, 'ITEM restart endpoint refresh not installed'
+          assert 'network.cacheEndpoints(ConduitRuntime.scanEndpoints(level,network,true),ConduitRuntime.scanEndpoints(level,network,false))' in item
+          assert 'level.getGameTime()%20 == (Math.floorMod(System.identityHashCode(network),4)*5)' in fluid
+          print('ITEM_RESTART_CACHE_REFRESH_SOURCE_GATE PASS')
+          PY
+          python3 patches/equipment-round3-hotpaths.py
+          python3 patches/terminal-menu-hotpaths.py
+          python3 patches/item-conduit-tick-dedup.py
           # Server-restart regression: persisted legacy mode 1 must recover
           # extract/INPUT semantics even when old worlds lack mc_flags.
           python3 - <<'PY'
@@ -1702,36 +1815,28 @@ jobs:
           s=s.replace(anchor,'long equipmentAttachStartNs=System.nanoTime(); '+anchor+' long equipmentSnapshotNs=System.nanoTime()-equipmentAttachStartNs;',1)
           anchor='for (Entry<ItemKey,byte[]> e:equipmentDescriptors.entrySet())'
           assert s.count(anchor)==1, 'registration loop anchor changed'
-          s=s.replace(anchor,'if (equipmentDescriptors.size()>=200) System.out.println("EQUIPMENT_ATTACH_PRE_REGISTER_NS "+(System.nanoTime()-equipmentAttachStartNs)+" snapshot_ns="+equipmentSnapshotNs+" types="+equipmentDescriptors.size()); '+anchor,1)
+          s=s.replace(anchor,'if (equipmentDescriptors.size()>=200 && Boolean.getBoolean("obsidiannetwork.profileEquipmentAttach")) System.out.println("EQUIPMENT_ATTACH_PRE_REGISTER_NS "+(System.nanoTime()-equipmentAttachStartNs)+" snapshot_ns="+equipmentSnapshotNs+" types="+equipmentDescriptors.size()); '+anchor,1)
           p.write_text(s)
           print('EQUIPMENT_ATTACH_PHASE_PROFILING_V1 PASS')
           PY
-          # Compile the test-only registration first so API drift fails clearly.
-          (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
+          python3 patches/equipment-round3-gametest.py
+          python3 patches/terminal-menu-tests.py
+          cp tests/integration/ServerTickProbe.java work/src/main/java/dev/obsidiannetwork/build103/ServerTickProbe.java
+          # Clean stale intermediate classes before capturing the exact tested runtime.
+          (cd work && gradle --no-daemon --no-configuration-cache clean compileJava --stacktrace)
+          python3 scripts/build_provenance.py capture \
+            --source-dir work/src/main/java --resource-dir work/src/main/resources \
+            --classes-dir work/build/classes/java/main --public-repo . --private-repo private \
+            --private-source-artifact private/xSxLabs-Network-Storage-0.76.0-rc10.jar \
+            --output dist/tested-build-manifest.json
+          # Dedicated startup, saved shutdown and restart are exercised by the two-JVM integration gate below.
           set +e
-          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-gametest.log 2>&1
+          (cd work && ON_SERVER_TICK_REPORT="$GITHUB_WORKSPACE/dist/server-ticks.json" gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-gametest.log 2>&1
           GT_RC=$?
           set -e
           cat /tmp/build103-gametest.log
-          # Locate server overload warnings relative to the storage workload.
-          # Do not misattribute GameTest startup stalls to player crafting.
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          lines=Path('/tmp/build103-gametest.log').read_text(errors='replace').splitlines()
-          starts=[i for i,line in enumerate(lines) if 'REAL_50_DRIVE_BENCHMARK_V1 cells=' in line]
-          sustained=[i for i,line in enumerate(lines) if 'REAL_50_DRIVE_SUSTAINED_SUMMARY ticks=' in line]
-          warnings=[(i,line.strip()) for i,line in enumerate(lines) if "Can't keep up!" in line]
-          for i,line in warnings:
-              phase=('before_storage_benchmark' if not starts or i<starts[0]
-                     else 'during_storage_benchmark_or_sustained_test' if not sustained or i<sustained[-1]
-                     else 'after_storage_sustained_test')
-              print(f'SERVER_LAG_PHASE phase={phase} line={i+1} warning={line}')
-          print(f'SERVER_LAG_PHASE_SUMMARY warnings={len(warnings)} benchmark_markers={len(starts)} sustained_markers={len(sustained)}')
-          if not sustained: raise SystemExit('Missing sustained storage summary; cannot classify server lag')
-          PY
           if [ "$GT_RC" -ne 0 ]; then echo "Build103 GameTest server failed rc=$GT_RC"; exit "$GT_RC"; fi
-          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\(7 tests\)" /tmp/build103-gametest.log
+          grep -Eq "Running test environment 'obsidiannetwork:build103_env'.*\([0-9]+ tests\)" /tmp/build103-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-gametest.log
           if grep -Eqi '[0-9]+ required tests failed|BUILD103 GAMETEST:' /tmp/build103-gametest.log; then exit 1; fi
           echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST PASS ====='
@@ -1777,189 +1882,69 @@ jobs:
           assert 'cacheEndpoints' in network
           print('BUILD216 ITEM FLUID ENERGY SPLIT MERGE CACHE SEMANTICS PASS')
           PY
+          python3 tests/integration/item_conduit_restart.py --project work --output dist/item-conduit-restart.json
           # Never package CI-only GameTest hooks/resources into the user JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
           rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
-          # User-authorized diagnostic compile: apply v1.6 features before Gradle.
-          python3 private/v1.1.1/apply-v16-final-features.py
-          # Reduce needless 800-cell capacity probes in exact storage preflight and commit.
-          python3 private/v1.1.1/apply-perf-full-cell-fast-reject.py
-          python3 patches/equipment-full-fast-reject.py
-          # Reduce copies in rapid shift-crafting; fail closed if source differs.
-          python3 private/v1.1.1/apply-perf-shift-craft-copy-elision.py
-          python3 private/v1.1.1/bench-perf-recipe-comparisons.py
-          python3 private/v1.1.1/apply-v16-bundle-tps-cache.py
-          # EQUIPMENT_RECONCILE_DECODE_ELISION_V2: avoid duplicate validation decode on successful insert.
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java')
-          s=p.read_text()
-          # Keep the original mutation listeners and persistence guarantees intact.
-          assert 'private void materializeSlot(int index)' in s
-          assert 'this.materializeAllSlots()' in s
-          print('EQUIPMENT_PERSISTENCE_INVARIANT_GATE PASS')
-          PY
-          # EQUIPMENT_DRIVE_SAVE_DIRTY_CACHE_V1: avoid re-encoding unchanged equipment cells on every save.
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java')
-          s=p.read_text()
-          anchor='private void materializeSlot(int index) {'
-          assert s.count(anchor)==1
-          # Each equipment mutation invalidates its own materialized snapshot; replacing
-          # an inventory slot also invalidates the cached payload.
-          print('EQUIPMENT_DRIVE_SAVE_DIAGNOSTIC materializeSlot=',s.count(anchor),
-                'equipment_encode=',s.count('item.writeStore(copy,equipment)'),
-                'save_all=',s.count('this.materializeAllSlots()'))
-          assert s.count('item.writeStore(copy,equipment)')==1
-          assert s.count('this.materializeAllSlots()')>=1
-          # Instrument only; avoid unsafe caching without full mutation coverage.
-          s=s.replace('ItemStack copy=shell.copyWithCount(1); item.writeStore(copy,equipment); this.stacks.set(index,copy); return;',
-                      'long equipmentSaveStart=System.nanoTime(); ItemStack copy=shell.copyWithCount(1); item.writeStore(copy,equipment); this.stacks.set(index,copy); long equipmentSaveNs=System.nanoTime()-equipmentSaveStart; if(equipmentSaveNs>50000000L)System.err.println("EQUIPMENT_CELL_SLOW_SAVE_NS "+equipmentSaveNs+" slot="+index+" types="+equipment.types()); return;',1)
-          assert 'EQUIPMENT_CELL_SLOW_SAVE_NS' in s
-          p.write_text(s)
-          print('EQUIPMENT_SAVE_TIMING_INSTRUMENTATION_GATE PASS')
-          PY
-          # Skip equipment-cell serialization when no mutation has occurred.
-          python3 patches/equipment-dirty-serialization.py
-          # EQUIPMENT_INSERT_DECODE_ELISION_V1: staged item is validated inside the transaction.
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java')
-          s=p.read_text()
-          old='((EquipmentCellItem)stack.getItem()).readStore(stack);'
-          assert s.count(old)==1, 'equipment preflight decode anchor changed'
-          # The staged stack is validated with readStore(staged) before tx.commit().
-          assert s.count('else if (staged.getItem() instanceof EquipmentCellItem e) e.readStore(staged);')==1
-          s=s.replace(old,'// XSXLABS_EQUIPMENT_INSERT_DECODE_ELISION_V1: validate staged copy in transaction below.',1)
-          p.write_text(s)
-          assert s.count('XSXLABS_EQUIPMENT_INSERT_DECODE_ELISION_V1')==1
-          print('EQUIPMENT_INSERT_DECODE_ELISION_GATE PASS')
-          PY
-          # Fail closed on the known ITEM cache refresh defect: a cache refresh
-          # cannot depend on identityHashCode(network), which changes on JVM restart.
-          # Verify the refresh cadence is derived only from world game time.
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('work/src/main/java/dev/obsidiannetwork/conduit/ItemConduitTicker.java')
-          s=p.read_text()
-          old='level.getGameTime()%5 == (Math.floorMod(System.identityHashCode(network),1)*5)'
-          assert s.count(old)==1, 'ITEM refresh cadence anchor changed'
-          s=s.replace(old,'level.getGameTime()%5 == 0',1)
-          p.write_text(s)
-          assert old not in p.read_text()
-          print('ITEM_RESTART_STABLE_REFRESH_CADENCE_V1 PASS')
-          PY
-          # Inspect actual conduit lifecycle hooks and endpoint cache construction.
-          # Source diagnostics are deliberately read-only until the safe reload hook
-          # can be established from the reconstructed Java code.
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          root=Path('work/src/main/java/dev/obsidiannetwork')
-          for rel in ('blockentity/ConduitBundleBlockEntity.java','conduit/ConduitNetworkManager.java','conduit/ItemConduitTicker.java','conduit/ConduitRuntime.java'):
-              p=root/rel
-              assert p.exists(), 'missing conduit source '+rel
-              lines=p.read_text().splitlines()
-              print('ITEM_RESTART_LIFECYCLE_FILE',rel)
-              patterns=('onLoad(', 'loadAdditional(', 'setLevel(', 'setRemoved(', 'onChunkUnloaded(', 'ensure(', 'scanEndpoints(', 'cacheEndpoints(', 'invalidateCapabilities(', 'setConduitFlags(')
-              matches=[i for i,line in enumerate(lines) if any(token in line for token in patterns)]
-              for i in matches[:24]:
-                  print('ITEM_RESTART_LIFECYCLE_LINE',rel,i+1,' '.join(lines[max(0,i-2):min(len(lines),i+5)]).strip()[:650])
-          print('ITEM_RESTART_LIFECYCLE_DIAGNOSTIC_V1 PASS')
-          PY
-          # Capture complete restart-critical methods, not only truncated
-          # context snippets, so topology reuse and saved-side semantics can
-          # be reviewed before a behavioral change.
-          python3 - <<'PY'
-          from pathlib import Path
-          root=Path('work/src/main/java/dev/obsidiannetwork')
-          for rel in ('conduit/ConduitNetworkManager.java','conduit/ItemConduitTicker.java','conduit/ConduitRuntime.java','blockentity/ConduitBundleBlockEntity.java'):
-              lines=(root/rel).read_text().splitlines()
-              if rel.endswith('ConduitBundleBlockEntity.java'):
-                  ranges=[(45,79)]
-              elif rel.endswith('ConduitRuntime.java'):
-                  ranges=[(70,100)]
-              else:
-                  ranges=[(1,min(75,len(lines)))]
-              for a,b in ranges:
-                  for i in range(a-1,min(b,len(lines))):
-                      print('ITEM_RESTART_SOURCE',rel,i+1,lines[i][:1300])
-          print('ITEM_RESTART_SOURCE_DUMP_V1 PASS')
-          PY
-          # Restart regression gate: ITEM endpoints must revalidate on every transfer tick,
-          # even when topology remains unchanged and the visible input mode persists.
-          python3 - <<'PY'
-          from pathlib import Path
-          item=(Path('work/src/main/java/dev/obsidiannetwork/conduit')/'ItemConduitTicker.java').read_text()
-          fluid=(Path('work/src/main/java/dev/obsidiannetwork/conduit')/'FluidConduitTicker.java').read_text()
-          assert 'XSXLABS_BUNDLE_TPS_CACHE_V1' in item
-          assert 'level.getGameTime()%5 == 0' in item, 'ITEM restart endpoint refresh not installed'
-          assert 'network.cacheEndpoints(ConduitRuntime.scanEndpoints(level,network,true),ConduitRuntime.scanEndpoints(level,network,false))' in item
-          assert 'level.getGameTime()%20 == (Math.floorMod(System.identityHashCode(network),4)*5)' in fluid
-          print('ITEM_RESTART_CACHE_REFRESH_SOURCE_GATE PASS')
-          PY
-          # Consolidated, machine-readable four-issue diagnostic for this run.
-          # This reports missing coverage explicitly rather than treating green
-          # source checks as a real dedicated-server restart or UI stress test.
-          python3 - <<'PY'
-          from pathlib import Path
-          import json,re
-          root=Path('work/src/main/java/dev/obsidiannetwork')
-          log=Path('/tmp/build103-gametest.log').read_text(errors='replace')
-          def numbers(marker):
-              lines=[line for line in log.splitlines() if marker in line and 'System.out.println' not in line]
-              return [dict((k,int(v)) for k,v in re.findall(r'([a-z_]+)=(\\d+)',line)) for line in lines]
-          def source(rel):
-              p=root/rel
-              return p.read_text() if p.exists() else ''
-          item=source('conduit/ItemConduitTicker.java')
-          manager=source('conduit/ConduitNetworkManager.java')
-          bundle=source('blockentity/ConduitBundleBlockEntity.java')
-          terminal=source('menu/StorageTerminalMenu.java')
-          reports={
-            'equipment_64k':{
-              'phase_measurements':numbers('FULL_EQUIPMENT_CELL_PHASE_NS'),
-              'total_measurements':numbers('FULL_EQUIPMENT_CELL_REINSERT_NS'),
-              'attach_pre_registration':numbers('EQUIPMENT_ATTACH_PRE_REGISTER_NS'),
-              'coverage':'real GameTest insert/remove; not a client menu close/reopen stress test'},
-            'bulk_storage':{
-              'measurements':numbers('REAL_STORAGE_BULK_DEPOSIT_NS'),
-              'coverage':'runtime insert/extract benchmark; not rapid GUI deposit stress'},
-            'crafting':{
-              'terminal_source_found':bool(terminal),
-              'markers':[line.strip()[:250] for line in log.splitlines() if 'CRAFT' in line.upper() and ('_NS ' in line or '_SUMMARY ' in line)][:30],
-              'coverage':'no verified rapid user-interface crafting latency test'},
-            'item_conduit_restart':{
-              'periodic_endpoint_refresh':'level.getGameTime()%5 == 0' in item,
-              'network_ensure_present':'ensure(ServerLevel level' in manager,
-              'persisted_item_modes':'mc_item_mode' in bundle,
-              'game_test_reload':('ITEM actual transfer after NBT block entity reload' in log),
-              'real_process_restart_test':False,
-              'coverage':'NBT reload GameTest is not a dedicated-server process restart'}
-          }
-          lag=[line.strip()[-350:] for line in log.splitlines() if "Can't keep up!" in line]
-          reports['server_tick_warnings']=lag
-          reports['missing_release_gates']=['real dedicated-server stop/start item transport','realistic full-cell menu close/reinsert profiling','rapid crafting terminal GUI stress','rapid bulk deposit GUI stress']
-          p=Path('dist/diagnostic-report.json')
-          p.parent.mkdir(exist_ok=True)
-          p.write_text(json.dumps(reports,indent=2,ensure_ascii=False))
-          print('FOUR_ISSUE_DIAGNOSTIC_REPORT_V1 '+p.read_text())
-          assert reports['equipment_64k']['phase_measurements'],'equipment performance marker missing'
-          assert reports['bulk_storage']['measurements'],'bulk performance marker missing'
-          PY
           echo '===== BUILD 101 FINAL BUILD ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
-          echo '===== BUILD 101 ALL AUTOMATABLE GATES PASS ====='
 
           mkdir -p dist
-          cp work/build/libs/*.jar dist/
-          sha256sum dist/*.jar > dist/SHA256SUMS.txt
-          test -s /tmp/xsxlabs-perf-hotpaths.json
-          cp /tmp/xsxlabs-perf-hotpaths.json dist/perf-hotpaths.json
+          JAR_PATH=work/build/libs/xSxLabs-Network-Storage-1.1.1.jar
+          test -s "$JAR_PATH"
+          python3 scripts/build_provenance.py verify \
+            --source-dir work/src/main/java --resource-dir work/src/main/resources \
+            --classes-dir work/build/classes/java/main --public-repo . --private-repo private \
+            --private-source-artifact private/xSxLabs-Network-Storage-0.76.0-rc10.jar \
+            --manifest dist/tested-build-manifest.json --jar "$JAR_PATH" \
+            --output dist/build-provenance.json
+          python3 scripts/diagnostic_report.py \
+            --log /tmp/build103-gametest.log --output dist/diagnostic-report.json \
+            --require-gametest-pass --restart-report dist/item-conduit-restart.json \
+            --provenance-report dist/build-provenance.json \
+            --server-ticks dist/server-ticks.json \
+            --require-tick-workload equipment_registry_reference \
+            --require-tick-workload equipment_offline --require-tick-workload equipment_attached \
+            --require-tick-workload rapid_crafting --require-tick-workload rapid_bulk \
+            --source-root work/src/main/java/dev/obsidiannetwork --perf-output dist/perf-hotpaths.json \
+            --require-marker FULL_EQUIPMENT_CELL_PHASE_NS \
+            --require-marker FULL_EQUIPMENT_CELL_REINSERT_NS \
+            --require-marker EQUIPMENT_ATTACH_PRE_REGISTER_NS \
+            --require-marker EQUIPMENT_REGISTRY_LOOKUP_NS \
+            --require-marker EQUIPMENT_CANONICAL_FIXTURE_V1 \
+            --require-marker EQUIPMENT_MENU_CYCLE_NS \
+            --require-marker EQUIPMENT_MENU_CONSERVATION_V1 \
+            --require-marker REAL_STORAGE_BULK_DEPOSIT_NS \
+            --require-marker TERMINAL_CRAFT_MENU_NS --require-marker TERMINAL_BULK_MENU_NS \
+            --require-marker TERMINAL_RECIPE_MATCH_REBUILD_NS --require-marker TERMINAL_RECIPE_MATCH_REUSE_NS
           test -s dist/diagnostic-report.json
-      - name: Upload v1.1.1 shared-conduit test JAR
+          # Only publish the candidate JAR after execution and byte-identity gates pass.
+          cp "$JAR_PATH" dist/
+          sha256sum dist/*.jar > dist/SHA256SUMS.txt
+          echo '===== SERVER VALIDATION AND JAR PROVENANCE PASS ====='
+      - name: Collect validation logs and test results
+        if: always()
+        env:
+          VALIDATION_OUTCOME: ${{ steps.validate.outcome }}
+        run: |
+          mkdir -p dist/validation
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=Path('dist/diagnostic-report.json')
+          if not p.exists():
+              p.write_text(json.dumps({'schema_version':2,'status':'failed','validation_step_outcome':os.environ.get('VALIDATION_OUTCOME'),'release_ready':False,'validation_errors':['Validation stopped before the complete runtime diagnostic could be produced; inspect validation logs.']},indent=2)+'\n')
+          PY
+          for log in /tmp/build103-gametest.log /tmp/build101-server.log; do
+            if [ -f "$log" ]; then cp "$log" dist/validation/; fi
+          done
+          if [ -d work/build/test-results ]; then cp -a work/build/test-results dist/validation/; fi
+          if [ -d work/build/reports ]; then cp -a work/build/reports dist/validation/; fi
+          if [ -d work/run-item-restart/crash-reports ]; then cp -a work/run-item-restart/crash-reports dist/validation/; fi
+          if [ -d work/run-gametest/crash-reports ]; then cp -a work/run-gametest/crash-reports dist/validation/; fi
+      - name: Upload verified candidate and validation evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: xsxlabs-network-storage-v1.6-performance-candidate

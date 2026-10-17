@@ -1,0 +1,7 @@
+# Reconstructed sources and downloaded private inputs are build workspaces.
+/work/
+/private/
+/dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/

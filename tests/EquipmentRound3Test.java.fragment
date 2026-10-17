@@ -1,0 +1,217 @@
+            private static final class FullEquipmentCellTest extends GameTestInstance {
+              FullEquipmentCellTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data) { super(data); }
+              @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec() { throw new UnsupportedOperationException("CI-only equipment cell test"); }
+              @Override protected net.minecraft.network.chat.MutableComponent typeDescription() { return Component.literal("Equipment cell registry, connected/offline storage and real menu regression"); }
+              private static boolean legacyEquipment(dev.obsidiannetwork.core.ItemKey key) {
+                try {
+                  net.minecraft.world.item.Item item=null;
+                  for(var candidate:net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+                    if(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(candidate).toString().equals(key.itemId())) { item=candidate; break; }
+                  }
+                  return item!=null&&(item.components().has(net.minecraft.core.component.DataComponents.TOOL)
+                    ||item.components().has(net.minecraft.core.component.DataComponents.EQUIPPABLE)
+                    ||item instanceof net.minecraft.world.item.BowItem||item instanceof net.minecraft.world.item.CrossbowItem
+                    ||item instanceof net.minecraft.world.item.TridentItem||item instanceof net.minecraft.world.item.ShearsItem
+                    ||item instanceof net.minecraft.world.item.FishingRodItem||item instanceof net.minecraft.world.item.ShieldItem);
+                } catch(RuntimeException ex) { return false; }
+              }
+              private static long percentile(long[] times,int percentile) {
+                long[] sorted=times.clone(); java.util.Arrays.sort(sorted);
+                return sorted[Math.max(0,(int)Math.ceil(sorted.length*percentile/100.0)-1)];
+              }
+              private static void verify(dev.obsidiannetwork.core.EquipmentCellStore store,
+                  java.util.Map<dev.obsidiannetwork.core.ItemKey,Long> expected,
+                  java.util.Map<dev.obsidiannetwork.core.ItemKey,byte[]> descriptors) {
+                long expectedUsed=expected.values().stream().mapToLong(Long::longValue).sum();
+                if(store.used()!=expectedUsed||store.free()!=dev.obsidiannetwork.core.EquipmentCellStore.CAPACITY-expectedUsed||!store.snapshot().equals(expected))
+                  throw new IllegalStateException("Equipment exact-count conservation failed");
+                var actual=store.descriptorSnapshot();
+                if(!actual.keySet().equals(descriptors.keySet()))throw new IllegalStateException("Equipment descriptor keys changed");
+                for(var e:descriptors.entrySet())if(!java.util.Arrays.equals(e.getValue(),actual.get(e.getKey())))
+                  throw new IllegalStateException("Equipment descriptor payload changed");
+              }
+              private static void eligibilityBenchmark() {
+                ServerTickProbe.mark("equipment_registry_reference");
+                int checked=0;
+                for(var item:net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+                  var key=dev.obsidiannetwork.core.ItemKey.simple(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).toString());
+                  if(legacyEquipment(key)!=dev.obsidiannetwork.core.EquipmentEligibility.isEquipment(key))
+                    throw new IllegalStateException("Equipment eligibility changed for "+key.itemId());
+                  checked++;
+                }
+                for(String id:java.util.List.of("obsidiannetwork:missing_equipment_round3","minecraft:missing_equipment_round3","diamond_sword","",":","INVALID:item")) {
+                  if(id.isEmpty())continue; // ItemKey rejects blank identifiers itself.
+                  var key=dev.obsidiannetwork.core.ItemKey.simple(id);
+                  if(legacyEquipment(key)!=dev.obsidiannetwork.core.EquipmentEligibility.isEquipment(key)
+                      ||dev.obsidiannetwork.core.EquipmentEligibility.isEquipment(key))
+                    throw new IllegalStateException("Unknown/noncanonical equipment identifier accepted: "+id);
+                }
+                var key=dev.obsidiannetwork.core.ItemKey.simple("minecraft:diamond_sword");
+                long[] legacy=new long[10],optimized=new long[10];
+                // Alternate order to reduce systematic JIT/GC ordering bias. Same JVM,
+                // same 257 registry queries; the reference is CI-only and never shipped.
+                for(int sample=-5;sample<10;sample++) {
+                  boolean first=(sample&1)==0;
+                  for(int pass=0;pass<2;pass++) {
+                    boolean old=first==(pass==0); long start=System.nanoTime();
+                    for(int type=0;type<257;type++)if(!(old?legacyEquipment(key):dev.obsidiannetwork.core.EquipmentEligibility.isEquipment(key)))
+                      throw new IllegalStateException("Equipment eligibility benchmark result changed");
+                    long elapsed=System.nanoTime()-start;
+                    if(sample>=0)(old?legacy:optimized)[sample]=elapsed;
+                  }
+                }
+                System.out.println("EQUIPMENT_REGISTRY_LOOKUP_NS legacy_median="+percentile(legacy,50)+" optimized_median="+percentile(optimized,50)
+                  +" legacy_p95="+percentile(legacy,95)+" optimized_p95="+percentile(optimized,95)+" legacy_max="+percentile(legacy,100)
+                  +" optimized_max="+percentile(optimized,100)+" samples=10 types=257 warmup=5 checked_ids="+checked);
+              }
+              private static final class CycleMetrics {
+                long insert,remove,decode; long maxInsert,maxRemove,maxDecode; int measured;
+                final long[] menu=new long[25];
+                void print(String workload) {
+                  long total=java.util.Arrays.stream(menu).sum();
+                  System.out.println("FULL_EQUIPMENT_CELL_PHASE_NS insert="+insert+" remove="+remove+" decode="+decode+" max_insert="+maxInsert
+                    +" max_remove="+maxRemove+" max_decode="+maxDecode+" cycles=25 types=257 workload="+workload);
+                  System.out.println("FULL_EQUIPMENT_CELL_REINSERT_NS "+(insert+remove+decode)+" cycles=25 count=64000 types=257 workload="+workload);
+                  System.out.println("EQUIPMENT_MENU_CYCLE_NS median="+percentile(menu,50)+" p95="+percentile(menu,95)+" max="+percentile(menu,100)
+                    +" total="+total+" cycles=25 warmup=5 count=64000 types=257 workload="+workload);
+                }
+              }
+              @Override public void run(GameTestHelper h) {
+                var level=(net.minecraft.server.level.ServerLevel)h.getLevel();
+                eligibilityBenchmark();
+                var offlinePos=h.absolutePos(new BlockPos(2,1,2));
+                var onlinePos=h.absolutePos(new BlockPos(6,1,2));
+                var controllerPos=h.absolutePos(new BlockPos(5,1,2));
+                level.setBlock(offlinePos,ObsidianNetwork.STORAGE_DRIVE.get().defaultBlockState(),3);
+                level.setBlock(controllerPos,ObsidianNetwork.NETWORK_CONTROLLER.get().defaultBlockState(),3);
+                level.setBlock(onlinePos,ObsidianNetwork.STORAGE_DRIVE.get().defaultBlockState(),3);
+                var offline=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)level.getBlockEntity(offlinePos);
+                var online=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)level.getBlockEntity(onlinePos);
+                net.minecraft.world.item.Item cellItem=null;
+                for(var candidate:net.minecraft.core.registries.BuiltInRegistries.ITEM)
+                  if(candidate instanceof dev.obsidiannetwork.item.EquipmentCellItem) { cellItem=candidate; break; }
+                if(cellItem==null)throw new IllegalStateException("Equipment cell not registered");
+                var item=(dev.obsidiannetwork.item.EquipmentCellItem)cellItem;
+                var store=new dev.obsidiannetwork.core.EquipmentCellStore();
+                var codec=new dev.obsidiannetwork.platform.MinecraftItemStackCodec(level.registryAccess());
+                var base=codec.describe(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD));
+                var key=base.key();
+                for(int i=0;i<256;i++) {
+                  var sword=new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD);
+                  sword.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,Component.literal("Equipment bench "+i));
+                  var distinct=codec.describe(sword);
+                  if(store.insertExact(distinct.key(),distinct.canonicalPayload(),1L)!=1L)
+                    throw new IllegalStateException("Equipment descriptor fill failed");
+                }
+                if(store.insertExact(key,base.canonicalPayload(),63744L)!=63744L||store.free()!=0L||store.types()!=257)
+                  throw new IllegalStateException("Equipment cell fill failed");
+                var expected=store.snapshot(); var descriptors=store.descriptorSnapshot();
+                System.out.println("EQUIPMENT_CANONICAL_FIXTURE_V1 count=64000 types=257 descriptor_bytes="
+                  +descriptors.values().stream().mapToInt(payload->payload.length).sum()+" serialized_bytes="+store.encode().length);
+                var stack=new net.minecraft.world.item.ItemStack(cellItem); item.writeStore(stack,store);
+                net.minecraft.world.item.ItemStack[] held={stack};
+                var player=net.neoforged.neoforge.common.util.FakePlayerFactory.get(level,
+                  new com.mojang.authlib.GameProfile(java.util.UUID.fromString("6a1da93a-1fe1-4ac5-9f80-46cabd9f67ad"),"ONEquipmentTest"));
+                var offlineMetrics=new CycleMetrics(); var onlineMetrics=new CycleMetrics();
+                dev.obsidiannetwork.core.NetworkRuntime[] attached={null};
+                var sequence=h.startSequence().thenExecuteAfter(5,()->{
+                  dev.obsidiannetwork.network.WorldTopologyBridge.onDriveLoaded(level,online);
+                  attached[0]=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForDrive(level,onlinePos);
+                  if(attached[0]==null||!attached[0].drives().contains(online.drive()))
+                    throw new IllegalStateException("Equipment attached-runtime test has no attached drive");
+                  // The mutation must change serialized contents: a remove/reinsert
+                  // of the same amount alone would miss a broken dirty listener.
+                  ServerTickProbe.mark("equipment_dirty_remove_integrity");
+                  if(!online.insertCellAt(1,held[0].copy())||attached[0].storage().extract(key,7L)!=7L)
+                    throw new IllegalStateException("Equipment dirty removal fixture failed");
+                  var reduced=new java.util.HashMap<>(expected); reduced.put(key,63737L);
+                  var dirtyRemoved=online.removeCellAt(1); // no intervening menu/save materialization
+                  verify(item.readStore(dirtyRemoved),reduced,descriptors);
+                  for(var e:expected.entrySet())if(attached[0].storage().index().amount(e.getKey())!=0L)
+                    throw new IllegalStateException("Equipment dirty removal left duplicated index entries");
+                  System.out.println("BENCHMARK_WINDOW_START workload=equipment wall_time_ms="+System.currentTimeMillis());
+                  // Empty equipment and legacy normal cells remain independently usable.
+                  var empty=new net.minecraft.world.item.ItemStack(item);
+                  if(!offline.insertCellAt(1,empty)||!item.readStore(offline.removeCellAt(1)).snapshot().isEmpty())
+                    throw new IllegalStateException("Empty equipment regression");
+                  for(var candidate:net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+                    if(candidate instanceof dev.obsidiannetwork.item.StorageCellItem normalItem) {
+                      var normal=new net.minecraft.world.item.ItemStack(candidate);
+                      var normalStore=normalItem.readStore(normal);
+                      var normalDescriptor=codec.describe(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE));
+                      var normalKey=normalDescriptor.key();
+                      if(normalStore.insertExact(normalKey,normalDescriptor.canonicalPayload(),17L)!=17L)
+                        throw new IllegalStateException("Normal cell fixture fill failed");
+                      normalItem.writeStore(normal,normalStore);
+                      if(!offline.insertCellAt(1,normal))throw new IllegalStateException("Normal cell insert regression");
+                      var removedNormal=offline.removeCellAt(1);
+                      if(removedNormal.getItem()!=candidate||normalItem.readStore(removedNormal).amount(normalKey)!=17L)
+                        throw new IllegalStateException("Normal cell regression");
+                      break;
+                    }
+                  }
+                });
+                for(int mode=0;mode<2;mode++)for(int cycle=-5;cycle<25;cycle++) {
+                  final boolean connected=mode==1; final int sample=cycle;
+                  sequence=sequence.thenExecuteAfter(1,()->{
+                    ServerTickProbe.mark(connected?"equipment_attached":"equipment_offline");
+                    var drive=connected?online:offline; var metrics=connected?onlineMetrics:offlineMetrics;
+                    long start=System.nanoTime(),t=start;
+                    var menu=drive.createMenu(43,player.getInventory(),player);
+                    // Real server menu slot insertion, broadcast reads and removal;
+                    // close while occupied first, reopen, then take the cell out.
+                    menu.slots.get(0).set(held[0].copy());
+                    if(drive.cellStack(0).isEmpty())throw new IllegalStateException("Equipment menu insert rejected");
+                    long insert=System.nanoTime()-t;
+                    if(drive.insertCellAt(0,held[0]))throw new IllegalStateException("Occupied equipment slot accepted a duplicate cell");
+                    if(connected) {
+                      for(var e:expected.entrySet())if(attached[0].storage().index().amount(e.getKey())!=e.getValue())
+                        throw new IllegalStateException("Equipment attached index wrong before mutation");
+                      if(attached[0].storage().extract(key,7L)!=7L||attached[0].storage().insertExact(key,descriptors.get(key),7L)!=7L)
+                        throw new IllegalStateException("Equipment mutation/dirty snapshot regression");
+                      if(sample==0) {
+                        var resource=drive.cellInventory().getResource(0);
+                        try(var aborted=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                          if(drive.cellInventory().extract(0,resource,1,aborted)!=1)
+                            throw new IllegalStateException("Equipment aborted-extract fixture failed");
+                        }
+                        verify(item.readStore(drive.cellStack(0)),expected,descriptors);
+                        try(var aborted=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                          if(drive.cellInventory().insert(1,net.neoforged.neoforge.transfer.item.ItemResource.of(held[0]),1,aborted)!=1)
+                            throw new IllegalStateException("Equipment aborted-insert fixture failed");
+                        }
+                        if(!drive.cellStack(1).isEmpty())throw new IllegalStateException("Equipment aborted insertion survived rollback");
+                        for(var e:expected.entrySet())if(attached[0].storage().index().amount(e.getKey())!=e.getValue())
+                          throw new IllegalStateException("Equipment index changed after transaction rollback");
+                      }
+                    }
+                    for(int sync=0;sync<3;sync++)menu.broadcastChanges();
+                    menu.removed(player);
+                    menu=drive.createMenu(44,player.getInventory(),player); menu.broadcastChanges();
+                    t=System.nanoTime();
+                    var removed=menu.slots.get(0).remove(1);
+                    long remove=System.nanoTime()-t;
+                    if(removed.isEmpty()||!drive.cellStack(0).isEmpty())throw new IllegalStateException("Equipment menu remove failed");
+                    menu.broadcastChanges(); menu.removed(player);
+                    t=System.nanoTime(); var decoded=item.readStore(removed); long decode=System.nanoTime()-t;
+                    verify(decoded,expected,descriptors);
+                    if(connected)for(var e:expected.entrySet())if(attached[0].storage().index().amount(e.getKey())!=0L)
+                      throw new IllegalStateException("Equipment duplicated in network after cell removal");
+                    // Repeat use of the old input stack never mutates the cell component.
+                    verify(item.readStore(held[0]),expected,descriptors);
+                    held[0]=removed;
+                    if(sample>=0) {
+                      metrics.insert+=insert; metrics.remove+=remove; metrics.decode+=decode;
+                      metrics.maxInsert=Math.max(metrics.maxInsert,insert); metrics.maxRemove=Math.max(metrics.maxRemove,remove);
+                      metrics.maxDecode=Math.max(metrics.maxDecode,decode); metrics.menu[sample]=System.nanoTime()-start; metrics.measured++;
+                    }
+                  });
+                }
+                sequence.thenExecute(()->{
+                  if(offlineMetrics.measured!=25||onlineMetrics.measured!=25)throw new IllegalStateException("Equipment measurement coverage missing");
+                  offlineMetrics.print("offline"); onlineMetrics.print("attached");
+                  System.out.println("BENCHMARK_WINDOW_END workload=equipment wall_time_ms="+System.currentTimeMillis());
+                  System.out.println("EQUIPMENT_MENU_CONSERVATION_V1 PASS offline_cycles=30 attached_cycles=30 count=64000 types=257 menu_closes=120");
+                }).thenSucceed();
+              }
+            }
