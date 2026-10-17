@@ -1769,7 +1769,7 @@ jobs:
           from pathlib import Path
           J=Path('work/src/main/java/dev/obsidiannetwork')
           topology=(J/'conduit/ConduitTopology.java').read_text()
-          assert 'network.containsPosition' in topology and 'relative(d)' in topology and 'indexedPositions.contains(pos)' in (J/'conduit/ConduitNetwork.java').read_text(), 'indexed cached removal invalidation missing'
+          assert 'network.nodes().stream().anyMatch' in topology and 'relative(d)' in topology, 'pre-optimization cached removal invalidation missing'
           assert not (J/'block/MultiCableBlock.java').exists(), 'MultiCableBlock runtime leaked'
           assert not (J/'blockentity/MultiCableBlockEntity.java').exists(), 'MultiCableBlockEntity runtime leaked'
           gt=(J/'build103/Build103GameTests.java').read_text()
@@ -1832,6 +1832,18 @@ jobs:
           python3 patches/spark-energy-ephemeral-endpoint-handlers.py
           # Spark: constant-time connected node membership on each physical topology check.
           python3 patches/spark-conduit-topology-position-index.py
+          # Post-optimization assertion, after the prepatch legacy topology gate.
+          python3 - <<'PY'
+          from pathlib import Path
+          base=Path('work/src/main/java/dev/obsidiannetwork/conduit')
+          network=(base/'ConduitNetwork.java').read_text()
+          topology=(base/'ConduitTopology.java').read_text()
+          assert 'XSXLABS_SPARK_CONDUIT_TOPOLOGY_POSITION_INDEX_V1' in network
+          assert 'network.containsPosition(bundle.getBlockPos().relative(d))' in topology
+          assert 'return indexedPositions.contains(pos)' in network
+          assert 'physicallyConnected!=cachedConnected' in topology
+          print('SPARK_CONDUIT_TOPOLOGY_INDEX_POSTPATCH_GATE PASS')
+          PY
           grep -Fq 'XSXLABS_SPARK_ENERGY_BFS_LOOP_INVARIANTS_V2' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           python3 - <<'PY'
           from pathlib import Path
