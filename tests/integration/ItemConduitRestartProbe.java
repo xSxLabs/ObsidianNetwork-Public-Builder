@@ -112,7 +112,21 @@ public final class ItemConduitRestartProbe {
                 report.put("configuration_preserved", true);
                 finish(server, true, null);
             }
-            if (ticks > 1200) throw new IllegalStateException("Transport timed out: " + diagnostics(level));
+            if (ticks > 1200) {
+                // CI-only failure forensics, NEVER a transport workaround: collect
+                // the blocked inventory, try exactly one direct invocation of the
+                // existing private transport method, then still FAIL the test.
+                // This distinguishes a missing automatic BE ticker invocation
+                // from a broken endpoint scan/capability/insert path.
+                if (PHASE.equals("after") && stage == 1) {
+                    try {
+                        report.put("standalone_direct_transfer_diagnostic", diagnoseStandaloneTransfer(level));
+                    } catch (Throwable diagnosticError) {
+                        report.put("standalone_direct_transfer_error", diagnosticError.toString());
+                    }
+                }
+                throw new IllegalStateException("Transport timed out: " + diagnostics(level));
+            }
         } catch (Throwable failure) {
             failure.printStackTrace();
             try { report.put("failure_diagnostics", diagnostics(server.overworld())); }
@@ -163,6 +177,29 @@ public final class ItemConduitRestartProbe {
                 check(cable.mode(side) == (end == 0 ? LogisticsCableBlockEntity.Mode.IMPORT : LogisticsCableBlockEntity.Mode.EXPORT), "Standalone persisted mode changed");
             } else throw new IllegalStateException("Saved endpoint block entity missing at " + cable(lane, end));
         }
+    }
+
+    private static Map<String, Object> diagnoseStandaloneTransfer(ServerLevel level) throws ReflectiveOperationException {
+        Map<String, Object> observation = new LinkedHashMap<>();
+        observation.put("before_source", contents(chest(level, source(1))));
+        observation.put("before_target", contents(chest(level, target(1))));
+        var entity = level.getBlockEntity(cable(1, 0));
+        check(entity instanceof LogisticsCableBlockEntity, "Pure standalone source no longer a logistics cable");
+        var cable = (LogisticsCableBlockEntity) entity;
+        observation.put("source_fluid", cable.isFluid());
+        observation.put("source_west_mode", cable.mode(Direction.WEST).name());
+        observation.put("filter_allows_gold", cable.cableAllows(Direction.WEST, BuiltInRegistries.ITEM.getKey(Items.GOLD_INGOT)));
+        observation.put("filter_allows_redstone", cable.cableAllows(Direction.WEST, BuiltInRegistries.ITEM.getKey(Items.REDSTONE)));
+        var exports = LogisticsCableBlockEntity.class.getDeclaredMethod("exports");
+        exports.setAccessible(true);
+        observation.put("discovered_exports", ((java.util.List<?>) exports.invoke(cable)).size());
+        var transfer = LogisticsCableBlockEntity.class.getDeclaredMethod("transferItem", Direction.class);
+        transfer.setAccessible(true);
+        transfer.invoke(cable, Direction.WEST);
+        observation.put("after_direct_source", contents(chest(level, source(1))));
+        observation.put("after_direct_target", contents(chest(level, target(1))));
+        System.out.println("ITEM_STANDALONE_FAILURE_DIRECT_INVOCATION_DIAGNOSTIC " + observation);
+        return observation;
     }
 
     private static Map<String, Object> diagnostics(ServerLevel level) {
