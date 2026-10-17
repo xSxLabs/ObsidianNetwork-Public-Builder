@@ -1058,7 +1058,15 @@ jobs:
                             if(delta<0)throw new IllegalStateException("Non-monotonic server tick clock");
                             tickWall[0]=now;
                             tickSamples[0]++;
-                            System.out.println("REAL_50_DRIVE_SERVER_TICK_SAMPLE sample="+tickSamples[0]+" elapsed_ns="+delta+" wall_clock_not_MSPT=true");
+                            // Execute bounded real storage work on each of 20 distinct
+                            // server ticks rather than only a one-tick benchmark burst.
+                            long workStart=System.nanoTime();
+                            for(int operation=0;operation<100;operation++){
+                              if(rt.storage().insert(stone,64L)!=64L||rt.storage().extract(stone,64L)!=64L)
+                                throw new IllegalStateException("50-drive sustained tick transfer failed at "+tickSamples[0]+":"+operation);
+                            }
+                            long workNanos=System.nanoTime()-workStart;
+                            System.out.println("REAL_50_DRIVE_SUSTAINED_TICK sample="+tickSamples[0]+" operations=200 storage_work_ns="+workNanos+" tick_wall_ns="+delta+" wall_clock_not_MSPT=true");
                           });
                         }
                         sampleSequence.thenExecute(()->{
