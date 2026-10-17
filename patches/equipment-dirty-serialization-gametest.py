@@ -10,12 +10,13 @@ import os
 root = Path(os.environ.get("V1_SOURCE_ROOT", "work/src/main/java"))
 p = root / "dev/obsidiannetwork/build103/Build103GameTests.java"
 source = p.read_text()
-anchor = (
-    '                System.out.println("FULL_EQUIPMENT_CELL_REINSERT_NS "+elapsed+'
-    '" cycles=25 count=64000 types=257");\n'
-    '                h.succeed();'
-)
+# YAML block scalars remove their own indentation before writing the Java
+# heredoc. Match source tokens, not indentation copied from the workflow.
+anchor = 'System.out.println("FULL_EQUIPMENT_CELL_REINSERT_NS "+elapsed+" cycles=25 count=64000 types=257");'
 assert source.count(anchor) == 1, "64k GameTest anchor changed; fail closed"
+after_anchor = source.split(anchor, 1)[1]
+import re
+assert re.match(r'\\s*h\\.succeed\\(\\);', after_anchor), "GameTest success anchor moved"
 injection = """                // Test-only: a committed snapshot must remain correct across live
                 // mutations and repeated materialization. This guards against
                 // stale NBT / lost items from the dirty-serialization optimization.
@@ -51,7 +52,7 @@ injection = """                // Test-only: a committed snapshot must remain co
                   throw new IllegalStateException("Test-only equipment reflection failed", error);
                 }
 """
-updated = source.replace(anchor, anchor.replace('                h.succeed();', injection + '                h.succeed();'), 1)
+updated = source.replace(anchor, anchor + '\n' + injection, 1)
 assert updated.count("EQUIPMENT_DIRTY_SERIALIZATION_MUTATION_GAMETEST PASS") == 1
 p.write_text(updated)
 print("EQUIPMENT_DIRTY_SERIALIZATION_MUTATION_TEST_FIXTURE_V1 PASS")
