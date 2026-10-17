@@ -222,7 +222,7 @@ public final class WirelessPlayerCharging {
  }
  static int chargeOne(ServerPlayer player,String network,ItemStack stack,int budget){
   if(stack.isEmpty()||budget<=0)return 0;
-  var energy=stack.getCapability(Capabilities.Energy.ITEM);
+  var energy=net.neoforged.neoforge.transfer.access.ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
   if(energy!=null){
    int requested;
    try(var sample=Transaction.openRoot()){
