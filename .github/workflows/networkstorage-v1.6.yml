@@ -1899,6 +1899,55 @@ jobs:
           assert 'level.getGameTime()%20 == (Math.floorMod(System.identityHashCode(network),4)*5)' in fluid
           print('ITEM_RESTART_CACHE_REFRESH_SOURCE_GATE PASS')
           PY
+          # Consolidated, machine-readable four-issue diagnostic for this run.
+          # This reports missing coverage explicitly rather than treating green
+          # source checks as a real dedicated-server restart or UI stress test.
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          log=Path('/tmp/build103-gametest.log').read_text(errors='replace')
+          def numbers(marker):
+              lines=[line for line in log.splitlines() if marker in line and 'System.out.println' not in line]
+              return [dict((k,int(v)) for k,v in re.findall(r'([a-z_]+)=(\\d+)',line)) for line in lines]
+          def source(rel):
+              p=root/rel
+              return p.read_text() if p.exists() else ''
+          item=source('conduit/ItemConduitTicker.java')
+          manager=source('conduit/ConduitNetworkManager.java')
+          bundle=source('blockentity/ConduitBundleBlockEntity.java')
+          terminal=source('menu/StorageTerminalMenu.java')
+          reports={
+            'equipment_64k':{
+              'phase_measurements':numbers('FULL_EQUIPMENT_CELL_PHASE_NS'),
+              'total_measurements':numbers('FULL_EQUIPMENT_CELL_REINSERT_NS'),
+              'attach_pre_registration':numbers('EQUIPMENT_ATTACH_PRE_REGISTER_NS'),
+              'coverage':'real GameTest insert/remove; not a client menu close/reopen stress test'},
+            'bulk_storage':{
+              'measurements':numbers('REAL_STORAGE_BULK_DEPOSIT_NS'),
+              'coverage':'runtime insert/extract benchmark; not rapid GUI deposit stress'},
+            'crafting':{
+              'terminal_source_found':bool(terminal),
+              'markers':[line.strip()[:250] for line in log.splitlines() if 'CRAFT' in line.upper() and ('_NS ' in line or '_SUMMARY ' in line)][:30],
+              'coverage':'no verified rapid user-interface crafting latency test'},
+            'item_conduit_restart':{
+              'periodic_endpoint_refresh':'level.getGameTime()%5 == 0' in item,
+              'network_ensure_present':'ensure(ServerLevel level' in manager,
+              'persisted_item_modes':'mc_item_mode' in bundle,
+              'game_test_reload':('ITEM actual transfer after NBT block entity reload' in log),
+              'real_process_restart_test':False,
+              'coverage':'NBT reload GameTest is not a dedicated-server process restart'}
+          }
+          lag=[line.strip()[-350:] for line in log.splitlines() if "Can't keep up!" in line]
+          reports['server_tick_warnings']=lag
+          reports['missing_release_gates']=['real dedicated-server stop/start item transport','realistic full-cell menu close/reinsert profiling','rapid crafting terminal GUI stress','rapid bulk deposit GUI stress']
+          p=Path('dist/diagnostic-report.json')
+          p.parent.mkdir(exist_ok=True)
+          p.write_text(json.dumps(reports,indent=2,ensure_ascii=False))
+          print('FOUR_ISSUE_DIAGNOSTIC_REPORT_V1 '+p.read_text())
+          assert reports['equipment_64k']['phase_measurements'],'equipment performance marker missing'
+          assert reports['bulk_storage']['measurements'],'bulk performance marker missing'
+          PY
           echo '===== BUILD 101 FINAL BUILD ====='
           (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
@@ -1909,6 +1958,7 @@ jobs:
           sha256sum dist/*.jar > dist/SHA256SUMS.txt
           test -s /tmp/xsxlabs-perf-hotpaths.json
           cp /tmp/xsxlabs-perf-hotpaths.json dist/perf-hotpaths.json
+          test -s dist/diagnostic-report.json
       - name: Upload v1.1.1 shared-conduit test JAR
         uses: actions/upload-artifact@v4
         with:
