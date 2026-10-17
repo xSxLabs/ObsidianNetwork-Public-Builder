@@ -147,10 +147,10 @@ def main():
         report.update(status="failed", error=str(failure))
         # Ensure CI artifacts retain actionable filesystem and phase evidence
         # even if the first or second JVM fails validation.
-        report["saved_world_files_diagnostic"] = sorted(
+        report["saved_world_files_diagnostic"] = [
             {"path": str(p.relative_to(run)), "bytes": p.stat().st_size}
-            for p in run.rglob("*") if p.is_file()
-        )[:120]
+            for p in sorted(run.rglob("*")) if p.is_file()
+        ][:120]
         raise
     finally:
         target.unlink(missing_ok=True)
