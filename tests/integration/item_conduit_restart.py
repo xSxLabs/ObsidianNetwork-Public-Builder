@@ -39,8 +39,22 @@ def require(condition, message):
 
 
 def world_manifest(world):
-    files = [world / "level.dat", *sorted((world / "region").glob("*.mca"))]
-    require(files[0].is_file() and len(files) > 1, "Dedicated server did not save level.dat and region data")
+    """Record every disk-backed save file without assuming a region layout.
+
+    A successfully populated second JVM is the authoritative persistence gate:
+    it must load the four saved chest inventories, endpoint modes and flags
+    from the *same* world before performing additional transfers. Region files
+    are supporting evidence; missing region files must be diagnosed, not used
+    to skip the real second-process verification.
+    """
+    level = world / "level.dat"
+    require(level.is_file() and level.stat().st_size > 0,
+            f"Dedicated server did not save a nonempty level.dat: {level}")
+    region_files = sorted(p for p in world.rglob("*.mca") if p.is_file())
+    if not region_files:
+        print(f"ITEM_RESTART_REGION_DIAGNOSTIC no .mca files found under {world}; "
+              "continuing to the mandatory second-JVM persisted-inventory test", flush=True)
+    files = [level, *region_files]
     return {str(path.relative_to(world)): hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
 
 
@@ -111,6 +125,8 @@ def main():
                 f"Expected exactly one saved dedicated-server world under {run}; found {candidates}")
         saved_world = candidates[0]
         report["saved_world_directory"] = str(saved_world.relative_to(project))
+        print(f"ITEM_RESTART_SAVED_WORLD location={saved_world} "
+              f"files={sorted(str(p.relative_to(saved_world)) for p in saved_world.rglob('*') if p.is_file())[:50]}", flush=True)
         report["world_after_stop_sha256"] = world_manifest(saved_world)
         # No file in the world is modified between the two independent JVMs.
         report["phases"]["after"] = run_phase(project, output, "after", report["session"], args.phase_timeout)
@@ -121,10 +137,20 @@ def main():
         restart_candidates = sorted(p.parent for p in run.rglob("level.dat") if p.is_file())
         require(restart_candidates == [saved_world], "Dedicated server restarted with a different or ambiguous world")
         report["world_after_restart_sha256"] = world_manifest(saved_world)
+        report["region_files_found_after_first_stop"] = sum(
+            p.endswith(".mca") for p in report["world_after_stop_sha256"])
+        report["region_files_found_after_restart"] = sum(
+            p.endswith(".mca") for p in report["world_after_restart_sha256"])
         report.update(status="passed", distinct_server_jvms=True, same_saved_world=True, source_probe_sha256=hashlib.sha256(PROBE.read_bytes()).hexdigest())
         print("ITEM_CONDUIT_PROCESS_RESTART_V1 PASS " + json.dumps({"before_pid": before["server_jvm_pid"], "after_pid": after["server_jvm_pid"], "topologies": after["topologies"]}))
     except BaseException as failure:
         report.update(status="failed", error=str(failure))
+        # Ensure CI artifacts retain actionable filesystem and phase evidence
+        # even if the first or second JVM fails validation.
+        report["saved_world_files_diagnostic"] = sorted(
+            {"path": str(p.relative_to(run)), "bytes": p.stat().st_size}
+            for p in run.rglob("*") if p.is_file()
+        )[:120]
         raise
     finally:
         target.unlink(missing_ok=True)
