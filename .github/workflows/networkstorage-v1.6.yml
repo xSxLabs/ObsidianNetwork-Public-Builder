@@ -1696,7 +1696,7 @@ jobs:
           if marker not in s:
               anchor='public void attachEquipmentCell(EquipmentCellStore cell) {'
               assert s.count(anchor)==1, 'equipment attach method anchor changed'
-              s=s.replace(anchor,anchor+'\\n       // '+marker+'\\n       var equipmentDescriptors = cell.descriptorSnapshot();',1)
+              s=s.replace(anchor,anchor+chr(10)+'       // '+marker+chr(10)+'       var equipmentDescriptors = cell.descriptorSnapshot();',1)
               old='for (Entry<ItemKey, byte[]> e : cell.descriptorSnapshot().entrySet())'
               assert s.count(old)==1, 'equipment validation anchor changed'
               s=s.replace(old,'for (Entry<ItemKey, byte[]> e : equipmentDescriptors.entrySet())',1)
