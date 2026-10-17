@@ -1821,6 +1821,21 @@ jobs:
           assert s.count('equipmentDescriptors.entrySet()')==2
           print('EQUIPMENT_ATTACH_SINGLE_SNAPSHOT_GATE PASS')
           PY
+          # Profile the attach hot path in the actual reconstructed runtime.
+          # This separates descriptor snapshot cost from validation/index registration.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/core/NetworkRuntime.java')
+          s=p.read_text()
+          anchor='var equipmentDescriptors = cell.descriptorSnapshot();'
+          assert s.count(anchor)==1, 'single-snapshot attach anchor changed'
+          s=s.replace(anchor,'long equipmentAttachStartNs=System.nanoTime(); '+anchor+' long equipmentSnapshotNs=System.nanoTime()-equipmentAttachStartNs;',1)
+          anchor='for (Entry<ItemKey,byte[]> e:equipmentDescriptors.entrySet())'
+          assert s.count(anchor)==1, 'registration loop anchor changed'
+          s=s.replace(anchor,'if (equipmentDescriptors.size()>=200) System.out.println("EQUIPMENT_ATTACH_PRE_REGISTER_NS "+(System.nanoTime()-equipmentAttachStartNs)+" snapshot_ns="+equipmentSnapshotNs+" types="+equipmentDescriptors.size()); '+anchor,1)
+          p.write_text(s)
+          print('EQUIPMENT_ATTACH_PHASE_PROFILING_V1 PASS')
+          PY
           # Restart regression gate: ITEM endpoints must revalidate on every transfer tick,
           # even when topology remains unchanged and the visible input mode persists.
           python3 - <<'PY'
