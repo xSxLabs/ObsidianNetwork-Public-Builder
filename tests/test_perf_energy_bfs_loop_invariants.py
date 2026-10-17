@@ -6,6 +6,7 @@ PATCH=Path(__file__).resolve().parents[1]/"patches/spark-energy-bfs-loop-invaria
 REL="dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java"
 def example():
     s="public final class EnergyCableBlockEntity extends BlockEntity implements FacadeCable {\n"
+    s+="private final class CableEnergyHandler implements EnergyHandler {\n"
     for name in ["getAmountAsLong()","extract(int amount, TransactionContext transaction)","insert(int amount, TransactionContext transaction)"]:
         s+="public int "+name+" { ArrayDeque queue = new ArrayDeque();\n"
         s+="HashSet visited = new HashSet(); int cableBudget=4096;\n"
@@ -17,7 +18,7 @@ def example():
         s+="EnergyHandler source = server.getCapability(Energy.BLOCK, next, side.getOpposite());\n"
         s+="if (source == null) source = server.getCapability(Energy.BLOCK, next, null);\n"
         s+="} } } return 0; }\n"
-    return s+"}\n"
+    return s+"}\n}\n"
 def run(s):
     with tempfile.TemporaryDirectory() as tmp:
         p=Path(tmp)/REL;p.parent.mkdir(parents=True);p.write_text(s)

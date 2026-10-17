@@ -1826,6 +1826,7 @@ jobs:
           # Autocrafting: don't allocate unchanged reservations on idle refill ticks.
           python3 patches/perf-autocraft-idle-reservation-elision.py
           # Spark energy BFS micro-optimization, full old FE/capability semantics intact.
+          # Spark v2 fixture includes the nested EnergyHandler; no game behavior relaxed.
           python3 patches/spark-energy-bfs-loop-invariants.py
           grep -Fq 'XSXLABS_SPARK_ENERGY_BFS_LOOP_INVARIANTS_V2' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           python3 - <<'PY'
