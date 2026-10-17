@@ -327,7 +327,7 @@ p=j/"ObsidianNetwork.java";s=p.read_text()
 needle="NeoForge.EVENT_BUS.register(EnergyToolEvents.class);"
 # Decompiler can show fully-qualified call or import; look for original string.
 if needle not in s:
- needle="net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(EnergyToolEvents.class);"
+ needle="net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(dev.obsidiannetwork.core.EnergyToolEvents.class);"
 assert needle in s, "Cannot locate NeoForge event bus setup"
 s=s.replace(needle,needle+'''
       net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(dev.obsidiannetwork.wireless.WirelessPlayerCharging.class);
