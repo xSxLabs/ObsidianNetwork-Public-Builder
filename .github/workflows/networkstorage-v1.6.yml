@@ -1739,6 +1739,7 @@ jobs:
           python3 private/v1.1.1/apply-v16-final-features.py
           # Reduce needless 800-cell capacity probes in exact storage preflight and commit.
           python3 private/v1.1.1/apply-perf-full-cell-fast-reject.py
+          python3 patches/equipment-full-fast-reject.py
           # Reduce copies in rapid shift-crafting; fail closed if source differs.
           python3 private/v1.1.1/apply-perf-shift-craft-copy-elision.py
           python3 private/v1.1.1/bench-perf-recipe-comparisons.py
