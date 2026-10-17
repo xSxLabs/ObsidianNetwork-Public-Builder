@@ -1,3 +1,4 @@
+# Wireless #235: corrected server-level FE capability regression assertion; full GUI/charging compile gates
 # Build 229: preserve multiple topology invalidation call sites in Spark neighbor-position patch; include regression fixture
 # Projekt Performance Build 227: primitive BFS visitation, conduit topology & ENERGY ticker neighboring BlockPos reuse
 # verify captured equipment dirty-slot lambda; CI rerun after 994374ac
