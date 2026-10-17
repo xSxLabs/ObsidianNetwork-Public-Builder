@@ -1828,6 +1828,8 @@ jobs:
           # Spark energy BFS micro-optimization, full old FE/capability semantics intact.
           # Spark v2 fixture includes the nested EnergyHandler; no game behavior relaxed.
           python3 patches/spark-energy-bfs-loop-invariants.py
+          # Spark: live ENERGY endpoint handlers resolved once per dispatch, not per pair.
+          python3 patches/spark-energy-ephemeral-endpoint-handlers.py
           grep -Fq 'XSXLABS_SPARK_ENERGY_BFS_LOOP_INVARIANTS_V2' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           python3 - <<'PY'
           from pathlib import Path
