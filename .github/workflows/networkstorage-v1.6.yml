@@ -1775,7 +1775,9 @@ jobs:
           p.write_text(s)
           print('EQUIPMENT_SAVE_TIMING_INSTRUMENTATION_GATE PASS')
           PY
-          # Skip equipment-cell serialization when no mutation has occurred.\n          python3 patches/equipment-dirty-serialization.py\n          # EQUIPMENT_INSERT_DECODE_ELISION_V1: staged item is validated inside the transaction.
+          # Skip equipment-cell serialization when no mutation has occurred.
+          python3 patches/equipment-dirty-serialization.py
+          # EQUIPMENT_INSERT_DECODE_ELISION_V1: staged item is validated inside the transaction.
           python3 - <<'PY'
           from pathlib import Path
           p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java')
