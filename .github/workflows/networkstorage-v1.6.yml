@@ -1850,6 +1850,24 @@ jobs:
           assert old not in p.read_text()
           print('ITEM_RESTART_STABLE_REFRESH_CADENCE_V1 PASS')
           PY
+          # Inspect actual conduit lifecycle hooks and endpoint cache construction.
+          # Source diagnostics are deliberately read-only until the safe reload hook
+          # can be established from the reconstructed Java code.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          for rel in ('blockentity/ConduitBundleBlockEntity.java','conduit/ConduitNetworkManager.java','conduit/ItemConduitTicker.java','conduit/ConduitRuntime.java'):
+              p=root/rel
+              assert p.exists(), 'missing conduit source '+rel
+              lines=p.read_text().splitlines()
+              print('ITEM_RESTART_LIFECYCLE_FILE',rel)
+              patterns=('onLoad(', 'loadAdditional(', 'setLevel(', 'setRemoved(', 'onChunkUnloaded(', 'ensure(', 'scanEndpoints(', 'cacheEndpoints(', 'invalidateCapabilities(', 'setConduitFlags(')
+              matches=[i for i,line in enumerate(lines) if any(token in line for token in patterns)]
+              for i in matches[:24]:
+                  print('ITEM_RESTART_LIFECYCLE_LINE',rel,i+1,' '.join(lines[max(0,i-2):min(len(lines),i+5)]).strip()[:650])
+          print('ITEM_RESTART_LIFECYCLE_DIAGNOSTIC_V1 PASS')
+          PY
           # Restart regression gate: ITEM endpoints must revalidate on every transfer tick,
           # even when topology remains unchanged and the visible input mode persists.
           python3 - <<'PY'
