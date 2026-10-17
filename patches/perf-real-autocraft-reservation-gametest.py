@@ -67,9 +67,11 @@ probe = """
                   long[] measurements=new long[9];
                   for(int sample=0;sample<measurements.length;sample++){
                     long start=System.nanoTime();
-                    for(int iteration=0;iteration<500;iteration++)
-                      if(XSXLABS_REQUIRE_IDLE_REUSE && reserve.invoke(service,idle)!=idle)
+                    for(int iteration=0;iteration<500;iteration++){
+                      Object observed=reserve.invoke(service,idle);
+                      if(XSXLABS_REQUIRE_IDLE_REUSE && observed!=idle)
                         throw new IllegalStateException("Idle reservation identity drift");
+                    }
                     measurements[sample]=System.nanoTime()-start;
                   }
                   java.util.Arrays.sort(measurements);
