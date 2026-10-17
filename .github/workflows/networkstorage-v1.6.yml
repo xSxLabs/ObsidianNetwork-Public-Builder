@@ -1050,6 +1050,7 @@ jobs:
                         // Sample elapsed wall time across real server tick boundaries.
                         final long[] tickWall={System.nanoTime()};
                         final int[] tickSamples={0};
+                        final long[] storageTickWorkNs=new long[20];
                         var sampleSequence=h.startSequence();
                         for(int tick=0;tick<20;tick++){
                           sampleSequence.thenExecuteAfter(1,()->{
@@ -1066,11 +1067,20 @@ jobs:
                                 throw new IllegalStateException("50-drive sustained tick transfer failed at "+tickSamples[0]+":"+operation);
                             }
                             long workNanos=System.nanoTime()-workStart;
+                            storageTickWorkNs[tickSamples[0]-1]=workNanos;
                             System.out.println("REAL_50_DRIVE_SUSTAINED_TICK sample="+tickSamples[0]+" operations=200 storage_work_ns="+workNanos+" tick_wall_ns="+delta+" wall_clock_not_MSPT=true");
                           });
                         }
                         sampleSequence.thenExecute(()->{
                           if(tickSamples[0]!=20)throw new IllegalStateException("Expected 20 server tick samples");
+                          java.util.Arrays.sort(storageTickWorkNs);
+                          long p95=storageTickWorkNs[18];
+                          long worst=storageTickWorkNs[19];
+                          System.out.println("REAL_50_DRIVE_SUSTAINED_SUMMARY ticks=20 operations=4000 p95_storage_work_ns="+p95+" worst_storage_work_ns="+worst+" not_server_MSPT=true");
+                          if(rt.storage().cells().stream().mapToLong(c->c.amount(stone)).sum()!=37655L)
+                            throw new IllegalStateException("50-drive sustained tick conservation failed");
+                          if(p95>50_000_000L)
+                            throw new IllegalStateException("50-drive sustained storage p95 exceeds 50ms budget: "+p95+"ns");
                           h.succeed();
                         });
 
