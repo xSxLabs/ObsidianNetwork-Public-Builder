@@ -1872,7 +1872,7 @@ jobs:
           topology=(base/'ConduitTopology.java').read_text()
           assert 'XSXLABS_SPARK_CONDUIT_TOPOLOGY_POSITION_INDEX_V1' in network
           assert 'network.containsPosition(neighborPos)' in topology, 'position-index membership must use the precomputed neighbor' 
-           assert 'ConduitRuntime.bundle(level,neighborPos,type)' in topology, 'physical connection must still be checked live'
+          assert 'ConduitRuntime.bundle(level,neighborPos,type)' in topology, 'physical connection must still be checked live'
           assert 'return indexedPositions.contains(pos)' in network
           assert 'physicallyConnected!=cachedConnected' in topology
           print('SPARK_CONDUIT_TOPOLOGY_INDEX_POSTPATCH_GATE PASS')
