@@ -76,6 +76,9 @@ jobs:
       - name: Reconstruct v1.0.5 baseline and inspect Importer
         run: |
           set -euo pipefail
+          # Verify the restart harness before an expensive source reconstruction.
+          python3 -m py_compile tests/integration/item_conduit_restart.py
+          python3 -m unittest discover -s tests -p 'test_item_conduit_restart_manifest.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           mkdir -p work/src/main/java work/src/main/resources
           curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
@@ -2040,6 +2043,16 @@ jobs:
           test -s /tmp/xsxlabs-perf-hotpaths.json
           cp /tmp/xsxlabs-perf-hotpaths.json dist/perf-hotpaths.json
           test -s dist/diagnostic-report.json
+      - name: Upload failed ITEM restart diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xsxlabs-performance-failure-evidence
+          path: |
+            dist/item-conduit-restart*.log
+            dist/item-conduit-restart*.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Upload v1.1.1 shared-conduit test JAR
         uses: actions/upload-artifact@v4
         with:
