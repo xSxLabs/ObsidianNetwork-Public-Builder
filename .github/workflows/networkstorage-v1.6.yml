@@ -1687,6 +1687,20 @@ jobs:
           python3 private/v1.1.1/apply-perf-shift-craft-copy-elision.py
           python3 private/v1.1.1/bench-perf-recipe-comparisons.py
           python3 private/v1.1.1/apply-v16-bundle-tps-cache.py
+          # EQUIPMENT_INSERT_DECODE_ELISION_V1: staged item is validated inside the transaction.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java')
+          s=p.read_text()
+          old='((EquipmentCellItem)stack.getItem()).readStore(stack);'
+          assert s.count(old)==1, 'equipment preflight decode anchor changed'
+          # The staged stack is validated with readStore(staged) before tx.commit().
+          assert s.count('else if (staged.getItem() instanceof EquipmentCellItem e) e.readStore(staged);')==1
+          s=s.replace(old,'// XSXLABS_EQUIPMENT_INSERT_DECODE_ELISION_V1: validate staged copy in transaction below.',1)
+          p.write_text(s)
+          assert s.count('XSXLABS_EQUIPMENT_INSERT_DECODE_ELISION_V1')==1
+          print('EQUIPMENT_INSERT_DECODE_ELISION_GATE PASS')
+          PY
           # EQUIPMENT_CELL_ATTACH_SNAPSHOT_REUSE_V1: one descriptor clone per attach.
           python3 - <<'PY'
           from pathlib import Path
