@@ -129,6 +129,53 @@ stress_code=r'''
                     " autocrafter_ctor_median_ns="+xsxAutocrafterCtorTrials[4]+
                     " autocrafter_status_median_ns="+xsxAutocrafterStatusTrials[4]+
                     " batch_size=20 trials=9 uncontrolled=true not_server_MSPT=true");
+                  // CI-only decomposition of the real Controller snapshot's
+                  // public helper calls. No changes to production status logic
+                  // or device power/FE budget. These are uncontrolled wall
+                  // timings per 20 calls and should not be added to MSPT.
+                  long[][] xsxSubcallTrials=new long[6][9];
+                  long xsxSubcallCheck=0L;
+                  for(int trial=0;trial<9;trial++){
+                    for(int iteration=0;iteration<20;iteration++){
+                      long begin=System.nanoTime();
+                      var probeRt=dev.obsidiannetwork.network.WorldTopologyBridge
+                          .runtimeForController(level,controller);
+                      xsxSubcallTrials[0][trial]+=System.nanoTime()-begin;
+                      if(probeRt!=rt)
+                        throw new IllegalStateException("Controller subcall lost active runtime");
+                      begin=System.nanoTime();
+                      xsxSubcallCheck+=probeRt.drives().size();
+                      xsxSubcallTrials[1][trial]+=System.nanoTime()-begin;
+                      begin=System.nanoTime();
+                      xsxSubcallCheck+=dev.obsidiannetwork.network.WorldTopologyBridge
+                          .autocrafterCount(level,probeRt);
+                      xsxSubcallTrials[2][trial]+=System.nanoTime()-begin;
+                      begin=System.nanoTime();
+                      xsxSubcallCheck+=dev.obsidiannetwork.network.WorldTopologyBridge
+                          .autocraftingActiveJobs(level,probeRt);
+                      xsxSubcallTrials[3][trial]+=System.nanoTime()-begin;
+                      begin=System.nanoTime();
+                      xsxSubcallCheck+=dev.obsidiannetwork.network.WorldTopologyBridge
+                          .autocraftingBlockedJobs(level,probeRt);
+                      xsxSubcallTrials[4][trial]+=System.nanoTime()-begin;
+                      begin=System.nanoTime();
+                      xsxSubcallCheck+=dev.obsidiannetwork.network.WorldTopologyBridge
+                          .templatesForRuntime(level,probeRt).size();
+                      xsxSubcallTrials[5][trial]+=System.nanoTime()-begin;
+                    }
+                  }
+                  for(long[] probe:xsxSubcallTrials)java.util.Arrays.sort(probe);
+                  if(xsxSubcallCheck<9000L)
+                    throw new IllegalStateException("Controller subcall probe did not see 50 drives");
+                  System.out.println("REAL_50_DRIVE_CONTROLLER_STATUS_SUBCALLS_V1 PASS"+
+                    " runtime_lookup_median_ns="+xsxSubcallTrials[0][4]+
+                    " drives_median_ns="+xsxSubcallTrials[1][4]+
+                    " autocrafter_count_median_ns="+xsxSubcallTrials[2][4]+
+                    " active_jobs_median_ns="+xsxSubcallTrials[3][4]+
+                    " blocked_jobs_median_ns="+xsxSubcallTrials[4][4]+
+                    " templates_median_ns="+xsxSubcallTrials[5][4]+
+                    " sum_check="+xsxSubcallCheck+
+                    " batch_size=20 trials=9 uncontrolled=true not_server_MSPT=true");
 '''
 out=s.replace(setup,setup+"\n"+setup_code,1).replace(attached,attached+"\n"+stress_code,1)
 assert out.count(marker)==1
