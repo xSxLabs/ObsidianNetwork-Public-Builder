@@ -2220,6 +2220,7 @@ jobs:
           # Wireless #268: single high-throughput TX feeding 8 actual receiver/sink pairs.
           python3 features/wireless-energy/inject-wireless-one-tx-eight-rx-gametest.py
           grep -Fq 'WIRELESS_ONE_TX_EIGHT_RX_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'var fanoutSink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Wireless #264: Curios-present JVM may start before distant forced
           # chunks become entity-ticking. Require real server-tick work only
           # after chunk warmup; no manual crediting of receiver FE.
