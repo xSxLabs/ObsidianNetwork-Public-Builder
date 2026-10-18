@@ -19,7 +19,12 @@ class NamedNetworkManagementContracts(unittest.TestCase):
  def test_server_validated_chat_commands_and_stable_ids(self):
   for marker in ('Commands.literal("rename")','Commands.literal("delete")',
      'StringArgumentType.greedyString()', '.rename(player,id,name)',
-     '.delete(player,id)', 'WirelessNetworkData.Entry created=null'):
+     '.delete(player,id)', 'WirelessNetworkData.Entry created=null',
+     'ids.add(buf.readUtf(80))', 'b.writeUtf(network.id(),80)',
+     'new net.minecraft.client.gui.components.EditBox',
+     'Commands.literal("rename")','sendNamed("rename")',
+     'sendNamed("delete")','sendNamed("create")',
+     'minecraft.getConnection().sendCommand(command)'):
    self.assertIn(marker,PATCH)
  def test_deletion_is_fail_closed_without_losing_block_buffer(self):
   self.assertIn('WirelessNetworkData.get(server).find(id)==null',CORE)
