@@ -78,3 +78,9 @@ Wire the live FE GameTest after the existing postpatch GameTest-source injection
 - **#242 RED** https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39085031061, commit `07d28a99f6368690bd86a23a646cfcb6dcc7a084`. Source patch and GUI passed `WIRELESS_NAMED_NETWORK_MANAGEMENT_V2 PASS`; compile / existing first GameTest pass succeeded (8/8). Second GameTest failed in the new `WIRELESS Overworld lookup can transact with Nether source` same-tick rollback step. It ran immediately after placing/filling the Nether BE, before the normal registration callback could run.
 - **#243** workflow commit `51dcd95306a8770199591a9db89fcb30e162f1e4`, run https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39085403205 initially in progress. In the *test fixture only*, immediately register the new Nether sender before the transactional rollback probe; check loaded/available and unchanged stored FE after abort. The later 40-tick passive transport test and exact conservation remain unchanged. Also includes the stale/different-dimension GUI action guard.
 - No production FE algorithm changes after #239; no private source or performance-branch modifications in this sequence.
+
+
+## Additional pending UI safety patch
+
+- After #243 started, `apply-wireless-network-management.py` gained two-click deletion confirmation keyed to the selected network ID (commit `d500cb555a171602372d4924b9adf44a75106279`), with matching source test commit `215a2e700ac5bb9bdc3b685db472772aace95f95`. This patch must be included in a *subsequent* CI run; it does **not** affect #243's already checked-out sources.
+- Open for actual client tests: data-slot refresh for network labels during out-of-band rename/delete, manual multiplayer permissions and Curios optional-modded startup.
