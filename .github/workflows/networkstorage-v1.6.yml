@@ -1,3 +1,4 @@
+# Wireless #265: extend CI-only postpatch density GameTest deadline beyond warmup
 # Wireless #264: fix Curios-present async forced-chunk warmup in 10/50/100 actual FE GameTest
 # Wireless #263: fix PNG magic bytes CI assertion; no gameplay changes
 # Wireless #262: quick-mine + craft/drop gates on top of point-style 261
@@ -2145,6 +2146,20 @@ jobs:
           mkdir -p work/src/main/java/dev/obsidiannetwork/build103
           mkdir -p work/src/main/resources/data/obsidiannetwork/structure
           cp /tmp/obsidian-perf-gametest/Build103GameTests.java work/src/main/java/dev/obsidiannetwork/build103/
+          # Wireless #265: the combined postpatch GameTest now runs 40 extra
+          # chunk-warmup ticks and a 60-tick transfer window. The existing
+          # 800-tick test limit expires after the 100-device PASS at tick 802.
+          # Extend ONLY this CI-only postpatch StateMachineTest deadline.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java')
+          s=p.read_text()
+          old='environment, STRUCTURE, 800, 0, true, Rotation.NONE)'
+          new='environment, STRUCTURE, 1100, 0, true, Rotation.NONE)'
+          assert s.count(old)==1,'postpatch GameTest deadline anchor changed'
+          p.write_text(s.replace(old,new,1))
+          print('WIRELESS_DENSE_POSTPATCH_TIMEOUT_1100_V1 PASS')
+          PY
           cp /tmp/obsidian-perf-gametest/build103_empty.nbt work/src/main/resources/data/obsidiannetwork/structure/
           # The first GameTest covers baseline behavior. Only the post-patch
           # GameTest demands that an idle request retains object identity.
