@@ -170,5 +170,27 @@ replace(screen,
 replace(screen,
  'topPos+163',
  'topPos+229')
-print("WIRELESS_NAMED_NETWORK_MANAGEMENT_V2 PASS: commands + shared GUI Create/Rename/Delete")
+# A network deletion invalidates its identity (although antenna FE remains
+# buffered). Require two clicks on the exact same selected ID.
+replace(screen,
+ ' private net.minecraft.client.gui.components.EditBox networkName;',
+ ' private net.minecraft.client.gui.components.EditBox networkName;\n private String deletionConfirmation="";')
+replace(screen,
+ '''   }else if("delete".equals(operation)){
+    command="wirelessnet delete "+id;''',
+ '''   }else if("delete".equals(operation)){
+    if(!id.equals(deletionConfirmation)){deletionConfirmation=id;return;}
+    command="wirelessnet delete "+id;''')
+replace(screen,
+ ''' private void click(int id){
+  if(minecraft''',
+ ''' private void click(int id){
+  deletionConfirmation="";
+  if(minecraft''')
+replace(screen,
+ '  g.text(font,"Sender buffer: "+menu.energyInThousands()+"k FE",leftPos+12,topPos+229,-1,false);',
+ '''  if(!deletionConfirmation.isEmpty())
+   g.text(font,"Click Delete again to confirm",leftPos+12,topPos+214,0xffff7a78,false);
+  g.text(font,"Sender buffer: "+menu.energyInThousands()+"k FE",leftPos+12,topPos+229,-1,false);''')
+print("WIRELESS_NAMED_NETWORK_MANAGEMENT_V3 PASS: commands + owner-only GUI with deletion confirmation")
 
