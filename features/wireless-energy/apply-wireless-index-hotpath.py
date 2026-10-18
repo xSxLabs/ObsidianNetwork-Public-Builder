@@ -20,14 +20,22 @@ change(entity,
   for(Direction side:DIRECTIONS){
    if(remainingBudget<=0)break;""",
  """  int remainingBudget=MAX_TRANSFER;
-  // Single bounded index query per active receiver work tick, not per side.
-  int remainingSupply=(int)Math.min(MAX_TRANSFER,WirelessEnergyRuntime.available(server.getServer(),be.networkId));
-  if(remainingSupply<=0)return;
+  // Resolve the loaded-sender index lazily. Empty receiver faces cost no scan.
+  int remainingSupply=-1;
   for(Direction side:DIRECTIONS){
-   if(remainingBudget<=0||remainingSupply<=0)break;""")
+   if(remainingBudget<=0||remainingSupply==0)break;""")
 change(entity,
  "   int offer=(int)Math.min(remainingBudget,WirelessEnergyRuntime.available(server.getServer(),be.networkId));",
  "   int offer=Math.min(remainingBudget,remainingSupply);")
+change(entity,
+ """   if(target==null)continue;
+   int offer=Math.min(remainingBudget,remainingSupply);""",
+ """   if(target==null)continue;
+   if(remainingSupply<0){
+    remainingSupply=(int)Math.min(MAX_TRANSFER,WirelessEnergyRuntime.available(server.getServer(),be.networkId));
+   }
+   if(remainingSupply<=0)break;
+   int offer=Math.min(remainingBudget,remainingSupply);""")
 change(entity,
  "     if(accepted==withdrawn){tx.commit();remainingBudget-=accepted;}",
  "     if(accepted==withdrawn){tx.commit();remainingBudget-=accepted;remainingSupply-=accepted;}")
@@ -43,4 +51,4 @@ change(runtime,
   bucket.removeIf(ref->ref.get()==null||ref.get()==sender);
   if(bucket.isEmpty())server.remove(sender.networkId());
   if(server.isEmpty())LOADED.remove(level.getServer());""")
-print("WIRELESS_RECEIVER_SINGLE_INDEX_WALK_V1 PASS")
+print("WIRELESS_RECEIVER_LAZY_INDEX_WALK_V2 PASS")
