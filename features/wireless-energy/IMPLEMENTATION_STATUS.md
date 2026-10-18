@@ -26,3 +26,12 @@ No playable feature JAR is proven yet. In particular there is **no confirmed** N
 ## Follow-up
 
 Wire the live FE GameTest after the existing postpatch GameTest-source injection, then verify item network separation and dynamic GUI state. Resolve source-shape and Java-API failures in the isolated feature workflow only. Run load/reload/FE conservation tests before offering a test JAR. Only after wireless is stable resume autocrat/storage/controller GUI tick spikes, mass crafting/deposit and exclusive autocraft job reservation in `projekt-performance`.
+
+## Verifizierter Fortschritt Build #238 (18.10.2026)
+
+- **Actions GRÜN**: https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39082417823, Commit `b464ea2fecb90e40b7fb613fc3da1f7e65c356a2`.
+- Fehler #237 war **kein Transferfehler**, sondern das vorbestehende StateMachineTest-Zeitlimit von 190 Ticks nach Hinzufügen der 35-Tick-Wireless-Prüfung. #238 verlängert nur das Testzeitlimit **dieses einen** kombinierten Tests auf 250 Ticks, ohne Prüfungen zu entfernen.
+- Beide GameTest-Server-Durchläufe: **8/8 grün**. Log: `WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS`, `WIRELESS_NETWORK_CORE_V1 PASS`, `WIRELESS_NETWORK_UI_CHARGING_V1 PASS`, `WIRELESS_ANTENNA_MODELS_V1 PASS` und `BUILD 101 ALL AUTOMATABLE GATES PASS`.
+- Build-Artefakt https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39082417823/artifacts/12119770996 ; extrahierte JAR `xSxLabs-Network-Storage-1.1.1.jar`: **1.575.544 Bytes**, SHA-256 `4a7cfb018074f38dc6fd57962d71e5c72ff8dffa1afddc0ceac85eb885fcdb45`. Gefundene Klassen: Transmitter-/Receiver-Block und BE, WirelessNetworkData, WirelessEnergyRuntime, WirelessNetworkMenu/Screen, WirelessPlayerCharging, WirelessCuriosCharging. Keine `build103`-Testklassen; `neoforge.mods.toml` enthalten.
+- **Nicht nachgewiesen**: echter Zwei-Dimensionen-Test, Server-Neustart und Wiederaufnahme mehrerer Netzwerke, optionaler Curios-Mod-Installations-/Deinstallationsfall, GUIs mit Client und Multiplayer unter realer Last. Noch nicht als Ingame-stabil deklarieren.
+- Performance-Branch `projekt-performance` bleibt unverändert im Quell-/Workflow-Code; dort wurden ausschließlich zusätzliche, vom Nutzer gemeldete GUI-/Autocraft-Performance-Probleme dokumentiert.
