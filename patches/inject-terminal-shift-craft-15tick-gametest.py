@@ -92,10 +92,11 @@ code=r'''
                         if(!xsxCraftInv.getItem(slot).isEmpty())
                           throw new IllegalStateException("Same-tick shift-burst duplicated output");
                       }
+                      int unspentCount=unspent.getCount();
                       xsxCraftMenu.slots.get(1).set(net.minecraft.world.item.ItemStack.EMPTY);
                       xsxBurstClicks[0]+=24;
                       xsxBurstReinserted[0]+=8;
-                      xsxBurstUnspent[0]+=unspent.getCount();
+                      xsxBurstUnspent[0]+=unspentCount;
                       xsxCraftTicks[0]++;
                       xsxLogsConsumed[0]+=16;
                       xsxPlanksReceived[0]+=planks;
