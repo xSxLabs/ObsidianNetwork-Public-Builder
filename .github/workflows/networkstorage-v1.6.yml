@@ -1,3 +1,4 @@
+# Build 280: correct method-scoped Importer fallback assertion; full Drive16, wireless and autocraft gates
 # Build 279: indexed importer topology plus conserved autocraft fast path; keep Drive16 binary gate
 # Build 278: final compiled client/server 16-slot Drive fail-closed gate; gameplay unchanged
 # Build 277: inject 16-slot GUI GameTest after restoring postpatch CI fixture
