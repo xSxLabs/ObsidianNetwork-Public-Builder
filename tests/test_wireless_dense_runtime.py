@@ -22,7 +22,7 @@ class WirelessDenseRuntimeContracts(unittest.TestCase):
             "world.setBlock(sourcePos,ObsidianNetwork.NETWORK_TRANSMITTER.get()",
             "world.setBlock(receiverPos,ObsidianNetwork.NETWORK_RECEIVER.get()",
             "world.setBlock(cellPos,ObsidianNetwork.BASIC_ENERGY_CELL.get()",
-            "source.energyHandler().insert(16000,funding)",
+            "denseSender.energyHandler().insert(16000,funding)",
             "check(total==10L*256000&&received>0",
             "check(total==50L*256000&&received>0",
             "check(total==100L*256000&&received>0",
