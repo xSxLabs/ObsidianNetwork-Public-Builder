@@ -1962,7 +1962,8 @@ jobs:
           grep -Fq 'sendNamed("rename")' work/src/main/java/dev/obsidiannetwork/client/WirelessNetworkScreen.java
           grep -Fq 'sendNamed("delete")' work/src/main/java/dev/obsidiannetwork/client/WirelessNetworkScreen.java
           grep -Fq 'public boolean canConfigure(' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
-          grep -Fq 'int remainingBudget=MAX_TRANSFER;' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
+          # Wireless smooth 20Hz receiver now has the same 64k/t throughput without five-tick bursts.
+          grep -Fq 'int remainingBudget=Math.min(MAX_TRANSFER,64000);' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
           grep -Fq 'NEXT_SENDER' work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java
           grep -Fq '!device.canConfigure(p)' work/src/main/java/dev/obsidiannetwork/menu/WirelessNetworkMenu.java
           test -f work/src/main/java/dev/obsidiannetwork/menu/WirelessNetworkMenu.java
