@@ -94,8 +94,11 @@ def new_count(components, controllers, registered, blocks, loaded, runtime):
     if not owner_nodes:
         return 0
     seen=registered & owner_nodes
-    for p in owner_nodes:
-        if p not in seen:
+    # Original graph.nodes() enumeration order matters: seen may contain
+    # neighboring graph nodes before reaching them. Preserve it exactly.
+    nodes=set().union(*components) if components else set()
+    for p in nodes:
+        if p not in seen and p in owner_nodes:
             if p in loaded and p in blocks:
                 seen.add(p)
             for q in neighbors(p):
