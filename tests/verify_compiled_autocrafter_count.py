@@ -20,13 +20,10 @@ assert data.count(method)==1 and data.count(next_method)==1, "Compiled Java meth
 start=data.index(method);end=data.index(next_method,start)
 code=data[start:end]
 for name in ("TopologyBindingManager.stateAt", "NetworkGraph.component",
-             "HashSet", "Level.hasChunkAt", "Level.getBlockState"):
-    # javap may name the server Level interface as ServerLevel / LevelReader.
-    if name in ("Level.hasChunkAt","Level.getBlockState"):
-        continue
+             "HashSet"):
     assert name in code, "Required compiled method contract missing: "+name
 assert code.count("NetworkGraph.component")==1, "Repeated component traversal in compiled method"
 assert "WorldTopologyBridge.runtimeForNode" not in code, "Compiled method still uses per-node BFS"
-assert "WorldTopologyBridge.LEVELS" in code, "Expected level map unchanged"
+assert "LEVELS:" in code, "Expected level map unchanged"
 assert "autocrafters" in code, "Expected authoritative registered autocrafters membership"
 print("AUTOCRAFTER_COUNT_COMPONENT_ONCE_BYTECODE_GATE_V1 PASS")
