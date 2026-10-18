@@ -84,3 +84,10 @@ Wire the live FE GameTest after the existing postpatch GameTest-source injection
 
 - After #243 started, `apply-wireless-network-management.py` gained two-click deletion confirmation keyed to the selected network ID (commit `d500cb555a171602372d4924b9adf44a75106279`), with matching source test commit `215a2e700ac5bb9bdc3b685db472772aace95f95`. This patch must be included in a *subsequent* CI run; it does **not** affect #243's already checked-out sources.
 - Open for actual client tests: data-slot refresh for network labels during out-of-band rename/delete, manual multiplayer permissions and Curios optional-modded startup.
+
+
+## #243 GREEN, #244 functional/performance build
+
+- **#243 Actions SUCCESS** https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39085403205, workflow commit `51dcd95306a8770199591a9db89fcb30e162f1e4`. Both real GameTest passes **8/8**, named network management patch generated/compiled, `WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS` and `WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS`; earlier direct Nether transactional abort regression also passed. The FE diagnostic was `active=false source=0 bridgeTX=0 sink=20000 netherTX=0 available=0`. Artifact ZIP ID `12119974112`, digest `sha256:24f5be9ab924324be4135c912cb44e6646c81a46019c0314a548d3d44bb1647f` is ZIP digest **not** user JAR hash.
+- **#244** workflow commit `83f9300f16c28bbbda09b602d215c6cb5d4f63db`, run https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39085875869 queued at documentation time. Adds the two-click same-ID delete confirmation and `apply-wireless-charging-single-pass.py`: once-per-player/20-tick inventory/hotbar/armor/offhand/Curios enumeration across all matching networks, global max 16,000 FE, preserving `chargeOne` transactional handling and individual charging category bitmasks.
+- Still outstanding: real client GUI with keyboard entry and multiple players, Curios installed runtime, dedicated-server save/restart with several named networks and retained buffers, chunk unload/reload, loaded-grid performance with Spark. No Ingame stable designation.
