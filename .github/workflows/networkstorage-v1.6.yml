@@ -1,3 +1,4 @@
+# Build 279: indexed importer topology plus conserved autocraft fast path; keep Drive16 binary gate
 # Build 278: final compiled client/server 16-slot Drive fail-closed gate; gameplay unchanged
 # Build 277: inject 16-slot GUI GameTest after restoring postpatch CI fixture
 # Build 276: corrected source-escape regression assertion; drive data never migrated
@@ -1878,6 +1879,8 @@ jobs:
           # per physical cable face, backed by NeoForge's lifecycle invalidation.
           # Graph walk, side-cut rules, FE transactions and receiver rate remain live.
           python3 patches/spark-energy-cable-endpoint-capability-cache.py
+          # AFK Spark: controller POSITIONS, revision-gated, live fallback on topology changes.
+          python3 patches/perf-accessory-topology-rebuild-index.py
           python3 - <<'PY'
           from pathlib import Path
           src=Path('work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java').read_text()
@@ -1932,6 +1935,8 @@ jobs:
           python3 patches/perf-autocrafter-menu-once-per-tick.py
           python3 patches/perf-drive-menu-serialization-hotpath.py
           python3 patches/perf-terminal-jei-recipe-candidate-reuse.py
+          # Crafting: skip only the duplicate preflight on already-approved reserved output.
+          python3 patches/perf-autocraft-single-exact-insert-preflight.py
           python3 - <<'PY'
           from pathlib import Path
           root=Path('work/src/main/java/dev/obsidiannetwork')
