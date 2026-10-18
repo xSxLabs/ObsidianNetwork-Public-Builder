@@ -22,6 +22,8 @@ class WirelessTwoOwnerAuthorization(unittest.TestCase):
             "check(!antenna.selectNetworkFor(b,id)", "antenna.selectNetworkFor(a,id)",
             "storage.rename(a,id,", "storage.setCharging(a,id,17)",
             "storage.delete(a,id)", "storage.find(id)==null",
+            "check(antenna.stored()==1024",
+            "WIRELESS preserved FE can be recovered after network deletion",
             "WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1 PASS",
         ):
             self.assertIn(check,S,check)
