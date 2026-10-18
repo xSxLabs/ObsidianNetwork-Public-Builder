@@ -2136,6 +2136,9 @@ jobs:
           python3 features/wireless-energy/inject-wireless-owner-authorization-gametest.py
           # Wireless #255: conditional bridge resolves only if Curios mod is installed.
           python3 features/wireless-energy/inject-wireless-curios-runtime-gametest.py
+          # Wireless #256: actual loaded 10/50/100 sender+receiver+EnergyCell FE workload.
+          python3 features/wireless-energy/inject-wireless-dense-runtime-gametest.py
+          grep -Fq 'WIRELESS_DENSE_REAL_SERVER_100_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_LOADED_SOURCE_ISOLATION_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
@@ -2167,6 +2170,8 @@ jobs:
           grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_CURIOS_ABSENT_START_V1 PASS' /tmp/build103-postpatch-gametest.log
+          for count in 10 50 100; do grep -Fq "WIRELESS_DENSE_REAL_SERVER_${count}_V1 PASS" /tmp/build103-postpatch-gametest.log; done
+          grep -Fq 'WIRELESS_DENSE_IDLE_RECEIVERS_100_V1 PASS' /tmp/build103-postpatch-gametest.log
           # A second post-patch GameTest JVM actually loads Curios 15.0.0 for MC 26.1.2.
           # Leave the distributable JAR / compileOnly optional dependency unchanged.
           cp work/build.gradle /tmp/wireless-curios-original.gradle
@@ -2185,6 +2190,8 @@ jobs:
           fi
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_CURIOS_INSTALLED_LINKAGE_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          for count in 10 50 100; do grep -Fq "WIRELESS_DENSE_REAL_SERVER_${count}_V1 PASS" /tmp/build103-curios-installed-gametest.log; done
+          grep -Fq 'WIRELESS_DENSE_IDLE_RECEIVERS_100_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1 PASS' /tmp/build103-curios-installed-gametest.log
           echo 'WIRELESS_CURIOS_ABSENT_AND_INSTALLED_RUNTIME_V1 PASS'
