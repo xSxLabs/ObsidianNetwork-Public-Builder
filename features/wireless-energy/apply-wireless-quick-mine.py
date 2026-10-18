@@ -33,5 +33,5 @@ for slug in ("network_transmitter","network_receiver"):
     assert loot["type"]=="minecraft:block"
     assert any(entry.get("name")=="obsidiannetwork:"+slug
                for pool in loot["pools"] for entry in pool["entries"])
-    assert (data.parent/"assets/obsidiannetwork/models/item"/f"{slug}.json").is_file()
+    assert (data.parent.parent/"assets/obsidiannetwork/models/item"/f"{slug}.json").is_file()
 print("WIRELESS_QUICK_MINE_CRAFT_DROP_V2 PASS both nodes: hardness 0.6, survival recipes, self-drop, item models")
