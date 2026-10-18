@@ -1,3 +1,4 @@
+# Build 303: Controller read-only device neighbor/capability dedup (per call), 4000 extra randomized equivalence checks and compiled binary gate; NO JAR RELEASE
 # Build 302: preserve original graph.nodes traversal order in cached-membership autocrafterCount, randomized equivalence and full Java/Curios matrix; release still locked
 # Build 301: optimize live autocrafterCount graph traversal from per-node BFS to one active component scan; 4000 equivalent model cases, full JVM/Curios regression, no user JAR
 # Build 300: per-helper Controller status hotspot measurement (topology, jobs, templates) under 50-drive load; no user JAR
@@ -1966,6 +1967,10 @@ jobs:
           # no cross-tick caching or change to wireless / item/FE handling.
           python3 patches/perf-autocrafter-count-component-once.py
           grep -Fq 'XSXLABS_AUTOCRAFTER_COMPONENT_ONCE_V1' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
+          # Build 303: do not probe the same adjacent external machine repeatedly
+          # when computing the Controller's read-only device summary.
+          python3 patches/perf-controller-external-machine-once.py
+          grep -Fq 'XSXLABS_CONTROLLER_EXTERNAL_ONCE_PER_CALL_V1' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
           python3 patches/perf-controller-menu-status-batching.py
           python3 patches/perf-autocrafter-menu-once-per-tick.py
           python3 patches/perf-drive-menu-serialization-hotpath.py
@@ -2611,6 +2616,7 @@ jobs:
           assert len(jars)==1, 'Expected exactly one distributable mod JAR'
           subprocess.run(['python3','tests/verify_compiled_drive16.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_autocrafter_count.py',str(jars[0])],check=True)
+          subprocess.run(['python3','tests/verify_compiled_controller_device_scan.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_solar_cache.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_energy_hotpath.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_craft_slots.py',str(jars[0])],check=True)
