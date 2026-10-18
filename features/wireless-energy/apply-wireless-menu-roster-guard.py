@@ -66,9 +66,9 @@ replace(
 )
 replace(
     menu,
-    """  public boolean stillValid(Player p){
-   return p.distanceToSqr(pos.getX()+0.5,pos.getY()+0.5,pos.getZ()+0.5)<=64.0;
-  }""",
+    """ public boolean stillValid(Player p){
+  return p.distanceToSqr(pos.getX()+0.5,pos.getY()+0.5,pos.getZ()+0.5)<=64.0;
+ }""",
     """  public boolean stillValid(Player p){
    if(p.distanceToSqr(pos.getX()+0.5,pos.getY()+0.5,pos.getZ()+0.5)>64.0)return false;
    if(!(p instanceof ServerPlayer owner))return true;
