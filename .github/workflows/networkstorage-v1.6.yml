@@ -1,3 +1,4 @@
+# Build 282: Java DriveContainer lower-row remove/reinsert/NBT regression before user JAR
 # Build 281: fixed solar six-face capability cache with a new fail-closed test suite
 # Build 280: correct method-scoped Importer fallback assertion; full Drive16, wireless and autocraft gates
 # Build 279: indexed importer topology plus conserved autocraft fast path; keep Drive16 binary gate
@@ -2281,6 +2282,7 @@ jobs:
           # Check the 16 real GUI cells only after applying the Drive patch.
           python3 patches/inject-drive-16-slot-postpatch-gametest.py
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Wireless #265: the combined postpatch GameTest now runs 40 extra
           # chunk-warmup ticks and a 60-tick transfer window. The existing
           # 800-tick test limit expires after the 100-device PASS at tick 802.
@@ -2362,6 +2364,7 @@ jobs:
           grep -Eq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 .*optimized_required=true' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_STORAGE_BULK_DEPOSIT_NS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
@@ -2391,6 +2394,7 @@ jobs:
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_CURIOS_INSTALLED_LINKAGE_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' /tmp/build103-curios-installed-gametest.log
           for count in 10 50 100; do grep -Fq "WIRELESS_DENSE_REAL_SERVER_${count}_V1 PASS" /tmp/build103-curios-installed-gametest.log; done
           grep -Fq 'WIRELESS_DENSE_IDLE_RECEIVERS_100_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_ONE_TX_EIGHT_RX_V1 PASS' /tmp/build103-curios-installed-gametest.log
