@@ -14,8 +14,8 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCHES = {
-    "autocrafter": "patches/perf-autocrafter-menu-once-per-tick.py",
     "controller": "patches/perf-controller-menu-status-batching.py",
+    "autocrafter": "patches/perf-autocrafter-menu-once-per-tick.py",
     "drive": "patches/perf-drive-menu-serialization-hotpath.py",
     "jei": "patches/perf-terminal-jei-recipe-candidate-reuse.py",
 }
@@ -158,11 +158,11 @@ class IntegratedGuiPerformanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             file = Path(tmp) / "dev/obsidiannetwork/menu/StorageTerminalMenu.java"
             file.parent.mkdir(parents=True)
-            text = ("public void applyJeiRecipeGrid(\n"
-                    "HashMap<ItemKey, Long> reservedNet = new HashMap<>();\n"
-                    "int invSize = sp.getInventory().getContainerSize();\n"
-                    "for (ItemKey key : runtime.storage().index().keysSnapshot()) {}\n"
-                    "private static Ingredient[] recipeIngredients3x3(")
+            old_start = assigned_string(PATCHES["jei"], "old_start")
+            old_loop = assigned_string(PATCHES["jei"], "old_loop")
+            text = ("public void applyJeiRecipeGrid(Inventory inv) {\n"
+                    + old_start + "\n" + old_loop + "\n"
+                    + "}\nprivate static Ingredient[] recipeIngredients3x3() {}")
             file.write_text(text)
             self.assertNotEqual(run_patch("jei", tmp).returncode, 0)
             self.assertEqual(file.read_text(), text)
