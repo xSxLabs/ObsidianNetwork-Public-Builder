@@ -51,3 +51,16 @@ Wire the live FE GameTest after the existing postpatch GameTest-source injection
 - New test-only injector `features/wireless-energy/inject-wireless-crossdim-gametest.py` adds a real Nether transmitter, 12,000 FE funded via FE transaction, and an existing Overworld receiver/sink; requires sink FE rise above original 8,000 and exactly 20,000 FE across both dimensions.
 - Test alone loads its Nether fixture chunk; **production runtime does not force-load chunks**. The timeout is extended only for the combined StateMachineTest from 250 to 380 ticks; other tests unchanged. Post-patch log must contain `WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS`.
 - Still open: gameplay check on a client and dedicated server, owner permissions on actual multiplayer, world reload persistence, optional Curios compatibility, creating/renaming/deleting via polished GUI, load/performance under dense receiver layouts.
+
+
+## Build #240 failure and #241 retry
+
+- **#240 RED**: https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39083789547. Reconstruction, Java compilation and original `WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS` succeeded. **True-crossdim assertion failed**, `BUILD103 GAMETEST: WIRELESS Nether FE actually reached overworld receiver and sink`; no claim of crossdim success.
+- Root-cause hypothesis: test setup loads the Nether transmitter's chunk once without an enduring ticket. This is **not yet proven**, because #240 did not log loaded state and FE counters at failure.
+- **#241**: https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39084598036, workflow commit `201db79f9041ac09f71a2b7cd08b8ed9d502f6ba` (initial status pending). Test fixture alone calls `nether.setChunkForced(...,true)` before the 40-tick window, releases on success, and prints `WIRELESS_CROSSDIM_DIAG_V1` before assertions. **The shipped transmitter/receiver runtime is unchanged and creates no chunk tickets.** If red, inspect whether FE is missing due to load state, capability, or scheduling; do not weaken exact conservation assertions.
+
+## Named network management implementation (unverified)
+
+- `apply-wireless-network-management.py` adds saved-data name/owner/mask bounds, owner-only `rename` and `delete` with immutable IDs, default Main kept immutable for charging and undeletable, and server-side Brigadier `/wirelessnet rename <id> <name>`, `/wirelessnet delete <id>`. GUI supports `Create named`, `Rename`, `Delete` through server-validated commands and now sends both filtered stable IDs and visible names.
+- Deletion immediately disables old network transfer by existing `find(id)==null` checks. **It does not erase a transmitter's persisted FE buffer**; owner may reselect a valid network. Main is public for energy but read-only for global charging settings.
+- `tests/test_wireless_network_management.py` enforces basic source contracts. **Not yet Java-compiled, GameTest-verified or Ingame-tested**; add patch to the feature workflow only after #241 finishes.
