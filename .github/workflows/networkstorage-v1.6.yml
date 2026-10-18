@@ -1878,6 +1878,35 @@ jobs:
           python3 features/wireless-energy/apply-wireless-menu-sync-cache.py
           # Wireless #252: invalidate stale names/IDs only after a roster edit.
           python3 features/wireless-energy/apply-wireless-menu-roster-guard.py
+          # Wireless #261: user-approved Flux-Point-style node models, 64k FE/t
+          # and a server-authoritative paginated list of visible networks.
+          python3 features/wireless-energy/apply-wireless-point-gui-rate.py
+          python3 features/wireless-energy/apply-wireless-point-assets.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          j=Path('work/src/main/java/dev/obsidiannetwork')
+          r=Path('work/src/main/resources/assets/obsidiannetwork')
+          be=(j/'blockentity/WirelessNetworkBlockEntity.java').read_text()
+          menu=(j/'menu/WirelessNetworkMenu.java').read_text()
+          screen=(j/'client/WirelessNetworkScreen.java').read_text()
+          assert 'MAX_TRANSFER=320000' in be and 'MAX_TRANSFER=16000' not in be
+          assert 'server.getGameTime()%5!=0' in be
+          assert 'WIRELESS_VISIBLE_ROSTER_V2' in screen
+          assert 'device.selectNetworkFor(p,current.get(choice).id())' in menu
+          assert 'ids.get(choice).equals(current.get(choice).id())' in menu
+          assert 'names.get(choice).equals(current.get(choice).name())' in menu
+          assert 'rosterPage*8+slot' in screen
+          for slug in ('network_transmitter','network_receiver'):
+              model=json.loads((r/'models/block'/f'{slug}.json').read_text())
+              assert len(model['elements'])>=9 and 'core' in model['textures']
+              for part in ('case','trim','core'):
+                  png=r/'textures/block'/f'{slug}_{part}.png'
+                  data=png.read_bytes()
+                  assert data.startswith(b'\\x89PNG\\r\\n\\x1a\\n')
+                  assert int.from_bytes(data[16:20],'big')==16
+          print('WIRELESS_USER_POINT_RATE_ROSTER_261_SOURCE_GATE PASS')
+          PY
           # Wireless #248: don't scan sender list at idle/unconnected receiver faces.
           grep -Fq 'int remainingSupply=-1;' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
           grep -Fq 'if(remainingSupply<0){' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
