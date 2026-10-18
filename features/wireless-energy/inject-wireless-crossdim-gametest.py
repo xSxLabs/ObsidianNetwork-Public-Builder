@@ -23,6 +23,10 @@ extra=r'''.thenExecuteAfter(45,()->{
                      check(nether!=null,"WIRELESS Nether dimension exists on real GameTest server");
                      BlockPos crossTxPos=new BlockPos(8,80,8);
                      // Only the TEST loads the fixture chunk; production wireless NEVER does.
+                     // GameTest must supply a lifetime-long fixture chunk ticket;
+                     // runtime itself is forbidden to force-load source dimensions.
+                     int fixtureChunkX=crossTxPos.getX()>>4, fixtureChunkZ=crossTxPos.getZ()>>4;
+                     nether.setChunkForced(fixtureChunkX,fixtureChunkZ,true);
                      nether.getChunkAt(crossTxPos);
                      nether.setBlock(crossTxPos,ObsidianNetwork.NETWORK_TRANSMITTER.get().defaultBlockState(),3);
                      var crossTx=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)nether.getBlockEntity(crossTxPos);
@@ -49,10 +53,16 @@ extra=r'''.thenExecuteAfter(45,()->{
                      var worldSink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(8,1,1)));
                      check(crossTx!=null&&worldSink!=null&&worldTransmitter!=null&&worldSource!=null,
                       "WIRELESS crossdim live entities after transfer");
+                     System.out.println("WIRELESS_CROSSDIM_DIAG_V1 active="+crossTx.isActive()
+                       +" source="+worldSource.stored()+" bridgeTX="+worldTransmitter.stored()
+                       +" sink="+worldSink.stored()+" netherTX="+crossTx.stored()
+                       +" available="+dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(
+                         helper.getLevel().getServer(),"obsidiannetwork:main"));
                      check(worldSink.stored()>8000,"WIRELESS Nether FE actually reached overworld receiver and sink");
                      check(worldSource.stored()+worldTransmitter.stored()+worldSink.stored()+crossTx.stored()==20000,
                       "WIRELESS exact conservation across Overworld and Nether");
                      nether.setBlock(crossTxPos,Blocks.AIR.defaultBlockState(),3);
+                     nether.setChunkForced(crossTxPos.getX()>>4,crossTxPos.getZ()>>4,false);
                      System.out.println("WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS");
                    })
                    '''
