@@ -54,10 +54,26 @@ addition=r'''
                      check(!antenna.selectNetworkFor(b,id),"WIRELESS B cannot select A private channel");
                      check(antenna.selectNetworkFor(a,id)&&id.equals(antenna.networkId()),
                       "WIRELESS A can bind owned antenna to own private channel");
+                     // Deleting a network must revoke transfer, not erase a
+                     // paid-for energy buffer on the transmitter.
+                     try(var funded=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
+                      check(antenna.energyHandler().insert(1024,funded)==1024,
+                       "WIRELESS owned private sender accepts 1024 FE");
+                      funded.commit();
+                     }
+                     check(dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(
+                      level.getServer(),id)==1024,"WIRELESS private sender funds its own network");
                      check(storage.delete(a,id),"WIRELESS A can delete private network");
                      check(storage.find(id)==null,"WIRELESS deleted private network is unavailable");
+                     check(antenna.stored()==1024,"WIRELESS deleting network must preserve antenna FE");
                      check(dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(
                       level.getServer(),id)==0,"WIRELESS removed private network forbids FE");
+                     check(antenna.selectNetworkFor(a,
+                      dev.obsidiannetwork.wireless.WirelessNetworkData.DEFAULT_ID),
+                      "WIRELESS owner can rebind buffered sender to Main");
+                     check(dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(
+                      level.getServer(),dev.obsidiannetwork.wireless.WirelessNetworkData.DEFAULT_ID)==1024,
+                      "WIRELESS preserved FE can be recovered after network deletion");
                      level.setBlock(pos,Blocks.AIR.defaultBlockState(),3);
                      System.out.println("WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1 PASS");
                    })'''
