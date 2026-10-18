@@ -16,7 +16,7 @@ STATUS = """private static ContainerData status(final Inventory inv, final Block
             if (!(inv.player.level() instanceof ServerLevel level)) {
                return 0;
             } else {
-               NetworkRuntime var4 = WorldTopologyBridge.runtimeForAccessory(level, p);
+               NetworkRuntime var4 = WorldTopologyBridge.runtimeForAutocrafter(level, p);
                return switch (i) {
                   case 0 -> var4 == null ? 0 : WorldTopologyBridge.autocraftingActiveJobs(level, var4);
                   case 1 -> var4 == null ? 0 : WorldTopologyBridge.autocraftingBlockedJobs(level, var4);
@@ -36,7 +36,7 @@ PREVIEW = """private static SimpleContainer preview(final Inventory inv, final B
       return !(inv.player.level() instanceof ServerLevel) ? new SimpleContainer(1) : new SimpleContainer(1) {
          public ItemStack getItem(int slot) {
             if (slot == 0 && inv.player.level() instanceof ServerLevel level) {
-               NetworkRuntime runtime = WorldTopologyBridge.runtimeForAccessory(level, p);
+               NetworkRuntime runtime = WorldTopologyBridge.runtimeForAutocrafter(level, p);
                if (runtime == null) {
                   return ItemStack.EMPTY;
                } else {
@@ -91,7 +91,7 @@ class AutocrafterMenuCacheTest(unittest.TestCase):
             self.assertEqual(actual.count("XSXLABS_AUTOCRAFTER_MENU_TICK_QUERY_CACHE_V1"), 1)
             status = actual.split("private static ContainerData status(",1)[1].split("private static SimpleContainer preview(",1)[0]
             preview = actual.split("private static SimpleContainer preview(",1)[1].split("private static SimpleContainer upgrades(",1)[0]
-            self.assertEqual(status.count("WorldTopologyBridge.runtimeForAccessory(level, p)"), 1)
+            self.assertEqual(status.count("WorldTopologyBridge.runtimeForAutocrafter(level, p)"), 1)
             self.assertIn("if (i == 3) return level.getBlockState(p)", status)
             self.assertIn("if (cachedTick != tick)", status)
             self.assertIn("cachedActive = -1;", status)
