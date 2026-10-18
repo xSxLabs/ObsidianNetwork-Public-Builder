@@ -32,11 +32,11 @@ new = r'''                     System.out.println("WIRELESS_DENSE_IDLE_RECEIVERS
                       world.setBlock(receiverPos.east(),ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
                       var rx=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)
                        world.getBlockEntity(receiverPos);
-                      var sink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)
+                      var fanoutSink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)
                        world.getBlockEntity(receiverPos.east());
-                      check(rx!=null&&!rx.isTransmitter()&&sink!=null,
+                      check(rx!=null&&!rx.isTransmitter()&&fanoutSink!=null,
                        "WIRELESS fanout real receiver and sink placed");
-                      check(sink.sideMode(Direction.WEST)==
+                      check(fanoutSink.sideMode(Direction.WEST)==
                        dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.INPUT,
                        "WIRELESS fanout sink WEST input configured");
                      }
@@ -58,12 +58,12 @@ new = r'''                     System.out.println("WIRELESS_DENSE_IDLE_RECEIVERS
                      long conservation=tx.stored(),delivered=0;
                      for(int i=0;i<8;i++){
                       var rxPos=new BlockPos(4162+i*3,80,4161);
-                      var sink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)
+                      var fanoutSink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)
                        world.getBlockEntity(rxPos.east());
-                      check(sink!=null&&sink.stored()>0,
+                      check(fanoutSink!=null&&fanoutSink.stored()>0,
                        "WIRELESS all eight receivers must deliver real FE, receiver "+i);
-                      delivered+=sink.stored();
-                      conservation+=sink.stored();
+                      delivered+=fanoutSink.stored();
+                      conservation+=fanoutSink.stored();
                      }
                      check(delivered>0&&conservation==512000L,
                       "WIRELESS one TX eight RX FE conservation exactly 512000");
