@@ -1,6 +1,6 @@
 # Feature-Branch: Network Transmitter / Network Receiver
 
-Status: **In Entwicklung – noch keine neue Test-JAR**. Branch `feature-wireless-energy-networks` wurde aus dem grünen Projekt-Performance-Build #232 abgezweigt (inklusive Dokumentationsstand `4c204269f4580cf6c1d6fe2830c067c9f02960ad`). Keine Änderungen an `projekt-performance` oder privaten Quellen.
+Status: **In Entwicklung – CI-Kandidaten #238 und #239 erfolgreich, noch nicht ingame bestätigt; echter Nether-Test #240 läuft**. Branch `feature-wireless-energy-networks` wurde aus dem grünen Projekt-Performance-Build #232 abgezweigt (inklusive Dokumentationsstand `4c204269f4580cf6c1d6fe2830c067c9f02960ad`). Keine Änderungen an `projekt-performance` oder privaten Quellen.
 
 ## Verbindliche Benennung und Funktionsumfang
 
