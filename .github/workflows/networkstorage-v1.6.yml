@@ -1,3 +1,4 @@
+# Wireless #259: pinpoint 0-FE Nether receiver ticker versus physical FE capability
 # Wireless #258: preserve full 10/50/100 FE gate; print exact failing balances
 # Wireless #235: corrected server-level FE capability regression assertion; full GUI/charging compile gates
 # Build 229: preserve multiple topology invalidation call sites in Spark neighbor-position patch; include regression fixture
