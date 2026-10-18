@@ -65,7 +65,7 @@ change(block,
 change(block,
     "  if(level.isClientSide())return InteractionResult.SUCCESS;\n  player.openMenu(",
     """  if(level.isClientSide())return InteractionResult.SUCCESS;
-  if(!(player instanceof ServerPlayer sp)||!device.canConfigure(sp)){
+  if(!(player instanceof ServerPlayer ownerPlayer)||!device.canConfigure(ownerPlayer)){
    player.sendSystemMessage(Component.literal("Only the antenna owner can configure this device"));
    return InteractionResult.FAIL;
   }
