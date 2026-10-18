@@ -1,3 +1,4 @@
+# Wireless #266: six-face TX/RX placement, every-tick smooth 64k FE and 64k/t player charging
 # Wireless #265: extend CI-only postpatch density GameTest deadline beyond warmup
 # Wireless #264: fix Curios-present async forced-chunk warmup in 10/50/100 actual FE GameTest
 # Wireless #263: fix PNG magic bytes CI assertion; no gameplay changes
@@ -1888,6 +1889,9 @@ jobs:
           python3 features/wireless-energy/apply-wireless-point-assets.py
           # Wireless #262: user-approved fast mine, verify actual crafting/loot data.
           python3 features/wireless-energy/apply-wireless-quick-mine.py
+          # Wireless #266: place both point devices on all six faces and remove
+          # five-tick receiver/20-tick player charging bursts without FE duplication.
+          python3 features/wireless-energy/apply-wireless-smooth-six-face.py
           grep -Fq '.strength(0.6F,6.0F).noOcclusion()' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           grep -Fq 'WIRELESS_QUICK_MINE_CRAFT_DROP_V2' features/wireless-energy/apply-wireless-quick-mine.py
           python3 - <<'PY'
@@ -1899,7 +1903,13 @@ jobs:
           menu=(j/'menu/WirelessNetworkMenu.java').read_text()
           screen=(j/'client/WirelessNetworkScreen.java').read_text()
           assert 'MAX_TRANSFER=320000' in be and 'MAX_TRANSFER=16000' not in be
-          assert 'server.getGameTime()%5!=0' in be
+          assert 'server.getGameTime()%5!=0' not in be
+          assert 'int remainingBudget=Math.min(MAX_TRANSFER,64000);' in be
+          charging=(j/'wireless/WirelessPlayerCharging.java').read_text()
+          assert 'MAX_PER_PLAYER_TICK=64000;' in charging
+          assert 'player.level().getGameTime()%20!=0' not in charging
+          point=(j/'block/WirelessNetworkBlock.java').read_text()
+          assert 'BlockStateProperties.FACING' in point and 'context.getClickedFace()' in point
           assert 'WIRELESS_VISIBLE_ROSTER_V2' in screen
           assert 'device.selectNetworkFor(p,current.get(choice).id())' in menu
           assert 'ids.get(choice).equals(current.get(choice).id())' in menu
@@ -1908,12 +1918,16 @@ jobs:
           for slug in ('network_transmitter','network_receiver'):
               model=json.loads((r/'models/block'/f'{slug}.json').read_text())
               assert len(model['elements'])>=9 and 'core' in model['textures']
+              states=json.loads((r/'blockstates'/f'{slug}.json').read_text())['variants']
+              assert set(states)=={'facing=up','facing=down','facing=north','facing=south','facing=east','facing=west'}
+              assert states['facing=down']['x']==180
               for part in ('case','trim','core'):
                   png=r/'textures/block'/f'{slug}_{part}.png'
                   data=png.read_bytes()
                   assert data.startswith(bytes((137,80,78,71,13,10,26,10)))
                   assert int.from_bytes(data[16:20],'big')==16
           print('WIRELESS_USER_POINT_RATE_ROSTER_261_SOURCE_GATE PASS')
+          print('WIRELESS_SIX_FACE_20HZ_CHARGE_AND_TRANSFER_SOURCE_GATE_V1 PASS')
           PY
           # Wireless #248: don't scan sender list at idle/unconnected receiver faces.
           grep -Fq 'int remainingSupply=-1;' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
