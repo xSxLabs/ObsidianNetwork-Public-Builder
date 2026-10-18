@@ -71,6 +71,29 @@ extra=r'''                     }
                      System.out.println("WIRELESS_DENSE_10_DIAG_V2 total="+total+" expected="+(10L*256000)
                        +" received="+received+" senders="+(total-received)
                        +" indexedAvailable="+supply+" gameTime="+world.getGameTime());
+                     if(received==0){
+                      // Diagnostic only: prove whether this distant Nether fixture
+                      // has active receiver block-entity tick scheduling. Original
+                      // exact conservation + nonzero transfer gate remains unchanged.
+                      var rp=new BlockPos(4160,80,4160);
+                      var testReceiver=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)world.getBlockEntity(rp);
+                      var testCell=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(rp.east());
+                      var testCapability=world.getCapability(
+                       net.neoforged.neoforge.capabilities.Capabilities.Energy.BLOCK,
+                       rp.east(),Direction.WEST);
+                      int insertable=-1;
+                      if(testCapability!=null)try(var simulation=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
+                       insertable=testCapability.insert(1024,simulation);
+                      }
+                      long beforeManual=testCell==null?-1:testCell.stored();
+                      if(testReceiver!=null)
+                       dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity.serverTick(
+                        world,rp,world.getBlockState(rp),testReceiver);
+                      System.out.println("WIRELESS_DENSE_MANUAL_TICK_DIAG_V1 receiver="+(testReceiver!=null)
+                       +" cap="+(testCapability!=null)+" insertable="+insertable
+                       +" before="+beforeManual+" after="+(testCell==null?-1:testCell.stored())
+                       +" time="+world.getGameTime());
+                     }
                      check(total==10L*256000&&received>0,"WIRELESS dense 10 conservation/transfer");
                      System.out.println("WIRELESS_DENSE_REAL_SERVER_10_V1 PASS total="+total+" sink="+received);
                      for(int index=10;index<50;index++){
