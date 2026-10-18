@@ -1,3 +1,4 @@
+# Build 295: actual 15 server-tick crafting result Shift-click burst, exact 240 input/960 output conservation, release still blocked
 # Build 294: tick real powered ControllerRuntime after charging test fixture; verify quick-move and GUI stress without relaxing checks
 # Build 293: Controller and Autocrafter true server GUI open stress in 50-drive game test; release held
 # Build 292: repair fail-closed test harness marker mutation; rerun actual 720 player QUICK_MOVE terminal GameTest
@@ -2311,12 +2312,15 @@ jobs:
           python3 patches/inject-terminal-real-quickmove-burst-gametest.py
           # Build 293: repeatedly open REAL Controller and Autocrafter menus under 50-drive load.
           python3 patches/inject-controller-autocrafter-50drive-gui-stress.py
+          # Build 295: actual result-slot shift-click crafting across 15 separate server ticks.
+          python3 patches/inject-terminal-shift-craft-15tick-gametest.py
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_AUTOCRAFTER_GUI_OPEN_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'REAL_50_DRIVE_TERMINAL_SHIFT_CRAFT_15_TICKS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Wireless #265: the combined postpatch GameTest now runs 40 extra
           # chunk-warmup ticks and a 60-tick transfer window. The existing
           # 800-tick test limit expires after the 100-device PASS at tick 802.
@@ -2403,6 +2407,7 @@ jobs:
           grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_AUTOCRAFTER_GUI_OPEN_STRESS_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'REAL_50_DRIVE_TERMINAL_SHIFT_CRAFT_15_TICKS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
@@ -2437,6 +2442,7 @@ jobs:
           grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_AUTOCRAFTER_GUI_OPEN_STRESS_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'REAL_50_DRIVE_TERMINAL_SHIFT_CRAFT_15_TICKS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           for count in 10 50 100; do grep -Fq "WIRELESS_DENSE_REAL_SERVER_${count}_V1 PASS" /tmp/build103-curios-installed-gametest.log; done
           grep -Fq 'WIRELESS_DENSE_IDLE_RECEIVERS_100_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_ONE_TX_EIGHT_RX_V1 PASS' /tmp/build103-curios-installed-gametest.log
