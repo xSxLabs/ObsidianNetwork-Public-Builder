@@ -913,7 +913,7 @@ jobs:
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "fifty_real_storage_drives"),
                   new FiftyDriveTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "conduit_bundle_runtime"),
-                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 250, 0, true, Rotation.NONE)));
+                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 380, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "mixed_item_bridge_topology"),
                   new MixedCableTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_bundle_standalone_fluid"),
@@ -2077,11 +2077,13 @@ jobs:
           p.write_text(s)
           print('REAL_AUTOCRAFT_OPTIMIZED_IDENTITY_GATE_ENABLED PASS')
           PY
-          # Wireless #238: the existing bundled StateMachineTest now includes a 35-tick real FE transfer sequence.
-          # Give only this extended test 250 ticks; all checks, other tests and timeouts remain unchanged.
+          # Wireless #240: one extended StateMachineTest includes the real FE air-gap proof
+          # plus 45+40 ticks of Nether -> Overworld FE conservation; only its timeout is 380.
           # Wireless: extra REAL Energy Cell -> ENERGY bundle -> transmitter
           # ... air gap ... receiver -> Energy Cell; exact FE conservation/rollback.
           python3 features/wireless-energy/inject-wireless-gametest.py
+          python3 features/wireless-energy/inject-wireless-crossdim-gametest.py
+          grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_CROSSDIM_READY_FE_GAMETEST_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'BlockPos wirelessSourcePos=' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'var wirelessSink=' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
@@ -2102,6 +2104,7 @@ jobs:
           grep -Eq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 .*optimized_required=true' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_STORAGE_BULK_DEPOSIT_NS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS' /tmp/build103-postpatch-gametest.log
           echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
           # Tests must never be shipped in the distributable JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
