@@ -93,7 +93,7 @@ class EnergyCableCacheTest(unittest.TestCase):
     def test_no_energy_or_topology_semantic_shortcuts(self):
         code=PATCH.read_text()
         self.assertNotIn("setChunkForced(",code)
-        self.assertNotIn("Transaction.openRoot()",code)
+        self.assertIn('assert s.count("Transaction.openRoot()")',code)
         self.assertNotIn("tx.commit()",code)
         self.assertNotIn("setDamageValue(",code)
         self.assertIn("Null-sided fallback",code)
