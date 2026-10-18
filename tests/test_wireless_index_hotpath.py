@@ -23,7 +23,9 @@ class WirelessIndexHotpathContracts(unittest.TestCase):
  def test_unregister_visits_only_matching_network(self):
   self.assertIn("var bucket=server.get(sender.networkId());",SCRIPT)
   self.assertIn("if(bucket.isEmpty())server.remove(sender.networkId());",SCRIPT)
-  # Old pattern is the deliberate fail-closed replacement anchor in this patch.\n  self.assertIn("for(var bucket:server.values())bucket.removeIf",SCRIPT)\n  self.assertIn("if(server.isEmpty())LOADED.remove(level.getServer());",SCRIPT)
+  # Old loop is intentionally present only as an exact replacement input anchor.
+  self.assertIn("for(var bucket:server.values())bucket.removeIf",SCRIPT)
+  self.assertIn("if(server.isEmpty())LOADED.remove(level.getServer());",SCRIPT)
  def test_fail_closed_on_source_drift(self):
   self.assertIn("assert source.count(old)==1",SCRIPT)
 
