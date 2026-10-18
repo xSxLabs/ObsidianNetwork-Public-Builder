@@ -70,8 +70,8 @@ class PerfGuiBundle(unittest.TestCase):
                     continue
                 target=node.args[0].id
                 pairs[target].append(ast.literal_eval(node.args[1]))
-        self.assertEqual(len(pairs["drive"]),1)
-        self.assertEqual(len(pairs["menu"]),7)
+        self.assertEqual(len(pairs["drive"]),2)
+        self.assertEqual(len(pairs["menu"]),8)
         with tempfile.TemporaryDirectory() as d:
             root=Path(d)
             for folder,name,key in (
@@ -79,7 +79,14 @@ class PerfGuiBundle(unittest.TestCase):
                  ("menu","DriveMenu.java","menu")):
                 f=root/("dev/obsidiannetwork/"+folder+"/"+name)
                 f.parent.mkdir(parents=True,exist_ok=True)
-                f.write_text("class Fixture {\n"+"\n".join(pairs[key])+"\n}")
+                fixture = "class Fixture {\n"+"\n".join(pairs[key])+"\n}"
+                if key == "menu":
+                    fixture = "private static final int CELL_SLOTS = 16;\n" + fixture
+                else:
+                    fixture += ('\nthis.cellInventory.serialize(output.child("cell_inventory"));'
+                                '\nthis.cellInventory.deserialize(input.childOrEmpty("cell_inventory"));'
+                                '\nfor (int slot = 0; slot < StorageDriveRuntime.SLOTS; slot++) {}')
+                f.write_text(fixture)
             r=run_patch(DRIVE,root)
             self.assertEqual(r.returncode,0,r.stdout+r.stderr)
             be=(root/"dev/obsidiannetwork/blockentity/StorageDriveBlockEntity.java").read_text()
@@ -90,6 +97,12 @@ class PerfGuiBundle(unittest.TestCase):
             self.assertIn("XSXLABS_DRIVE_GUI_TICK_SNAPSHOT_V1",ui)
             self.assertIn("cachedTick != tick",ui)
             self.assertIn("return cached[slot].copy();",ui)
+            self.assertIn("return CELL_SLOTS;",ui)
+            self.assertIn("new ItemStack[CELL_SLOTS]",ui)
+            self.assertIn("new boolean[CELL_SLOTS]",ui)
+            self.assertIn("slot >= CELL_SLOTS",ui)
+            self.assertNotIn("slot >= 8",ui)
+            self.assertIn("XSXLABS_DRIVE_LAST_CELL_ALL_16_V1",be)
             self.assertGreaterEqual(ui.count("invalidate();"),5)
             self.assertIn("this.be.removeCellAt(slot)",ui)
             self.assertNotEqual(run_patch(DRIVE,root).returncode,0)
