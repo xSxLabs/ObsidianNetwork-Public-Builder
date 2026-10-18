@@ -1875,6 +1875,9 @@ jobs:
           python3 features/wireless-energy/apply-wireless-menu-sync-cache.py
           grep -Fq 'int remainingSupply=(int)Math.min(MAX_TRANSFER,WirelessEnergyRuntime.available' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
           grep -Fq 'var bucket=server.get(sender.networkId());' work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java
+          if grep -Fq 'for(var bucket:server.values())bucket.removeIf' work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java; then
+            echo 'WIRELESS obsolete global unregister scan still present in GENERATED Java'; exit 1;
+          fi
           grep -Fq 'private long lastSnapshotTick=Long.MIN_VALUE;' work/src/main/java/dev/obsidiannetwork/menu/WirelessNetworkMenu.java
           grep -Fq 'WIRELESS_CHARGING_SINGLE_PASS_V1' features/wireless-energy/apply-wireless-charging-single-pass.py
           grep -Fq 'Click Delete again to confirm' work/src/main/java/dev/obsidiannetwork/client/WirelessNetworkScreen.java
