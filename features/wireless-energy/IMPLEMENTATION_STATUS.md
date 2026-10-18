@@ -118,3 +118,10 @@ Wire the live FE GameTest after the existing postpatch GameTest-source injection
 - **#246 RED** https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39086905540; failure during the first **Python source unit tests** only: `test_wireless_index_hotpath.py` incorrectly used `assertNotIn` on the patch file, which intentionally contains the obsolete code as an exact find-and-replace anchor. No Java compilation, FE transport or GameTest outcome was reached in this build. Existing optimized #245 remains the last green reference.
 - Test corrected in commit `9d5b46fecf8acb24571b1830db1cb05d6599875b`. Additionally, #247 CI checks the **generated Java** for absence of the obsolete all-network unregister loop; this is the correct place for the negative assertion, not the patch's input matcher.
 - **#247** https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39087000101, workflow commit `4b0d1c3f044f619c41cd641a0dfb6a03b9e809a8`, running at documentation time. No success claim until both original eight-test GameTest passes.
+
+
+## Receiver idle-path follow-up (not part of #247 pinned checkout)
+
+- Review identified that the first `apply-wireless-index-hotpath.py` version eagerly queried the sender index even when none of the receiver's six faces had an FE capability. This would cause extra work for disconnected/idle receivers, contrary to the feature's performance target.
+- Pending corrected patch commit `c3643a78bbb058690b61674cfe7d7f30f7616be8`: initialize `remainingSupply=-1` and resolve `WirelessEnergyRuntime.available` only after a real neighboring FE target is discovered. The first lookup remains cached for the rest of the receiver work tick, with the 16,000 FE budget and commit-only accounting unchanged.
+- Contract adjustment `e04c1ab7f3a916675d29da19531b9460489655f0`. This fix is **not** in #247's already-pinned workflow revision; include it only in a later sequential run and check idle receiver source gates.
