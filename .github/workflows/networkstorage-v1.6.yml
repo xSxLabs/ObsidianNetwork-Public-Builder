@@ -1,3 +1,4 @@
+# Wireless #262: quick-mine + craft/drop gates on top of point-style 261
 # Wireless #260: use tick-active Overworld fixture for 10/50/100 FE density gates
 # Wireless #259: pinpoint 0-FE Nether receiver ticker versus physical FE capability
 # Wireless #258: preserve full 10/50/100 FE gate; print exact failing balances
@@ -1882,6 +1883,10 @@ jobs:
           # and a server-authoritative paginated list of visible networks.
           python3 features/wireless-energy/apply-wireless-point-gui-rate.py
           python3 features/wireless-energy/apply-wireless-point-assets.py
+          # Wireless #262: user-approved fast mine, verify actual crafting/loot data.
+          python3 features/wireless-energy/apply-wireless-quick-mine.py
+          grep -Fq '.strength(0.6F,6.0F).noOcclusion()' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          grep -Fq 'WIRELESS_QUICK_MINE_CRAFT_DROP_V2' features/wireless-energy/apply-wireless-quick-mine.py
           python3 - <<'PY'
           from pathlib import Path
           import json
