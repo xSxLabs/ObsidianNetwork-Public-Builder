@@ -125,3 +125,10 @@ Wire the live FE GameTest after the existing postpatch GameTest-source injection
 - Review identified that the first `apply-wireless-index-hotpath.py` version eagerly queried the sender index even when none of the receiver's six faces had an FE capability. This would cause extra work for disconnected/idle receivers, contrary to the feature's performance target.
 - Pending corrected patch commit `c3643a78bbb058690b61674cfe7d7f30f7616be8`: initialize `remainingSupply=-1` and resolve `WirelessEnergyRuntime.available` only after a real neighboring FE target is discovered. The first lookup remains cached for the rest of the receiver work tick, with the 16,000 FE budget and commit-only accounting unchanged.
 - Contract adjustment `e04c1ab7f3a916675d29da19531b9460489655f0`. This fix is **not** in #247's already-pinned workflow revision; include it only in a later sequential run and check idle receiver source gates.
+
+
+## #247 verified, #248 lazy receiver guard
+
+- **#247 GREEN** https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39087000101, workflow commit `4b0d1c3f044f619c41cd641a0dfb6a03b9e809a8`. Both passes **8/8 GameTests**, crossdim FE and persistence CODEC PASS. `WIRELESS_RECEIVER_SINGLE_INDEX_WALK_V1 PASS` and `WIRELESS_MENU_ONE_NETWORK_SNAPSHOT_PER_TICK_V1 PASS`. Archive artifact `12121103542`, ZIP digest `sha256:8921d0bac1cc1433613f1fc30bfc94aefde46b696aa8a4a45297c14c5f862ad4` (not JAR SHA). These passing assertions do not provide measured MSPT improvements.
+- **#248** workflow commit `5a40ab13974b29450ef072a0c73bb15a16d5bb01`, run https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39087363211 queued at reporting time. Adds lazy supply lookup only after a valid FE-capable neighbor, retaining the per-dispatch index cap and 16k FE conservation. Source gate checks target detection precedes index lookup and only one available() call in receiver tick.
+- Branches `projekt-performance` and private source remain unmodified. Distinct in-game client, multiplayer, installed Curios and dedicated-server **disk restart** validation remain open.
