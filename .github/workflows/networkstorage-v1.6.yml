@@ -1,3 +1,4 @@
+# Build 300: per-helper Controller status hotspot measurement (topology, jobs, templates) under 50-drive load; no user JAR
 # Build 299: parse and validate exact 50-drive menu constructor/status timings in both Curios Java GameTests; no user JAR
 # Build 298: CI-only per-phase Controller/Autocrafter GUI timing; preserve full Curios and 16-slot regression gates, no user JAR
 # Build 297: Curios-present 50-drive terminal, controller and autocrafter GameTests use FakePlayer (no mock-client handshake); NO JAR RELEASE
@@ -2325,6 +2326,7 @@ jobs:
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_AUTOCRAFTER_GUI_OPEN_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'REAL_50_DRIVE_CONTROLLER_STATUS_SUBCALLS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_50_DRIVE_TERMINAL_SHIFT_CRAFT_15_TICKS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Wireless #265: the combined postpatch GameTest now runs 40 extra
           # chunk-warmup ticks and a 60-tick transfer window. The existing
@@ -2413,6 +2415,7 @@ jobs:
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_AUTOCRAFTER_GUI_OPEN_STRESS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'REAL_50_DRIVE_CONTROLLER_STATUS_SUBCALLS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_TERMINAL_SHIFT_CRAFT_15_TICKS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS' /tmp/build103-postpatch-gametest.log
@@ -2449,6 +2452,7 @@ jobs:
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_AUTOCRAFTER_GUI_OPEN_STRESS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'REAL_50_DRIVE_CONTROLLER_STATUS_SUBCALLS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           python3 performance/verify-gui-phase-breakdown.py /tmp/build103-postpatch-gametest.log /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_TERMINAL_SHIFT_CRAFT_15_TICKS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           for count in 10 50 100; do grep -Fq "WIRELESS_DENSE_REAL_SERVER_${count}_V1 PASS" /tmp/build103-curios-installed-gametest.log; done
