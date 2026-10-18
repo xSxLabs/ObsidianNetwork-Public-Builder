@@ -54,7 +54,7 @@ name: xSxLabs Network Storage v1.6
 'on':
   workflow_dispatch:
   push:
-    branches: [feature-wireless-energy-networks]
+    branches: [projekt-performance-wireless]
     paths: ['.github/workflows/networkstorage-v1.6.yml']
 
 
@@ -1895,6 +1895,39 @@ jobs:
           # Wireless #268: unlimited per-call TX throughput / finite real FE;
           # each of the many receivers retains its individual 64k FE/t budget.
           python3 features/wireless-energy/apply-wireless-unlimited-transmitter.py
+          # Project Performance + Wireless: bundle several menu and terminal
+          # hotpath optimizations into a single fully validated test JAR.
+          python3 patches/perf-controller-menu-status-batching.py
+          python3 patches/perf-autocrafter-menu-once-per-tick.py
+          python3 patches/perf-drive-menu-serialization-hotpath.py
+          python3 patches/perf-terminal-jei-recipe-candidate-reuse.py
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          power=(root/'menu/PowerStatusMenu.java').read_text()
+          autoc=(root/'menu/AutocrafterMenu.java').read_text()
+          drive=(root/'menu/DriveMenu.java').read_text()
+          drive_be=(root/'blockentity/StorageDriveBlockEntity.java').read_text()
+          terminal=(root/'menu/StorageTerminalMenu.java').read_text()
+          assert power.count('XSXLABS_CONTROLLER_STATUS_ONCE_PER_TICK_V1')==1
+          assert power.count('WorldTopologyBridge.runtimeForController(sl, c.getBlockPos())')==1
+          assert 'now - this.lastSummaryTick >= 20L' in power
+          assert autoc.count('XSXLABS_AUTOCRAFTER_MENU_TICK_QUERY_CACHE_V1')==1
+          assert 'return cachedPreview.copy();' in autoc
+          assert 'WorldTopologyBridge.autocraftingActiveJobs(level, cachedRuntime)' in autoc
+          assert 'WorldTopologyBridge.autocraftingBlockedJobs(level, cachedRuntime)' in autoc
+          assert drive.count('XSXLABS_DRIVE_GUI_TICK_SNAPSHOT_V1')==1
+          assert 'return cached[slot].copy();' in drive
+          assert 'XSXLABS_DRIVE_FAST_OCCUPANCY_V1' in drive_be
+          assert 'this.cellInventory.getResource(i)' not in drive_be.split('public int occupiedSlots()',1)[1].split('private void updateVisualState()',1)[0]
+          jej=terminal.split('public void applyJeiRecipeGrid(',1)[1].split('private static Ingredient[] recipeIngredients3x3(',1)[0]
+          assert 'XSXLABS_JEI_ONCE_PER_RECIPE_KEYS_V1' in jej
+          assert jej.count('runtime.storage().index().keysSnapshot()')==1
+          assert 'for (ItemKey key : availableKeys)' in jej
+          assert 'runtime.storage().extract(desc[ixx].key(), 1L)' in jej
+          assert 'runtime.storage().insertExact(desc[ixxx].key(), desc[ixxx].canonicalPayload(), 1L)' in jej
+          print('PERF_WIRELESS_FOUR_GUI_TERMINAL_PATCHES_V1 PASS')
+          PY
           grep -Fq '.strength(0.6F,6.0F).noOcclusion()' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           grep -Fq 'WIRELESS_QUICK_MINE_CRAFT_DROP_V2' features/wireless-energy/apply-wireless-quick-mine.py
           python3 - <<'PY'
