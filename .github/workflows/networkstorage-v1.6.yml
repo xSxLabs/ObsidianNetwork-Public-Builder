@@ -2122,6 +2122,9 @@ jobs:
           python3 features/wireless-energy/inject-wireless-crossdim-gametest.py
           # Wireless #245: live MC26.1 block entity NBT and network codec roundtrip.
           python3 features/wireless-energy/inject-wireless-persistence-gametest.py
+          # #249: real loaded-index detach/reattach and unknown-ID no-FE-leak coverage.
+          python3 features/wireless-energy/inject-wireless-source-isolation-gametest.py
+          grep -Fq 'WIRELESS_LOADED_SOURCE_ISOLATION_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_CROSSDIM_READY_FE_GAMETEST_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
@@ -2146,6 +2149,7 @@ jobs:
           grep -Fq 'WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'WIRELESS_LOADED_SOURCE_ISOLATION_V1 PASS' /tmp/build103-postpatch-gametest.log
           echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
           # Tests must never be shipped in the distributable JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
