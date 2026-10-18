@@ -61,9 +61,8 @@ extra=r'''                     }
                      for(int index=0;index<10;index++){
                       var pos=new BlockPos(4160+(index%10)*3,80,4161+(index/10)*3);
                       var source=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)world.getBlockEntity(pos);
-                      var sink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(pos.south().east().north().east().west().north());
                       // Sender is at z+1; sink at receiver.east() = sender.north().east().
-                      sink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(pos.north().east());
+                      var sink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(pos.north().east());
                       check(source!=null&&sink!=null,"WIRELESS dense 10 valid FE entities");
                       total+=source.stored()+sink.stored();received+=sink.stored();
                      }
