@@ -32,6 +32,8 @@ code=r'''
                   var xsxCraftMenu=new dev.obsidiannetwork.menu.StorageTerminalMenu(
                       93,xsxCraftInv,xsxlabsBurstTerminalPos,2L,2L);
                   rt.energy().load(rt.energy().capacity());
+                  // ControllerRuntime.powered is a tick-updated state, not a direct EnergyBuffer read.
+                  rt.tick();
                   if(!rt.powered())throw new IllegalStateException("Shift crafting test network unpowered");
                   final int[] xsxCraftTicks={0};
                   final long[] xsxCraftWorkNs=new long[15];
