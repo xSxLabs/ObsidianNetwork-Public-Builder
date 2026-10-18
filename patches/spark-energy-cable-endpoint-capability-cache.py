@@ -11,6 +11,7 @@ verified non-cable boundary is replaced. Null-sided fallback is preserved.
 Patch must run LAST of the ENERGY cable source patches and fail closed.
 """
 import os
+import re
 from pathlib import Path
 
 path=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java"
@@ -114,13 +115,15 @@ field = r'''
 # valid decompiler emits the same local pair for getAmount/extract/insert.
 s=original
 for name,count in (("source",2),("target",1)):
-    before=(f"EnergyHandler {name} = (EnergyHandler){sided};\n"
-            f"                        if ({name} == null) {{\n"
-            f"                           {name} = (EnergyHandler){fallback};\n"
-            f"                        }}")
+    # Tolerate decompiler whitespace only; the full distinct call and null
+    # fallback signatures remain mandatory, including correct argument order.
+    pair=(r"EnergyHandler\s+"+name+r"\s*=\s*\(EnergyHandler\)"
+          +re.escape(sided)+r";\s*if\s*\(\s*"+name
+          +r"\s*==\s*null\s*\)\s*\{\s*"+name
+          +r"\s*=\s*\(EnergyHandler\)"+re.escape(fallback)+r";\s*\}")
     after=f"EnergyHandler {name} = EnergyCableBlockEntity.this.liveBoundaryEnergy(server, cable, side, next, nextState);"
-    assert s.count(before)==count, f"Unexpected energy {name} capability pair: {s.count(before)}, expected {count}"
-    s=s.replace(before,after)
+    s,replaced=re.subn(pair,lambda match:after,s)
+    assert replaced==count, f"Unexpected energy {name} capability pair: {replaced}, expected {count}"
 assert s.count(sided)==0 and s.count(fallback)==0
 assert s.count("liveBoundaryEnergy(server, cable, side, next, nextState)")==3
 assert s.count("Transaction.openRoot()")==original.count("Transaction.openRoot()")
