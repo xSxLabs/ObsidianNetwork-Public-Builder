@@ -1,3 +1,4 @@
+# Build 278: final compiled client/server 16-slot Drive fail-closed gate; gameplay unchanged
 # Build 277: inject 16-slot GUI GameTest after restoring postpatch CI fixture
 # Build 276: corrected source-escape regression assertion; drive data never migrated
 # Build 275: 16-cell GameTest only after Drive patch; baseline, Curios and storage gates retained
@@ -2519,6 +2520,17 @@ jobs:
           mkdir -p dist
           cp work/build/libs/*.jar dist/
           sha256sum dist/*.jar > dist/SHA256SUMS.txt
+          # Post-build binary regression check: all 16 client AND server
+          # Drive slots, GUI geometry, NBT keys and cache invalidation.
+          # Never trust only the unoptimized baseline or source-level checks.
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          jars=sorted(Path('dist').glob('*.jar'))
+          assert len(jars)==1, 'Expected exactly one distributable mod JAR'
+          subprocess.run(['python3','tests/verify_compiled_drive16.py',str(jars[0])],check=True)
+          print('BINARY_DRIVE16_RELEASE_GATE_V1 PASS')
+          PY
           test -s /tmp/xsxlabs-perf-hotpaths.json
           cp /tmp/xsxlabs-perf-hotpaths.json dist/perf-hotpaths.json
           test -s dist/diagnostic-report.json
