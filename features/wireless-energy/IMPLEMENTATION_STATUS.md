@@ -35,3 +35,19 @@ Wire the live FE GameTest after the existing postpatch GameTest-source injection
 - Build-Artefakt https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39082417823/artifacts/12119770996 ; extrahierte JAR `xSxLabs-Network-Storage-1.1.1.jar`: **1.575.544 Bytes**, SHA-256 `4a7cfb018074f38dc6fd57962d71e5c72ff8dffa1afddc0ceac85eb885fcdb45`. Gefundene Klassen: Transmitter-/Receiver-Block und BE, WirelessNetworkData, WirelessEnergyRuntime, WirelessNetworkMenu/Screen, WirelessPlayerCharging, WirelessCuriosCharging. Keine `build103`-Testklassen; `neoforge.mods.toml` enthalten.
 - **Nicht nachgewiesen**: echter Zwei-Dimensionen-Test, Server-Neustart und Wiederaufnahme mehrerer Netzwerke, optionaler Curios-Mod-Installations-/Deinstallationsfall, GUIs mit Client und Multiplayer unter realer Last. Noch nicht als Ingame-stabil deklarieren.
 - Performance-Branch `projekt-performance` bleibt unverändert im Quell-/Workflow-Code; dort wurden ausschließlich zusätzliche, vom Nutzer gemeldete GUI-/Autocraft-Performance-Probleme dokumentiert.
+
+
+## Build #239: Owner protection and bounded sender scheduling (18.10.2026)
+
+- **Actions success**: https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39083431169; workflow commit `ab8eb4adf76354093b456faf0687b9ccbd0ca66c`.
+- Generated Java hardening: `features/wireless-energy/apply-wireless-hardening.py`. Transmitter/Receiver store owner UUID; placed devices are claimed by placer, legacy ownerless devices on first GUI use; only owner may open configuration / trigger menu actions; network selection additionally checks `WirelessNetworkData.canAccess`.
+- Receiver obeys **one global 16,000 FE budget across all six faces per 5-tick dispatch**, retaining atomic withdrawal/insert rollback. `WirelessEnergyRuntime.pull` rotates its sender start cursor among loaded matching transmitters, so no fixed-first sender preference.
+- Guard tests: `tests/test_wireless_hardening.py`, reconstructed Java compile and pre-existing two-pass GameTests under unchanged test semantics. No Ingame or Multiplayer confirmation.
+- Artifact: `xsxlabs-network-storage-v1.6-performance-candidate`, ID `12119049265`; reported ZIP digest `sha256:ea7472f80b8de9ac33819a7175e30d2ed6be8c88fc493201aa8e45db9a477c21` is **not** a JAR checksum.
+
+## Build #240: Actual second-dimension GameTest (pending verification)
+
+- Workflow commit `ce4ef34eb64e84fea122c48ab8692b95e432781a`, Actions run https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39083789547 was in progress when documented; **no success claim until job completes**.
+- New test-only injector `features/wireless-energy/inject-wireless-crossdim-gametest.py` adds a real Nether transmitter, 12,000 FE funded via FE transaction, and an existing Overworld receiver/sink; requires sink FE rise above original 8,000 and exactly 20,000 FE across both dimensions.
+- Test alone loads its Nether fixture chunk; **production runtime does not force-load chunks**. The timeout is extended only for the combined StateMachineTest from 250 to 380 ticks; other tests unchanged. Post-patch log must contain `WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS`.
+- Still open: gameplay check on a client and dedicated server, owner permissions on actual multiplayer, world reload persistence, optional Curios compatibility, creating/renaming/deleting via polished GUI, load/performance under dense receiver layouts.
