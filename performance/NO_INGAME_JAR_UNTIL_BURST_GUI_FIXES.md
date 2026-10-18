@@ -34,3 +34,15 @@ Stand: 18.10.2026. Nutzerfreigabe: **KEINE neue Ingame-Test-JAR zusenden**, bis 
 5. Kontrollierte A/B Messung. **Vorher keine Ingame-JAR an den Nutzer geben.**
 
 Selbst ein erfolgreicher interner CI-Build entfernt keine dieser Sperren ohne zugehörige Testbelege.
+
+
+## Interner Fortschritt 18.10.2026 – Builds #287 bis #293
+- **#287 GRÜN:** 50 echte Drives/800 Zellen, 450 Instanzen des serverseitigen DriveContainer, 14.400 Slot-Lesezugriffe einschließlich Slot 8–15. Keine TPS-/Client-GUI-Aussage.
+- **#288 GRÜN:** TerminalInventoryBlockEntity.setCraftItem lässt nur bei **exakt unveränderten** ItemStack-Daten (Item, Komponenten/NBT und Anzahl) redundante NeoForge Extract/Insert-Transaktionen aus; vorhandene schreibende Transaktionen bleiben bei jeder realen Änderung unverändert. Binärer JAR-Gate und 107 Python-Tests grün.
+- **#289 GRÜN:** Reale NeoForge ItemStack-Handler-GameTests mit 4.500 No-op-Schreibversuchen über 9 Slots; absichtlich veränderte Count-, Tool-DAMAGE-Komponenten und Empty-Slots vollständig korrekt. Curios-aus/-an, JVM-Neustart und vorbestehende Wireless/Drive-Tests erneut bestanden.
+- **#290 GRÜN:** Redundanter zweiter broadcastChanges()-Durchlauf nach rebuildRecipeChoice im Crafting-Terminal entfernt. Beide notwendigen Recipe-Ergebnispfade bleiben laut kompiliertem Bytecode eigenständig synchronisiert. Noch kein echter Spieler-Burstnachweis.
+- **#291 ROT:** Neu eingeführter Testfixture-Unit-Test veränderte einen Stringmarker durch Suffix \`_OLD\`, wodurch der Originalstring weiterhin als Teilstring enthalten war. Fail-closed-Test stoppte vor Java-Kompilation; **keine** bewiesene Java-Regression. Korrigiert, den Marker vollständig zu ersetzen.
+- **#292 gestaffelte CI-Prüfung:** erster realer Minecraft-GameTest für 720 tatsächliche \`StorageTerminalMenu.quickMoveStack\`-Aktionen mit ServerPlayer und 50-Drive-Live-Storage. Exakte per-Click-Item-Erhaltung, Quellenleerung und vollständige Rückentnahme; abhängig vom JVM-Lauf grün/rot bewerten.
+- **#293 gestaffelte CI-Prüfung:** zusätzlich 180 echte Controller-GUI- und 180 echte Autocrafter-GUI-Servermenüinstanzen inklusive Status-/Preview-Lesezugriffen auf voller Topologie, 9 Laufzeitstichproben; Ergebnisse vor Prüfung **nicht** als grün markieren.
+
+Alle Komponenten und CI-GameTests sind **kein** Ersatz für kontrollierte vollständige serverseitige MSPT mean/p95/p99- und GC-Messungen bei hoher Spieler-Interaktion auf derselben gespeicherten Welt. **Keine JAR-Freigabe.**
