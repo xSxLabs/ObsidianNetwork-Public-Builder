@@ -47,6 +47,8 @@ burst_code=r'''
                   // The headless test network has no generator: power only the
                   // test fixture; normal energy policy / 20Hz ticks stay intact.
                   rt.energy().load(rt.energy().capacity());
+                  // ControllerRuntime.powered is a tick-updated state, not a direct EnergyBuffer read.
+                  rt.tick();
                   if(!rt.powered())throw new IllegalStateException("Full test network did not power up");
                   long[] xsxBurstTimes=new long[9];
                   int xsxOperations=0;
