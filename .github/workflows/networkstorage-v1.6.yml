@@ -1,3 +1,4 @@
+# Build 274: critical 16-slot Drive GUI visibility regression (no inventory migration)
 # Build 273: EnergyCable endpoint capability cache under same wireless+GUI and smithing guards
 # Build 271: match real post-v1.6 Autocrafter runtime accessor in four-patch integrated performance check
 # Wireless #266: six-face TX/RX placement, every-tick smooth 64k FE and 64k/t player charging
@@ -1031,6 +1032,28 @@ jobs:
                   if(drive.occupiedSlots()!=dev.obsidiannetwork.core.StorageDriveRuntime.SLOTS)throw new IllegalStateException("Drive not fully populated");
                 }
                 if(insertedCells!=800)throw new IllegalStateException("Expected 800 real cells");
+                // #274 regression: 16 real occupied slots are readable via the
+                // actual private DriveMenu backing Container, not only via BE.
+                // Old GUI-cache regression reported 8 and concealed slots 8..15.
+                try {
+                  var first=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)
+                     level.getBlockEntity(h.absolutePos(new BlockPos(2,2,1)));
+                  if(first==null)throw new IllegalStateException("Missing complete drive fixture");
+                  Class<?> cls=Class.forName("dev.obsidiannetwork.menu.DriveMenu$DriveContainer");
+                  var ctr=cls.getDeclaredConstructor(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity.class);
+                  ctr.setAccessible(true);
+                  var backing=(net.minecraft.world.Container)ctr.newInstance(first);
+                  if(backing.getContainerSize()!=16)
+                     throw new IllegalStateException("Drive GUI backing container truncated to "+backing.getContainerSize());
+                  for(int slot=0;slot<16;slot++){
+                     var visible=backing.getItem(slot);
+                     if(visible.isEmpty())throw new IllegalStateException("Drive cell invisible at "+slot);
+                  }
+                  if(first.occupiedSlots()!=16)throw new IllegalStateException("Reading GUI lost original cell");
+                  System.out.println("DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS");
+                }catch(ReflectiveOperationException ex){
+                  throw new IllegalStateException("Cannot inspect actual drive GUI 16-slot container",ex);
+                }
                 h.startSequence().thenExecuteAfter(50,()->{
                   var rt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForController(level,controller);
                   if(rt==null)throw new IllegalStateException("50-drive controller runtime missing");
@@ -1943,7 +1966,19 @@ jobs:
           assert 'WorldTopologyBridge.autocraftingActiveJobs(level, cachedRuntime)' in autoc
           assert 'WorldTopologyBridge.autocraftingBlockedJobs(level, cachedRuntime)' in autoc
           assert drive.count('XSXLABS_DRIVE_GUI_TICK_SNAPSHOT_V1')==1
+          assert drive.count('XSXLABS_DRIVE_ALL_16_SLOTS_V1')==1
+          assert 'private static final int CELL_SLOTS = 16;' in drive
+          assert 'return CELL_SLOTS;' in drive
+          assert 'new ItemStack[CELL_SLOTS]' in drive
+          assert 'new boolean[CELL_SLOTS]' in drive
+          assert 'slot >= CELL_SLOTS' in drive
+          assert 'return 8;' not in drive.split('private static final class DriveContainer',1)[1]
+          assert 'slot >= 8' not in drive
           assert 'return cached[slot].copy();' in drive
+          assert 'XSXLABS_DRIVE_LAST_CELL_ALL_16_V1' in drive_be
+          assert 'int slot = StorageDriveRuntime.SLOTS - 1;' in drive_be
+          assert 'this.cellInventory.serialize(output.child("cell_inventory"));' in drive_be
+          assert 'this.cellInventory.deserialize(input.childOrEmpty("cell_inventory"));' in drive_be
           assert 'XSXLABS_DRIVE_FAST_OCCUPANCY_V1' in drive_be
           assert 'this.cellInventory.getResource(i)' not in drive_be.split('public int occupiedSlots()',1)[1].split('private void updateVisualState()',1)[0]
           jej=terminal.split('public void applyJeiRecipeGrid(',1)[1].split('private static Ingredient[] recipeIngredients3x3(',1)[0]
