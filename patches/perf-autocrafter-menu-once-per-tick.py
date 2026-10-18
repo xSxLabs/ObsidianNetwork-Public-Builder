@@ -35,7 +35,7 @@ replace_method(
     "private static ContainerData status(final Inventory inv, final BlockPos p) {",
     "private static SimpleContainer preview(final Inventory inv, final BlockPos p) {",
     (
-        "NetworkRuntime var4 = WorldTopologyBridge.runtimeForAccessory(level, p);",
+        "NetworkRuntime var4 = WorldTopologyBridge.runtimeForAutocrafter(level, p);",
         "WorldTopologyBridge.autocraftingActiveJobs(level, var4)",
         "WorldTopologyBridge.autocraftingBlockedJobs(level, var4)",
         "var4 != null && var4.powered()",
@@ -58,7 +58,7 @@ replace_method(
             if (i < 0 || i > 2) return 0;
             long tick = level.getGameTime();
             if (cachedTick != tick) {
-               cachedRuntime = WorldTopologyBridge.runtimeForAccessory(level, p);
+               cachedRuntime = WorldTopologyBridge.runtimeForAutocrafter(level, p);
                cachedActive = -1;
                cachedBlocked = -1;
                cachedTick = tick;
@@ -94,7 +94,7 @@ replace_method(
     "private static SimpleContainer preview(final Inventory inv, final BlockPos p) {",
     "private static SimpleContainer upgrades(Inventory inv, BlockPos p) {",
     (
-        "WorldTopologyBridge.runtimeForAccessory(level, p)",
+        "WorldTopologyBridge.runtimeForAutocrafter(level, p)",
         "WorldTopologyBridge.autocraftingService(level, runtime).jobViews(level)",
         "Identifier.tryParse(jobs.getFirst().output().itemId())",
         "new ItemStack(item)",
@@ -111,7 +111,7 @@ replace_method(
             long tick = level.getGameTime();
             if (cachedTick != tick) {
                ItemStack next = ItemStack.EMPTY;
-               NetworkRuntime runtime = WorldTopologyBridge.runtimeForAccessory(level, p);
+               NetworkRuntime runtime = WorldTopologyBridge.runtimeForAutocrafter(level, p);
                if (runtime != null) {
                   List<MinecraftAutocraftingService.JobView> jobs =
                      WorldTopologyBridge.autocraftingService(level, runtime).jobViews(level);
