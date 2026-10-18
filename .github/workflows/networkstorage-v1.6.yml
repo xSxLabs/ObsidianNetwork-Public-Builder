@@ -1865,6 +1865,14 @@ jobs:
           python3 features/wireless-energy/apply-antenna-assets.py
           # Wireless #239: owner-bound configuration and one receiver-side FE budget.
           python3 features/wireless-energy/apply-wireless-hardening.py
+          # Build 242: persistent named network management + GUI + owner-only actions.
+          python3 features/wireless-energy/apply-wireless-network-management.py
+          grep -Fq 'public boolean rename(ServerPlayer player,String id,String name)' work/src/main/java/dev/obsidiannetwork/wireless/WirelessNetworkData.java
+          grep -Fq 'public boolean delete(ServerPlayer player,String id)' work/src/main/java/dev/obsidiannetwork/wireless/WirelessNetworkData.java
+          grep -Fq 'Commands.literal("rename")' work/src/main/java/dev/obsidiannetwork/wireless/WirelessNetworkCommands.java
+          grep -Fq 'Commands.literal("delete")' work/src/main/java/dev/obsidiannetwork/wireless/WirelessNetworkCommands.java
+          grep -Fq 'sendNamed("rename")' work/src/main/java/dev/obsidiannetwork/client/WirelessNetworkScreen.java
+          grep -Fq 'sendNamed("delete")' work/src/main/java/dev/obsidiannetwork/client/WirelessNetworkScreen.java
           grep -Fq 'public boolean canConfigure(' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
           grep -Fq 'int remainingBudget=MAX_TRANSFER;' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
           grep -Fq 'NEXT_SENDER' work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java
@@ -2077,8 +2085,8 @@ jobs:
           p.write_text(s)
           print('REAL_AUTOCRAFT_OPTIMIZED_IDENTITY_GATE_ENABLED PASS')
           PY
-          # Wireless #241: keep the Nether GameTest source chunk loaded for its test window.
-          # The feature still never creates chunk tickets; combined test timeout is 380 ticks.
+          # Wireless #242: preserve successful Nether test fixture, prove transactional
+          # remote pull/rollback; also build owner-validated named network GUI.
           # Wireless: extra REAL Energy Cell -> ENERGY bundle -> transmitter
           # ... air gap ... receiver -> Energy Cell; exact FE conservation/rollback.
           python3 features/wireless-energy/inject-wireless-gametest.py
