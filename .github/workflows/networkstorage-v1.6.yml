@@ -1,3 +1,4 @@
+# Build 290: remove redundant Crafting Terminal menu broadcast after recipe rebuild, preserving both sync paths; release held
 # Build 289: real dedicated NeoForge TerminalInventory BE test (4500 no-ops plus count/component changes), release held
 # Build 288: remove redundant nine-slot terminal persistence transactions on exact no-op writes; no user JAR
 # Build 287: test-only 50 real Drive menu server read stress; no runtime change, no ingame release
@@ -1956,6 +1957,9 @@ jobs:
           # Terminal crafting-grid writes: skip only exact component+count identity no-ops.
           python3 patches/perf-terminal-unchanged-craft-slot-elision.py
           grep -Fq 'XSXLABS_TERMINAL_UNCHANGED_CRAFT_SLOT_ELISION_V1' work/src/main/java/dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.java
+          # Build 290: recipe rebuild already syncs both paths; elide the second broadcast.
+          python3 patches/perf-terminal-duplicate-broadcast-elision.py
+          grep -Fq 'XSXLABS_TERMINAL_DUPLICATE_BROADCAST_ELISION_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           # Crafting: skip only the duplicate preflight on already-approved reserved output.
           python3 patches/perf-autocraft-single-exact-insert-preflight.py
           python3 - <<'PY'
@@ -2571,6 +2575,7 @@ jobs:
           subprocess.run(['python3','tests/verify_compiled_solar_cache.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_energy_hotpath.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_craft_slots.py',str(jars[0])],check=True)
+          subprocess.run(['python3','tests/verify_compiled_terminal_broadcast.py',str(jars[0])],check=True)
           print('BINARY_DRIVE16_SOLAR_ENERGY_HOTPATH_RELEASE_GATES_V1 PASS')
           PY
           test -s /tmp/xsxlabs-perf-hotpaths.json
