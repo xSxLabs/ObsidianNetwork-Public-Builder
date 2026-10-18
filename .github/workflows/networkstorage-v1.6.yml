@@ -2195,6 +2195,11 @@ jobs:
           grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1 PASS' /tmp/build103-curios-installed-gametest.log
           echo 'WIRELESS_CURIOS_ABSENT_AND_INSTALLED_RUNTIME_V1 PASS'
+          # Wireless #257: validate and export exact FE counts for BOTH Curios states.
+          python3 features/wireless-energy/validate-wireless-density-report.py \
+            --without-curios /tmp/build103-postpatch-gametest.log \
+            --with-curios /tmp/build103-curios-installed-gametest.log \
+            --output dist/wireless-density-report.json
           echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
           # Tests must never be shipped in the distributable JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
