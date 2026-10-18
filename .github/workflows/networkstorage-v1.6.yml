@@ -1,3 +1,4 @@
+# Build 276: corrected source-escape regression assertion; drive data never migrated
 # Build 275: 16-cell GameTest only after Drive patch; baseline, Curios and storage gates retained
 # Build 274: critical 16-slot Drive GUI visibility regression (no inventory migration)
 # Build 273: EnergyCable endpoint capability cache under same wireless+GUI and smithing guards
