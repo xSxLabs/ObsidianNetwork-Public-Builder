@@ -1,3 +1,4 @@
+# Build 273: EnergyCable endpoint capability cache under same wireless+GUI and smithing guards
 # Build 271: match real post-v1.6 Autocrafter runtime accessor in four-patch integrated performance check
 # Wireless #266: six-face TX/RX placement, every-tick smooth 64k FE and 64k/t player charging
 # Wireless #265: extend CI-only postpatch density GameTest deadline beyond warmup
@@ -1868,6 +1869,26 @@ jobs:
           # Spark #232: one neighbor position per active mixed conduit endpoint face;
           # cache only immutable enum array, never world/endpoint/transaction state.
           python3 patches/spark-conduit-runtime-neighbor-direction-reuse.py
+          # Projekt Performance Wireless #273: FE endpoint capability caching
+          # per physical cable face, backed by NeoForge's lifecycle invalidation.
+          # Graph walk, side-cut rules, FE transactions and receiver rate remain live.
+          python3 patches/spark-energy-cable-endpoint-capability-cache.py
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java').read_text()
+          assert src.count('XSXLABS_SPARK_CABLE_ENDPOINT_CAPABILITY_CACHE_V1')==1
+          assert src.count('liveBoundaryEnergy(server, cable, side, next, nextState)')==3
+          assert src.count('BlockCapabilityCache.create(')==2
+          assert 'public void onLoad()' in src and 'public void setRemoved()' in src
+          assert 'segment.worldPosition.equals(cable)' in src
+          assert 'server.getBlockEntity(cable)' in src
+          assert 'nextState, null, side.getOpposite()' in src
+          assert 'nextState, null, null' in src
+          assert 'TransactionContext transaction' in src
+          assert 'source.extract(' in src and 'target.insert(' in src
+          assert src.count('cableBudget-- > 0')==3
+          print('SPARK_CABLE_ENDPOINT_CACHE_BUILD_GATE_V1 PASS')
+          PY
           # Feature branch: install the two wireless antenna blocks on top of green perf #232.
           python3 features/wireless-energy/apply-wireless-runtime.py
           python3 features/wireless-energy/apply-wireless-ui-charging.py
