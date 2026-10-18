@@ -61,7 +61,7 @@ class TerminalBroadcastTests(unittest.TestCase):
         for before,after in (
             ("this.broadcastChanges();\n         return;", "return;"),
             ("this.broadcastChanges();\n   }\n   public boolean", "return;\n   }\n   public boolean"),
-            ("this.rebuildRecipeChoice(sp, level);", "this.rebuildRecipeChoice(sp, level, extra);"),
+            ("this.rebuildRecipeChoice(sp, level);", "this.rebuildRecipeChoice(sp, level); changedAfter();"),
             ("be.setCraftItem(", "be.saveOnly("),
         ):
             src=SOURCE.replace(before,after)
