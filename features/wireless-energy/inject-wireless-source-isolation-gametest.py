@@ -17,7 +17,6 @@ assert s.count(anchor)==1,"wireless rollback anchor changed"
 extra=r'''
                      // WIRELESS_LOADED_SOURCE_ISOLATION_V1: no ghost transport and
                      // no FE destruction when a registered source is detached.
-                     var wirelessRegistry=dev.obsidiannetwork.wireless.WirelessEnergyRuntime.class;
                      String validId="obsidiannetwork:main";
                      String absentId="obsidiannetwork:wireless-nonexistent";
                      crossTx.selectNetwork(absentId);
