@@ -1896,6 +1896,10 @@ jobs:
           # Wireless #268: unlimited per-call TX throughput / finite real FE;
           # each of the many receivers retains its individual 64k FE/t budget.
           python3 features/wireless-energy/apply-wireless-unlimited-transmitter.py
+          # Wireless hotfix: upgrading ordinary tools is ONLY allowed by the
+          # Battery Upgrade smithing recipe, never by wireless charging.
+          # Recovery command removes just Obsidian's FE marker from one held item.
+          python3 features/wireless-energy/apply-wireless-smithing-only-charging.py
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
           python3 patches/perf-controller-menu-status-batching.py
@@ -1928,6 +1932,25 @@ jobs:
           assert 'runtime.storage().extract(desc[ixx].key(), 1L)' in jej
           assert 'runtime.storage().insertExact(desc[ixxx].key(), desc[ixxx].canonicalPayload(), 1L)' in jej
           print('PERF_WIRELESS_FOUR_GUI_TERMINAL_PATCHES_V1 PASS')
+          PY
+          # Confirm the final compiled Java has no implicit tool conversion.
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          p=(root/'wireless/WirelessPlayerCharging.java').read_text()
+          c=(root/'wireless/WirelessNetworkCommands.java').read_text()
+          s=(root/'recipe/BatteryUpgradeSmithingRecipe.java').read_text()
+          assert 'WIRELESS_SMITHING_ONLY_TOOL_CHARGE_V1' in p
+          assert p.count('if(EnergyTool.upgraded(stack))')==1
+          assert 'if(EnergyTool.eligible(stack))' not in p
+          assert 'getCapability(Capabilities.Energy.ITEM)' in p
+          assert 'EnergyTool.setEnergy(stack,EnergyTool.energy(stack)+drawn)' in p
+          assert 'WIRELESS_HELD_TOOL_RESTORE_V1' in c
+          assert 'held.remove(dev.obsidiannetwork.registry.ModDataComponents.ENERGY_TOOL_FE.get())' in c
+          assert 'getMainHandItem()' in c and 'setDamageValue(' not in c
+          assert 'in.template().is(ObsidianNetwork.BATTERY_UPGRADE.get())' in s
+          assert 'EnergyTool.setEnergy(out,EnergyTool.capacity(out))' in s
+          print('WIRELESS_SMITHING_ONLY_AND_EXPLICIT_RESTORE_SOURCE_GATE_V1 PASS')
           PY
           grep -Fq '.strength(0.6F,6.0F).noOcclusion()' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           grep -Fq 'WIRELESS_QUICK_MINE_CRAFT_DROP_V2' features/wireless-energy/apply-wireless-quick-mine.py
