@@ -11,6 +11,8 @@ class TrueCrossDimensionGameTestContracts(unittest.TestCase):
   for marker in (
    "getLevel(net.minecraft.world.level.Level.NETHER)",
    "nether.getChunkAt(crossTxPos)",
+   "nether.setChunkForced(fixtureChunkX,fixtureChunkZ,true)",
+   "nether.setChunkForced(crossTxPos.getX()>>4,crossTxPos.getZ()>>4,false)",
    "ObsidianNetwork.NETWORK_TRANSMITTER.get().defaultBlockState()",
    "nether.getBlockEntity(crossTxPos)",
    "crossTx.energyHandler().insert(12000,fillCross)",
