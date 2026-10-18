@@ -1,6 +1,6 @@
 # Feature-Branch: Network Transmitter / Network Receiver
 
-Status: **In Entwicklung – #248 grün (8/8 GameTests, Crossdim-FE, NBT-Codec, lazy Receiver-Abfrage und GUI-Cache); #249 prüft die reale Senderindex-Abmeldung/Wiederanmeldung; keine Ingame-Freigabe**. Branch `feature-wireless-energy-networks` wurde aus dem grünen Projekt-Performance-Build #232 abgezweigt (inklusive Dokumentationsstand `4c204269f4580cf6c1d6fe2830c067c9f02960ad`). Keine Änderungen an `projekt-performance` oder privaten Quellen.
+Status: **In Entwicklung – Build #250 grün (8/8 GameTests, Nether→Oberwelt-FE, 12.000 FE über zwei getrennte dedizierte Server-JVMs); Build #251 prüft zusätzlich zwei private Funknetzwerke und deren persistente Isolation. Noch keine Ingame-Freigabe.** Branch `feature-wireless-energy-networks` wurde aus dem grünen Projekt-Performance-Build #232 abgezweigt (inklusive Dokumentationsstand `4c204269f4580cf6c1d6fe2830c067c9f02960ad`). Keine Änderungen an `projekt-performance` oder privaten Quellen.
 
 ## Verbindliche Benennung und Funktionsumfang
 
