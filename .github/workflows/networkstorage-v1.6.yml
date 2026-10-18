@@ -1,3 +1,4 @@
+# Build 292: repair fail-closed test harness marker mutation; rerun actual 720 player QUICK_MOVE terminal GameTest
 # Build 291: real ServerPlayer -> CraftingTerminalMenu.quickMoveStack -> 50-drive burst conservation; no user JAR
 # Build 290: remove redundant Crafting Terminal menu broadcast after recipe rebuild, preserving both sync paths; release held
 # Build 289: real dedicated NeoForge TerminalInventory BE test (4500 no-ops plus count/component changes), release held
