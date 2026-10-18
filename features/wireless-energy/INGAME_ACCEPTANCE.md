@@ -34,3 +34,11 @@ Bei Problemen folgende Informationen festhalten: getestete **Buildnummer und Act
 - Grüne CI belegt nur die tatsächlich gelaufenen Source-, Java- und GameTests.
 - NBT/Codec-Roundtrip belegt **keinen** vollständigen Welt-Save/Neustart.
 - Nether-GameTest lädt seinen Testchunk selbst und belegt **nicht** automatisches Produktion-Chunkloading.
+
+## Abschluss: reale Laufzeit- und Spark-Abnahme
+
+Der Teststand #255 bestätigt Curios-Ladefähigkeit/Bridge-Linkage mit und ohne das optionale Mod, aber **keinen** ausgerüsteten Curios-Energiegegenstand. Curios allein hat standardmäßig keine nutzbaren Slots. Für Szenario 7 daher eine passende Slot-Konfiguration/Addon mit tatsächlichem Slot und einem FE-fähigen Item installieren; andernfalls gilt ein leerer Curios-Adapter nicht als erfolgreicher Ladebeweis.
+
+Die Dichte-Regression #256/#257 erzeugt im GameTest nur einen echten **FE-Funktionstest unter gleichzeitig geladener Last**: 10, 50 und 100 Sender+Empfänger+EnergyCell-Kombinationen, mit erhaltener FE-Gesamtbilanz. **Kein** Wert daraus ist eine kontrollierte Spark-MSPT- oder P95/P99-Verbesserung. Für die finale Spielabnahme bei identischen Server-Einstellungen je Phase 60–120 Sekunden aufzeichnen: 0 Wireless-Geräte; 10/10; 50/50; 100/100. Zusätzlich jeweils „Quelle vorhanden / Quelle weg“, Ziel leer / Ziel voll, einmal offene und geschlossene Wireless-GUI. P50/P95/P99, maximale MSPT, GC-Spikes und „Can't keep up“-Meldungen vergleichen, dann das zugehörige Spark-Profil sichern.
+
+Nach erfolgreichem CI-Build nur den **enthaltenen Mod-JAR** aus dem Actions-Artefakt installieren, nicht das ZIP als Mod verwenden. Vor jedem Client- oder Serverstart Welt-Backup und Abgleich der JAR-Versionen. Der separate Branch `projekt-performance` bleibt weiterhin unbeeinflusst.
