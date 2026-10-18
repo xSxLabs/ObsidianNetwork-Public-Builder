@@ -1,3 +1,4 @@
+# Build 288: remove redundant nine-slot terminal persistence transactions on exact no-op writes; no user JAR
 # Build 287: test-only 50 real Drive menu server read stress; no runtime change, no ingame release
 # Build 286: validate final compiled ENERGY helper bytecode with full 100+ regression suite
 # Build 285: literal brace regex injection fix for ENERGY helper, full regression rerun
@@ -114,6 +115,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_item_conduit_restart_manifest.py' -v
           python3 -m unittest discover -s tests -p 'test_item_cable_empty_filter_load.py' -v
           # Project Performance #209: validate fail-closed bulk + autocraft patches first.
+          # Build 288: test_perf_terminal_unchanged_craft_slots.py is included in this full suite.
           python3 -m unittest discover -s tests -p 'test_perf_*.py' -v
           python3 -m unittest discover -s tests -p 'test_wireless_*.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
@@ -1950,6 +1952,9 @@ jobs:
           python3 patches/perf-autocrafter-menu-once-per-tick.py
           python3 patches/perf-drive-menu-serialization-hotpath.py
           python3 patches/perf-terminal-jei-recipe-candidate-reuse.py
+          # Terminal crafting-grid writes: skip only exact component+count identity no-ops.
+          python3 patches/perf-terminal-unchanged-craft-slot-elision.py
+          grep -Fq 'XSXLABS_TERMINAL_UNCHANGED_CRAFT_SLOT_ELISION_V1' work/src/main/java/dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.java
           # Crafting: skip only the duplicate preflight on already-approved reserved output.
           python3 patches/perf-autocraft-single-exact-insert-preflight.py
           python3 - <<'PY'
@@ -2559,6 +2564,7 @@ jobs:
           subprocess.run(['python3','tests/verify_compiled_drive16.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_solar_cache.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_energy_hotpath.py',str(jars[0])],check=True)
+          subprocess.run(['python3','tests/verify_compiled_terminal_craft_slots.py',str(jars[0])],check=True)
           print('BINARY_DRIVE16_SOLAR_ENERGY_HOTPATH_RELEASE_GATES_V1 PASS')
           PY
           test -s /tmp/xsxlabs-perf-hotpaths.json
