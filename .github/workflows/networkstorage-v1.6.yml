@@ -2075,6 +2075,9 @@ jobs:
           # ... air gap ... receiver -> Energy Cell; exact FE conservation/rollback.
           python3 features/wireless-energy/inject-wireless-gametest.py
           grep -Fq 'WIRELESS_CROSSDIM_READY_FE_GAMETEST_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'BlockPos wirelessSourcePos=' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'var wirelessSink=' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          # Build #237: prove Java test locals do not shadow original energy-cell locals.
           # Separate the second GameTest server from the first CI-only test universe.
           rm -rf work/run/gametestserver
           set +e
