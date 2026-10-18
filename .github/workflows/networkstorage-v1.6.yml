@@ -1,3 +1,4 @@
+# Build 275: 16-cell GameTest only after Drive patch; baseline, Curios and storage gates retained
 # Build 274: critical 16-slot Drive GUI visibility regression (no inventory migration)
 # Build 273: EnergyCable endpoint capability cache under same wireless+GUI and smithing guards
 # Build 271: match real post-v1.6 Autocrafter runtime accessor in four-patch integrated performance check
@@ -1032,28 +1033,6 @@ jobs:
                   if(drive.occupiedSlots()!=dev.obsidiannetwork.core.StorageDriveRuntime.SLOTS)throw new IllegalStateException("Drive not fully populated");
                 }
                 if(insertedCells!=800)throw new IllegalStateException("Expected 800 real cells");
-                // #274 regression: 16 real occupied slots are readable via the
-                // actual private DriveMenu backing Container, not only via BE.
-                // Old GUI-cache regression reported 8 and concealed slots 8..15.
-                try {
-                  var first=(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity)
-                     level.getBlockEntity(h.absolutePos(new BlockPos(2,2,1)));
-                  if(first==null)throw new IllegalStateException("Missing complete drive fixture");
-                  Class<?> cls=Class.forName("dev.obsidiannetwork.menu.DriveMenu$DriveContainer");
-                  var ctr=cls.getDeclaredConstructor(dev.obsidiannetwork.blockentity.StorageDriveBlockEntity.class);
-                  ctr.setAccessible(true);
-                  var backing=(net.minecraft.world.Container)ctr.newInstance(first);
-                  if(backing.getContainerSize()!=16)
-                     throw new IllegalStateException("Drive GUI backing container truncated to "+backing.getContainerSize());
-                  for(int slot=0;slot<16;slot++){
-                     var visible=backing.getItem(slot);
-                     if(visible.isEmpty())throw new IllegalStateException("Drive cell invisible at "+slot);
-                  }
-                  if(first.occupiedSlots()!=16)throw new IllegalStateException("Reading GUI lost original cell");
-                  System.out.println("DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS");
-                }catch(ReflectiveOperationException ex){
-                  throw new IllegalStateException("Cannot inspect actual drive GUI 16-slot container",ex);
-                }
                 h.startSequence().thenExecuteAfter(50,()->{
                   var rt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForController(level,controller);
                   if(rt==null)throw new IllegalStateException("50-drive controller runtime missing");
@@ -1950,6 +1929,9 @@ jobs:
           python3 patches/perf-autocrafter-menu-once-per-tick.py
           python3 patches/perf-drive-menu-serialization-hotpath.py
           python3 patches/perf-terminal-jei-recipe-candidate-reuse.py
+          # Check the 16 real GUI cells only after applying the Drive patch.
+          python3 patches/inject-drive-16-slot-postpatch-gametest.py
+          grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           python3 - <<'PY'
           from pathlib import Path
           root=Path('work/src/main/java/dev/obsidiannetwork')
@@ -2364,6 +2346,7 @@ jobs:
           grep -Fq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 samples=9' /tmp/build103-postpatch-gametest.log
           grep -Eq 'REAL_AUTOCRAFT_IDLE_RESERVATION_V1 .*optimized_required=true' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_STORAGE_BULK_DEPOSIT_NS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
@@ -2392,6 +2375,7 @@ jobs:
           fi
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_CURIOS_INSTALLED_LINKAGE_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' /tmp/build103-curios-installed-gametest.log
           for count in 10 50 100; do grep -Fq "WIRELESS_DENSE_REAL_SERVER_${count}_V1 PASS" /tmp/build103-curios-installed-gametest.log; done
           grep -Fq 'WIRELESS_DENSE_IDLE_RECEIVERS_100_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_ONE_TX_EIGHT_RX_V1 PASS' /tmp/build103-curios-installed-gametest.log
