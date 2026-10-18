@@ -66,6 +66,11 @@ extra=r'''                     }
                       check(denseSender!=null&&denseSink!=null,"WIRELESS dense 10 valid FE entities");
                       total+=denseSender.stored()+denseSink.stored();received+=denseSink.stored();
                      }
+                     long supply=dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(
+                      world.getServer(),"obsidiannetwork:main");
+                     System.out.println("WIRELESS_DENSE_10_DIAG_V2 total="+total+" expected="+(10L*256000)
+                       +" received="+received+" senders="+(total-received)
+                       +" indexedAvailable="+supply+" gameTime="+world.getGameTime());
                      check(total==10L*256000&&received>0,"WIRELESS dense 10 conservation/transfer");
                      System.out.println("WIRELESS_DENSE_REAL_SERVER_10_V1 PASS total="+total+" sink="+received);
                      for(int index=10;index<50;index++){
