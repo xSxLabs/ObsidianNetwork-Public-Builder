@@ -1873,6 +1873,8 @@ jobs:
           # targeted unregister, and one network list snapshot per menu/server tick.
           python3 features/wireless-energy/apply-wireless-index-hotpath.py
           python3 features/wireless-energy/apply-wireless-menu-sync-cache.py
+          # Wireless #252: invalidate stale names/IDs only after a roster edit.
+          python3 features/wireless-energy/apply-wireless-menu-roster-guard.py
           # Wireless #248: don't scan sender list at idle/unconnected receiver faces.
           grep -Fq 'int remainingSupply=-1;' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
           grep -Fq 'if(remainingSupply<0){' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
@@ -1892,6 +1894,9 @@ jobs:
             echo 'WIRELESS obsolete global unregister scan still present in GENERATED Java'; exit 1;
           fi
           grep -Fq 'private long lastSnapshotTick=Long.MIN_VALUE;' work/src/main/java/dev/obsidiannetwork/menu/WirelessNetworkMenu.java
+          grep -Fq 'private long rosterRevision;' work/src/main/java/dev/obsidiannetwork/wireless/WirelessNetworkData.java
+          grep -Fq 'observedRosterRevision=revision;' work/src/main/java/dev/obsidiannetwork/menu/WirelessNetworkMenu.java
+          grep -Fq 'owner.level().getBlockEntity(pos)!=device' work/src/main/java/dev/obsidiannetwork/menu/WirelessNetworkMenu.java
           grep -Fq 'WIRELESS_CHARGING_SINGLE_PASS_V1' features/wireless-energy/apply-wireless-charging-single-pass.py
           grep -Fq 'Click Delete again to confirm' work/src/main/java/dev/obsidiannetwork/client/WirelessNetworkScreen.java
           grep -Fq 'for(int i=0;i<inventory.size()&&remaining>0;i++)' work/src/main/java/dev/obsidiannetwork/wireless/WirelessPlayerCharging.java
