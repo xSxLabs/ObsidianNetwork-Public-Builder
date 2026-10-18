@@ -62,3 +62,13 @@ Weitere Einschränkung: Der reale Server-Tick-Ring in #296 hatte 100 Samples mit
 
 - **#297 GRÜN**, [GitHub-Run](https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39155266497): vollständiger Headless-Minecraft/GameTest-Lauf **ohne Curios und mit Curios**, inklusive 50 Drives / 800 Zellen, 720 realen Terminal-Shift-Einlagerungen und 46.080 erhaltenen Items, 15 echten Shift-Craft-Ticks (240 Logs -> 960 Planken), 180 Controller- plus 180 Autocrafter-Öffnungen, Wireless-100-Receiver-Test, Zwei-Eigentümer-Autorisierung und separatem Neustart. Keine Client-Render- oder kontrollierte A/B-MSPT-Messung.
 - **#298 CI-Messstufe:** pro 20 echten GUI-Öffnungen Konstruktor und 21 Controller-Statusabfragen beziehungsweise Autocrafter-Status/Preview getrennt mit `System.nanoTime()` messen; 9 wiederholte Trials, Median/p90, keine harte Performance-Schwelle aufgrund CI/JIT/GC. Zum Schutz weiterhin identische Item-/FE-/Drive-/Curios-Gates und kein Nutzer-JAR-Artefakt ausgeben.
+
+## Build #298: Ursache der Controller-GUI-Arbeitszeit eingegrenzt
+
+- **#298 GRÜN**, https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39158977938. Echte Minecraft-Menüs auf 50 Drives/800 Cells (9 Trials mit jeweils 20 Controller- und 20 Autocrafter-Öffnungen), mit und ohne Curios, beide GameTests grün. 123 Python-Tests plus JVM-/Wireless-/Neustartgates.
+- **Controller-Konstruktor** pro 20 Öffnungen Median **306.416 ns**, p90 **1.654.125 ns**. **Statusabfragen derselben 20 Menüs** Median **107.283.821 ns**, p90 **156.878.257 ns**. Daher liegt die teure Arbeit im Controller-Status-Snapshot, NICHT in der Objektkonstruktion. Die unabhängigen Median-Werte nicht als additiven genauen Gesamtwert behandeln.
+- **Autocrafter** Konstruktor Median **394.574 ns**, Status/Preview Median **2.186.670 ns** je 20 Öffnungen. Die Vergleichszahlen sind innerhalb desselben Runs auf verschiedenen Codepfaden; kein CPU-Geschwindigkeitsnachweis.
+- **#299:** neue fail-closed Parser- und Mutationstests prüfen GUI-Metriken inkl. Vollständigkeit, monotone Quantile, 9x20 Trial-Format, Curios-an/-aus und falsche MSPT-Interpretationen.
+- **#300:** CI-only Real-GameTest zerlegt Controller-Status-Kosten in 6 Helfer: Controller-Runtime-Lookup, Drive-Zahl, Autocrafter-Zahl, aktive/blockierte Jobs, Templates. Damit kann nach grünem Test ein konservativer, konkreter Laufzeit-Fix gewählt werden. Die neuen Timing-Probes dürfen keine Server-MSPT-Aussage ersetzen; no user JAR release.
+
+**Freigabesperre P1–P8 bleibt bestehen.** Volle regressionssichere Leistung ist erst mit A/B auf identischer gespeicherter Welt nachgewiesen.
