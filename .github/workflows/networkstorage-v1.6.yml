@@ -1,3 +1,4 @@
+# Build 285: literal brace regex injection fix for ENERGY helper, full regression rerun
 # Build 284: repeatable cable helper blocktype predicate hoist + 30,000 behavioral cases
 # Build 283: final distributable bytecode verifies cached solar endpoints as well as 16 Drive slots
 # Build 282: Java DriveContainer lower-row remove/reinsert/NBT regression before user JAR
