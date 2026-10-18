@@ -84,6 +84,12 @@ class SmoothSixFaceTest(unittest.TestCase):
                 })
                 self.assertEqual(variants["facing=up"]["model"], "obsidiannetwork:block/" + slug)
                 self.assertEqual(variants["facing=down"]["x"], 180)
+                # User-tested #267: only north/south must invert; other faces stay exact.
+                self.assertEqual(variants["facing=north"], {"model": "obsidiannetwork:block/" + slug, "x": 90})
+                self.assertEqual(variants["facing=south"], {"model": "obsidiannetwork:block/" + slug, "x": 270})
+                self.assertEqual(variants["facing=east"], {"model": "obsidiannetwork:block/" + slug, "x": 90, "y": 90})
+                self.assertEqual(variants["facing=west"], {"model": "obsidiannetwork:block/" + slug, "x": 90, "y": 270})
+                self.assertEqual(variants["facing=up"], {"model": "obsidiannetwork:block/" + slug})
             be = (source_root / "blockentity/WirelessNetworkBlockEntity.java").read_text()
             self.assertIn("int remainingBudget=Math.min(MAX_TRANSFER,64000);", be)
             self.assertNotIn("server.getGameTime()%5!=0", be)
