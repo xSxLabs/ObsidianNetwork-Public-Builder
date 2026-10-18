@@ -39,7 +39,7 @@ class ControllerAutocrafterGuiStress(unittest.TestCase):
         for term in ("ObsidianNetwork.AUTOCRAFTER.get().defaultBlockState()",
                      "net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level)","new dev.obsidiannetwork.menu.PowerStatusMenu(",
                      "new dev.obsidiannetwork.menu.AutocrafterMenu(",
-                     "menu.drives()!=50","menu.terminals()<1",
+                     "menu.drives()!=50","menu.terminals()<1", "menu.autocrafters()!=1",
                      "menu.slots.get(0).getItem()",
                      "ItemStack.matches(first,again)",
                      "xsxControllerOpens!=180||xsxAutoOpens!=180",
