@@ -2,7 +2,7 @@
 """CI-only loaded receiver + transmitter stress probe, 10 / 50 / 100 live devices.
 
 Add AFTER Curios runtime injection to the same real-server StateMachineTest.
-The probe runs in an isolated forced-chunk Overworld fixture and verifies conservation for EVERY
+The probe warms the isolated forced-chunk Overworld fixture before testing server-tick transfers and verifies conservation for EVERY
 wireless sender / receiver / real EnergyCell at each density. Chunk tickets
 belong solely to the test and are all released. We report only density and
 energy balances: these are NOT controlled server MSPT/p95 or spark readings.
@@ -28,8 +28,18 @@ extra=r'''                     }
                      // FE capabilities. Wireless production never adds tickets.
                      var world=helper.getLevel();
                      check(world!=null,"WIRELESS dense Overworld world exists");
-                     for(int cx=260;cx<=262;cx++)for(int cz=260;cz<=262;cz++)
+                     for(int cx=260;cx<=262;cx++)for(int cz=260;cz<=262;cz++){
                       world.setChunkForced(cx,cz,true);
+                      world.getChunk(cx,cz); // CI fixture: synchronously materialize.
+                     }
+                     System.out.println("WIRELESS_DENSE_TICKET_WARMUP_V3 START");
+                   })
+                   .thenExecuteAfter(40,()->{
+                     // Give the server real time to promote forced chunks to
+                     // entity-ticking before adding the FE devices. Curios-present
+                     // JVM may reach GameTests earlier than Curios-absent JVM.
+                     var world=helper.getLevel();
+                     check(world!=null,"WIRELESS dense warmed world present");
                      for(int index=0;index<10;index++){
                       var sourcePos=new BlockPos(4160+(index%10)*3,80,4161+(index/10)*3);
                       var receiverPos=new BlockPos(sourcePos.getX(),80,sourcePos.getZ()-1);
@@ -54,7 +64,7 @@ extra=r'''                     }
                      }
                      System.out.println("WIRELESS_DENSE_REAL_SERVER_10_V1 ARMED");
                    })
-                   .thenExecuteAfter(20,()->{
+                   .thenExecuteAfter(60,()->{
                      var world=helper.getLevel();
                      check(world!=null,"WIRELESS dense world still exists at 10");
                      long total=0,received=0;
@@ -71,28 +81,17 @@ extra=r'''                     }
                      System.out.println("WIRELESS_DENSE_10_DIAG_V2 total="+total+" expected="+(10L*256000)
                        +" received="+received+" senders="+(total-received)
                        +" indexedAvailable="+supply+" gameTime="+world.getGameTime());
+                     // Leave FE untouched on failure: the diagnostic is read-only.
                      if(received==0){
-                      // Diagnostic only: prove whether this distant Nether fixture
-                      // has active receiver block-entity tick scheduling. Original
-                      // exact conservation + nonzero transfer gate remains unchanged.
                       var rp=new BlockPos(4160,80,4160);
-                      var testReceiver=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)world.getBlockEntity(rp);
-                      var testCell=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(rp.east());
-                      var testCapability=world.getCapability(
+                      var rx=world.getBlockEntity(rp);
+                      var cap=world.getCapability(
                        net.neoforged.neoforge.capabilities.Capabilities.Energy.BLOCK,
                        rp.east(),Direction.WEST);
-                      int insertable=-1;
-                      if(testCapability!=null)try(var simulation=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
-                       insertable=testCapability.insert(1024,simulation);
-                      }
-                      long beforeManual=testCell==null?-1:testCell.stored();
-                      if(testReceiver!=null)
-                       dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity.serverTick(
-                        world,rp,world.getBlockState(rp),testReceiver);
-                      System.out.println("WIRELESS_DENSE_MANUAL_TICK_DIAG_V1 receiver="+(testReceiver!=null)
-                       +" cap="+(testCapability!=null)+" insertable="+insertable
-                       +" before="+beforeManual+" after="+(testCell==null?-1:testCell.stored())
-                       +" time="+world.getGameTime());
+                      System.out.println("WIRELESS_DENSE_TICK_DIAG_V3 receiver="+(rx!=null)
+                       +" cellCapability="+(cap!=null)
+                       +" loaded="+world.hasChunkAt(rp)
+                       +" gameTime="+world.getGameTime());
                      }
                      check(total==10L*256000&&received>0,"WIRELESS dense 10 conservation/transfer");
                      System.out.println("WIRELESS_DENSE_REAL_SERVER_10_V1 PASS total="+total+" sink="+received);
