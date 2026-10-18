@@ -97,3 +97,10 @@ Wire the live FE GameTest after the existing postpatch GameTest-source injection
 
 - `inject-wireless-persistence-gametest.py` (commit `427a5c5fa4cc241108f9e49d72ee50fafebabc2c`) tests the actual Minecraft 26.1 `saveWithFullMetadata` / `BlockEntity.loadStatic` roundtrip of a real 12,000 FE Nether transmitter, plus `WirelessNetworkData.Entry.CODEC` roundtrip of ID/name/owner/all five charging bits. `tests/test_wireless_persistence_codec.py` guards injection.
 - This is **in-memory NBT/codec coverage only**, not a full dedicated-server filesystem save/restart. Run it in the next nonparallel CI build after #244, then separately verify real world persistence.
+
+
+## #244 verified and #245 under test (18.10.2026)
+
+- **#244 CI GREEN** https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39085875869, workflow commit `83f9300f16c28bbbda09b602d215c6cb5d4f63db`. Both GameTest passes report **8/8**, real air-gap and Nether→Overworld conservation PASS, plus `WIRELESS_NAMED_NETWORK_MANAGEMENT_V3 PASS` and `WIRELESS_CHARGING_SINGLE_PASS_V1 PASS`. Archive artifact ID `12120952203`, ZIP digest `sha256:d9a79b576d0a8e1a8e6e61734cdd5d6a52f506fe580e1c35d334e92273f951f6` (not a JAR checksum). No in-game claim.
+- **#245** https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39086382012, workflow commit `df1f3e99bb3305023285b0ddc3e307149e5fbbc6`, in progress at documentation time. Runs live BlockEntity NBT + SavedData network-entry codec roundtrip inside unchanged crossdim GameTest. **Not a real disk-save/server-restart verification.**
+- Prepared but **not yet CI wired**: `apply-wireless-index-hotpath.py` (`bf0c3086fa4b3a904083d10bf1f9982d4e77ac59`) makes the receiver sample available sender energy once per five-tick dispatch and unregister matching senders directly by network ID; no change to FE rollback/conservation. `tests/test_wireless_index_hotpath.py` source contracts. Next CI only after #245 outcome.
