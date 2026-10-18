@@ -2134,6 +2134,8 @@ jobs:
           python3 features/wireless-energy/inject-wireless-real-chunk-lifecycle-gametest.py
           # Wireless #254: validate two distinct ServerPlayer UUIDs against server-side ownership.
           python3 features/wireless-energy/inject-wireless-owner-authorization-gametest.py
+          # Wireless #255: conditional bridge resolves only if Curios mod is installed.
+          python3 features/wireless-energy/inject-wireless-curios-runtime-gametest.py
           grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_LOADED_SOURCE_ISOLATION_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
@@ -2164,6 +2166,28 @@ jobs:
           grep -Fq 'WIRELESS_LOADED_SOURCE_ISOLATION_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'WIRELESS_CURIOS_ABSENT_START_V1 PASS' /tmp/build103-postpatch-gametest.log
+          # A second post-patch GameTest JVM actually loads Curios 15.0.0 for MC 26.1.2.
+          # Leave the distributable JAR / compileOnly optional dependency unchanged.
+          cp work/build.gradle /tmp/wireless-curios-original.gradle
+          cat >> work/build.gradle <<'WIRELESS_CURIOS_GRADLE'
+          dependencies { runtimeOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2' }
+          WIRELESS_CURIOS_GRADLE
+          rm -rf work/run/gametestserver
+          set +e
+          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-curios-installed-gametest.log 2>&1
+          CURIOS_GT_RC=$?
+          set -e
+          cp /tmp/wireless-curios-original.gradle work/build.gradle
+          if [ "$CURIOS_GT_RC" -ne 0 ]; then
+            tail -n 350 /tmp/build103-curios-installed-gametest.log
+            echo "Wireless Curios-present GameTest failed rc=$CURIOS_GT_RC"; exit "$CURIOS_GT_RC"
+          fi
+          grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'WIRELESS_CURIOS_INSTALLED_LINKAGE_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          echo 'WIRELESS_CURIOS_ABSENT_AND_INSTALLED_RUNTIME_V1 PASS'
           echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
           # Tests must never be shipped in the distributable JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
