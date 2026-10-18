@@ -1,3 +1,4 @@
+# Build 284: repeatable cable helper blocktype predicate hoist + 30,000 behavioral cases
 # Build 283: final distributable bytecode verifies cached solar endpoints as well as 16 Drive slots
 # Build 282: Java DriveContainer lower-row remove/reinsert/NBT regression before user JAR
 # Build 281: fixed solar six-face capability cache with a new fail-closed test suite
@@ -1885,6 +1886,9 @@ jobs:
           # per physical cable face, backed by NeoForge's lifecycle invalidation.
           # Graph walk, side-cut rules, FE transactions and receiver rate remain live.
           python3 patches/spark-energy-cable-endpoint-capability-cache.py
+          # Build 284: one immutable ENERGY_CABLE predicate per hot helper call.
+          python3 patches/spark-energy-helper-duplicate-blocktype-elision.py
+          grep -Fq 'XSXLABS_ENERGY_HELPER_DUPLICATE_BLOCKTYPE_ELISION_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           # AFK Spark: controller POSITIONS, revision-gated, live fallback on topology changes.
           python3 patches/perf-accessory-topology-rebuild-index.py
           # The solar optimization is isolated; do not alter FE contracts.
