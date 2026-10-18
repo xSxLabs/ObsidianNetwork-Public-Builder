@@ -72,6 +72,7 @@ class ControllerAutocrafterGuiStress(unittest.TestCase):
         for name in ("build103-postpatch-gametest.log","build103-curios-installed-gametest.log"):
             self.assertIn("grep -Fq '"+MARKER+"' /tmp/"+name,text)
             self.assertIn("grep -Fq 'REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS' /tmp/"+name,text)
+        self.assertIn("python3 performance/verify-gui-phase-breakdown.py",text)
 
 if __name__=="__main__":
     unittest.main()

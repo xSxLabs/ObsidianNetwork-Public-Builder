@@ -94,3 +94,29 @@ def validated_server_observations(source_log: str):
         raise ValueError("GC interpretation and uncontrolled flags missing")
     return {"ticks":tick,"gc":collection,
             "coverage":"Recent MinecraftServer tick ring + GC MXBean counters during GameTest; uncontrolled"}
+
+
+def validated_gui_phase_breakdown(source_log: str):
+    """Validate real menu timing segments without claiming a server-MSPT improvement."""
+    marker = "REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS"
+    rows = require_metrics(numbers_in(source_log, marker),
+        "controller_ctor_median_ns", "controller_ctor_p90_ns",
+        "controller_status_median_ns", "controller_status_p90_ns",
+        "autocrafter_ctor_median_ns", "autocrafter_status_median_ns",
+        "batch_size", "trials")
+    if len(rows) != 1:
+        raise ValueError("Exactly one controller/autocrafter timing breakdown is required")
+    r = rows[0]
+    if r["batch_size"] != 20 or r["trials"] != 9:
+        raise ValueError("GUI timing fixture trial count changed")
+    for prefix in ("controller_ctor", "controller_status"):
+        if not (0 < r[prefix + "_median_ns"] <= r[prefix + "_p90_ns"]):
+            raise ValueError("GUI constructor/status timing quantiles invalid")
+    for prefix in ("autocrafter_ctor", "autocrafter_status"):
+        if r[prefix + "_median_ns"] <= 0:
+            raise ValueError("GUI timing must be positive")
+    if not any(marker in line and "System.out.println" not in line
+               and "uncontrolled=true" in line and "not_server_MSPT=true" in line
+               for line in source_log.splitlines()):
+        raise ValueError("GUI timing scope and interpretation must be explicit")
+    return {"measurements": r, "scope": "20 actual menu opens per trial, uncontrolled JIT/GC; not server MSPT"}

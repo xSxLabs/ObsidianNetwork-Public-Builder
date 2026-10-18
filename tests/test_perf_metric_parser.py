@@ -5,7 +5,7 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "performance"))
-from metric_parser import numbers_in, require_metrics, validated_sustained_tick_work, validated_server_observations
+from metric_parser import numbers_in, require_metrics, validated_sustained_tick_work, validated_server_observations, validated_gui_phase_breakdown
 
 
 class MetricParserTests(unittest.TestCase):
@@ -138,6 +138,29 @@ class MetricParserTests(unittest.TestCase):
             with self.subTest(changed=changed[:65]):
                 with self.assertRaises(ValueError):
                     validated_server_observations(changed)
+
+    def test_gui_phase_breakdown_requires_all_four_positive_metrics_and_real_scope(self):
+        row = ("REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS"
+               " controller_ctor_median_ns=100000 controller_ctor_p90_ns=120000"
+               " controller_status_median_ns=50000 controller_status_p90_ns=70000"
+               " autocrafter_ctor_median_ns=10000 autocrafter_status_median_ns=20000"
+               " batch_size=20 trials=9 uncontrolled=true not_server_MSPT=true")
+        got = validated_gui_phase_breakdown(row)
+        self.assertEqual(got["measurements"]["controller_status_median_ns"], 50000)
+        self.assertIn("not server MSPT", got["scope"])
+        for corrupted in (
+            row.replace("controller_ctor_p90_ns=120000", "controller_ctor_p90_ns=99999"),
+            row.replace("controller_status_median_ns=50000", "controller_status_median_ns=0"),
+            row.replace("trials=9", "trials=8"),
+            row.replace("batch_size=20", "batch_size=19"),
+            row.replace("uncontrolled=true", "uncontrolled=false"),
+            row.replace("not_server_MSPT=true", "not_server_MSPT=false"),
+            row.replace("autocrafter_status_median_ns=20000", "autocrafter_status_median_ns=0"),
+            row + "\\n" + row,
+        ):
+            with self.subTest(corrupted=corrupted[-90:]):
+                with self.assertRaises(ValueError):
+                    validated_gui_phase_breakdown(corrupted)
 
 
 if __name__ == "__main__":
