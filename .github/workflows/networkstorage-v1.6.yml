@@ -1,3 +1,4 @@
+# Build 294: tick real powered ControllerRuntime after charging test fixture; verify quick-move and GUI stress without relaxing checks
 # Build 293: Controller and Autocrafter true server GUI open stress in 50-drive game test; release held
 # Build 292: repair fail-closed test harness marker mutation; rerun actual 720 player QUICK_MOVE terminal GameTest
 # Build 291: real ServerPlayer -> CraftingTerminalMenu.quickMoveStack -> 50-drive burst conservation; no user JAR
