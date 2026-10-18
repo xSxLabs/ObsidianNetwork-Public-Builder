@@ -33,7 +33,7 @@ assert m.count("this.graph.component(start)")==1
 assert m.count("this.conflictingControllers = Set.copyOf(conflicts);")==1
 assert m.count("this.graph.revision()")==1
 assert m.count("this.batchDepth++")==1
-assert m.count("this.rebuildPending")==4
+assert m.count("this.rebuildPending")==3
 assert w.count("public static NetworkRuntime runtimeForAccessory(ServerLevel level, BlockPos pos) {")==1
 
 old_method="""   public static NetworkRuntime runtimeForAccessory(ServerLevel level, BlockPos pos) {
