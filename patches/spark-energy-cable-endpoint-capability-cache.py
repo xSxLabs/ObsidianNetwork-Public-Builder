@@ -27,7 +27,7 @@ fallback="server.getCapability(Energy.BLOCK, next, nextState, null, null)"
 assert original.count(sided)==3 and original.count(fallback)==3, "Sided/null FE lookup contract changed"
 assert original.count("nextState = server.getBlockState(next)")==3
 assert original.count("cableBudget-- > 0")==3
-assert original.count("transaction")==2, "Unknown FE method signature"
+assert original.count("TransactionContext transaction")==2, "Unknown FE method signature"
 # Never change fee debit, credit, transaction or BFS guards as part of this patch.
 for anchor in ("source.extract(", "target.insert(", "if (var18 == 0)", "energyOpen("):
     assert anchor in original, "Missing FE invariant: "+anchor
