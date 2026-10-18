@@ -49,7 +49,14 @@ class ControllerAutocrafterGuiStress(unittest.TestCase):
                      "xsxAutocrafterCtorTrials", "xsxAutocrafterStatusTrials",
                      "controller_ctor_median_ns=", "controller_status_median_ns=",
                      "autocrafter_ctor_median_ns=", "autocrafter_status_median_ns=",
-                     "uncontrolled=true"):
+                     "uncontrolled=true",
+                     "REAL_50_DRIVE_CONTROLLER_STATUS_SUBCALLS_V1 PASS",
+                     "runtimeForController(level,controller)",
+                     ".autocrafterCount(level,probeRt)",
+                     ".autocraftingActiveJobs(level,probeRt)",
+                     ".autocraftingBlockedJobs(level,probeRt)",
+                     ".templatesForRuntime(level,probeRt).size()",
+                     "xsxSubcallTrials[5][trial]", "xsxSubcallCheck<9000L"):
             self.assertIn(term,source,term)
         self.assertNotIn("h.makeMockServerPlayerInLevel()",source)
         again,identical=run(source)
@@ -72,6 +79,7 @@ class ControllerAutocrafterGuiStress(unittest.TestCase):
         for name in ("build103-postpatch-gametest.log","build103-curios-installed-gametest.log"):
             self.assertIn("grep -Fq '"+MARKER+"' /tmp/"+name,text)
             self.assertIn("grep -Fq 'REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS' /tmp/"+name,text)
+            self.assertIn("grep -Fq 'REAL_50_DRIVE_CONTROLLER_STATUS_SUBCALLS_V1 PASS' /tmp/"+name,text)
         self.assertIn("python3 performance/verify-gui-phase-breakdown.py",text)
 
 if __name__=="__main__":
