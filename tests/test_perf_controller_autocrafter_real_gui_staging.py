@@ -43,7 +43,13 @@ class ControllerAutocrafterGuiStress(unittest.TestCase):
                      "menu.slots.get(0).getItem()",
                      "ItemStack.matches(first,again)",
                      "xsxControllerOpens!=180||xsxAutoOpens!=180",
-                     "controller_p90_ns=", "autocrafter_p90_ns=", "not_server_MSPT=true"):
+                     "controller_p90_ns=", "autocrafter_p90_ns=", "not_server_MSPT=true",
+                     "REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS",
+                     "xsxControllerCtorTrials", "xsxControllerStatusTrials",
+                     "xsxAutocrafterCtorTrials", "xsxAutocrafterStatusTrials",
+                     "controller_ctor_median_ns=", "controller_status_median_ns=",
+                     "autocrafter_ctor_median_ns=", "autocrafter_status_median_ns=",
+                     "uncontrolled=true"):
             self.assertIn(term,source,term)
         self.assertNotIn("h.makeMockServerPlayerInLevel()",source)
         again,identical=run(source)
@@ -65,6 +71,7 @@ class ControllerAutocrafterGuiStress(unittest.TestCase):
         self.assertLess(text.index("python3 patches/inject-terminal-real-quickmove-burst-gametest.py"),text.index(script))
         for name in ("build103-postpatch-gametest.log","build103-curios-installed-gametest.log"):
             self.assertIn("grep -Fq '"+MARKER+"' /tmp/"+name,text)
+            self.assertIn("grep -Fq 'REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS' /tmp/"+name,text)
 
 if __name__=="__main__":
     unittest.main()
