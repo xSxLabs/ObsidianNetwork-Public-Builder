@@ -156,7 +156,7 @@ class MetricParserTests(unittest.TestCase):
             row.replace("uncontrolled=true", "uncontrolled=false"),
             row.replace("not_server_MSPT=true", "not_server_MSPT=false"),
             row.replace("autocrafter_status_median_ns=20000", "autocrafter_status_median_ns=0"),
-            row + "\\n" + row,
+            row + "\n" + row,
         ):
             with self.subTest(corrupted=corrupted[-90:]):
                 with self.assertRaises(ValueError):
