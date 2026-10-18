@@ -1863,6 +1863,12 @@ jobs:
           python3 features/wireless-energy/apply-wireless-runtime.py
           python3 features/wireless-energy/apply-wireless-ui-charging.py
           python3 features/wireless-energy/apply-antenna-assets.py
+          # Wireless #239: owner-bound configuration and one receiver-side FE budget.
+          python3 features/wireless-energy/apply-wireless-hardening.py
+          grep -Fq 'public boolean canConfigure(' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
+          grep -Fq 'int remainingBudget=MAX_TRANSFER;' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
+          grep -Fq 'NEXT_SENDER' work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java
+          grep -Fq '!device.canConfigure(p)' work/src/main/java/dev/obsidiannetwork/menu/WirelessNetworkMenu.java
           test -f work/src/main/java/dev/obsidiannetwork/menu/WirelessNetworkMenu.java
           test -f work/src/main/java/dev/obsidiannetwork/client/WirelessNetworkScreen.java
           test -f work/src/main/java/dev/obsidiannetwork/wireless/WirelessPlayerCharging.java
