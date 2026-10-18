@@ -24,7 +24,11 @@ class NamedNetworkManagementContracts(unittest.TestCase):
      'new net.minecraft.client.gui.components.EditBox',
      'Commands.literal("rename")','sendNamed("rename")',
      'sendNamed("delete")','sendNamed("create")',
-     'minecraft.getConnection().sendCommand(command)'):
+     'minecraft.getConnection().sendCommand(command)',
+     'id.equals(deletionConfirmation)',
+     'deletionConfirmation=id;return;',
+     'deletionConfirmation="";',
+     'Click Delete again to confirm'):
    self.assertIn(marker,PATCH)
  def test_deletion_is_fail_closed_without_losing_block_buffer(self):
   self.assertIn('WirelessNetworkData.get(server).find(id)==null',CORE)
