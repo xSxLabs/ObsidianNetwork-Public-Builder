@@ -72,3 +72,12 @@ Weitere Einschränkung: Der reale Server-Tick-Ring in #296 hatte 100 Samples mit
 - **#300:** CI-only Real-GameTest zerlegt Controller-Status-Kosten in 6 Helfer: Controller-Runtime-Lookup, Drive-Zahl, Autocrafter-Zahl, aktive/blockierte Jobs, Templates. Damit kann nach grünem Test ein konservativer, konkreter Laufzeit-Fix gewählt werden. Die neuen Timing-Probes dürfen keine Server-MSPT-Aussage ersetzen; no user JAR release.
 
 **Freigabesperre P1–P8 bleibt bestehen.** Volle regressionssichere Leistung ist erst mit A/B auf identischer gespeicherter Welt nachgewiesen.
+
+## Build #300 Messung / #301 Korrektur / #302 Re-Test
+
+- **#299 GRÜN**: https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39159534160 ; strenge Parser-Prüfungen in beiden Curios-Konfigurationen, vollständige JVM-/Neustartmatrix.
+- **#300 GRÜN**: https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/actions/runs/39159706366 ; auf 50-Drive-Netz Median pro **20 Controller Status-Helfer-Aufrufe**: `WorldTopologyBridge.autocrafterCount` = 99.933.139 ns; Runtime-Lookup = 9.043 ns; Drives = 77.127 ns; aktive Jobs = 9.616 ns; blockierte Jobs = 10.959 ns; Templates = 51.222 ns. Gemessene Zeit ist nicht Server-MSPT.
+- **#301 ROT im vorgeschalteten Python-Gleichwertigkeitstest**: Die neue vereinfachte Autocrafter-Zählung iterierte direkt die vorberechnete aktive Komponentenmenge; im Sonderfall angrenzender Autocrafter verändert deren Iterationsreihenfolge den `seen`-Zustand und somit das Ergebnis. **Fail-closed vor Java-Build, daher nicht freigeben.**
+- **#302 CI-Kandidat**: Preserve exakt das bisherige `graph().nodes()`-Iterationsverhalten; nur die **pro Knoten wiederholte** `runtimeForNode`-Komponentensuche wird durch einen einmalig pro Aufruf aufgebauten live `ownerNodes`-Set-Membership-Test ersetzt. Keinerlei persistente Caches; keine Änderung an Items, FE, Wireless oder regulären Autocrafting-Rollbacks. Zusätzliche 4.000 randomisierte Graph-/Block-/Chunk-/Conflict-Modelle und echter Java-50-Drive-GameTest mit exakt einem angeschlossenen Autocrafter. Zusätzlich verifiziert ein `javap`-Gate die finale Bytecode-Struktur.
+- Auch wenn #302 grün wird, fehlen weiterhin kontrollierte Vergleichswerte für Spark-MSPT/TPS und echte Client-GUI-Interaktionen; alle P1–P8-Sperren bleiben bestehen.
+
