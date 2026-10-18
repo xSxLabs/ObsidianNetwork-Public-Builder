@@ -2225,8 +2225,12 @@ jobs:
           print('PERFORMANCE_MACHINE_READABLE_METRICS_GATE PASS')
           PY
           # CI-only: stop and restart two actual dedicated-server JVMs on
-          # the same saved world. Do not repackage the temporary subscriber.
+          # the same saved world. Extend the existing probe with real wireless
+          # transmitter buffer save/restore and a new receiver after restart.
+          # All temporary subscriber classes remain excluded from the JAR.
+          python3 features/wireless-energy/apply-wireless-dedicated-restart-probe.py
           python3 tests/integration/item_conduit_restart.py --project work --output dist/item-conduit-restart.json
+          grep -Fq 'WIRELESS_DEDICATED_PROCESS_RESTART_V1 PASS' dist/item-conduit-restart-after.log
           python3 - <<'PY'
           from pathlib import Path
           import json
@@ -2234,9 +2238,23 @@ jobs:
           assert report['status']=='passed' and report['same_saved_world'] and report['distinct_server_jvms']
           assert report['phases']['after']['configuration_preserved']
           assert report['phases']['after']['item_conservation']
+          # Wireless #250: actual world files survive two different dedicated server JVMs.
+          assert report['phases']['before']['wireless_fe_initial']==12000
+          assert report['phases']['after']['wireless_fe_persisted'] is True
+          assert report['phases']['after']['wireless_fe_conserved'] is True
+          assert report['phases']['after']['wireless_fe_after_restart']==12000
+          assert report['phases']['after']['wireless_fe_received_after_restart']>0
+          assert report['same_saved_world'] and report['distinct_server_jvms']
           diagnostics=Path('dist/diagnostic-report.json')
           d=json.loads(diagnostics.read_text())
           d['item_conduit_restart']['real_process_restart_test']=True
+          d['wireless_dedicated_restart']={
+            'two_distinct_server_processes':True,
+            'same_saved_world':True,
+            'transmitter_fe_saved_and_restored':True,
+            'post_restart_real_fe_transfer':True,
+            'warning':'Owner/multi-network permissions and Curios client scenarios remain unverified'
+          }
           d['item_conduit_restart']['coverage']='four real chest/conduit topologies across dedicated-server process restart; live GUI untested'
           d['missing_release_gates']=[x for x in d['missing_release_gates'] if x!='real dedicated-server stop/start item transport']
           diagnostics.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\n')
