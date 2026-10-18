@@ -1,3 +1,4 @@
+# Build 286: validate final compiled ENERGY helper bytecode with full 100+ regression suite
 # Build 285: literal brace regex injection fix for ENERGY helper, full regression rerun
 # Build 284: repeatable cable helper blocktype predicate hoist + 30,000 behavioral cases
 # Build 283: final distributable bytecode verifies cached solar endpoints as well as 16 Drive slots
@@ -2551,7 +2552,8 @@ jobs:
           assert len(jars)==1, 'Expected exactly one distributable mod JAR'
           subprocess.run(['python3','tests/verify_compiled_drive16.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_solar_cache.py',str(jars[0])],check=True)
-          print('BINARY_DRIVE16_AND_SOLAR_RELEASE_GATES_V1 PASS')
+          subprocess.run(['python3','tests/verify_compiled_energy_hotpath.py',str(jars[0])],check=True)
+          print('BINARY_DRIVE16_SOLAR_ENERGY_HOTPATH_RELEASE_GATES_V1 PASS')
           PY
           test -s /tmp/xsxlabs-perf-hotpaths.json
           cp /tmp/xsxlabs-perf-hotpaths.json dist/perf-hotpaths.json
