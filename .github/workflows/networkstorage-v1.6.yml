@@ -913,7 +913,7 @@ jobs:
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "fifty_real_storage_drives"),
                   new FiftyDriveTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "conduit_bundle_runtime"),
-                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
+                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 250, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "mixed_item_bridge_topology"),
                   new MixedCableTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_bundle_standalone_fluid"),
@@ -2071,6 +2071,8 @@ jobs:
           p.write_text(s)
           print('REAL_AUTOCRAFT_OPTIMIZED_IDENTITY_GATE_ENABLED PASS')
           PY
+          # Wireless #238: the existing bundled StateMachineTest now includes a 35-tick real FE transfer sequence.
+          # Give only this extended test 250 ticks; all checks, other tests and timeouts remain unchanged.
           # Wireless: extra REAL Energy Cell -> ENERGY bundle -> transmitter
           # ... air gap ... receiver -> Energy Cell; exact FE conservation/rollback.
           python3 features/wireless-energy/inject-wireless-gametest.py
