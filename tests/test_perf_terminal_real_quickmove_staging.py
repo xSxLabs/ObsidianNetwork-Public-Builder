@@ -42,7 +42,7 @@ class RealTerminalQuickMoveTests(unittest.TestCase):
                      "if(moved.isEmpty()||moved.getCount()!=64||!xsxPlayerInv.getItem(0).isEmpty())",
                      "inStorage!=xsxBefore+64",
                      "rt.storage().extract(xsxBurstKey,64L)!=64L",
-                     "xsxOperations!=720", "exact_items=46080", "rt.tick();", "not_server_MSPT=true"):
+                     "xsxOperations!=720", "exact_items=46080", "rt.tick();", "MinecraftItemStackCodec(", "Items.COBBLESTONE,64)).key()", "not_server_MSPT=true"):
             self.assertIn(term,after,term)
         rr,unchanged=run(after)
         self.assertNotEqual(rr.returncode,0)
