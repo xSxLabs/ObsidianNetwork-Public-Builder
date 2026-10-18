@@ -35,6 +35,14 @@ Bei Problemen folgende Informationen festhalten: getestete **Buildnummer und Act
 - NBT/Codec-Roundtrip belegt **keinen** vollständigen Welt-Save/Neustart.
 - Nether-GameTest lädt seinen Testchunk selbst und belegt **nicht** automatisches Produktion-Chunkloading.
 
+## Neue Nutzerwünsche: Point-Optik, hohes FE und schneller Abbau
+
+- Ab Build #263: beide Wireless-Blöcke nutzen eigenständige kompakte Point-/Node-Modelle mit dunkler Metallfassung (Transmitter violett, Receiver cyan) statt den bisherigen Antennenaufbauten. Die Modelle, Texturen und Rechte bleiben originär; keine Assets aus Flux Networks kopiert.
+- Receiver-Obergrenze: 320.000 FE je 5-Tick-Arbeitsschritt, entsprechend maximal durchschnittlich 64.000 FE/t pro Receiver bei ausreichend geladenen Sendern und aufnahmefähigen Nachbarmaschinen. Das separate Inventar-Ladelimit pro Spieler bleibt 16.000 FE pro 20 Ticks. Die tatsächliche Transferrate muss im Spiel anhand echter Energiequellen und -ziele geprüft werden.
+- GUI: acht sichtbar benannte, direkt anklickbare Netze pro Seite, Prev/Next-Navigation; nur für diesen Spieler freigegebene Netze. Server prüft die gewählte Netzwerk-ID und Zugriffsrechte.
+- Blockhärte 0,6; die beiden im Kreativtab vorhandenen und als Crafting-Item registrierten Blöcke haben eigene Rezepte und Self-Drop-Loot-Tables. Ingame separat mit Hand und Spitzhacke abbauen, auf Item-Drop und erneutem Setzen prüfen. Rezept IRI/RCR/IEI: I = Eisenbarren, R = Redstone, C = Wireless Antenna, E = Energy Cable; je ein Transmitter beziehungsweise Receiver.
+- Minecraft-Client-Abnahme wichtig: Prüfen, ob alle Point-Modelle korrekt angezeigt werden, die GUI ohne Überlagerungen 8 Namen zeigt, längere Listen umblättert, nur berechtigte Netze auswählt, Namen nach Umbenennung durch erneutes Öffnen korrekt anzeigt, der Receiver FE weitergibt und das Energiesystem bei Chunkwechseln keine Energie erzeugt.
+
 ## Abschluss: reale Laufzeit- und Spark-Abnahme
 
 Der Teststand #255 bestätigt Curios-Ladefähigkeit/Bridge-Linkage mit und ohne das optionale Mod, aber **keinen** ausgerüsteten Curios-Energiegegenstand. Curios allein hat standardmäßig keine nutzbaren Slots. Für Szenario 7 daher eine passende Slot-Konfiguration/Addon mit tatsächlichem Slot und einem FE-fähigen Item installieren; andernfalls gilt ein leerer Curios-Adapter nicht als erfolgreicher Ladebeweis.
