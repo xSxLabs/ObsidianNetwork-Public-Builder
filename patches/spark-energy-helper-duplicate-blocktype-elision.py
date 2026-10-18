@@ -67,14 +67,10 @@ for name in ("energyOpen","energyCable"):
     # Reuse one local, immutable block type decision; the original second
     # branch still checks the same cable, while the early bundle gate stays.
     new=f"// {marker}\n      boolean physicalEnergyCable = {energy_call};\n      if(!physicalEnergyCable && !{bundle_call}) return false;"
-    body=body.replace(old,new,1)
-    assert body.count(energy_call)==1
-    body=body.replace(energy_call,"physicalEnergyCable",1)
-    # Replacing the remaining expression MUST NOT accidentally self-reference
-    # the newly declared boolean. Repair its initializer explicitly.
-    initializer="boolean physicalEnergyCable = physicalEnergyCable;"
-    assert body.count(initializer)==1, "unexpected cable predicate layout"
-    body=body.replace(initializer,f"boolean physicalEnergyCable = {energy_call};",1)
+    prefix,suffix=body.split(old,1)
+    assert suffix.count(energy_call)==1, "Expected exactly one repeated cable branch"
+    suffix=suffix.replace(energy_call,"physicalEnergyCable",1)
+    body=prefix+new+suffix
     assert body.count(energy_call)==1
     assert body.count("if(!physicalEnergyCable && !"+bundle_call+") return false;")==1
     assert body.count("physicalEnergyCable")==3, "one initializer, one guard, one original branch"
