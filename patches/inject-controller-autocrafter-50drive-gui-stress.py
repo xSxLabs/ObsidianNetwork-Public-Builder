@@ -2,7 +2,7 @@
 """CI-only actual Controller and Autocrafter GUI read/open bursts on 50 drives.
 
 Unlike direct status helper microtests, this instantiates real server-side
-PowerStatusMenu and AutocrafterMenu 180 times each using a mock ServerPlayer
+PowerStatusMenu and AutocrafterMenu 180 times each using a headless NeoForge FakePlayer
 in a 50-drive 800-cell controller topology. Queries all 21 Controller data
 fields twice and Autocrafter job/status/preview fields. Validates repeatable
 status within one tick. The test measures workload wall time only; it does NOT
@@ -43,14 +43,25 @@ stress_code=r'''
                   var xsxGuiInv=xsxGuiPlayer.getInventory();
                   long[] xsxControllerMenuTrials=new long[9];
                   long[] xsxAutocrafterMenuTrials=new long[9];
+                  // Segment test timings; separate actual constructor cost from
+                  // first snapshot reading and repeated cached status reads.
+                  // No runtime modification, no synthetic MSPT attribution.
+                  long[] xsxControllerCtorTrials=new long[9];
+                  long[] xsxControllerStatusTrials=new long[9];
+                  long[] xsxAutocrafterCtorTrials=new long[9];
+                  long[] xsxAutocrafterStatusTrials=new long[9];
                   int xsxControllerOpens=0;
                   int xsxAutoOpens=0;
                   long xsxReadChecksum=0;
                   for(int trial=0;trial<9;trial++){
                     long controllerStart=System.nanoTime();
+                    long constructorWork=0L, statusWork=0L;
                     for(int opening=0;opening<20;opening++){
+                      long ctorBegin=System.nanoTime();
                       var menu=new dev.obsidiannetwork.menu.PowerStatusMenu(
                           73,xsxGuiInv,controller,false,level.getBlockEntity(controller));
+                      constructorWork+=System.nanoTime()-ctorBegin;
+                      long readBegin=System.nanoTime();
                       if(menu.drives()!=50)
                         throw new IllegalStateException("Controller GUI lost 50 attached drives");
                       if(menu.terminals()<1)
@@ -63,13 +74,20 @@ stress_code=r'''
                             +menu.templateManagers()+menu.craftingMonitors()
                             +menu.wirelessAntennas()+menu.processingMachines();
                       }
+                      statusWork+=System.nanoTime()-readBegin;
                       xsxControllerOpens++;
                     }
                     xsxControllerMenuTrials[trial]=System.nanoTime()-controllerStart;
+                    xsxControllerCtorTrials[trial]=constructorWork;
+                    xsxControllerStatusTrials[trial]=statusWork;
                     long autocrafterStart=System.nanoTime();
+                    long autocrafterCtorWork=0L, autocrafterStatusWork=0L;
                     for(int opening=0;opening<20;opening++){
+                      long autoCtorBegin=System.nanoTime();
                       var menu=new dev.obsidiannetwork.menu.AutocrafterMenu(
                           74,xsxGuiInv,xsxStressAutoPos);
+                      autocrafterCtorWork+=System.nanoTime()-autoCtorBegin;
+                      long autoReadBegin=System.nanoTime();
                       int active=menu.active();
                       int blocked=menu.blocked();
                       if(active<0||blocked<0)
@@ -79,12 +97,19 @@ stress_code=r'''
                       var again=menu.slots.get(0).getItem();
                       if(!net.minecraft.world.item.ItemStack.matches(first,again))
                         throw new IllegalStateException("Autocrafter menu preview changed inside one tick");
+                      autocrafterStatusWork+=System.nanoTime()-autoReadBegin;
                       xsxAutoOpens++;
                     }
                     xsxAutocrafterMenuTrials[trial]=System.nanoTime()-autocrafterStart;
+                    xsxAutocrafterCtorTrials[trial]=autocrafterCtorWork;
+                    xsxAutocrafterStatusTrials[trial]=autocrafterStatusWork;
                   }
                   java.util.Arrays.sort(xsxControllerMenuTrials);
                   java.util.Arrays.sort(xsxAutocrafterMenuTrials);
+                  java.util.Arrays.sort(xsxControllerCtorTrials);
+                  java.util.Arrays.sort(xsxControllerStatusTrials);
+                  java.util.Arrays.sort(xsxAutocrafterCtorTrials);
+                  java.util.Arrays.sort(xsxAutocrafterStatusTrials);
                   if(xsxControllerOpens!=180||xsxAutoOpens!=180)
                     throw new IllegalStateException("Controller or Autocrafter GUI stress incomplete");
                   System.out.println("REAL_50_DRIVE_CONTROLLER_AUTOCRAFTER_GUI_OPEN_STRESS_V1 PASS"+
@@ -94,6 +119,16 @@ stress_code=r'''
                     " autocrafter_median_ns="+xsxAutocrafterMenuTrials[4]+
                     " autocrafter_p90_ns="+xsxAutocrafterMenuTrials[8]+
                     " read_checksum="+xsxReadChecksum+" not_server_MSPT=true");
+                  // Individual trial elapsed times are for 20 menu opens, not
+                  // full-server tick or client render timings.
+                  System.out.println("REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS"+
+                    " controller_ctor_median_ns="+xsxControllerCtorTrials[4]+
+                    " controller_ctor_p90_ns="+xsxControllerCtorTrials[8]+
+                    " controller_status_median_ns="+xsxControllerStatusTrials[4]+
+                    " controller_status_p90_ns="+xsxControllerStatusTrials[8]+
+                    " autocrafter_ctor_median_ns="+xsxAutocrafterCtorTrials[4]+
+                    " autocrafter_status_median_ns="+xsxAutocrafterStatusTrials[4]+
+                    " batch_size=20 trials=9 uncontrolled=true not_server_MSPT=true");
 '''
 out=s.replace(setup,setup+"\n"+setup_code,1).replace(attached,attached+"\n"+stress_code,1)
 assert out.count(marker)==1
