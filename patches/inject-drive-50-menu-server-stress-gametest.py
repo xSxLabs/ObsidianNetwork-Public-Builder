@@ -67,7 +67,7 @@ addition=r'''
                   }
 '''
 updated=source.replace(anchor,anchor+"\n"+addition,1)
-assert updated.count(marker)==2, "Expected one source marker and one log marker"
+assert updated.count(marker)==1, "Expected exactly one runtime stress marker"
 assert updated.count('if(attached!=50)throw new IllegalStateException("Expected 50 real drives, got "+attached);')==1
 path.write_text(updated, encoding="utf-8")
 print("DRIVE_50_MENU_SERVER_STRESS_TEST_ONLY_INJECTION_V1 PASS")
