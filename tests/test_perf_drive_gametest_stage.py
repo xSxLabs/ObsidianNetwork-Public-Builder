@@ -32,6 +32,7 @@ class DriveStagingTests(unittest.TestCase):
         self.assertEqual(wf.count("python3 patches/inject-drive-16-slot-postpatch-gametest.py"), 1)
         for log in ("build103-postpatch-gametest.log", "build103-curios-installed-gametest.log"):
             self.assertIn("grep -Fq '" + MARKER + "' /tmp/" + log, wf)
+            self.assertIn("grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' /tmp/" + log, wf)
         drive = DRIVE.read_text(encoding="utf-8")
         self.assertIn("return CELL_SLOTS;", drive)
         self.assertIn("StorageDriveRuntime.SLOTS - 1;", drive)
