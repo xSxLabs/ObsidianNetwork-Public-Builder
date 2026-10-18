@@ -52,7 +52,7 @@ class RealTerminalQuickMoveTests(unittest.TestCase):
                      "DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS",
                      "REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS",
                      "REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS"):
-            modified=FIXTURE.replace(term,term+"_OLD")
+            modified=FIXTURE.replace(term,"INVALID_ANCHOR_REPLACEMENT")
             r,after=run(modified)
             self.assertNotEqual(r.returncode,0,term)
             self.assertEqual(after,modified)
