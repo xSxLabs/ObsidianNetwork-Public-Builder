@@ -1,3 +1,4 @@
+# Build 283: final distributable bytecode verifies cached solar endpoints as well as 16 Drive slots
 # Build 282: Java DriveContainer lower-row remove/reinsert/NBT regression before user JAR
 # Build 281: fixed solar six-face capability cache with a new fail-closed test suite
 # Build 280: correct method-scoped Importer fallback assertion; full Drive16, wireless and autocraft gates
@@ -2544,7 +2545,8 @@ jobs:
           jars=sorted(Path('dist').glob('*.jar'))
           assert len(jars)==1, 'Expected exactly one distributable mod JAR'
           subprocess.run(['python3','tests/verify_compiled_drive16.py',str(jars[0])],check=True)
-          print('BINARY_DRIVE16_RELEASE_GATE_V1 PASS')
+          subprocess.run(['python3','tests/verify_compiled_solar_cache.py',str(jars[0])],check=True)
+          print('BINARY_DRIVE16_AND_SOLAR_RELEASE_GATES_V1 PASS')
           PY
           test -s /tmp/xsxlabs-perf-hotpaths.json
           cp /tmp/xsxlabs-perf-hotpaths.json dist/perf-hotpaths.json
