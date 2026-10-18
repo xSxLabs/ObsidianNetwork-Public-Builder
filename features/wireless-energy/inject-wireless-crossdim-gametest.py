@@ -36,6 +36,14 @@ extra=r'''.thenExecuteAfter(45,()->{
                       fillCross.commit();
                      }
                      check(crossTx.stored()==12000,"WIRELESS Nether transmitter 12000 FE committed");
+                     check(crossTx.isActive(),"WIRELESS Nether fixture source is loaded");
+                     // This immediate, same-tick rollback probe runs before the normal
+                     // onLoad registry callback. Explicit registration is test-only;
+                     // the later 40-tick transport independently proves live callbacks.
+                     dev.obsidiannetwork.wireless.WirelessEnergyRuntime.register(crossTx);
+                     check(dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(
+                      helper.getLevel().getServer(),"obsidiannetwork:main")>=12000,
+                      "WIRELESS Nether source indexed for immediate transactional rollback probe");
                      // The same crossdim registry must expose transactional FE to an
                      // Overworld caller; root rollback must restore the Nether buffer.
                      try(var remoteAbort=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
