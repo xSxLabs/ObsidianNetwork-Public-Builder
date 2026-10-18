@@ -52,8 +52,8 @@ def drive_replacements():
                 and all(isinstance(a, ast.Constant) and isinstance(a.value, str)
                         for a in node.args[1:])):
             changes[node.args[0].id].append((node.args[1].value, node.args[2].value))
-    assert len(changes["drive"]) == 1
-    assert len(changes["menu"]) == 7
+    assert len(changes["drive"]) == 2
+    assert len(changes["menu"]) == 8
     return changes
 
 
@@ -107,7 +107,14 @@ class IntegratedGuiPerformanceTests(unittest.TestCase):
             menu = root / "menu/DriveMenu.java"
             for target, kind in ((drive, "drive"), (menu, "menu")):
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text("\n".join(old for old, _ in replacements[kind]), encoding="utf-8")
+                fixture = "\n".join(old for old, _ in replacements[kind])
+                if kind == "menu":
+                    fixture = "private static final int CELL_SLOTS = 16;\n" + fixture
+                else:
+                    fixture += ('\nthis.cellInventory.serialize(output.child("cell_inventory"));'
+                                '\nthis.cellInventory.deserialize(input.childOrEmpty("cell_inventory"));'
+                                '\nfor (int slot = 0; slot < StorageDriveRuntime.SLOTS; slot++) {}')
+                target.write_text(fixture, encoding="utf-8")
             result = run_patch("drive", tmp)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             updated_drive = drive.read_text()
@@ -116,6 +123,13 @@ class IntegratedGuiPerformanceTests(unittest.TestCase):
             self.assertIn("this.cellInventory.copyToList()", updated_drive)
             self.assertIn("XSXLABS_DRIVE_GUI_TICK_SNAPSHOT_V1", updated_menu)
             self.assertIn("return cached[slot].copy();", updated_menu)
+            self.assertIn("return CELL_SLOTS;", updated_menu)
+            self.assertIn("new ItemStack[CELL_SLOTS]", updated_menu)
+            self.assertIn("new boolean[CELL_SLOTS]", updated_menu)
+            self.assertIn("slot >= CELL_SLOTS", updated_menu)
+            self.assertNotIn("slot >= 8", updated_menu)
+            self.assertIn("XSXLABS_DRIVE_LAST_CELL_ALL_16_V1", updated_drive)
+            self.assertIn("int slot = StorageDriveRuntime.SLOTS - 1;", updated_drive)
             self.assertIn("return this.be.removeCellAt(slot);", "\n".join(
                 old for old, _ in replacements["menu"]
             ))
