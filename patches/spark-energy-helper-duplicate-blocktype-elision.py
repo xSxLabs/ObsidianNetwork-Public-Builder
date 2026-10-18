@@ -28,8 +28,11 @@ pattern=(
 )
 
 def helper(source,name):
-    sig=pattern.format(method=name, direction=
-        r"\s*,\s*(?:net\.minecraft\.core\.)?Direction\s+\w+" if name=="energyOpen" else "")
+    direction=(r"\s*,\s*(?:net\.minecraft\.core\.)?Direction\s+\w+"
+        if name=="energyOpen" else "")
+    # Use literal token replacement: regex needs a raw opening brace (\\{).
+    # Python str.format interprets it as a format brace and breaks the script.
+    sig=pattern.replace("{method}",name).replace("{direction}",direction)
     found=list(re.finditer(sig,source))
     assert len(found)==1, f"Unexpected {name} signature"
     match=found[0]
