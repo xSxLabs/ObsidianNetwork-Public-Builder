@@ -39,11 +39,12 @@ change(block,
 
 # The authored point geometry has its bottom attached at Y=0 and glows at
 # Y=16. Rotate the entire model to match the six directional block states.
+# Ingame #267: north/south X rotations were reversed; other four faces verified correct.
 rotations = {
     "facing=up": {},
     "facing=down": {"x": 180},
-    "facing=north": {"x": 270},
-    "facing=south": {"x": 90},
+    "facing=north": {"x": 90},
+    "facing=south": {"x": 270},
     "facing=east": {"x": 90, "y": 90},
     "facing=west": {"x": 90, "y": 270},
 }
