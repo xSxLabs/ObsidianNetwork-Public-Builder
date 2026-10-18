@@ -1,3 +1,4 @@
+# Wireless #264: fix Curios-present async forced-chunk warmup in 10/50/100 actual FE GameTest
 # Wireless #263: fix PNG magic bytes CI assertion; no gameplay changes
 # Wireless #262: quick-mine + craft/drop gates on top of point-style 261
 # Wireless #260: use tick-active Overworld fixture for 10/50/100 FE density gates
@@ -2176,6 +2177,11 @@ jobs:
           python3 features/wireless-energy/inject-wireless-curios-runtime-gametest.py
           # Wireless #256: actual loaded 10/50/100 sender+receiver+EnergyCell FE workload.
           python3 features/wireless-energy/inject-wireless-dense-runtime-gametest.py
+          # Wireless #264: Curios-present JVM may start before distant forced
+          # chunks become entity-ticking. Require real server-tick work only
+          # after chunk warmup; no manual crediting of receiver FE.
+          grep -Fq 'WIRELESS_DENSE_TICKET_WARMUP_V3 START' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'WIRELESS_DENSE_TICK_DIAG_V3' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_DENSE_REAL_SERVER_100_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
