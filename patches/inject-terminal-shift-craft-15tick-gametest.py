@@ -41,6 +41,9 @@ code=r'''
                   final long[] xsxCraftWorkNs=new long[15];
                   final int[] xsxLogsConsumed={0};
                   final int[] xsxPlanksReceived={0};
+                  final int[] xsxBurstClicks={0};
+                  final int[] xsxBurstReinserted={0};
+                  final int[] xsxBurstUnspent={0};
                   var xsxCraftSequence=h.startSequence();
                   for(int tick=0;tick<15;tick++){
                     xsxCraftSequence.thenExecuteAfter(1,()->{
@@ -67,6 +70,32 @@ code=r'''
                       }
                       if(planks!=64)
                         throw new IllegalStateException("Shift craft expected 64 planks, got "+planks);
+
+                      // Try 24 more real result shift-clicks in the SAME tick.
+                      // Reinsert eight additional logs so every attempt sees
+                      // an available recipe. The per-tick cap must not make
+                      // additional output, consume extra logs or duplicate it.
+                      xsxCraftMenu.slots.get(1).set(new net.minecraft.world.item.ItemStack(
+                          net.minecraft.world.item.Items.OAK_LOG,8));
+                      var burstPreview=xsxCraftMenu.slots.get(0).getItem();
+                      if(burstPreview.isEmpty()||burstPreview.getCount()!=4)
+                        throw new IllegalStateException("Same-tick burst recipe was not available");
+                      for(int burst=0;burst<24;burst++){
+                        xsxCraftMenu.clicked(0,0,
+                            net.minecraft.world.inventory.ContainerInput.QUICK_MOVE,xsxCraftPlayer);
+                      }
+                      var unspent=xsxCraftMenu.slots.get(1).getItem();
+                      if(unspent.isEmpty()||unspent.getItem()!=net.minecraft.world.item.Items.OAK_LOG
+                          ||unspent.getCount()!=8)
+                        throw new IllegalStateException("Same-tick shift-burst consumed extra logs");
+                      for(int slot=0;slot<36;slot++){
+                        if(!xsxCraftInv.getItem(slot).isEmpty())
+                          throw new IllegalStateException("Same-tick shift-burst duplicated output");
+                      }
+                      xsxCraftMenu.slots.get(1).set(net.minecraft.world.item.ItemStack.EMPTY);
+                      xsxBurstClicks[0]+=24;
+                      xsxBurstReinserted[0]+=8;
+                      xsxBurstUnspent[0]+=unspent.getCount();
                       xsxCraftTicks[0]++;
                       xsxLogsConsumed[0]+=16;
                       xsxPlanksReceived[0]+=planks;
@@ -76,7 +105,13 @@ code=r'''
                   xsxCraftSequence.thenExecute(()->{
                     if(xsxCraftTicks[0]!=15||xsxLogsConsumed[0]!=240||xsxPlanksReceived[0]!=960)
                       throw new IllegalStateException("Terminal 15-tick shift-craft item conservation failed");
+                    if(xsxBurstClicks[0]!=360||xsxBurstReinserted[0]!=120||
+                       xsxBurstUnspent[0]!=120)
+                      throw new IllegalStateException("Same-tick burst conservation/accounting mismatch");
                     java.util.Arrays.sort(xsxCraftWorkNs);
+                    System.out.println("REAL_50_DRIVE_TERMINAL_SAME_TICK_BURST_V1 PASS"+
+                        " burst_clicks=360 reinserted_logs=120 unspent_logs=120"+
+                        " no_duplicate_output=true true_server_menu=true not_server_MSPT=true");
                     System.out.println("REAL_50_DRIVE_TERMINAL_SHIFT_CRAFT_15_TICKS_V1 PASS"+
                         " ticks=15 input_logs=240 output_planks=960"+
                         " median_craft_work_ns="+xsxCraftWorkNs[7]+
