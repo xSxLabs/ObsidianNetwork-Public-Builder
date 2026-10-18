@@ -913,7 +913,7 @@ jobs:
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "fifty_real_storage_drives"),
                   new FiftyDriveTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "conduit_bundle_runtime"),
-                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 380, 0, true, Rotation.NONE)));
+                  new StateMachineTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 800, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "mixed_item_bridge_topology"),
                   new MixedCableTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(environment, STRUCTURE, 190, 0, true, Rotation.NONE)));
               event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork", "standalone_bundle_standalone_fluid"),
@@ -2129,6 +2129,10 @@ jobs:
           python3 features/wireless-energy/inject-wireless-persistence-gametest.py
           # #249: real loaded-index detach/reattach and unknown-ID no-FE-leak coverage.
           python3 features/wireless-energy/inject-wireless-source-isolation-gametest.py
+          # Wireless #253: real remote Nether chunk eviction and reload, not only index detach.
+          # CI fixture alone forces the chunk; runtime must never force-load.
+          python3 features/wireless-energy/inject-wireless-real-chunk-lifecycle-gametest.py
+          grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_LOADED_SOURCE_ISOLATION_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
@@ -2155,6 +2159,7 @@ jobs:
           grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_LOADED_SOURCE_ISOLATION_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1 PASS' /tmp/build103-postpatch-gametest.log
           echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
           # Tests must never be shipped in the distributable JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
