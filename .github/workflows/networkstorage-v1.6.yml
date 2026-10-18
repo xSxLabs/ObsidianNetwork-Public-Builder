@@ -1,3 +1,4 @@
+# Build 277: inject 16-slot GUI GameTest after restoring postpatch CI fixture
 # Build 276: corrected source-escape regression assertion; drive data never migrated
 # Build 275: 16-cell GameTest only after Drive patch; baseline, Curios and storage gates retained
 # Build 274: critical 16-slot Drive GUI visibility regression (no inventory migration)
@@ -1930,9 +1931,6 @@ jobs:
           python3 patches/perf-autocrafter-menu-once-per-tick.py
           python3 patches/perf-drive-menu-serialization-hotpath.py
           python3 patches/perf-terminal-jei-recipe-candidate-reuse.py
-          # Check the 16 real GUI cells only after applying the Drive patch.
-          python3 patches/inject-drive-16-slot-postpatch-gametest.py
-          grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           python3 - <<'PY'
           from pathlib import Path
           root=Path('work/src/main/java/dev/obsidiannetwork')
@@ -2267,6 +2265,10 @@ jobs:
           mkdir -p work/src/main/java/dev/obsidiannetwork/build103
           mkdir -p work/src/main/resources/data/obsidiannetwork/structure
           cp /tmp/obsidian-perf-gametest/Build103GameTests.java work/src/main/java/dev/obsidiannetwork/build103/
+          # The pre-patch baseline fixture was temporarily removed from work/; restore it first.
+          # Check the 16 real GUI cells only after applying the Drive patch.
+          python3 patches/inject-drive-16-slot-postpatch-gametest.py
+          grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Wireless #265: the combined postpatch GameTest now runs 40 extra
           # chunk-warmup ticks and a 60-tick transfer window. The existing
           # 800-tick test limit expires after the 100-device PASS at tick 802.

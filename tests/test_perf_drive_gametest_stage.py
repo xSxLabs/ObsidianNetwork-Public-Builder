@@ -24,6 +24,10 @@ class DriveStagingTests(unittest.TestCase):
         self.assertLess(baseline, patch)
         self.assertLess(patch, injected)
         self.assertLess(injected, postpatch)
+        restored = wf.index("cp /tmp/obsidian-perf-gametest/Build103GameTests.java "
+                            "work/src/main/java/dev/obsidiannetwork/build103/")
+        self.assertLess(patch, restored)
+        self.assertLess(restored, injected)
         self.assertNotIn(MARKER, wf[:baseline])
         self.assertEqual(wf.count("python3 patches/inject-drive-16-slot-postpatch-gametest.py"), 1)
         for log in ("build103-postpatch-gametest.log", "build103-curios-installed-gametest.log"):
