@@ -123,6 +123,8 @@ class RuntimeComponentCountTests(unittest.TestCase):
         self.assertIn("ownerNodes.addAll(s.manager.graph().component(controllerPos))",after)
         self.assertIn("if (ownerNodes.isEmpty()) return 0;",after)
         self.assertIn("if (ownerNodes.contains(p))",after)
+        self.assertIn("for (NetworkGraph.Pos px : s.manager.graph().nodes())",after)
+        self.assertIn("!seen.contains(px) && ownerNodes.contains(px)",after)
         self.assertIn("level.hasChunkAt(q)",after)
         self.assertIn("seen.add(qp);",after)
         self.assertNotIn("runtimeForNode(s, px) == runtime",after)
