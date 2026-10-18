@@ -66,6 +66,8 @@ stress_code=r'''
                         throw new IllegalStateException("Controller GUI lost 50 attached drives");
                       if(menu.terminals()<1)
                         throw new IllegalStateException("Controller GUI cannot see real attached terminal");
+                      if(menu.autocrafters()!=1)
+                        throw new IllegalStateException("Controller GUI must see exactly one attached autocrafter");
                       for(int read=0;read<2;read++){
                         xsxReadChecksum+=menu.stored()+menu.capacity()+menu.drives()
                             +menu.terminals()+menu.autocrafters()+menu.activeJobs()
