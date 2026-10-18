@@ -66,8 +66,11 @@ new="""   public static int autocrafterCount(ServerLevel level, NetworkRuntime r
 
       // Keep the original scan and neighboring-block discovery semantics,
       // but visit only the ACTIVE component(s) of the requested runtime.
-      for (NetworkGraph.Pos px : ownerNodes) {
-         if (!seen.contains(px)) {
+      // Iterate graph.nodes() in its ORIGINAL iteration order. Scanning
+      // ownerNodes directly can change which neighboring machine nodes get
+      // skipped by seen, and therefore alter the exact final count.
+      for (NetworkGraph.Pos px : s.manager.graph().nodes()) {
+         if (!seen.contains(px) && ownerNodes.contains(px)) {
             BlockPos bp = new BlockPos(px.x(), px.y(), px.z());
             if (level.hasChunkAt(bp) && level.getBlockState(bp).is((Block)ObsidianNetwork.AUTOCRAFTER.get())) {
                seen.add(px);
