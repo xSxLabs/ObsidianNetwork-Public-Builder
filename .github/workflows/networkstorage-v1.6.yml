@@ -1,3 +1,4 @@
+# Build 289: real dedicated NeoForge TerminalInventory BE test (4500 no-ops plus count/component changes), release held
 # Build 288: remove redundant nine-slot terminal persistence transactions on exact no-op writes; no user JAR
 # Build 287: test-only 50 real Drive menu server read stress; no runtime change, no ingame release
 # Build 286: validate final compiled ENERGY helper bytecode with full 100+ regression suite
@@ -2296,9 +2297,12 @@ jobs:
           python3 patches/inject-drive-16-slot-postpatch-gametest.py
           # Build 287: simulate repeated real server-side menu reads on 50 attached drives.
           python3 patches/inject-drive-50-menu-server-stress-gametest.py
+          # Build 289: real 9-slot BE handler mutation/no-op stress (postpatch only).
+          python3 patches/inject-terminal-craft-slot-noop-gametest.py
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Wireless #265: the combined postpatch GameTest now runs 40 extra
           # chunk-warmup ticks and a 60-tick transfer window. The existing
           # 800-tick test limit expires after the 100-device PASS at tick 802.
@@ -2382,6 +2386,7 @@ jobs:
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_TRUE_CROSSDIM_FE_GAMETEST_V2 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
@@ -2413,6 +2418,7 @@ jobs:
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           for count in 10 50 100; do grep -Fq "WIRELESS_DENSE_REAL_SERVER_${count}_V1 PASS" /tmp/build103-curios-installed-gametest.log; done
           grep -Fq 'WIRELESS_DENSE_IDLE_RECEIVERS_100_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_ONE_TX_EIGHT_RX_V1 PASS' /tmp/build103-curios-installed-gametest.log
