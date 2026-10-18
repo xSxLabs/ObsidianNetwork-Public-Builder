@@ -138,7 +138,8 @@ w=replace_once(w,old_method,new_method,"bridge method")
 assert m.count(marker)==1 and w.count(marker)==1
 assert "this.graph.component(start)" in m and "this.rebuildCount++" in m
 assert "this.graph.revision()" in m and "this.conflictingControllers = Set.copyOf(conflicts)" in m
-assert w.count("s.manager.stateAt(p)")==1 and w.count("s.manager.graph().component(p)")==1
+assert w.count(new_method)==1, "Patched accessor must occur exactly once"
+assert new_method.count("s.manager.stateAt(p)")==1 and new_method.count("s.manager.graph().component(p)")==1
 assert "activeAccessoryController(p)" in w
 # Mutate neither source unless ALL gates have succeeded.
 manager.write_text(m,encoding="utf-8")
