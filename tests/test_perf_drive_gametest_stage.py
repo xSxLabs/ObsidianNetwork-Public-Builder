@@ -31,7 +31,8 @@ class DriveStagingTests(unittest.TestCase):
         drive = DRIVE.read_text(encoding="utf-8")
         self.assertIn("return CELL_SLOTS;", drive)
         self.assertIn("StorageDriveRuntime.SLOTS - 1;", drive)
-        self.assertIn('this.cellInventory.serialize(output.child("cell_inventory"));', drive)
+        self.assertIn("cellInventory.serialize(output.child(", drive)
+        self.assertIn("cellInventory.deserialize(input.childOrEmpty(", drive)
 
     def test_inject_once_into_actual_fixture_and_fail_closed(self):
         with tempfile.TemporaryDirectory() as td:
