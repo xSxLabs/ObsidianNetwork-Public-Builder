@@ -37,16 +37,16 @@ extra=r'''                     }
                       world.setBlock(sourcePos,ObsidianNetwork.NETWORK_TRANSMITTER.get().defaultBlockState(),3);
                       world.setBlock(receiverPos,ObsidianNetwork.NETWORK_RECEIVER.get().defaultBlockState(),3);
                       world.setBlock(cellPos,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
-                      var source=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)world.getBlockEntity(sourcePos);
+                      var denseSender=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)world.getBlockEntity(sourcePos);
                       var receiver=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)world.getBlockEntity(receiverPos);
                       var cell=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(cellPos);
-                      check(source!=null&&receiver!=null&&cell!=null,
+                      check(denseSender!=null&&receiver!=null&&cell!=null,
                        "WIRELESS dense 10 real FE devices");
                       check(cell.sideMode(Direction.WEST)==dev.obsidiannetwork.blockentity.EnergyCellBlockEntity.SideMode.INPUT,
                        "WIRELESS dense sink must accept WEST FE");
                       for(int batch=0;batch<16;batch++){
                        try(var funding=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
-                        check(source.energyHandler().insert(16000,funding)==16000,
+                        check(denseSender.energyHandler().insert(16000,funding)==16000,
                          "WIRELESS dense TX 256000 FE funding");
                         funding.commit();
                        }
@@ -60,11 +60,11 @@ extra=r'''                     }
                      long total=0,received=0;
                      for(int index=0;index<10;index++){
                       var pos=new BlockPos(4160+(index%10)*3,80,4161+(index/10)*3);
-                      var source=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)world.getBlockEntity(pos);
+                      var denseSender=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)world.getBlockEntity(pos);
                       // Sender is at z+1; sink at receiver.east() = sender.north().east().
-                      var sink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(pos.north().east());
-                      check(source!=null&&sink!=null,"WIRELESS dense 10 valid FE entities");
-                      total+=source.stored()+sink.stored();received+=sink.stored();
+                      var denseSink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)world.getBlockEntity(pos.north().east());
+                      check(denseSender!=null&&denseSink!=null,"WIRELESS dense 10 valid FE entities");
+                      total+=denseSender.stored()+denseSink.stored();received+=denseSink.stored();
                      }
                      check(total==10L*256000&&received>0,"WIRELESS dense 10 conservation/transfer");
                      System.out.println("WIRELESS_DENSE_REAL_SERVER_10_V1 PASS total="+total+" sink="+received);
