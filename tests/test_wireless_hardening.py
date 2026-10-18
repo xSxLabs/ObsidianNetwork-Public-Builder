@@ -17,6 +17,9 @@ class WirelessHardeningTests(unittest.TestCase):
             "markPlacedBy(sp)",
             "!device.canConfigure(ownerPlayer)",
             "!device.canConfigure(p)",
+            "device.isRemoved()",
+            "device.getLevel()!=p.level()",
+            "p.level().getBlockEntity(pos)!=device",
             "WirelessNetworkData.get(player.level().getServer()).canAccess(player,id)",
             "device.selectNetworkFor(p,",
         ):
