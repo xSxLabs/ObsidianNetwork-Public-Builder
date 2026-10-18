@@ -36,6 +36,14 @@ extra=r'''.thenExecuteAfter(45,()->{
                       fillCross.commit();
                      }
                      check(crossTx.stored()==12000,"WIRELESS Nether transmitter 12000 FE committed");
+                     // The same crossdim registry must expose transactional FE to an
+                     // Overworld caller; root rollback must restore the Nether buffer.
+                     try(var remoteAbort=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
+                      int probed=dev.obsidiannetwork.wireless.WirelessEnergyRuntime.pull(
+                       helper.getLevel().getServer(),"obsidiannetwork:main",512,remoteAbort);
+                      check(probed==512,"WIRELESS Overworld lookup can transact with Nether source");
+                     }
+                     check(crossTx.stored()==12000,"WIRELESS crossdim aborted FE pull reverts Nether buffer");
                      var worldSource=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(0,1,1)));
                      var worldTransmitter=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(2,1,1)));
                      var worldSink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(8,1,1)));
