@@ -1,3 +1,4 @@
+# Build 281: fixed solar six-face capability cache with a new fail-closed test suite
 # Build 280: correct method-scoped Importer fallback assertion; full Drive16, wireless and autocraft gates
 # Build 279: indexed importer topology plus conserved autocraft fast path; keep Drive16 binary gate
 # Build 278: final compiled client/server 16-slot Drive fail-closed gate; gameplay unchanged
@@ -1864,6 +1865,8 @@ jobs:
           python3 patches/spark-solar-conduit-direction-arrays.py
           # Spark bundled build 226: Solar cache with NeoForge invalidation.
           python3 patches/spark-solar-block-capability-cache.py
+          # Build 281: keep six real FE capability caches, remove EnumMap overhead.
+          python3 patches/spark-solar-fixed-six-face-cache.py
           # Reuse already immutable BlockPos in all three energy BFS walks.
           python3 patches/spark-energy-bfs-position-reuse.py
           # Hoist enum direction clones from conduit validation hot paths.
@@ -1882,6 +1885,8 @@ jobs:
           python3 patches/spark-energy-cable-endpoint-capability-cache.py
           # AFK Spark: controller POSITIONS, revision-gated, live fallback on topology changes.
           python3 patches/perf-accessory-topology-rebuild-index.py
+          # The solar optimization is isolated; do not alter FE contracts.
+          grep -Fq 'XSXLABS_SOLAR_FIXED_SIX_FACE_CACHE_V1' work/src/main/java/dev/obsidiannetwork/blockentity/SolarGeneratorBlockEntity.java
           python3 - <<'PY'
           from pathlib import Path
           src=Path('work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java').read_text()
