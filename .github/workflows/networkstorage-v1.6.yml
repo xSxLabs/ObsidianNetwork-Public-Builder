@@ -1,3 +1,4 @@
+# Wireless #263: fix PNG magic bytes CI assertion; no gameplay changes
 # Wireless #262: quick-mine + craft/drop gates on top of point-style 261
 # Wireless #260: use tick-active Overworld fixture for 10/50/100 FE density gates
 # Wireless #259: pinpoint 0-FE Nether receiver ticker versus physical FE capability
@@ -1908,7 +1909,7 @@ jobs:
               for part in ('case','trim','core'):
                   png=r/'textures/block'/f'{slug}_{part}.png'
                   data=png.read_bytes()
-                  assert data.startswith(b'\\x89PNG\\r\\n\\x1a\\n')
+                  assert data.startswith(bytes((137,80,78,71,13,10,26,10)))
                   assert int.from_bytes(data[16:20],'big')==16
           print('WIRELESS_USER_POINT_RATE_ROSTER_261_SOURCE_GATE PASS')
           PY
