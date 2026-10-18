@@ -6,6 +6,9 @@ must never be copied into the distributable mod JAR.
 """
 from pathlib import Path
 import unittest
+import tempfile
+import subprocess
+import sys
 
 PATCH=(Path(__file__).resolve().parents[1]/
        "features/wireless-energy/apply-wireless-private-network-restart-probe.py").read_text()
@@ -34,6 +37,28 @@ class WirelessPrivateNetworkRestartContracts(unittest.TestCase):
     "wirelessAfterTransferComplete(level)",
     'WIRELESS_PRIVATE_NETWORK_ISOLATION_V2 PASS'):
    self.assertIn(marker,PATCH,marker)
+ def test_combined_patch_apply_to_real_restart_fixture(self):
+  root=Path(__file__).resolve().parents[1]
+  base=root/"features/wireless-energy/apply-wireless-dedicated-restart-probe.py"
+  private=root/"features/wireless-energy/apply-wireless-private-network-restart-probe.py"
+  with tempfile.TemporaryDirectory() as directory:
+   work=Path(directory)
+   probe=work/"tests/integration/ItemConduitRestartProbe.java"
+   probe.parent.mkdir(parents=True)
+   probe.write_text((root/"tests/integration/ItemConduitRestartProbe.java").read_text())
+   for patch in (base,private):
+    result=subprocess.run([sys.executable,str(patch)],cwd=work,capture_output=True,text=True)
+    self.assertEqual(result.returncode,0,
+      f"{patch.name} failed: stdout={result.stdout} stderr={result.stderr}")
+   generated=probe.read_text()
+   for marker in (
+     "WIRELESS_PRIVATE_NETWORK_DEDICATED_RESTART_V2",
+     "WIRELESS_PRIVATE_SAVEDDATA_RESTART_V2 PASS",
+     "WIRELESS_PRIVATE_NETWORK_ISOLATION_V2 PASS",
+     "WIRELESS_DEDICATED_PROCESS_RESTART_V1 PASS",
+     "source.stored()+cell.stored()",
+     "data.setDirty();"):
+    self.assertIn(marker,generated)
  def test_existing_exact_fe_and_stop_start_preserved(self):
   self.assertIn("apply-wireless-dedicated-restart-probe.py",PATCH)
   self.assertIn("assert s.count(old)==1",PATCH)
