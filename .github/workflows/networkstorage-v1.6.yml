@@ -1,3 +1,4 @@
+# Build 302: preserve original graph.nodes traversal order in cached-membership autocrafterCount, randomized equivalence and full Java/Curios matrix; release still locked
 # Build 301: optimize live autocrafterCount graph traversal from per-node BFS to one active component scan; 4000 equivalent model cases, full JVM/Curios regression, no user JAR
 # Build 300: per-helper Controller status hotspot measurement (topology, jobs, templates) under 50-drive load; no user JAR
 # Build 299: parse and validate exact 50-drive menu constructor/status timings in both Curios Java GameTests; no user JAR
