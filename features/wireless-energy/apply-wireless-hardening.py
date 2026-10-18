@@ -74,7 +74,7 @@ change(block,
 menu="menu/WirelessNetworkMenu.java"
 change(menu,
     "  if(!(player instanceof ServerPlayer p)||device==null||!stillValid(player))return false;",
-    "  if(!(player instanceof ServerPlayer p)||device==null||!stillValid(player)||!device.canConfigure(p))return false;")
+    "  if(!(player instanceof ServerPlayer p)||device==null||device.isRemoved()||device.getLevel()!=p.level()||p.level().getBlockEntity(pos)!=device||!stillValid(player)||!device.canConfigure(p))return false;")
 change(menu,
     "   device.selectNetwork(list.get(index%list.size()).id());return true;",
     "   return device.selectNetworkFor(p,list.get(index%list.size()).id());")
