@@ -38,7 +38,9 @@ burst_code=r'''
                       level,xsxlabsBurstTerminalPos);
                   if(xsxTerminalRt!=rt)
                     throw new IllegalStateException("Actual Crafting Terminal not attached to full network");
-                  var xsxBurstPlayer=h.makeMockServerPlayerInLevel();
+                  var xsxBurstPlayer=// Headless Curios tests must avoid GameTestHelper's login/network sync.
+                  // NeoForge FakePlayer has a local inventory, but no client handshake.
+                  net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
                   var xsxPlayerInv=xsxBurstPlayer.getInventory();
                   var xsxMenu=new dev.obsidiannetwork.menu.StorageTerminalMenu(
                       61,xsxPlayerInv,xsxlabsBurstTerminalPos,1L,1L);

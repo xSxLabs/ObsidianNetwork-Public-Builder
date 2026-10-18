@@ -37,7 +37,7 @@ class ControllerAutocrafterGuiStress(unittest.TestCase):
         self.assertEqual(r.returncode,0,r.stdout+r.stderr)
         self.assertEqual(source.count(MARKER),1)
         for term in ("ObsidianNetwork.AUTOCRAFTER.get().defaultBlockState()",
-                     "h.makeMockServerPlayerInLevel()","new dev.obsidiannetwork.menu.PowerStatusMenu(",
+                     "net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level)","new dev.obsidiannetwork.menu.PowerStatusMenu(",
                      "new dev.obsidiannetwork.menu.AutocrafterMenu(",
                      "menu.drives()!=50","menu.terminals()<1",
                      "menu.slots.get(0).getItem()",
@@ -45,6 +45,7 @@ class ControllerAutocrafterGuiStress(unittest.TestCase):
                      "xsxControllerOpens!=180||xsxAutoOpens!=180",
                      "controller_p90_ns=", "autocrafter_p90_ns=", "not_server_MSPT=true"):
             self.assertIn(term,source,term)
+        self.assertNotIn("h.makeMockServerPlayerInLevel()",source)
         again,identical=run(source)
         self.assertNotEqual(again.returncode,0)
         self.assertEqual(identical,source)

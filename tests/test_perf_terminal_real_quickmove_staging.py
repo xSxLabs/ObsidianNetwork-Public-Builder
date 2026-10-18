@@ -36,7 +36,7 @@ class RealTerminalQuickMoveTests(unittest.TestCase):
         self.assertEqual(after.count(MARKER),1)
         for term in ("ObsidianNetwork.CRAFTING_TERMINAL.get().defaultBlockState()",
                      "WorldTopologyBridge.runtimeForTerminal(",
-                     "h.makeMockServerPlayerInLevel()",
+                     "net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level)",
                      "new dev.obsidiannetwork.menu.StorageTerminalMenu(",
                      "xsxMenu.quickMoveStack(xsxBurstPlayer,37)",
                      "if(moved.isEmpty()||moved.getCount()!=64||!xsxPlayerInv.getItem(0).isEmpty())",
@@ -44,6 +44,7 @@ class RealTerminalQuickMoveTests(unittest.TestCase):
                      "rt.storage().extract(xsxBurstKey,64L)!=64L",
                      "xsxOperations!=720", "exact_items=46080", "rt.tick();", "MinecraftItemStackCodec(", "Items.COBBLESTONE,64)).key()", "not_server_MSPT=true"):
             self.assertIn(term,after,term)
+        self.assertNotIn("h.makeMockServerPlayerInLevel()",after)
         rr,unchanged=run(after)
         self.assertNotEqual(rr.returncode,0)
         self.assertEqual(unchanged,after)

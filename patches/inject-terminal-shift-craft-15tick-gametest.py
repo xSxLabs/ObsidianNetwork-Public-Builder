@@ -27,7 +27,9 @@ code=r'''
                   // Vanilla oak log -> four planks, 16 crafts = 64 planks/tick.
                   // Run on 15 separate real server ticks to exercise the
                   // menu's intended per-tick 64-item shift output limit.
-                  var xsxCraftPlayer=h.makeMockServerPlayerInLevel();
+                  var xsxCraftPlayer=// Headless Curios tests must avoid GameTestHelper's login/network sync.
+                  // NeoForge FakePlayer has a local inventory, but no client handshake.
+                  net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
                   var xsxCraftInv=xsxCraftPlayer.getInventory();
                   var xsxCraftMenu=new dev.obsidiannetwork.menu.StorageTerminalMenu(
                       93,xsxCraftInv,xsxlabsBurstTerminalPos,2L,2L);

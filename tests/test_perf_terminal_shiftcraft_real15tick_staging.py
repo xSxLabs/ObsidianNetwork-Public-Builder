@@ -35,7 +35,7 @@ class FifteenTickShiftCraft(unittest.TestCase):
         self.assertEqual(r.returncode,0,r.stdout+r.stderr)
         self.assertEqual(source.count(MARKER),1)
         for term in ("new dev.obsidiannetwork.menu.StorageTerminalMenu(",
-                     "h.makeMockServerPlayerInLevel()", "Items.OAK_LOG,16",
+                     "net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level)", "Items.OAK_LOG,16",
                      "Items.OAK_PLANKS", "preview.getCount()!=4",
                      "xsxCraftMenu.clicked(0,0,",
                      "ContainerInput.QUICK_MOVE,xsxCraftPlayer)",
@@ -43,6 +43,7 @@ class FifteenTickShiftCraft(unittest.TestCase):
                      "xsxPlanksReceived[0]!=960", "xsxCraftSequence.thenExecuteAfter(1",
                      "rt.tick();","not_server_MSPT=true"):
             self.assertIn(term,source,term)
+        self.assertNotIn("h.makeMockServerPlayerInLevel()",source)
         repeat,identical=apply(source)
         self.assertNotEqual(repeat.returncode,0)
         self.assertEqual(identical,source)

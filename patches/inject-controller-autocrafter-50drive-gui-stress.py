@@ -37,7 +37,9 @@ stress_code=r'''
                   // Use server-side actual menu constructors (not synthetic
                   // ContainerData fixtures), scanning live controller status,
                   // autocrafting job views and preview slot on a full network.
-                  var xsxGuiPlayer=h.makeMockServerPlayerInLevel();
+                  var xsxGuiPlayer=// Headless Curios tests must avoid GameTestHelper's login/network sync.
+                  // NeoForge FakePlayer has a local inventory, but no client handshake.
+                  net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
                   var xsxGuiInv=xsxGuiPlayer.getInventory();
                   long[] xsxControllerMenuTrials=new long[9];
                   long[] xsxAutocrafterMenuTrials=new long[9];
