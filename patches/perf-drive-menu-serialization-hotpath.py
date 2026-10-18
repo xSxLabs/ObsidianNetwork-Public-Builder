@@ -42,6 +42,18 @@ change(drive,
       return n;
    }""")
 
+# Regression #274: the legacy DriveContainer reported only 8 although
+# DriveMenu and StorageDriveRuntime have 16; do not truncate the second row.
+# Do not change blockstate CELLS (0..8) which is intentionally a visual clamp.
+change(menu,
+"""      public int getContainerSize() {
+         return 8;
+      }""",
+"""      public int getContainerSize() {
+         // XSXLABS_DRIVE_ALL_16_SLOTS_V1: the GUI must expose every stored cell.
+         return CELL_SLOTS;
+      }""")
+
 change(menu,
 """   private static final class DriveContainer implements Container {
       private final StorageDriveBlockEntity be;
@@ -51,8 +63,8 @@ change(menu,
       private final StorageDriveBlockEntity be;
       // XSXLABS_DRIVE_GUI_TICK_SNAPSHOT_V1: immutable per-menu tick view.
       // Mutations always use the live BE and invalidate these read-only values.
-      private final ItemStack[] cached = new ItemStack[8];
-      private final boolean[] present = new boolean[8];
+      private final ItemStack[] cached = new ItemStack[CELL_SLOTS];
+      private final boolean[] present = new boolean[CELL_SLOTS];
       private long cachedTick = Long.MIN_VALUE;
 
       private void invalidate() {
@@ -67,7 +79,7 @@ change(menu,
          return this.be.cellStack(slot);
       }""",
 """      public ItemStack getItem(int slot) {
-         if (slot < 0 || slot >= 8) return ItemStack.EMPTY;
+         if (slot < 0 || slot >= CELL_SLOTS) return ItemStack.EMPTY;
          if (this.be.getLevel() == null) return this.be.cellStack(slot);
          long tick = this.be.getLevel().getGameTime();
          if (cachedTick != tick) {
@@ -122,4 +134,26 @@ change(menu,
 """      public void clearContent() {
          invalidate();
          for (int i = 0; i < CELL_SLOTS; i++) {""")
-print("DRIVE_FAST_OCCUPANCY_V1 PASS; DRIVE_GUI_TICK_SNAPSHOT_V1 PASS")
+# The BE's regular NBT inventory is authoritative across all 16 slots, and
+# ejecting a cell must not silently ignore slots 8..15 either.
+change(drive,
+"""   public ItemStack ejectLastCell() {
+      int slot = 7;""",
+"""   public ItemStack ejectLastCell() {
+      // XSXLABS_DRIVE_LAST_CELL_ALL_16_V1
+      int slot = StorageDriveRuntime.SLOTS - 1;""")
+
+updated = menu.read_text(encoding="utf-8")
+assert updated.count("private static final int CELL_SLOTS = 16;") == 1
+assert updated.count("return CELL_SLOTS;") >= 1
+assert "new ItemStack[CELL_SLOTS]" in updated and "new boolean[CELL_SLOTS]" in updated
+assert "slot >= CELL_SLOTS" in updated
+assert "new ItemStack[8]" not in updated and "new boolean[8]" not in updated
+assert "slot >= 8" not in updated
+assert "return cached[slot].copy();" in updated
+entity = drive.read_text(encoding="utf-8")
+assert "this.cellInventory.serialize(output.child(\"cell_inventory\"));" in entity
+assert "this.cellInventory.deserialize(input.childOrEmpty(\"cell_inventory\"));" in entity
+assert "for (int slot = 0; slot < StorageDriveRuntime.SLOTS; slot++)" in entity
+assert "int slot = StorageDriveRuntime.SLOTS - 1;" in entity
+print("DRIVE_FAST_OCCUPANCY_V1 PASS; DRIVE_GUI_TICK_SNAPSHOT_V1 PASS; DRIVE_ALL_16_SLOTS_NO_TRUNCATION_V1 PASS")
