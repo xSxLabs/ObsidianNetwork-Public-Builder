@@ -2132,6 +2132,9 @@ jobs:
           # Wireless #253: real remote Nether chunk eviction and reload, not only index detach.
           # CI fixture alone forces the chunk; runtime must never force-load.
           python3 features/wireless-energy/inject-wireless-real-chunk-lifecycle-gametest.py
+          # Wireless #254: validate two distinct ServerPlayer UUIDs against server-side ownership.
+          python3 features/wireless-energy/inject-wireless-owner-authorization-gametest.py
+          grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_LOADED_SOURCE_ISOLATION_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
@@ -2160,6 +2163,7 @@ jobs:
           grep -Fq 'WIRELESS_PERSISTENCE_CODEC_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_LOADED_SOURCE_ISOLATION_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_REAL_CHUNK_UNLOAD_RELOAD_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'WIRELESS_SERVER_TWO_OWNER_AUTHORIZATION_V1 PASS' /tmp/build103-postpatch-gametest.log
           echo 'POSTPATCH_EQUIPMENT_AND_CONDUIT_GAMETEST PASS'
           # Tests must never be shipped in the distributable JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
