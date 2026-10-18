@@ -1873,7 +1873,20 @@ jobs:
           # targeted unregister, and one network list snapshot per menu/server tick.
           python3 features/wireless-energy/apply-wireless-index-hotpath.py
           python3 features/wireless-energy/apply-wireless-menu-sync-cache.py
-          grep -Fq 'int remainingSupply=(int)Math.min(MAX_TRANSFER,WirelessEnergyRuntime.available' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
+          # Wireless #248: don't scan sender list at idle/unconnected receiver faces.
+          grep -Fq 'int remainingSupply=-1;' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
+          grep -Fq 'if(remainingSupply<0){' work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('work/src/main/java/dev/obsidiannetwork/blockentity/WirelessNetworkBlockEntity.java').read_text()
+          start=s.index('public static void serverTick(')
+          end=s.index('private final class Handler',start)
+          tick=s[start:end]
+          assert tick.index('if(target==null)continue;') < tick.index('if(remainingSupply<0){'), 'sender index queried without a real FE neighbor'
+          assert tick.count('WirelessEnergyRuntime.available(')==1, 'receiver should scan sender index at most once per dispatch'
+          assert 'if(accepted==withdrawn){tx.commit();remainingBudget-=accepted;remainingSupply-=accepted;}' in tick, 'FE conservation budget drift'
+          print('WIRELESS_RECEIVER_LAZY_INDEX_GUARD_V2 PASS')
+          PY
           grep -Fq 'var bucket=server.get(sender.networkId());' work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java
           if grep -Fq 'for(var bucket:server.values())bucket.removeIf' work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java; then
             echo 'WIRELESS obsolete global unregister scan still present in GENERATED Java'; exit 1;
