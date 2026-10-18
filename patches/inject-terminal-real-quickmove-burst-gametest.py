@@ -42,7 +42,11 @@ burst_code=r'''
                   var xsxPlayerInv=xsxBurstPlayer.getInventory();
                   var xsxMenu=new dev.obsidiannetwork.menu.StorageTerminalMenu(
                       61,xsxPlayerInv,xsxlabsBurstTerminalPos,1L,1L);
-                  var xsxBurstKey=dev.obsidiannetwork.core.ItemKey.simple("minecraft:cobblestone");
+                  // Use the exact same canonical descriptor as StorageTerminalMenu.quickMoveStack.
+                  // ItemKey.simple() need not equal an ItemStackCodec key, even for vanilla items.
+                  var xsxBurstKey=new dev.obsidiannetwork.platform.MinecraftItemStackCodec(
+                      level.registryAccess()).describe(new net.minecraft.world.item.ItemStack(
+                          net.minecraft.world.item.Items.COBBLESTONE,64)).key();
                   long xsxBefore=rt.storage().cells().stream().mapToLong(c->c.amount(xsxBurstKey)).sum();
                   // The headless test network has no generator: power only the
                   // test fixture; normal energy policy / 20Hz ticks stay intact.
