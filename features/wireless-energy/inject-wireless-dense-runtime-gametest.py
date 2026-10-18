@@ -2,7 +2,7 @@
 """CI-only loaded receiver + transmitter stress probe, 10 / 50 / 100 live devices.
 
 Add AFTER Curios runtime injection to the same real-server StateMachineTest.
-The probe runs in a remote Nether fixture and verifies conservation for EVERY
+The probe runs in an isolated forced-chunk Overworld fixture and verifies conservation for EVERY
 wireless sender / receiver / real EnergyCell at each density. Chunk tickets
 belong solely to the test and are all released. We report only density and
 energy balances: these are NOT controlled server MSPT/p95 or spark readings.
@@ -24,10 +24,10 @@ assert s.count(end)==1, "wireless dense test must attach after final Curios lamb
 extra=r'''                     }
                    })
                    .thenExecuteAfter(2,()->{
-                     // Isolated dense Nether fixture: 3x3 chunks, real BEs and
+                     // Isolated dense Overworld fixture: 3x3 chunks, real BEs and
                      // FE capabilities. Wireless production never adds tickets.
-                     var world=helper.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
-                     check(world!=null,"WIRELESS dense Nether world exists");
+                     var world=helper.getLevel();
+                     check(world!=null,"WIRELESS dense Overworld world exists");
                      for(int cx=260;cx<=262;cx++)for(int cz=260;cz<=262;cz++)
                       world.setChunkForced(cx,cz,true);
                      for(int index=0;index<10;index++){
@@ -55,7 +55,7 @@ extra=r'''                     }
                      System.out.println("WIRELESS_DENSE_REAL_SERVER_10_V1 ARMED");
                    })
                    .thenExecuteAfter(20,()->{
-                     var world=helper.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+                     var world=helper.getLevel();
                      check(world!=null,"WIRELESS dense world still exists at 10");
                      long total=0,received=0;
                      for(int index=0;index<10;index++){
@@ -112,7 +112,7 @@ extra=r'''                     }
                      }
                    })
                    .thenExecuteAfter(20,()->{
-                     var world=helper.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+                     var world=helper.getLevel();
                      check(world!=null,"WIRELESS dense world still exists at 50");
                      long total=0,received=0;
                      for(int i=0;i<50;i++){
@@ -138,7 +138,7 @@ extra=r'''                     }
                      }
                    })
                    .thenExecuteAfter(20,()->{
-                     var world=helper.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+                     var world=helper.getLevel();
                      check(world!=null,"WIRELESS dense world still exists at 100");
                      long total=0,received=0;
                      for(int i=0;i<100;i++){
@@ -162,7 +162,7 @@ extra=r'''                     }
                       "WIRELESS dense sender registry retains deleted sources");
                    })
                    .thenExecuteAfter(10,()->{
-                     var world=helper.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+                     var world=helper.getLevel();
                      check(world!=null,"WIRELESS dense idle world still exists");
                      check(dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(
                       world.getServer(),"obsidiannetwork:main")==0,
