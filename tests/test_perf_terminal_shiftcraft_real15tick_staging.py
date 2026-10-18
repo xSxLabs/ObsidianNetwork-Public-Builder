@@ -41,7 +41,11 @@ class FifteenTickShiftCraft(unittest.TestCase):
                      "ContainerInput.QUICK_MOVE,xsxCraftPlayer)",
                      "if(planks!=64)", "xsxLogsConsumed[0]!=240",
                      "xsxPlanksReceived[0]!=960", "xsxCraftSequence.thenExecuteAfter(1",
-                     "rt.tick();","not_server_MSPT=true"):
+                     "rt.tick();","not_server_MSPT=true",
+                     "REAL_50_DRIVE_TERMINAL_SAME_TICK_BURST_V1 PASS",
+                     "for(int burst=0;burst<24;burst++)",
+                     "xsxBurstClicks[0]!=360", "xsxBurstUnspent[0]!=120",
+                     "unspent.getCount()!=8", "no_duplicate_output=true"):
             self.assertIn(term,source,term)
         self.assertNotIn("h.makeMockServerPlayerInLevel()",source)
         repeat,identical=apply(source)
@@ -65,6 +69,7 @@ class FifteenTickShiftCraft(unittest.TestCase):
                         s.index(command))
         for name in ("build103-postpatch-gametest.log","build103-curios-installed-gametest.log"):
             self.assertIn("grep -Fq '"+MARKER+"' /tmp/"+name,s)
+            self.assertIn("grep -Fq 'REAL_50_DRIVE_TERMINAL_SAME_TICK_BURST_V1 PASS' /tmp/"+name,s)
 
 if __name__=="__main__":
     unittest.main()
