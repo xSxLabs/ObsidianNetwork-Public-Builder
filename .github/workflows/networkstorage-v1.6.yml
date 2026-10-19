@@ -1,3 +1,4 @@
+# Build 310: run integrated autocrafter Direction.values() hoist with full existing regression and binary gates; CI only, no user JAR
 # Build 309: assert 3 Spark live-scan performance fixes survive actual compiled distributor JAR; full Curios, Wireless, Drive16/50 regression; no user JAR
 # Build 308: fail-closed parser accepts Java whitespace variations while matching exact hotpath signatures; 3-fix bundle tests and Curios full suite, no user JAR
 # Build 307: corrected fail-closed 3-fix Spark hotpath bundle (same chunk/autocrafter/controller, Conduit registered block path); full Curios/Wireless/Drive16; no user JAR
