@@ -1,3 +1,4 @@
+# Build 309: assert 3 Spark live-scan performance fixes survive actual compiled distributor JAR; full Curios, Wireless, Drive16/50 regression; no user JAR
 # Build 308: fail-closed parser accepts Java whitespace variations while matching exact hotpath signatures; 3-fix bundle tests and Curios full suite, no user JAR
 # Build 307: corrected fail-closed 3-fix Spark hotpath bundle (same chunk/autocrafter/controller, Conduit registered block path); full Curios/Wireless/Drive16; no user JAR
 # Build 306: three scan/registry CPU fixes, 6000 chunk/4000 registry equivalence tests, full 50-drive/wireless/Curios validation; NO USER JAR
@@ -2632,6 +2633,7 @@ jobs:
           subprocess.run(['python3','tests/verify_compiled_drive16.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_autocrafter_count.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_controller_device_scan.py',str(jars[0])],check=True)
+          subprocess.run(['python3','tests/verify_compiled_spark_live_scan_guards.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_solar_cache.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_energy_hotpath.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_craft_slots.py',str(jars[0])],check=True)
