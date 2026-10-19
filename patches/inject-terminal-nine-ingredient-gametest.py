@@ -18,7 +18,7 @@ code=r'''
                   // One 3x3 compression craft of each type via the same
                   // production result-slot QUICK_MOVE as normal player input.
                   // This catches a regression not covered by log -> planks.
-                  for(var xsxNineCase : new net.minecraft.world.item.Item[][]{
+                  long xsxNineTotalNs=0L;\n                  long xsxNineWorstNs=0L;\n                  for(var xsxNineCase : new net.minecraft.world.item.Item[][]{
                       {net.minecraft.world.item.Items.COAL,net.minecraft.world.item.Items.COAL_BLOCK},
                       {net.minecraft.world.item.Items.REDSTONE,net.minecraft.world.item.Items.REDSTONE_BLOCK},
                       {net.minecraft.world.item.Items.BONE_MEAL,net.minecraft.world.item.Items.BONE_BLOCK}
@@ -29,7 +29,7 @@ code=r'''
                     var xsxNinePreview=xsxCraftMenu.slots.get(0).getItem();
                     if(xsxNinePreview.isEmpty()||xsxNinePreview.getItem()!=xsxNineCase[1])
                       throw new IllegalStateException("3x3 compression recipe missing: "+xsxNineCase[0]);
-                    xsxCraftMenu.clicked(0,0,
+                    long xsxNineStartNs=System.nanoTime();\n                    xsxCraftMenu.clicked(0,0,
                         net.minecraft.world.inventory.ContainerInput.QUICK_MOVE,xsxCraftPlayer);
                     for(int i=1;i<=9;i++)
                       if(!xsxCraftMenu.slots.get(i).getItem().isEmpty())
@@ -47,7 +47,7 @@ code=r'''
                     if(xsxNineProduced!=1)
                       throw new IllegalStateException("9-input craft conservation: "+xsxNineProduced);
                   }
-                  System.out.println("XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=3 ingredients=27 results=3");
+                  System.out.println("XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=3 ingredients=27 results=3 total_click_ns="+xsxNineTotalNs+" worst_click_ns="+xsxNineWorstNs+" not_server_MSPT=true");
 '''
 # Insert after player and inventory initialization, before 15-tick fixture setup.
 needle='final int[] xsxCraftTicks={0};'
