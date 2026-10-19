@@ -1,3 +1,4 @@
+# Build 307: corrected fail-closed 3-fix Spark hotpath bundle (same chunk/autocrafter/controller, Conduit registered block path); full Curios/Wireless/Drive16; no user JAR
 # Build 306: three scan/registry CPU fixes, 6000 chunk/4000 registry equivalence tests, full 50-drive/wireless/Curios validation; NO USER JAR
 # Build 305: real simultaneous 50-drive Crafting Terminal shift-craft bursts and 30+30 Controller/Autocrafter GUI opens, both Curios modes; no user JAR
 # Build 304: 360 same-tick real Terminal shift-click bursts with 120 returned logs and no duplicate output, full Java/Curios regression; no user JAR
