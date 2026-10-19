@@ -45,7 +45,15 @@ class FifteenTickShiftCraft(unittest.TestCase):
                      "REAL_50_DRIVE_TERMINAL_SAME_TICK_BURST_V1 PASS",
                      "for(int burst=0;burst<24;burst++)",
                      "xsxBurstClicks[0]!=360", "xsxBurstUnspent[0]!=120",
-                     "unspent.getCount()!=8", "no_duplicate_output=true"):
+                     "unspent.getCount()!=8", "no_duplicate_output=true",
+                     "REAL_50_DRIVE_MIXED_CRAFT_GUI_15_TICKS_V1 PASS",
+                     "xsxMixedControllerOpens[0]!=30||xsxMixedAutoOpens[0]!=30",
+                     "for(int mix=0;mix<2;mix++)",
+                     "mixedController.drives()!=50",
+                     "mixedController.autocrafters()<1",
+                     "new dev.obsidiannetwork.menu.AutocrafterMenu(",
+                     "ItemStack.matches(a,b)",
+                     "gui_p95_ns=", "xsxMixedGuiNs[14]"):
             self.assertIn(term,source,term)
         self.assertNotIn("h.makeMockServerPlayerInLevel()",source)
         repeat,identical=apply(source)
@@ -70,6 +78,7 @@ class FifteenTickShiftCraft(unittest.TestCase):
         for name in ("build103-postpatch-gametest.log","build103-curios-installed-gametest.log"):
             self.assertIn("grep -Fq '"+MARKER+"' /tmp/"+name,s)
             self.assertIn("grep -Fq 'REAL_50_DRIVE_TERMINAL_SAME_TICK_BURST_V1 PASS' /tmp/"+name,s)
+            self.assertIn("grep -Fq 'REAL_50_DRIVE_MIXED_CRAFT_GUI_15_TICKS_V1 PASS' /tmp/"+name,s)
 
 if __name__=="__main__":
     unittest.main()

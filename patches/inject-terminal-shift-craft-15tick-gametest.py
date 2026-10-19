@@ -44,6 +44,12 @@ code=r'''
                   final int[] xsxBurstClicks={0};
                   final int[] xsxBurstReinserted={0};
                   final int[] xsxBurstUnspent={0};
+                  // Keep craft-only timings independent from the additionally
+                  // measured GUI work on each of the same 15 actual server ticks.
+                  final long[] xsxMixedGuiNs=new long[15];
+                  final int[] xsxMixedControllerOpens={0};
+                  final int[] xsxMixedAutoOpens={0};
+                  final long[] xsxMixedStatusChecksum={0L};
                   var xsxCraftSequence=h.startSequence();
                   for(int tick=0;tick<15;tick++){
                     xsxCraftSequence.thenExecuteAfter(1,()->{
@@ -101,6 +107,36 @@ code=r'''
                       xsxLogsConsumed[0]+=16;
                       xsxPlanksReceived[0]+=planks;
                       xsxCraftWorkNs[xsxCraftTicks[0]-1]=System.nanoTime()-begin;
+
+                      // XSXLABS_MIXED_CRAFT_GUI_15TICK_STRESS_V1: controller
+                      // and autocrafter screens opened/queried under REAL
+                      // shift-crafting + 24 extra same-tick shift-clicks.
+                      // No synthetic storage, no test-only production patch.
+                      long mixedStart=System.nanoTime();
+                      for(int mix=0;mix<2;mix++){
+                        var mixedController=new dev.obsidiannetwork.menu.PowerStatusMenu(
+                            95,xsxCraftInv,controller,false,level.getBlockEntity(controller));
+                        if(mixedController.drives()!=50||mixedController.terminals()<1||
+                           mixedController.autocrafters()<1||
+                           mixedController.activeJobs()<0||mixedController.blockedJobs()<0)
+                          throw new IllegalStateException("Mixed GUI Controller network lost devices");
+                        xsxMixedStatusChecksum[0]+=mixedController.drives()
+                            +mixedController.terminals()+mixedController.autocrafters()
+                            +mixedController.stored()+mixedController.capacity();
+                        xsxMixedControllerOpens[0]++;
+                        var mixedAuto=new dev.obsidiannetwork.menu.AutocrafterMenu(
+                            96,xsxCraftInv,xsxStressAutoPos);
+                        if(mixedAuto.active()<0||mixedAuto.blocked()<0)
+                          throw new IllegalStateException("Mixed GUI Autocrafter status invalid");
+                        var a=mixedAuto.slots.get(0).getItem();
+                        var b=mixedAuto.slots.get(0).getItem();
+                        if(!net.minecraft.world.item.ItemStack.matches(a,b))
+                          throw new IllegalStateException("Mixed GUI preview mutated same tick");
+                        xsxMixedStatusChecksum[0]+=mixedAuto.active()+mixedAuto.blocked()
+                            +(mixedAuto.online()?1:0);
+                        xsxMixedAutoOpens[0]++;
+                      }
+                      xsxMixedGuiNs[xsxCraftTicks[0]-1]=System.nanoTime()-mixedStart;
                     });
                   }
                   xsxCraftSequence.thenExecute(()->{
@@ -109,7 +145,21 @@ code=r'''
                     if(xsxBurstClicks[0]!=360||xsxBurstReinserted[0]!=120||
                        xsxBurstUnspent[0]!=120)
                       throw new IllegalStateException("Same-tick burst conservation/accounting mismatch");
+                    if(xsxMixedControllerOpens[0]!=30||xsxMixedAutoOpens[0]!=30||
+                       xsxMixedStatusChecksum[0]<=0L)
+                      throw new IllegalStateException("Mixed craft+GUI count/checksum mismatch");
+                    for(long elapsed : xsxMixedGuiNs)
+                      if(elapsed<=0L)throw new IllegalStateException("Missing per-tick GUI work sample");
+                    java.util.Arrays.sort(xsxMixedGuiNs);
                     java.util.Arrays.sort(xsxCraftWorkNs);
+                    System.out.println("REAL_50_DRIVE_MIXED_CRAFT_GUI_15_TICKS_V1 PASS"+
+                        " ticks=15 controller_opens="+xsxMixedControllerOpens[0]+
+                        " autocrafter_opens="+xsxMixedAutoOpens[0]+
+                        " controller_drive_count=50 cells=800"+
+                        " gui_median_ns="+xsxMixedGuiNs[7]+
+                        " gui_p95_ns="+xsxMixedGuiNs[14]+
+                        " checksum="+xsxMixedStatusChecksum[0]+
+                        " true_server_menu=true no_player_client=true not_server_MSPT=true");
                     System.out.println("REAL_50_DRIVE_TERMINAL_SAME_TICK_BURST_V1 PASS"+
                         " burst_clicks=360 reinserted_logs=120 unspent_logs=120"+
                         " no_duplicate_output=true true_server_menu=true not_server_MSPT=true");
