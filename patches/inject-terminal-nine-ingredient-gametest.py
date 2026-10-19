@@ -27,7 +27,7 @@ code=r'''
                   }){
                     for(int i=1;i<=9;i++)
                       xsxCraftMenu.slots.get(i).set(
-                          new net.minecraft.world.item.ItemStack(xsxNineCase[0],1));
+                          new net.minecraft.world.item.ItemStack(xsxNineCase[0],16));
                     var xsxNinePreview=xsxCraftMenu.slots.get(0).getItem();
                     if(xsxNinePreview.isEmpty()||xsxNinePreview.getItem()!=xsxNineCase[1])
                       throw new IllegalStateException("3x3 compression recipe missing: "+xsxNineCase[0]);
@@ -50,10 +50,10 @@ code=r'''
                         xsxCraftInv.setItem(i,net.minecraft.world.item.ItemStack.EMPTY);
                       }
                     }
-                    if(xsxNineProduced!=1)
+                    if(xsxNineProduced!=16)
                       throw new IllegalStateException("9-input craft conservation: "+xsxNineProduced);
                   }
-                  System.out.println("XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=3 ingredients=27 results=3 total_click_ns="+xsxNineTotalNs+" worst_click_ns="+xsxNineWorstNs+" not_server_MSPT=true");
+                  System.out.println("XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=3 ingredients=432 results=48 total_click_ns="+xsxNineTotalNs+" worst_click_ns="+xsxNineWorstNs+" not_server_MSPT=true");
 '''
 # Insert after player and inventory initialization, before 15-tick fixture setup.
 needle='final int[] xsxCraftTicks={0};'
