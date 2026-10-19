@@ -76,8 +76,8 @@ def conduit(s):
         assert s.count(x)==1,("conduit safety",x)
     return s
 c=edit_scope(c,
-  "  public static List<Endpoint> scanEndpoints(ServerLevel level,ConduitNetwork network,boolean extract){",
-  "  public static List<Endpoint> endpoints(",
+  "public static List<Endpoint> scanEndpoints(ServerLevel level,ConduitNetwork network,boolean extract){",
+  "public static List<Endpoint> endpoints(",
   conduit,"conduit method")
 assert w.count(marker)==2 and c.count(marker)==1
 # Publish only once all three independent safety checks passed.
