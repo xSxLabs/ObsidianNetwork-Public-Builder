@@ -33,8 +33,8 @@ def autocrafter(s):
     assert s.count("xsxCenterChunkLoaded")==3 and s.count("level.hasChunkAt(q)")==1
     return s
 w=edit_scope(w,
-  "   public static int autocrafterCount(ServerLevel level, NetworkRuntime runtime) {",
-  "   public static int autoChiselerCount(ServerLevel level, NetworkRuntime runtime) {",
+  "public static int autocrafterCount(ServerLevel level, NetworkRuntime runtime) {",
+  "public static int autoChiselerCount(ServerLevel level, NetworkRuntime runtime) {",
   autocrafter,"auto method")
 def devices(s):
     s=replace(s,"BlockPos p = new BlockPos(node.x(), node.y(), node.z());",
@@ -50,8 +50,8 @@ def devices(s):
         assert x in s
     return s
 w=edit_scope(w,
-  "   public static WorldTopologyBridge.DeviceCounts connectedDeviceCounts(ServerLevel level, NetworkRuntime runtime) {",
-  "   public static List<BlockPos> externalCandidates(ServerLevel level, NetworkRuntime runtime) {",
+  "public static WorldTopologyBridge.DeviceCounts connectedDeviceCounts(ServerLevel level, NetworkRuntime runtime) {",
+  "public static List<BlockPos> externalCandidates(ServerLevel level, NetworkRuntime runtime) {",
   devices,"device method")
 def conduit(s):
     s=replace(s,
