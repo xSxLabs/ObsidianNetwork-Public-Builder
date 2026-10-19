@@ -94,7 +94,12 @@ name: xSxLabs Network Storage v1.6
   workflow_dispatch:
   push:
     branches: [projekt-performance-wireless]
-    paths: ['.github/workflows/networkstorage-v1.6.yml']
+    paths:
+      - '.github/workflows/networkstorage-v1.6.yml'
+      - 'patches/**'
+      - 'tests/**'
+      - 'performance/**'
+      - 'private/**'
 
 
 
