@@ -1979,6 +1979,7 @@ jobs:
           grep -Fq 'XSXLABS_CONTROLLER_EXTERNAL_ONCE_PER_CALL_V1' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
           # Build 306: three combined Spark CPU hotpath microfixes with fail-closed source guards.
           python3 patches/perf-spark-batched-live-chunk-registry-guards.py
+          python3 patches/perf-autocrafter-direction-once.py
           grep -Fq 'XSXLABS_SPARK_LIVE_SCAN_GUARDS_V1' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
           grep -Fq 'XSXLABS_SPARK_LIVE_SCAN_GUARDS_V1' work/src/main/java/dev/obsidiannetwork/conduit/ConduitRuntime.java
           python3 patches/perf-controller-menu-status-batching.py
