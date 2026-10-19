@@ -58,8 +58,7 @@ code=r'''
 # Insert after player and inventory initialization, before 15-tick fixture setup.
 needle=anchor
 assert s.count('var xsxCraftInv=xsxCraftPlayer.getInventory();')==1
-s=s.replace(needle,code+"
-                  "+needle,1)
+s=s.replace(needle,needle+"\\n"+code,1)
 assert s.count(marker)==2
 p.write_text(s,encoding="utf-8")
 print("NINE_INGREDIENT_SHIFT_CRAFT_TEST_INJECTION_V1 PASS")
