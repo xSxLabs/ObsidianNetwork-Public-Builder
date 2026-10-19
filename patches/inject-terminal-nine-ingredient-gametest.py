@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 p=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/build103/Build103GameTests.java"
 s=p.read_text(encoding="utf-8")
-anchor='final int[] xsxCraftTicks={0};'
+anchor='if(!rt.powered())throw new IllegalStateException("Shift crafting test network unpowered");'
 marker="XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1"
 assert s.count(anchor)==1 and marker not in s
 assert "xsxCraftMenu.clicked(0,0," in s
@@ -56,7 +56,7 @@ code=r'''
                   System.out.println("XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=3 ingredients=432 results=48 total_click_ns="+xsxNineTotalNs+" worst_click_ns="+xsxNineWorstNs+" not_server_MSPT=true");
 '''
 # Insert after player and inventory initialization, before 15-tick fixture setup.
-needle='final int[] xsxCraftTicks={0};'
+needle=anchor
 assert s.count('var xsxCraftInv=xsxCraftPlayer.getInventory();')==1
 s=s.replace(needle,code+"
                   "+needle,1)
