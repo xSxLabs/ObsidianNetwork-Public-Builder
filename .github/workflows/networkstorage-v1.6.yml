@@ -1995,6 +1995,8 @@ jobs:
           grep -Fq 'XSXLABS_TERMINAL_DUPLICATE_BROADCAST_ELISION_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           # Crafting: skip only the duplicate preflight on already-approved reserved output.
           python3 patches/perf-autocraft-single-exact-insert-preflight.py
+          # Combined final-candidate source gate: crafting + storage + cables must all be present.
+          python3 patches/perf-final-crafting-cable-source-gate.py
           python3 - <<'PY'
           from pathlib import Path
           root=Path('work/src/main/java/dev/obsidiannetwork')
