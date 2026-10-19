@@ -2344,6 +2344,9 @@ jobs:
           python3 patches/inject-controller-autocrafter-50drive-gui-stress.py
           # Build 295: actual result-slot shift-click crafting across 15 separate server ticks.
           python3 patches/inject-terminal-shift-craft-15tick-gametest.py
+          # Real 3x3 compression recipes on the same 50-drive terminal.
+          python3 patches/inject-terminal-nine-ingredient-gametest.py
+          grep -Fq 'XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
