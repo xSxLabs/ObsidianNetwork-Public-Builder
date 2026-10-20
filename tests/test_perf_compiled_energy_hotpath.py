@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mutation tests: bytecode hotpath contract rejects duplicate/no FE semantics."""
+"""Mutation tests: compiled ENERGY lazy block cache and live FE semantics must hold."""
 import importlib.util
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -16,9 +16,9 @@ def method(name):
     contract=[
         "  private static boolean "+name+"(ServerLevel, BlockPos, BlockState);",
         "    Code:",
-        "       1: // Field ObsidianNetwork.ENERGY_CABLE:",
+        "       1: // Field XsxRegisteredEnergyBlocks.ENERGY:",
         "       4: // Method BlockState.is:",
-        "       8: // Field ObsidianNetwork.CONDUIT_BUNDLE:",
+        "       8: // Field XsxRegisteredEnergyBlocks.BUNDLE:",
         "      12: // Method BlockState.is:",
         "      16: // Method ServerLevel.getBlockEntity:",
         "      20: // class ConduitBundleBlockEntity",
@@ -32,25 +32,44 @@ def method(name):
     return "\n".join(contract)+"\n"
 
 BASE=method("energyCable")+"\n"+method("energyOpen")+"\n  private static void following();\n"
+CACHE="""final class EnergyCableBlockEntity$XsxRegisteredEnergyBlocks {
+  private static final Block ENERGY;
+  private static final Block BUNDLE;
+  static {};
+    Code:
+       0: // Field ObsidianNetwork.ENERGY_CABLE:
+       3: // Method DeferredHolder.get:
+       6: // Field ObsidianNetwork.CONDUIT_BUNDLE:
+       9: // Method DeferredHolder.get:
+}
+"""
+
 class Result:
     def __init__(self,source):
         self.stdout=source
 
 class CompiledEnergyContractTest(TestCase):
-    def jar(self,folder):
+    def jar(self,folder,include_cache=True):
         jar=Path(folder)/"test.jar"
         with ZipFile(jar,"w") as z:
-            z.writestr(MOD.ENTRY,b"fake class bytecode")
+            z.writestr(MOD.ENTRY,b"fake helper bytecode")
+            if include_cache:
+                z.writestr(MOD.CACHE_ENTRY,b"fake nested initializer bytecode")
         return jar
+
+    def javap(self,main_code=BASE,cache_code=CACHE):
+        def run(cmd,**_):
+            return Result(cache_code if cmd[-1]==MOD.CACHE_CLASS else main_code)
+        return patch.object(MOD.subprocess,"run",side_effect=run)
 
     def test_verified_hotpath_and_multiple_negative_mutations(self):
         with TemporaryDirectory() as folder:
             jar=self.jar(folder)
-            with patch.object(MOD.subprocess,"run",return_value=Result(BASE)):
+            with self.javap():
                 MOD.verify(jar)
             for missing in (
-                "ObsidianNetwork.ENERGY_CABLE:",
-                "ObsidianNetwork.CONDUIT_BUNDLE:",
+                "XsxRegisteredEnergyBlocks.ENERGY:",
+                "XsxRegisteredEnergyBlocks.BUNDLE:",
                 "ServerLevel.getBlockEntity:",
                 "ConduitBundleBlockEntity$Layer.ENERGY",
                 "EnergyCableBlock.isCut:",
@@ -58,22 +77,39 @@ class CompiledEnergyContractTest(TestCase):
                 "ConduitBundleBlockEntity.has:",
             ):
                 with self.subTest(missing=missing):
-                    with patch.object(MOD.subprocess,"run",return_value=Result(BASE.replace(missing,"removed"))):
+                    with self.javap(main_code=BASE.replace(missing,"removed")):
                         with self.assertRaises(AssertionError):
                             MOD.verify(jar)
-            # Old build280: duplicate BlockState.is from identical block type.
+            for missing in ("ObsidianNetwork.ENERGY_CABLE:",
+                            "ObsidianNetwork.CONDUIT_BUNDLE:",
+                            "static {};"):
+                with self.subTest(cache_missing=missing):
+                    with self.javap(cache_code=CACHE.replace(missing,"removed")):
+                        with self.assertRaises(AssertionError):
+                            MOD.verify(jar)
+            # Must reject reverting to old per-neighbor registry reads.
+            old=BASE.replace("XsxRegisteredEnergyBlocks.ENERGY:",
+                             "ObsidianNetwork.ENERGY_CABLE:")
+            with self.javap(main_code=old):
+                with self.assertRaises(AssertionError):
+                    MOD.verify(jar)
+            # Reject duplicate BlockState checks in either compiled helper.
             duplicate=BASE.replace("      16: // Method ServerLevel.getBlockEntity:",
                                    "      13: // Method BlockState.is:\n      16: // Method ServerLevel.getBlockEntity:")
-            with patch.object(MOD.subprocess,"run",return_value=Result(duplicate)):
+            with self.javap(main_code=duplicate):
                 with self.assertRaises(AssertionError):
                     MOD.verify(jar)
 
-    def test_missing_jar_or_incomplete_method_boundary_rejected(self):
+    def test_missing_jar_cache_or_method_boundary_rejected(self):
         with TemporaryDirectory() as folder:
             with self.assertRaises(AssertionError):
                 MOD.verify(Path(folder)/"missing.jar")
-            jar=self.jar(folder)
-            with patch.object(MOD.subprocess,"run",return_value=Result(method("energyCable"))):
+            jar=self.jar(folder,include_cache=False)
+            with self.javap():
+                with self.assertRaises(AssertionError):
+                    MOD.verify(jar)
+            jar=self.jar(folder,include_cache=True)
+            with self.javap(main_code=method("energyCable")):
                 with self.assertRaises(AssertionError):
                     MOD.verify(jar)
 
