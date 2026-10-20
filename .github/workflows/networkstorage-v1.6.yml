@@ -117,6 +117,33 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+
+      - name: Publish run identity and diagnostic counters
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import os,re
+          from pathlib import Path
+          p=Path("/tmp/xsxlabs-perf-diagnostic.log")
+          lines=p.read_text(errors="replace").splitlines() if p.exists() else []
+          # Only aggregate numeric metrics, never method windows or private source.
+          safe=[x[:250] for x in lines if x.startswith(("PERF_DIAG_SCAN ","PERF_DIAG_FILE ","PERF_DIAG_METHOD ","PERF_DIAG_MISSING ","PERF_DIAG_ALL_SUBSYSTEMS_COMPLETE"))]
+          safe=safe[:120]
+          body=("Build run: https://github.com/"+os.environ["GH_REPO"]+"/actions/runs/"+os.environ["RUN_ID"]+
+                "\nCommit: "+os.environ["RUN_SHA"]+"; attempt: "+os.environ["RUN_ATTEMPT"]+
+                "\nDiagnostic counters (source redacted):\n\x60\x60\x60text\n"+
+                "\n".join(safe or ["Diagnostic did not reach its reporting step."])+
+                "\n\x60\x60\x60\n")
+          Path("/tmp/xsxlabs-issue-body.md").write_text(body)
+          PY
+          gh issue comment 3 --body-file /tmp/xsxlabs-issue-body.md
       - uses: actions/checkout@v4
         with:
           # Build exactly the triggering revision, not a later branch HEAD.
@@ -2702,32 +2729,6 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish run identity and diagnostic counters
-        if: always()
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
-          RUN_ATTEMPT: ${{ github.run_attempt }}
-          RUN_SHA: ${{ github.sha }}
-        run: |
-          python3 - <<'PY'
-          import os,re
-          from pathlib import Path
-          p=Path("/tmp/xsxlabs-perf-diagnostic.log")
-          lines=p.read_text(errors="replace").splitlines() if p.exists() else []
-          # Only aggregate numeric metrics, never method windows or private source.
-          safe=[x[:250] for x in lines if x.startswith(("PERF_DIAG_SCAN ","PERF_DIAG_FILE ","PERF_DIAG_METHOD ","PERF_DIAG_MISSING ","PERF_DIAG_ALL_SUBSYSTEMS_COMPLETE"))]
-          safe=safe[:120]
-          body=("Build run: https://github.com/"+os.environ["GH_REPO"]+"/actions/runs/"+os.environ["RUN_ID"]+
-                "\nCommit: "+os.environ["RUN_SHA"]+"; attempt: "+os.environ["RUN_ATTEMPT"]+
-                "\nDiagnostic counters (source redacted):\n\x60\x60\x60text\n"+
-                "\n".join(safe or ["Diagnostic did not reach its reporting step."])+
-                "\n\x60\x60\x60\n")
-          Path("/tmp/xsxlabs-issue-body.md").write_text(body)
-          PY
-          gh issue comment 3 --body-file /tmp/xsxlabs-issue-body.md
 
 # visual-fix-retry-65
 
