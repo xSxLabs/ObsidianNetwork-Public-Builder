@@ -68,10 +68,12 @@ code=r'''
                       for(int slot=0;slot<36;slot++){
                         var present=xsxCraftInv.getItem(slot);
                         if(!present.isEmpty()){
-                          if(present.getItem()!=net.minecraft.world.item.Items.OAK_PLANKS)
-                            throw new IllegalStateException("Unexpected shift-crafted inventory item at "+slot);
-                          planks+=present.getCount();
-                          xsxCraftInv.setItem(slot,net.minecraft.world.item.ItemStack.EMPTY);
+                          // The shared FakePlayer inventory may contain outputs from
+                          // the nine-ingredient fixture; preserve unrelated stacks.
+                          if(present.getItem()==net.minecraft.world.item.Items.OAK_PLANKS){
+                            planks+=present.getCount();
+                            xsxCraftInv.setItem(slot,net.minecraft.world.item.ItemStack.EMPTY);
+                          }
                         }
                       }
                       if(planks!=64)
@@ -95,7 +97,7 @@ code=r'''
                           ||unspent.getCount()!=8)
                         throw new IllegalStateException("Same-tick shift-burst consumed extra logs");
                       for(int slot=0;slot<36;slot++){
-                        if(!xsxCraftInv.getItem(slot).isEmpty())
+                        if(xsxCraftInv.getItem(slot).getItem()==net.minecraft.world.item.Items.OAK_PLANKS)
                           throw new IllegalStateException("Same-tick shift-burst duplicated output");
                       }
                       int unspentCount=unspent.getCount();
