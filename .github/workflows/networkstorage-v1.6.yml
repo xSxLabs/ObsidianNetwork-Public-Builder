@@ -1994,6 +1994,9 @@ jobs:
           python3 patches/perf-terminal-jei-recipe-candidate-reuse.py
           # Terminal crafting-grid writes: skip only exact component+count identity no-ops.
           python3 patches/perf-terminal-unchanged-craft-slot-elision.py
+          # Avoid nine redundant setter dispatches on unchanged 3x3 grid slots.
+          python3 patches/perf-terminal-nine-slot-dispatch-elision.py
+          grep -Fq 'XSXLABS_TERMINAL_NINE_SLOT_DISPATCH_ELISION_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           grep -Fq 'XSXLABS_TERMINAL_UNCHANGED_CRAFT_SLOT_ELISION_V1' work/src/main/java/dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.java
           # Build 290: recipe rebuild already syncs both paths; elide the second broadcast.
           python3 patches/perf-terminal-duplicate-broadcast-elision.py
