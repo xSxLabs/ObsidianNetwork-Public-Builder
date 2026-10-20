@@ -18,6 +18,7 @@ targets={
 "autocrafter":"AutocrafterBlockEntity.java",
 }
 files=list(root.rglob("*.java"))
+missing_critical=[]
 print("PERF_DIAG_SCAN",len(files),"java_files")
 operations=("Transaction.openRoot(", ".extract(", ".insert(", "getBlockEntity(", "getCapability(", "broadcastChanges(", "setChanged(", "keysSnapshot(", "getCraftItem(", "setCraftItem(", "getItem(", "setItem(")
 for name,rel in targets.items():
@@ -27,6 +28,8 @@ for name,rel in targets.items():
  p=matches[0] if matches else root/rel
  if not p.is_file():
   print("PERF_DIAG_MISSING",name,rel)
+  if name in ("craft_menu","craft_inventory","energy_cable","conduit_ticker","solar"):
+   missing_critical.append(name)
   continue
  text=p.read_text(encoding="utf-8")
  print("PERF_DIAG_FILE",name,"bytes",len(text),*[f"{op}={text.count(op)}" for op in operations])
@@ -67,4 +70,6 @@ for name,rel in targets.items():
       window=re.sub(r"\s+"," ",window).strip()
       print("PERF_DIAG_WINDOW",name,meth,op,window[:225])
     break
+if missing_critical:
+ raise RuntimeError("Missing critical performance source files: "+", ".join(missing_critical))
 print("PERF_DIAG_ALL_SUBSYSTEMS_COMPLETE")
