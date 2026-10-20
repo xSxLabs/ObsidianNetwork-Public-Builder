@@ -2004,7 +2004,7 @@ jobs:
           p=Path("work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java")
           t=p.read_text()
           for name in ("slotsChanged","quickMoveStack","rebuildRecipeChoice"):
-              m=re.search(r"\\b(?:public|private|protected)\\s+[^\\n{;]*\\b"+name+r"\\s*\\(",t)
+              m=re.search(r"\b(?:public|private|protected)\s+[^\n{;]*\b"+name+r"\s*\(",t)
               if not m:
                   print("CRAFT_DIAG missing",name)
                   continue
