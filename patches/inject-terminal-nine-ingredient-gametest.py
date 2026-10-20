@@ -15,8 +15,8 @@ assert "xsxCraftMenu.clicked(0,0," in s
 assert "xsxlabsBurstTerminalPos" in s
 code=r'''
                   // XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1
-                  // One 3x3 compression craft of each type via the same
-                  // production result-slot QUICK_MOVE as normal player input.
+                  // Sixteen consecutive 3x3 compression crafts per case via
+                  // the production result-slot QUICK_MOVE as normal player input.
                   // This catches a regression not covered by log -> planks.
                   long xsxNineTotalNs=0L;
                   long xsxNineWorstNs=0L;
@@ -60,5 +60,7 @@ needle=anchor
 assert s.count('var xsxCraftInv=xsxCraftPlayer.getInventory();')==1
 s=s.replace(needle,needle+"\n"+code,1)
 assert s.count(marker)==2
+assert s.index(anchor)<s.index(marker, s.index(anchor))
+assert s.count("xsxNineProduced!=16")==1
 p.write_text(s,encoding="utf-8")
 print("NINE_INGREDIENT_SHIFT_CRAFT_TEST_INJECTION_V1 PASS")
