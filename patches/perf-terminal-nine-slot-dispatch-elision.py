@@ -20,8 +20,10 @@ assert len(matches)==1,("Expected exactly one craft-grid setter loop",len(matche
 m=matches[0]
 target,index,stack=m.group("target","index","stack")
 assert "getItem(" in stack,(target,index,stack)
+assert "getCraftItem(" not in stack,(target,index,stack)
 assert "craftSlots" in body,(target,index,stack)
 assert target not in ("this","super"),"Unexpected setter owner"
+assert "getCraftItem(int" in (Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.java").read_text(encoding="utf-8")
 replacement=(
     "// "+marker+"\n"
     "         // Compare the authoritative persisted stack before dispatching a transaction.\n"
