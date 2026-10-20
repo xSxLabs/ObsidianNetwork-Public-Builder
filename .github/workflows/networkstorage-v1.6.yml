@@ -1,3 +1,4 @@
+# Build 346: user-authorized post-spark 3x3 result batch and safe concrete-vanilla prefilter; full existing regression suite
 # Build 310: run integrated autocrafter Direction.values() hoist with full existing regression and binary gates; CI only, no user JAR
 # Build 309: assert 3 Spark live-scan performance fixes survive actual compiled distributor JAR; full Curios, Wireless, Drive16/50 regression; no user JAR
 # Build 308: fail-closed parser accepts Java whitespace variations while matching exact hotpath signatures; 3-fix bundle tests and Curios full suite, no user JAR
@@ -2032,6 +2033,11 @@ jobs:
           # Build 290: recipe rebuild already syncs both paths; elide the second broadcast.
           python3 patches/perf-terminal-duplicate-broadcast-elision.py
           grep -Fq 'XSXLABS_TERMINAL_DUPLICATE_BROADCAST_ELISION_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          # Build 346: Spark #345 result-take repeated slot writes and vanilla recipe scanning.
+          python3 patches/perf-terminal-result-bulk-persistence.py
+          python3 patches/perf-terminal-recipe-cardinality-fastpath.py
+          grep -Fq 'XSXLABS_CRAFT_RESULT_BATCH_PERSIST_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          grep -Fq 'XSXLABS_VANILLA_RECIPE_CARDINALITY_FASTPATH_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           # Crafting: skip only the duplicate preflight on already-approved reserved output.
           python3 patches/perf-autocraft-single-exact-insert-preflight.py
           # Combined final-candidate source gate: crafting + storage + cables must all be present.
