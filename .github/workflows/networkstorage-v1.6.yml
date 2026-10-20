@@ -1996,6 +1996,8 @@ jobs:
           python3 patches/perf-terminal-unchanged-craft-slot-elision.py
           # Avoid nine redundant setter dispatches on unchanged 3x3 grid slots.
           python3 patches/perf-terminal-nine-slot-dispatch-elision.py
+          # Build-wide hotpath inventory: crafting, cables, conduit, solar, IO, controller.
+          python3 patches/perf-all-subsystems-diagnostic.py
           # Export reconstructed, fully patched terminal source for precise performance diagnosis.
           # Do not publish private reconstructed source as a public artifact.
           python3 - <<'PY'
