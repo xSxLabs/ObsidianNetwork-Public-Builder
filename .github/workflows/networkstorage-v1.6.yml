@@ -104,7 +104,7 @@ name: xSxLabs Network Storage v1.6
 
 
 
-permissions: {contents: read}
+permissions: {contents: read, issues: write}
 # Build 214 energy API trigger
 # Build 212 explicit trigger
 # Build 215 expanded conduit test trigger
@@ -117,6 +117,32 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+      - name: Publish run identity and diagnostic counters
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import os,re
+          from pathlib import Path
+          p=Path("/tmp/xsxlabs-perf-diagnostic.log")
+          lines=p.read_text(errors="replace").splitlines() if p.exists() else []
+          # Only aggregate numeric metrics, never method windows or private source.
+          safe=[x[:250] for x in lines if x.startswith(("PERF_DIAG_SCAN ","PERF_DIAG_FILE ","PERF_DIAG_METHOD ","PERF_DIAG_MISSING ","PERF_DIAG_ALL_SUBSYSTEMS_COMPLETE"))]
+          safe=safe[:120]
+          body=("Build run: https://github.com/"+os.environ["GH_REPO"]+"/actions/runs/"+os.environ["RUN_ID"]+
+                "\\nCommit: "+os.environ["RUN_SHA"]+"; attempt: "+os.environ["RUN_ATTEMPT"]+
+                "\\nDiagnostic counters (source redacted):\\n\\x60\\x60\\x60text\\n"+
+                "\\n".join(safe or ["Diagnostic did not reach its reporting step."])+
+                "\\n\\x60\\x60\\x60\\n")
+          Path("/tmp/xsxlabs-issue-body.md").write_text(body)
+          PY
+          gh issue comment 3 --body-file /tmp/xsxlabs-issue-body.md
       - uses: actions/checkout@v4
         with:
           # Build exactly the triggering revision, not a later branch HEAD.
@@ -1997,7 +2023,7 @@ jobs:
           # Avoid nine redundant setter dispatches on unchanged 3x3 grid slots.
           python3 patches/perf-terminal-nine-slot-dispatch-elision.py
           # Build-wide hotpath inventory: crafting, cables, conduit, solar, IO, controller.
-          python3 patches/perf-all-subsystems-diagnostic.py
+          python3 patches/perf-all-subsystems-diagnostic.py | tee /tmp/xsxlabs-perf-diagnostic.log
           # Export reconstructed, fully patched terminal source for precise performance diagnosis.
           # Do not publish private reconstructed source as a public artifact.
           python3 - <<'PY'
