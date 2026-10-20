@@ -1996,6 +1996,30 @@ jobs:
           python3 patches/perf-terminal-unchanged-craft-slot-elision.py
           # Avoid nine redundant setter dispatches on unchanged 3x3 grid slots.
           python3 patches/perf-terminal-nine-slot-dispatch-elision.py
+          # Export reconstructed, fully patched terminal source for precise performance diagnosis.
+          # Do not publish private reconstructed source as a public artifact.
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          p=Path("work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java")
+          t=p.read_text()
+          for name in ("slotsChanged","quickMoveStack","rebuildRecipeChoice"):
+              m=re.search(r"\\b(?:public|private|protected)\\s+[^\\n{;]*\\b"+name+r"\\s*\\(",t)
+              if not m:
+                  print("CRAFT_DIAG missing",name)
+                  continue
+              depth=0
+              start=t.find("{",m.end())
+              if start<0: raise RuntimeError("Method body missing: "+name)
+              end=start
+              for i in range(start,len(t)):
+                  if t[i]=="{": depth+=1
+                  elif t[i]=="}":
+                      depth-=1
+                      if depth==0: end=i+1; break
+              body=t[m.start():end]
+              print("CRAFT_DIAG",name,"chars",len(body),"setCraftItem",body.count("setCraftItem("),"extract",body.count(".extract("),"broadcast",body.count("broadcastChanges("),"transactions",body.count("Transaction.openRoot("))
+          PY
           grep -Fq 'XSXLABS_TERMINAL_NINE_SLOT_DISPATCH_ELISION_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           grep -Fq 'XSXLABS_TERMINAL_UNCHANGED_CRAFT_SLOT_ELISION_V1' work/src/main/java/dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.java
           # Build 290: recipe rebuild already syncs both paths; elide the second broadcast.
