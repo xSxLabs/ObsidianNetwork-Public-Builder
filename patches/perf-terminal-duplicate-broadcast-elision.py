@@ -32,7 +32,7 @@ assert choice.count("return;")>=1, "Recipe choice no-match path lost"
 assert "this.resultSlots" in choice and "setItem(" in choice, "Recipe result state drift"
 assert body.count("this.rebuildRecipeChoice(")==1
 assert body.count("this.broadcastChanges();")==1
-assert "setCraftItem(" in body, "Expected nine-slot persistence in slotsChanged"
+assert ("setCraftItem(" in body or "setCraftGrid(" in body), "Expected craft-grid persistence in slotsChanged"
 pat=re.compile(r'(?P<recipe>this\.rebuildRecipeChoice\([^;{}]*\);)\s*'
                r'(?P<broadcast>this\.broadcastChanges\(\);)')
 match=list(pat.finditer(body))
