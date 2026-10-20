@@ -19,7 +19,9 @@ matches=list(pat.finditer(body))
 assert len(matches)==1,("Expected exactly one craft-grid setter loop",len(matches))
 m=matches[0]
 target,index,stack=m.group("target","index","stack")
-assert "craftSlots" in stack and "getItem(" in stack,(target,index,stack)
+assert "getItem(" in stack,(target,index,stack)
+assert "craftSlots" in body,(target,index,stack)
+assert target not in ("this","super"),"Unexpected setter owner"
 replacement=(
     "// "+marker+"\n"
     "         // Compare the authoritative persisted stack before dispatching a transaction.\n"
