@@ -13,6 +13,9 @@ def verify(jar: Path):
     end="public void copyFrom(net.minecraft.world.item.ItemStack[]);"
     assert out.count(head)==out.count(end)==1, "Compiled craft-slot method drift"
     body=out.split(head,1)[1].split(end,1)[0]
+    # The newly added setCraftGrid method sits between these methods. Keep
+    # verifying the original setter independently, not both method bodies.
+    body=body.split("public void setCraftGrid(net.minecraft.world.item.ItemStack[]);",1)[0]
     for token in ("Method getCraftItem:(I)Lnet/minecraft/world/item/ItemStack;",
                   "Method net/minecraft/world/item/ItemStack.matches:",
                   "Method net/neoforged/neoforge/transfer/item/ItemStacksResourceHandler.extract:",
