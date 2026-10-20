@@ -48,10 +48,10 @@ for name,rel in targets.items():
  # full reconstructed private source in public CI logs.
  if name in ("craft_menu","craft_inventory"):
   for meth in ("slotsChanged","setCraftItem","getCraftItem","quickMoveStack","rebuildRecipeChoice"):
-   for m in re.finditer(r"\\b"+re.escape(meth)+r"\\s*\\(",text):
+   for m in re.finditer(r"\b"+re.escape(meth)+r"\s*\(",text):
     pos=m.start()
     before=text[max(0,pos-120):pos]
-    if not re.search(r"(?:public|private|protected)\\s+",before): continue
+    if not re.search(r"(?:public|private|protected)\s+",before): continue
     opening=text.find("{",m.end())
     if opening<0 or opening-pos>350: continue
     depth=1
@@ -64,7 +64,7 @@ for name,rel in targets.items():
     for op in ("Transaction.openRoot(", "this.crafting.extract(", "this.crafting.insert(", "setCraftItem(", "getCraftItem(", "broadcastChanges("):
      for match in list(re.finditer(re.escape(op),body))[:6]:
       window=body[max(0,match.start()-85):min(len(body),match.end()+125)]
-      window=re.sub(r"\\s+"," ",window).strip()
+      window=re.sub(r"\s+"," ",window).strip()
       print("PERF_DIAG_WINDOW",name,meth,op,window[:225])
     break
 print("PERF_DIAG_ALL_SUBSYSTEMS_COMPLETE")
