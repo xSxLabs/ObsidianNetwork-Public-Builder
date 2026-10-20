@@ -2027,7 +2027,7 @@ jobs:
               body=t[m.start():end]
               print("CRAFT_DIAG",name,"chars",len(body),"setCraftItem",body.count("setCraftItem("),"extract",body.count(".extract("),"broadcast",body.count("broadcastChanges("),"transactions",body.count("Transaction.openRoot("))
           PY
-          grep -Fq 'XSXLABS_TERMINAL_NINE_SLOT_DISPATCH_ELISION_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
+          grep -Fq 'XSXLABS_TERMINAL_BULK_GRID_PERSISTENCE_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           grep -Fq 'XSXLABS_TERMINAL_UNCHANGED_CRAFT_SLOT_ELISION_V1' work/src/main/java/dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.java
           # Build 290: recipe rebuild already syncs both paths; elide the second broadcast.
           python3 patches/perf-terminal-duplicate-broadcast-elision.py
