@@ -19,8 +19,10 @@ def verify(jar):
     assert slots.count("Method rebuildRecipeChoice:")==1
     assert slots.count("Method broadcastChanges:")==0, "Duplicate terminal broadcast survived"
     assert choice.count("Method broadcastChanges:")==2, "Recipe-choice branch sync was removed"
-    assert slots.count("Method dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.setCraftItem:")==1, (
-        "Terminal persisted craft slots disappeared")
+    assert slots.count("Method dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.setCraftGrid:")==1, (
+        "Atomic terminal craft-grid persistence disappeared")
+    assert slots.count("Method dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.setCraftItem:")==0, (
+        "Legacy per-slot persistence returned to the hot path")
     print("COMPILED_TERMINAL_SINGLE_GRID_BROADCAST_V1 PASS both_recipe_branches_synced=true")
 
 if __name__=="__main__":
