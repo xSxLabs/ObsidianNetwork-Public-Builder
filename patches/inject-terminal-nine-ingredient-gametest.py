@@ -28,6 +28,13 @@ code=r'''
                     for(int i=1;i<=9;i++)
                       xsxCraftMenu.slots.get(i).set(
                           new net.minecraft.world.item.ItemStack(xsxNineCase[0],16));
+                    // Existing player inventory may contain unrelated fixture items.
+                    // Track only the recipe output, without deleting other stacks.
+                    int xsxNineBefore=0;
+                    for(int i=0;i<36;i++){
+                      var stack=xsxCraftInv.getItem(i);
+                      if(stack.getItem()==xsxNineCase[1]) xsxNineBefore+=stack.getCount();
+                    }
                     var xsxNinePreview=xsxCraftMenu.slots.get(0).getItem();
                     if(xsxNinePreview.isEmpty()||xsxNinePreview.getItem()!=xsxNineCase[1])
                       throw new IllegalStateException("3x3 compression recipe missing: "+xsxNineCase[0]);
@@ -43,13 +50,10 @@ code=r'''
                     int xsxNineProduced=0;
                     for(int i=0;i<36;i++){
                       var item=xsxCraftInv.getItem(i);
-                      if(!item.isEmpty()){
-                        if(item.getItem()!=xsxNineCase[1])
-                          throw new IllegalStateException("Unexpected 9-input result "+item);
+                      if(!item.isEmpty()&&item.getItem()==xsxNineCase[1])
                         xsxNineProduced+=item.getCount();
-                        xsxCraftInv.setItem(i,net.minecraft.world.item.ItemStack.EMPTY);
-                      }
                     }
+                    xsxNineProduced-=xsxNineBefore;
                     if(xsxNineProduced!=16)
                       throw new IllegalStateException("9-input craft conservation: "+xsxNineProduced);
                   }
