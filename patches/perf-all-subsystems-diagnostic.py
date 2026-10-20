@@ -7,19 +7,24 @@ import os,re
 from pathlib import Path
 root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 targets={
-"craft_menu":"menu/StorageTerminalMenu.java",
-"craft_inventory":"blockentity/TerminalInventoryBlockEntity.java",
-"energy_cable":"blockentity/EnergyCableBlockEntity.java",
-"conduit_ticker":"conduit/EnergyConduitTicker.java",
-"solar":"blockentity/SolarGeneratorBlockEntity.java",
-"importer":"blockentity/ImporterBlockEntity.java",
-"exporter":"blockentity/ExporterBlockEntity.java",
-"controller":"blockentity/NetworkControllerBlockEntity.java",
-"autocrafter":"blockentity/AutocrafterBlockEntity.java",
+"craft_menu":"StorageTerminalMenu.java",
+"craft_inventory":"TerminalInventoryBlockEntity.java",
+"energy_cable":"EnergyCableBlockEntity.java",
+"conduit_ticker":"EnergyConduitTicker.java",
+"solar":"SolarGeneratorBlockEntity.java",
+"importer":"ImporterBlockEntity.java",
+"exporter":"ExporterBlockEntity.java",
+"controller":"NetworkControllerBlockEntity.java",
+"autocrafter":"AutocrafterBlockEntity.java",
 }
+files=list(root.rglob("*.java"))
+print("PERF_DIAG_SCAN",len(files),"java_files")
 operations=("Transaction.openRoot(", ".extract(", ".insert(", "getBlockEntity(", "getCapability(", "broadcastChanges(", "setChanged(", "keysSnapshot(", "getCraftItem(", "setCraftItem(", "getItem(", "setItem(")
 for name,rel in targets.items():
- p=root/rel
+ matches=[p for p in files if p.name==rel]
+ if not matches:
+  matches=[p for p in files if name.replace('_','') in p.stem.lower()]
+ p=matches[0] if matches else root/rel
  if not p.is_file():
   print("PERF_DIAG_MISSING",name,rel)
   continue
