@@ -154,6 +154,7 @@ jobs:
           # Build 288: test_perf_terminal_unchanged_craft_slots.py is included in this full suite.
           python3 -m unittest discover -s tests -p 'test_perf_*.py' -v
           python3 -m unittest discover -s tests -p 'test_wireless_*.py' -v
+          python3 -m unittest discover -s tests -p 'test_network_elytra_*.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           mkdir -p work/src/main/java work/src/main/resources
           curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
