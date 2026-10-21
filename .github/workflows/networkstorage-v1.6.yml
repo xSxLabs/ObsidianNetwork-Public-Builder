@@ -1,3 +1,4 @@
+# Build 353: correct 26.1 glider API, enable feature patch CI triggers; preserve existing GameTest/Curios matrix
 # Build 351: Network Elytra with wireless FE Shift-boost + live Crafting Terminal capacity meter; full regression CI
 # Build 350: index ordered 3x3 vanilla recipe candidate buckets once per recipe-map/occupancy, full conservation+Curios tests
 # Build 347: additionally cache immutable registered block objects lazily in ENERGY helpers; preserve full FE tests
@@ -101,6 +102,7 @@ name: xSxLabs Network Storage v1.6
     paths:
       - '.github/workflows/networkstorage-v1.6.yml'
       - 'patches/**'
+      - 'features/**'
       - 'tests/**'
       - 'performance/**'
       - 'private/**'
