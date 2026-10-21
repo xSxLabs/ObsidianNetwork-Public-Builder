@@ -109,7 +109,6 @@ public final class NetworkElytraItem extends Item {
             if (next.lengthSqr() > BOOST_MAX_SPEED * BOOST_MAX_SPEED)
                 next = next.normalize().scale(BOOST_MAX_SPEED);
             player.setDeltaMovement(next);
-            player.hasImpulse = true;
         }
     }
 }
