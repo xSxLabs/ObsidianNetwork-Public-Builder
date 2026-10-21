@@ -42,7 +42,7 @@ source=source.replace(old,new,1)
 old='''            player.setDeltaMovement(next);
         }'''
 new='''            player.setDeltaMovement(next);
-            player.hasImpulse = true; // Send motion updates; client mirrors movement.
+            // Client predicts the same velocity; no removed 26.1 hasImpulse field.
         }'''
 assert source.count(old)==1
 source=source.replace(old,new,1)
