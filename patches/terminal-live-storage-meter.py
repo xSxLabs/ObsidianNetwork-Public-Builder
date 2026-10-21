@@ -81,7 +81,8 @@ fields='''
          private long lastSample=Long.MIN_VALUE;
          @Override public int get(int i) {
             if(i<0||i>=8)return 0;
-            if(inventory.player.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+            net.minecraft.server.level.ServerLevel sl=StorageTerminalMenu.this.terminalServerLevel();
+            if(sl!=null) {
                long tick=sl.getGameTime();
                if(lastSample==Long.MIN_VALUE||tick<lastSample||tick-lastSample>=10L) {
                   lastSample=tick;
