@@ -108,7 +108,7 @@ mod.write_text(t.replace(old,new,1),encoding="utf-8")
 
 def put(path,content):
  path.parent.mkdir(parents=True,exist_ok=True)
- path.write_text(json.dumps(content,indent=2)+"\\n",encoding="utf-8")
+ path.write_text(json.dumps(content,indent=2)+"\n",encoding="utf-8")
 
 # Modern Curios uses vanilla item tags; both optional slots are supported.
 for slot in ("back","elytra"):
@@ -140,7 +140,7 @@ def png(path,w,h,pixel):
  def chunk(name,data):
   return struct.pack(">I",len(data))+name+data+struct.pack(">I",zlib.crc32(name+data)&0xffffffff)
  path.parent.mkdir(parents=True,exist_ok=True)
- path.write_bytes(b"\\x89PNG\\r\\n\\x1a\\n"+chunk(b"IHDR",struct.pack(">2I5B",w,h,8,6,0,0,0))+chunk(b"IDAT",raw)+chunk(b"IEND",b""))
+ path.write_bytes(b"\x89PNG\r\n\x1a\n"+chunk(b"IHDR",struct.pack(">2I5B",w,h,8,6,0,0,0))+chunk(b"IDAT",raw)+chunk(b"IEND",b""))
 
 def icon(x,y):
  # Symmetric articulated panels; turquoise conduits contrast the graphite shell.
