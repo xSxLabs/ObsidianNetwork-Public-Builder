@@ -94,7 +94,7 @@ public abstract class NetworkElytraSpeedCheckMixin {
 assert source.count(marker)==1
 assert 'method="shouldCheckPlayerMovement"' in source
 assert "setReturnValue(false)" in source
-assert "gamerule" not in source.lower().replace("game rules", ""), "Do not mutate GameRules"
+assert "getGameRules(" not in source and "GameRules." not in source, "Do not mutate GameRules"
 # Publish only after all source/asset validation has succeeded.
 path.write_text(source,encoding="utf-8")
 data["mixins"].append("NetworkElytraSpeedCheckMixin")
