@@ -66,7 +66,7 @@ class EightNineRecipeTest(unittest.TestCase):
                     "build103-curios-installed-gametest.log"):
             for marker in (
                 "XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=4",
-                "XSXLABS_REAL_EIGHT_INGREDIENT_SHIFT_CRAFT_V1 PASS ingredients=128"):
+                "XSXLABS_REAL_EIGHT_INGREDIENT_SHIFT_CRAFT_V1 PASS ingredients=128 results=16"):
                 self.assertIn(f"grep -Fq '{marker}' /tmp/{log}", text)
 
 if __name__ == "__main__":
