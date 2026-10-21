@@ -23,7 +23,8 @@ code=r'''
                   for(var xsxNineCase : new net.minecraft.world.item.Item[][]{
                       {net.minecraft.world.item.Items.COAL,net.minecraft.world.item.Items.COAL_BLOCK},
                       {net.minecraft.world.item.Items.REDSTONE,net.minecraft.world.item.Items.REDSTONE_BLOCK},
-                      {net.minecraft.world.item.Items.BONE_MEAL,net.minecraft.world.item.Items.BONE_BLOCK}
+                      {net.minecraft.world.item.Items.BONE_MEAL,net.minecraft.world.item.Items.BONE_BLOCK},
+                      {net.minecraft.world.item.Items.IRON_INGOT,net.minecraft.world.item.Items.IRON_BLOCK}
                   }){
                     for(int i=1;i<=9;i++)
                       xsxCraftMenu.slots.get(i).set(
@@ -57,13 +58,50 @@ code=r'''
                     if(xsxNineProduced!=16)
                       throw new IllegalStateException("9-input craft conservation: "+xsxNineProduced);
                   }
-                  System.out.println("XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=3 ingredients=432 results=48 total_click_ns="+xsxNineTotalNs+" worst_click_ns="+xsxNineWorstNs+" not_server_MSPT=true");
+                  System.out.println("XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=4 ingredients=576 results=64 total_click_ns="+xsxNineTotalNs+" worst_click_ns="+xsxNineWorstNs+" not_server_MSPT=true");
+'''
+
+eight=r'''
+                  // XSXLABS_REAL_EIGHT_INGREDIENT_SHIFT_CRAFT_V1
+                  // 8-slot chest recipe, deliberately leaving the centre empty.
+                  // Exercise the real QUICK_MOVE result path with sixteen crafts.
+                  for(int xsxEightSlot=1; xsxEightSlot<=9; xsxEightSlot++) {
+                    xsxCraftMenu.slots.get(xsxEightSlot).set(
+                      xsxEightSlot==5 ? net.minecraft.world.item.ItemStack.EMPTY :
+                      new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.OAK_PLANKS,16));
+                  }
+                  int xsxEightBefore=0;
+                  for(int xsxEightSlot=0; xsxEightSlot<36; xsxEightSlot++) {
+                    var xsxEightStack=xsxCraftInv.getItem(xsxEightSlot);
+                    if(xsxEightStack.getItem()==net.minecraft.world.item.Items.CHEST)
+                      xsxEightBefore+=xsxEightStack.getCount();
+                  }
+                  var xsxEightPreview=xsxCraftMenu.slots.get(0).getItem();
+                  if(xsxEightPreview.isEmpty() || xsxEightPreview.getItem()!=net.minecraft.world.item.Items.CHEST)
+                    throw new IllegalStateException("8-slot chest recipe missing from real terminal");
+                  long xsxEightStarted=System.nanoTime();
+                  xsxCraftMenu.clicked(0,0,
+                      net.minecraft.world.inventory.ContainerInput.QUICK_MOVE,xsxCraftPlayer);
+                  long xsxEightElapsed=System.nanoTime()-xsxEightStarted;
+                  for(int xsxEightSlot=1; xsxEightSlot<=9; xsxEightSlot++)
+                    if(!xsxCraftMenu.slots.get(xsxEightSlot).getItem().isEmpty())
+                      throw new IllegalStateException("8-slot chest shift craft left input at "+xsxEightSlot);
+                  int xsxEightAfter=0;
+                  for(int xsxEightSlot=0; xsxEightSlot<36; xsxEightSlot++) {
+                    var xsxEightStack=xsxCraftInv.getItem(xsxEightSlot);
+                    if(xsxEightStack.getItem()==net.minecraft.world.item.Items.CHEST)
+                      xsxEightAfter+=xsxEightStack.getCount();
+                  }
+                  if(xsxEightAfter-xsxEightBefore!=16)
+                    throw new IllegalStateException("8-slot chest craft conservation: "+(xsxEightAfter-xsxEightBefore));
+                  System.out.println("XSXLABS_REAL_EIGHT_INGREDIENT_SHIFT_CRAFT_V1 PASS ingredients=128 results=16 total_click_ns="+xsxEightElapsed+" not_server_MSPT=true");
 '''
 # Insert after player and inventory initialization, before 15-tick fixture setup.
 needle=anchor
 assert s.count('var xsxCraftInv=xsxCraftPlayer.getInventory();')==1
-s=s.replace(needle,needle+"\n"+code,1)
+s=s.replace(needle,needle+"\n"+code+"\n"+eight,1)
 assert s.count(marker)==2
+assert s.count("XSXLABS_REAL_EIGHT_INGREDIENT_SHIFT_CRAFT_V1")==2
 assert s.index(anchor)<s.index(marker, s.index(anchor))
 assert s.count("xsxNineProduced!=16")==1
 p.write_text(s,encoding="utf-8")

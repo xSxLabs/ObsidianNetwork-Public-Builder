@@ -2513,6 +2513,8 @@ jobs:
           grep -Fq 'REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_STATUS_SUBCALLS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_TERMINAL_SHIFT_CRAFT_15_TICKS_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=4' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'XSXLABS_REAL_EIGHT_INGREDIENT_SHIFT_CRAFT_V1 PASS ingredients=128 results=16' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_TERMINAL_SAME_TICK_BURST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_MIXED_CRAFT_GUI_15_TICKS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_REAL_FE_TRANSFER_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
@@ -2557,6 +2559,8 @@ jobs:
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_STATUS_SUBCALLS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           python3 performance/verify-gui-phase-breakdown.py /tmp/build103-postpatch-gametest.log /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_TERMINAL_SHIFT_CRAFT_15_TICKS_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1 PASS cases=4' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'XSXLABS_REAL_EIGHT_INGREDIENT_SHIFT_CRAFT_V1 PASS ingredients=128 results=16' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_TERMINAL_SAME_TICK_BURST_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_MIXED_CRAFT_GUI_15_TICKS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           for count in 10 50 100; do grep -Fq "WIRELESS_DENSE_REAL_SERVER_${count}_V1 PASS" /tmp/build103-curios-installed-gametest.log; done
