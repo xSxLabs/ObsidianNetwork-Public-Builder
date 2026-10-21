@@ -47,7 +47,7 @@ code=r"""
                        dev.obsidiannetwork.core.EnergyTool.energy(wings)!=max-1500L ||
                        wings.getDamageValue()!=0)
                       throw new IllegalStateException("Network Elytra FE consumption must not damage item");
-                    System.out.println("NETWORK_ELYTRA_AND_LIVE_STORAGE_50_DRIVE_GAMETEST_V1 PASS cells="+attached+
+                    System.out.println("NETWORK_ELYTRA_AND_LIVE_STORAGE_50_DRIVE_GAMETEST_V1 PASS cells="+meterCells+
                        " used="+meter[0]+" capacity="+meter[1]+" elytraFE="+max);
                   }
 """
