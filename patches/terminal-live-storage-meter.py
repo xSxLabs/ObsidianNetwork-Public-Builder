@@ -137,8 +137,8 @@ updated=0
 for screen in screens:
     body=screen.read_text(encoding="utf-8")
     render=list(re.finditer(
-        r'\b(?:public|protected)\s+void\s+render\s*\(\s*(?:GuiGraphicsExtractor|net\.minecraft\.client\.gui\.GuiGraphicsExtractor)\s+(?P<g>\w+)\s*,[^)]*\)\s*\{',body))
-    assert len(render)==1, "Crafting Terminal screen render method drift: "+screen.name
+        r'\b(?:public|protected)\s+void\s+extractContents\s*\(\s*(?:GuiGraphicsExtractor|net\.minecraft\.client\.gui\.GuiGraphicsExtractor)\s+(?P<g>\w+)\s*,[^)]*\)\s*\{',body))
+    assert len(render)==1, "Crafting Terminal screen extractContents method drift: "+screen.name
     match=render[0]
     end=closing(body,match.end()-1)
     g=match.group("g")
