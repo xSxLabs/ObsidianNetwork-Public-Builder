@@ -148,13 +148,14 @@ for screen in screens:
       long xsxOccupied=this.menu.xsxStorageUsed();
       long xsxMaximum=this.menu.xsxStorageCapacity();
       String xsxLabel="Storage "+xsxCompactItems(xsxOccupied)+" / "+xsxCompactItems(xsxMaximum);
+      // Footer row opposite TYPES; avoids the search and sort controls.
+      int xsxY=this.topPos+(this.imageHeight*61)/100;
       int xsxX=this.leftPos+this.imageWidth-this.font.width(xsxLabel)-7;
-      int xsxY=this.topPos+8;
-      '''+g+'''.text(this.font,xsxLabel,xsxX,xsxY,0xFFA5AFBC,false);
-      int xsxBarX=this.leftPos+this.imageWidth-65, xsxBarY=this.topPos+19;
-      '''+g+'''.fill(xsxBarX,xsxBarY,xsxBarX+58,xsxBarY+2,0xFF27323E);
-      int xsxFill=xsxMaximum<=0L?0:(int)Math.min(58L,(xsxOccupied*58.0D)/xsxMaximum);
-      if(xsxFill>0)'''+g+'''.fill(xsxBarX,xsxBarY,xsxBarX+xsxFill,xsxBarY+2,0xFF51B4CF);
+      int xsxBarX=xsxX-38, xsxBarY=xsxY+4;
+      '''+g+'''.fill(xsxBarX,xsxBarY,xsxBarX+30,xsxBarY+2,0xFF302B39);
+      int xsxFill=xsxMaximum<=0L?0:(int)Math.min(30L,(xsxOccupied*30.0D)/xsxMaximum);
+      if(xsxFill>0)'''+g+'''.fill(xsxBarX,xsxBarY,xsxBarX+xsxFill,xsxBarY+2,0xFF6A9BB0);
+      '''+g+'''.text(this.font,xsxLabel,xsxX,xsxY,0xFF817E92,false);
 '''
     helper='''
    // Tiny header readout; formatting is purely client-side, no String.format.
