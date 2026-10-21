@@ -1992,6 +1992,8 @@ jobs:
           python3 features/wireless-energy/apply-network-elytra-hotfix.py
           # Build 377: restore legacy Wireless Terminal Curios slot + vanilla-like landing/takeoff gates.
           python3 features/wireless-energy/apply-network-elytra-landing.py
+          # Build 378: scoped vanilla Elytra movement-check exception for charged Network Elytra only.
+          python3 features/wireless-energy/apply-network-elytra-speedcheck.py
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
           # Build 301: live runtime component membership in one graph walk, with
@@ -2723,6 +2725,7 @@ jobs:
           subprocess.run(['python3','tests/verify_compiled_energy_hotpath.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_craft_slots.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_broadcast.py',str(jars[0])],check=True)
+          subprocess.run(['python3','tests/verify_compiled_network_elytra_speedcheck.py',str(jars[0])],check=True)
           print('BINARY_DRIVE16_SOLAR_ENERGY_HOTPATH_RELEASE_GATES_V1 PASS')
           PY
           test -s /tmp/xsxlabs-perf-hotpaths.json
