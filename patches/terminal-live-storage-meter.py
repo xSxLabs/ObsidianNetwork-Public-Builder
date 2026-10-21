@@ -56,12 +56,13 @@ network.write_text(s.replace(anchor,method+anchor,1),encoding="utf-8")
 menu=j/"menu/StorageTerminalMenu.java"
 s=menu.read_text(encoding="utf-8")
 assert marker not in s
-# Find unique server-authoritative 5-arg constructor used by actual menu GameTests.
+# The 3-arg/5-arg constructors delegate to the 7-arg primary constructor;
+# bind data slots ONLY in the primary constructor (never twice).
 ctor_matches=list(re.finditer(
     r'\bpublic\s+StorageTerminalMenu\s*\(\s*int\s+\w+\s*,\s*Inventory\s+(?P<inv>\w+)\s*,\s*BlockPos\s+(?P<pos>\w+)\s*,(?P<rest>[^)]*)\)\s*\{',s))
 assert len(ctor_matches)>=1, "Crafting Terminal constructor shape drift"
-ctor_matches=[m for m in ctor_matches if m.group("rest").count("long")>=2]
-assert len(ctor_matches)==1, "ambiguous runtime-backed Crafting Terminal ctor"
+ctor_matches=[m for m in ctor_matches if m.group("rest").count("long")>=2 and "String" in m.group("rest") and "boolean" in m.group("rest")]
+assert len(ctor_matches)==1, "ambiguous primary 7-argument Crafting Terminal ctor"
 m=ctor_matches[0]
 # Data slots are small and per-open-menu. No network snapshot sent every tick.
 fields='''
