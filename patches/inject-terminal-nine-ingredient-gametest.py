@@ -96,12 +96,22 @@ eight=r'''
                     throw new IllegalStateException("8-slot chest craft conservation: "+(xsxEightAfter-xsxEightBefore));
                   System.out.println("XSXLABS_REAL_EIGHT_INGREDIENT_SHIFT_CRAFT_V1 PASS ingredients=128 results=16 total_click_ns="+xsxEightElapsed+" not_server_MSPT=true");
 '''
-# Insert after player and inventory initialization, before 15-tick fixture setup.
+# Four 9-slot output batches already hit the legitimate 64-result per-tick
+# safety cap. The 8-slot test MUST run on the next real server tick.
+# Never weaken the cap or the full sixteen-craft conservation assertions.
 needle=anchor
 assert s.count('var xsxCraftInv=xsxCraftPlayer.getInventory();')==1
-s=s.replace(needle,needle+"\n"+code+"\n"+eight,1)
+sequence_anchor="xsxCraftSequence.thenExecute(()->{"
+assert s.count(sequence_anchor)==1, "Shift craft tick sequence completion moved"
+s=s.replace(needle,needle+"\n"+code,1)
+s=s.replace(sequence_anchor,
+    "// XSXLABS_EIGHT_SLOT_NEXT_TICK_V2: 9-slot suite exhausted this tick's 64-item cap.\n"
+    "                  xsxCraftSequence.thenExecuteAfter(1,()->{\n"+eight+"\n                  });\n"
+    "                  "+sequence_anchor,1)
 assert s.count(marker)==2
 assert s.count("XSXLABS_REAL_EIGHT_INGREDIENT_SHIFT_CRAFT_V1")==2
+assert s.count("XSXLABS_EIGHT_SLOT_NEXT_TICK_V2")==1
+assert s.count("xsxCraftSequence.thenExecuteAfter(1,()->{")>=1
 assert s.index(anchor)<s.index(marker, s.index(anchor))
 assert s.count("xsxNineProduced!=16")==1
 p.write_text(s,encoding="utf-8")

@@ -18,6 +18,8 @@ class Build103GameTests {
     var xsxCraftInv=xsxCraftPlayer.getInventory();
     xsxCraftMenu.clicked(0,0,net.minecraft.world.inventory.ContainerInput.QUICK_MOVE,xsxCraftPlayer);
     if(!rt.powered())throw new IllegalStateException("Shift crafting test network unpowered");
+    var xsxCraftSequence=h.startSequence();
+    xsxCraftSequence.thenExecute(()->{ });
   }
 }
 '''
@@ -40,6 +42,8 @@ class EightNineRecipeTest(unittest.TestCase):
         for fragment in (
             "Items.IRON_INGOT,net.minecraft.world.item.Items.IRON_BLOCK",
             "Items.OAK_PLANKS,16",
+            "XSXLABS_EIGHT_SLOT_NEXT_TICK_V2",
+            "xsxCraftSequence.thenExecuteAfter(1,()->{",
             "xsxEightSlot==5 ? net.minecraft.world.item.ItemStack.EMPTY",
             "xsxCraftMenu.clicked(0,0,",
             "xsxEightAfter-xsxEightBefore!=16",
@@ -59,6 +63,13 @@ class EightNineRecipeTest(unittest.TestCase):
         self.assertNotEqual(run.returncode, 0)
         self.assertEqual(source, FIXTURE.replace(
             'Shift crafting test network unpowered', 'missing intended anchor'))
+
+    def test_missing_tick_sequence_fails_closed(self):
+        broken = FIXTURE.replace("xsxCraftSequence.thenExecute(()->{ });",
+                                 "// deleted completion callback")
+        run, source = self.inject(broken)
+        self.assertNotEqual(run.returncode, 0)
+        self.assertEqual(source, broken)
 
     def test_both_curios_modes_must_report_both_recipes(self):
         text = WORKFLOW.read_text()
