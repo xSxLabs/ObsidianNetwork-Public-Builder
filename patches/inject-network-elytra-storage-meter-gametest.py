@@ -10,7 +10,7 @@ import os
 root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 p=root/"build103/Build103GameTests.java"
 s=p.read_text(encoding="utf-8")
-anchor='if(insertedCells!=800)throw new IllegalStateException("Expected 800 real cells");'
+anchor='throw new IllegalStateException("Expected 800 attached real cells, got "+rt.storage().cells().size());'
 mark="NETWORK_ELYTRA_AND_LIVE_STORAGE_50_DRIVE_GAMETEST_V1"
 assert s.count(anchor)==1,"50-drive exact attachment guard moved"
 assert mark not in s,"feature gate injected twice"
@@ -21,17 +21,17 @@ code=r"""
                   {
                     long[] meter = rt.storage().xsxStorageMeterTotals();
                     long actualUsed=0L,actualTotal=0L;
-                    int attached=0;
+                    int meterCells=0;
                     for(var cell : rt.storage().cells()) {
                       actualUsed+=cell.used();
                       actualTotal+=cell.used()+cell.free();
-                      attached++;
+                      meterCells++;
                     }
-                    if(attached!=800 || meter[0]!=actualUsed ||
+                    if(meterCells!=800 || meter[0]!=actualUsed ||
                         meter[1]!=actualTotal || meter[1]<=0 ||
                         meter[0]>meter[1])
                        throw new IllegalStateException("Live terminal meter mismatch on 50 drives/800 cells: "+
-                          attached+" "+meter[0]+"/"+meter[1]+" expected "+actualUsed+"/"+actualTotal);
+                          meterCells+" "+meter[0]+"/"+meter[1]+" expected "+actualUsed+"/"+actualTotal);
                     var wings = new net.minecraft.world.item.ItemStack(ObsidianNetwork.NETWORK_ELYTRA.get());
                     if(!wings.has(net.minecraft.core.component.DataComponents.EQUIPPABLE) ||
                        !wings.has(net.minecraft.core.component.DataComponents.GLIDER) ||
