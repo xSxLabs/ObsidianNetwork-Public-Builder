@@ -1,3 +1,4 @@
+# Build 361: menu-synced used/total on 800 real cells, both Curios modes; release must stay regression-gated
 # Build 358: real 50-drive capacity and initial FE glider GameTest in both Curios configurations
 # Build 353: correct 26.1 glider API, enable feature patch CI triggers; preserve existing GameTest/Curios matrix
 # Build 351: Network Elytra with wireless FE Shift-boost + live Crafting Terminal capacity meter; full regression CI
@@ -2403,6 +2404,8 @@ jobs:
           python3 patches/inject-terminal-craft-slot-noop-gametest.py
           # Build 291: run actual menu QUICK_MOVE on 50-drive, 800-cell network.
           python3 patches/inject-terminal-real-quickmove-burst-gametest.py
+          # Validate live used/total menu sync on 50 real attached Drives.
+          python3 patches/inject-terminal-meter-sync-gametest.py
           # Build 293: repeatedly open REAL Controller and Autocrafter menus under 50-drive load.
           python3 patches/inject-controller-autocrafter-50drive-gui-stress.py
           # Build 295: actual result-slot shift-click crafting across 15 separate server ticks.
@@ -2547,6 +2550,8 @@ jobs:
           grep -Fq 'NETWORK_ELYTRA_AND_LIVE_STORAGE_50_DRIVE_GAMETEST_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'REAL_50_DRIVE_TERMINAL_STORAGE_METER_SYNC_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'REAL_50_DRIVE_TERMINAL_STORAGE_METER_SYNC_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_AUTOCRAFTER_GUI_OPEN_STRESS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_GUI_PHASE_BREAKDOWN_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_STATUS_SUBCALLS_V1 PASS' /tmp/build103-curios-installed-gametest.log
