@@ -1,3 +1,4 @@
+# Build 351: Network Elytra with wireless FE Shift-boost + live Crafting Terminal capacity meter; full regression CI
 # Build 350: index ordered 3x3 vanilla recipe candidate buckets once per recipe-map/occupancy, full conservation+Curios tests
 # Build 347: additionally cache immutable registered block objects lazily in ENERGY helpers; preserve full FE tests
 # Build 346: user-authorized post-spark 3x3 result batch and safe concrete-vanilla prefilter; full existing regression suite
@@ -1980,6 +1981,9 @@ jobs:
           # Battery Upgrade smithing recipe, never by wireless charging.
           # Recovery command removes just Obsidian's FE marker from one held item.
           python3 features/wireless-energy/apply-wireless-smithing-only-charging.py
+          # Network Elytra: crafted with a vanilla Elytra + Nether Star; FE
+          # instead of durability, owner network charging and Shift acceleration.
+          python3 features/wireless-energy/apply-network-elytra.py
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
           # Build 301: live runtime component membership in one graph walk, with
@@ -2005,6 +2009,9 @@ jobs:
           python3 patches/perf-terminal-nine-slot-dispatch-elision.py
           # Replace nine separate craft-grid setter transactions with one atomic update.
           python3 patches/perf-terminal-bulk-grid-persistence.py
+          # Crafting Terminal: sync 64-bit attached-cell used/total every 10 ticks.
+          # No network traversal on the client or per render frame.
+          python3 patches/terminal-live-storage-meter.py
           grep -Fq 'XSXLABS_TERMINAL_BULK_GRID_PERSISTENCE_V1' work/src/main/java/dev/obsidiannetwork/menu/StorageTerminalMenu.java
           grep -Fq 'public void setCraftGrid(ItemStack[] stacks)' work/src/main/java/dev/obsidiannetwork/blockentity/TerminalInventoryBlockEntity.java
           # Build-wide hotpath inventory: crafting, cables, conduit, solar, IO, controller.
