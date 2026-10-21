@@ -13,11 +13,28 @@ assert marker not in source
 old='''        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
         if (!(chest.getItem() instanceof NetworkElytraItem)) return;
         long energy = EnergyTool.energy(chest);'''
-new='''        // XSXLABS_NETWORK_ELYTRA_CURIOS_BOOST_V2: no Curios classes resolve without Curios.
+new='''        // XSXLABS_NETWORK_ELYTRA_CURIOS_BOOST_V2: Curios classes resolve only when loaded.
         ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-        if (!(chest.getItem() instanceof NetworkElytraItem)
-            && net.neoforged.fml.ModList.get().isLoaded("curios"))
+        boolean networkInChest = chest.getItem() instanceof NetworkElytraItem;
+        if (!networkInChest && net.neoforged.fml.ModList.get().isLoaded("curios"))
             chest = dev.obsidiannetwork.wireless.NetworkElytraCurios.find(player);
+        boolean networkInCurios = !networkInChest && chest.getItem() instanceof NetworkElytraItem;
+        // NeoForge 26.1 reads the GLIDING_FLIGHT attribute for takeoff.
+        // A Curios stack is not chest equipment: explicitly grant the attribute.
+        // Only toggle the modifier on state transitions, never every tick.
+        var xsxGlide = player.getAttribute(net.neoforged.neoforge.common.NeoForgeMod.GLIDING_FLIGHT);
+        if (xsxGlide != null) {
+            net.minecraft.resources.Identifier id =
+                net.minecraft.resources.Identifier.fromNamespaceAndPath("obsidiannetwork","network_elytra_curios_flight");
+            boolean allowCurioFlight = networkInCurios &&
+                EnergyTool.energy(chest) >= FLIGHT_COST_PER_5_TICKS;
+            if (allowCurioFlight && !xsxGlide.hasModifier(id))
+                xsxGlide.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                    id, 1.0D,
+                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
+            else if (!allowCurioFlight && xsxGlide.hasModifier(id))
+                xsxGlide.removeModifier(id);
+        }
         if (!(chest.getItem() instanceof NetworkElytraItem)) return;
         long energy = EnergyTool.energy(chest);'''
 assert source.count(old)==1
