@@ -15,7 +15,7 @@ class ElytraAndMeterRegressions(unittest.TestCase):
   self.assertIn('if(inv.isEmpty())return ItemStack.EMPTY;',S)
   self.assertIn('for(String slot : new String[]{"back","elytra"})',S)
  def test_server_and_client_motion(self):
-  self.assertIn('player.hasImpulse = true',S)
+  self.assertIn('player.setDeltaMovement(next)',S)
   self.assertIn('ClientTickEvent.Post',S)
   self.assertIn('mc.options.keyShift.isDown()',S)
   self.assertIn('SHIFT_COST_PER_5_TICKS',S)
