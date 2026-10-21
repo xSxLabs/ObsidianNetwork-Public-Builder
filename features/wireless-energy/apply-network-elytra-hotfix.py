@@ -194,5 +194,21 @@ def wings(x,y):
 
 png(res/"assets/obsidiannetwork/textures/item/network_elytra.png",64,64,icon)
 png(res/"assets/obsidiannetwork/textures/entity/equipment/wings/network_elytra.png",128,64,wings)
+# Verify generated JSON and PNG payloads before Gradle packages the JAR.
+for asset in (
+ res/"assets/obsidiannetwork/equipment/network_elytra.json",
+ res/"assets/obsidiannetwork/models/item/network_elytra.json",
+ res/"data/curios/tags/item/back.json",
+ res/"data/obsidiannetwork/curios/entities/players.json"
+):
+ assert isinstance(json.loads(asset.read_text()),dict), asset
+for asset,expected in (
+ (res/"assets/obsidiannetwork/textures/item/network_elytra.png",(64,64)),
+ (res/"assets/obsidiannetwork/textures/entity/equipment/wings/network_elytra.png",(128,64))
+):
+ blob=asset.read_bytes()
+ assert blob[:8]==bytes.fromhex("89504e470d0a1a0a"), "Bad PNG signature: "+str(asset)
+ assert struct.unpack(">II",blob[16:24])==expected, "Wrong PNG dimensions: "+str(asset)
+
 assert "NETWORK_ELYTRA_CURIOS_BOOST_V2" in item.read_text()
 print("NETWORK_ELYTRA_CURIOS_BOOST_V2 PASS: Curios back/elytra + client boost + bundled sci-fi wings and icon")
