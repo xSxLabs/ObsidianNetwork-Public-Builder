@@ -19,22 +19,7 @@ new='''        // XSXLABS_NETWORK_ELYTRA_CURIOS_BOOST_V2: Curios classes resolve
         if (!networkInChest && net.neoforged.fml.ModList.get().isLoaded("curios"))
             chest = dev.obsidiannetwork.wireless.NetworkElytraCurios.find(player);
         boolean networkInCurios = !networkInChest && chest.getItem() instanceof NetworkElytraItem;
-        // NeoForge 26.1 reads the GLIDING_FLIGHT attribute for takeoff.
-        // A Curios stack is not chest equipment: explicitly grant the attribute.
-        // Only toggle the modifier on state transitions, never every tick.
-        var xsxGlide = player.getAttribute(net.neoforged.neoforge.common.NeoForgeMod.GLIDING_FLIGHT);
-        if (xsxGlide != null) {
-            net.minecraft.resources.Identifier id =
-                net.minecraft.resources.Identifier.fromNamespaceAndPath("obsidiannetwork","network_elytra_curios_flight");
-            boolean allowCurioFlight = networkInCurios &&
-                EnergyTool.energy(chest) >= FLIGHT_COST_PER_5_TICKS;
-            if (allowCurioFlight && !xsxGlide.hasModifier(id))
-                xsxGlide.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                    id, 1.0D,
-                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
-            else if (!allowCurioFlight && xsxGlide.hasModifier(id))
-                xsxGlide.removeModifier(id);
-        }
+        // Vanilla canGlide() is extended only for a powered Curios Elytra by our Mixin.
         if (!(chest.getItem() instanceof NetworkElytraItem)) return;
         long energy = EnergyTool.energy(chest);'''
 assert source.count(old)==1
@@ -77,6 +62,49 @@ public final class NetworkElytraCurios {
  }
 }
 ''',encoding="utf-8")
+
+# NeoForge 26.1.2 has NO GLIDING_FLIGHT attribute. The vanilla LivingEntity
+# canGlide() decision is extended by the existing mod Mixin configuration,
+# leaving every ordinary chestplate and every non-Network glider untouched.
+mixin=java/"mixin/NetworkElytraCuriosGlideMixin.java"
+assert not mixin.exists()
+mixin.parent.mkdir(parents=True,exist_ok=True)
+mixin.write_text(r'''package dev.obsidiannetwork.mixin;
+
+import dev.obsidiannetwork.core.EnergyTool;
+import dev.obsidiannetwork.item.NetworkElytraItem;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.fml.ModList;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+/** Network Elytra Curios glide gate for MC 26.1. No armor stack mutation. */
+@Mixin(LivingEntity.class)
+public abstract class NetworkElytraCuriosGlideMixin {
+ @Inject(method="canGlide",at=@At("RETURN"),cancellable=true)
+ private void xsxPoweredCuriosGlide(CallbackInfoReturnable<Boolean> result) {
+  if(result.getReturnValue())return;
+  if(!((Object)this instanceof Player player))return;
+  // Curios classes are never referenced unless Curios is installed.
+  if(!ModList.get().isLoaded("curios"))return;
+  ItemStack wing=dev.obsidiannetwork.wireless.NetworkElytraCurios.find(player);
+  if(wing.getItem() instanceof NetworkElytraItem
+     && EnergyTool.energy(wing)>=NetworkElytraItem.FLIGHT_COST_PER_5_TICKS)
+   result.setReturnValue(true);
+ }
+}
+''',encoding="utf-8")
+mixConfig=res/"obsidiannetwork.mixins.json"
+mixData=json.loads(mixConfig.read_text(encoding="utf-8"))
+assert mixData.get("package")=="dev.obsidiannetwork.mixin", "unexpected Mixin package"
+assert isinstance(mixData.get("mixins"),list)
+assert "NetworkElytraCuriosGlideMixin" not in mixData["mixins"]
+mixData["mixins"].append("NetworkElytraCuriosGlideMixin")
+mixConfig.write_text(json.dumps(mixData,indent=2)+"\n",encoding="utf-8")
 
 # Both vanilla and optional Curios wings share the same server-authoritative FE.
 # Player input is client-authoritative; velocity MUST also be applied locally.

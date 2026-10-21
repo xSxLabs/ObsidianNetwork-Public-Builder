@@ -9,9 +9,10 @@ class ElytraAndMeterRegressions(unittest.TestCase):
  def test_curios_not_classloaded_when_absent(self):
   self.assertIn('isLoaded("curios")',S)
   self.assertIn('NetworkElytraCurios.find(player)',S)
-  self.assertIn('NeoForgeMod.GLIDING_FLIGHT',S)
-  self.assertIn('allowCurioFlight',S)
-  self.assertIn('xsxGlide.removeModifier(id)',S)
+  self.assertIn('NetworkElytraCuriosGlideMixin',S)
+  self.assertIn('@Inject(method="canGlide"',S)
+  self.assertIn('result.setReturnValue(true)',S)
+  self.assertNotIn('NeoForgeMod.GLIDING_FLIGHT',S)
   self.assertIn('if(inv.isEmpty())return ItemStack.EMPTY;',S)
   self.assertIn('for(String slot : new String[]{"back","elytra"})',S)
  def test_server_and_client_motion(self):
