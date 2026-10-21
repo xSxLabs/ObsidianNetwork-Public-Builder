@@ -17,13 +17,15 @@ anchor = '   public static final DeferredItem<BlockItem> NETWORK_RECEIVER_ITEM =
 assert s.count(anchor) == 1, "wireless item registry moved"
 registration = '''
    // XSXLABS_NETWORK_ELYTRA_V1: explicitly energy-marked by default.
-   // Elytra's EQUIPPABLE and GLIDER components preserve vanilla wearing/gliding.
+   // Construct chest EQUIPPABLE directly: never resolve unbound Items.ELYTRA during register.
    public static final DeferredItem<dev.obsidiannetwork.item.NetworkElytraItem> NETWORK_ELYTRA = ITEMS.registerItem(
       "network_elytra", p -> new dev.obsidiannetwork.item.NetworkElytraItem(
          p.durability(2000000)
           .component(net.minecraft.core.component.DataComponents.UNBREAKABLE, net.minecraft.util.Unit.INSTANCE)
           .component(net.minecraft.core.component.DataComponents.EQUIPPABLE,
-              net.minecraft.world.item.Items.ELYTRA.components().get(net.minecraft.core.component.DataComponents.EQUIPPABLE))
+              net.minecraft.world.item.equipment.Equippable.builder(net.minecraft.world.entity.EquipmentSlot.CHEST)
+                  .setAsset(net.minecraft.world.item.equipment.EquipmentAssets.ELYTRA)
+                  .build())
           .component(net.minecraft.core.component.DataComponents.GLIDER, net.minecraft.util.Unit.INSTANCE)
           .component(dev.obsidiannetwork.registry.ModDataComponents.ENERGY_TOOL_FE.get(), 0L)
       )
@@ -144,6 +146,8 @@ for locale,name in [("en_us","Network Elytra"),("de_de","Netzwerk-Elytra")]:
     put(lang,data)
 
 assert marker in mod.read_text()
+assert "Items.ELYTRA.components()" not in mod.read_text()
+assert "Equippable.builder(" in mod.read_text()
 assert "EnergyTool.consume(chest, charge)" in item.read_text()
 assert "WirelessPlayerCharging" in (java / "wireless/WirelessPlayerCharging.java").read_text()
 assert "if(EnergyTool.upgraded(stack))" in (java / "wireless/WirelessPlayerCharging.java").read_text()
