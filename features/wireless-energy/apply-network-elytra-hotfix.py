@@ -163,8 +163,24 @@ for slot in ("back","elytra"):
 # Provision one dedicated back slot when Curios alone is installed. Merges by slot ID.
 put(res/"data/obsidiannetwork/curios/slots/back.json",
     {"size":1,"order":100,"icon":"curios:slot/empty_back_slot"})
-put(res/"data/obsidiannetwork/curios/entities/players.json",
-    {"entities":["minecraft:player"],"slots":["back"]})
+# Keep the existing wireless-terminal Curios assignment. Replacing this
+# entire entity file with just "back" removes network_terminal from players.
+players_file=res/"data/obsidiannetwork/curios/entities/players.json"
+players_data=json.loads(players_file.read_text(encoding="utf-8")) if players_file.exists() else {}
+assert isinstance(players_data,dict)
+slots=players_data.setdefault("slots",[])
+entities=players_data.setdefault("entities",[])
+assert isinstance(slots,list) and isinstance(entities,list)
+for name in ("network_terminal","back"):
+ if name not in slots: slots.append(name)
+if "minecraft:player" not in entities: entities.append("minecraft:player")
+players_data["replace"]=False
+put(players_file,players_data)
+# Original terminal tag is essential: do not overwrite its valid item set.
+terminal_tag=res/"data/curios/tags/item/network_terminal.json"
+assert terminal_tag.exists(), "wireless terminal Curios item tag missing"
+terminal_values=json.loads(terminal_tag.read_text(encoding="utf-8")).get("values",[])
+assert isinstance(terminal_values,list) and terminal_values, "wireless terminal tag empty"
 
 put(res/"assets/obsidiannetwork/equipment/network_elytra.json",
     {"layers":{"wings":[{"texture":"obsidiannetwork:network_elytra","use_player_texture":False}]}})
