@@ -1936,10 +1936,10 @@ def b49_replace(relative,old,new):
  path.write_text(data.replace(old,new,1),encoding="utf-8")
 
 b49_replace("powerarmor/ArmorStationMenu.java",
-'''    case "protection","fire_protection","blast_protection",
-         "projectile_protection","feather_falling" -> 4;''',
-'''    case "protection","fire_protection","blast_protection",
-         "projectile_protection","feather_falling" -> 5;''')
+'''   case "protection","fire_protection","blast_protection",
+        "projectile_protection","feather_falling" -> 4;''',
+'''   case "protection","fire_protection","blast_protection",
+        "projectile_protection","feather_falling" -> 5;''')
 b49_replace("powerarmor/ArmorStationMenu.java",
 ''' private static int maxCardCount(String id){''',
 ''' public static int maxCardCount(String id){''')
