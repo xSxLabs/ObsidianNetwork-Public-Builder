@@ -33,6 +33,8 @@ class StationIndependence(unittest.TestCase):
 
  def test_right_click_enter_and_rebindable_exit(self):
   self.assertIn("PlayerInteractEvent.EntityInteract",PATCH)
+  self.assertIn("PlayerInteractEvent.EntityInteractSpecific",PATCH)
+  self.assertIn("enter(stand,event.getEntity())",PATCH)
   self.assertIn("event.getTarget()",PATCH)
   self.assertIn("event.setCanceled(true)",PATCH)
   self.assertIn("PowerArmorRuntime.SLOTS[i]",PATCH)
