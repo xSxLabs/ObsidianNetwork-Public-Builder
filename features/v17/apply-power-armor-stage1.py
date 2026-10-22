@@ -529,9 +529,17 @@ for layer in ("humanoid","humanoid_leggings"):
  target=r/"assets/obsidiannetwork/textures/entity/equipment"/layer/"power_armor.png"
  target.parent.mkdir(parents=True,exist_ok=True)
  target.write_bytes(src.read_bytes())
+# Distinct original 16px inventory icons using the armor's red/gold/cyan palette.
+icons=Path(__file__).parent/"assets"/"textures/item"
+for part in ("helmet","chestplate","leggings","boots"):
+ src=icons/("power_armor_"+part+".png")
+ assert src.is_file(),"Power Armor item icon missing: "+str(src)
+ dest=r/"assets/obsidiannetwork/textures/item"/("power_armor_"+part+".png")
+ dest.parent.mkdir(parents=True,exist_ok=True)
+ dest.write_bytes(src.read_bytes())
 for name in ("helmet","chestplate","leggings","boots","upgrade"):
  put(r/f"assets/obsidiannetwork/models/item/power_armor_{name}.json",
-     {"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/netherite_"+("chestplate" if name=="upgrade" else name)}})
+     {"parent":"minecraft:item/generated","textures":{"layer0":("minecraft:item/netherite_chestplate" if name=="upgrade" else "obsidiannetwork:item/power_armor_"+name)}})
  put(r/f"assets/obsidiannetwork/items/power_armor_{name}.json",
      {"model":{"type":"minecraft:model","model":"obsidiannetwork:item/power_armor_"+name}})
 for name in ["armor_station"]:
