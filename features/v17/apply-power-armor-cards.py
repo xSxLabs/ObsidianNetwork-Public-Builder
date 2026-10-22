@@ -68,7 +68,7 @@ addition='''  // CLEAN_V17_CARDS_V1: installation/deinstallation is station-only
    String[] entries=installed.isEmpty()?new String[0]:installed.split(",");
    // No duplicate effect cards, except protection (8 levels maximum).
    int count=0;for(String id:entries)if(id.equals(card.upgradeId))count++;
-   if(entries.length>=12||count>=(card.upgradeId.equals("protection")?8:1))return InteractionResult.FAIL;
+   if(entries.length>=15||count>=(card.upgradeId.equals("protection")?4:1))return InteractionResult.FAIL;
    chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),
        installed.isEmpty()?card.upgradeId:installed+","+card.upgradeId);
    station.put(1,chest);
@@ -147,14 +147,14 @@ extra=''' @SubscribeEvent public static void onDamage(net.neoforged.neoforge.eve
   }
   // Stronger than Netherite/Protection at higher power-card tiers,
   // but never full invulnerability. Damage-type cards are additive, capped.
-  float reduction=0.20f+Math.min(8,protection)*0.08f;
+  float reduction=Math.min(0.995f,Math.min(4,protection)*0.245f);
   var source=event.getSource();
-  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE))reduction+=fire*0.04f;
-  if(source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION))reduction+=blast*0.04f;
-  if(source.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE))reduction+=projectile*0.04f;
-  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FALL))reduction+=feather*0.04f;
-  reduction=Math.min(0.94f,reduction);
-  long cost=Math.max(80,(long)(amount*80.0f));
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE))reduction+=Math.min(4,fire)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION))reduction+=Math.min(4,blast)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE))reduction+=Math.min(4,projectile)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FALL))reduction+=Math.min(4,feather)*0.02f;
+  reduction=Math.min(0.995f,reduction);
+  long cost=Math.max(400,(long)(amount*1200.0f*(1.0f+protection*0.5f)));
   for(EquipmentSlot slot:SLOTS)if(EnergyTool.energy(player.getItemBySlot(slot))<cost)return;
   for(EquipmentSlot slot:SLOTS)EnergyTool.consume(player.getItemBySlot(slot),cost);
   event.setNewDamage(amount*(1-reduction));
@@ -168,13 +168,13 @@ exitKey=j/"powerarmor/PowerArmorExitKeyClient.java"
 text=exitKey.read_text(encoding="utf-8")
 old=''' private static final KeyMapping EXIT=new KeyMapping(
    "key.obsidiannetwork.power_armor_exit",
-   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.MISC);'''
+   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("obsidiannetwork","xsxlabs")));'''
 new=''' public static final KeyMapping EXIT=new KeyMapping(
    "key.obsidiannetwork.power_armor_exit",
-   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.MISC);
+   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("obsidiannetwork","xsxlabs")));
  public static final KeyMapping NIGHT=new KeyMapping(
    "key.obsidiannetwork.power_armor_nightvision",
-   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_J,KeyMapping.Category.MISC);'''
+   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_J,KeyMapping.Category.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("obsidiannetwork","xsxlabs")));'''
 assert text.count(old)==1,"Stage1 exit key changed"
 text=text.replace(old,new,1)
 old=''' @SubscribeEvent public static void register(RegisterKeyMappingsEvent e){
@@ -219,7 +219,7 @@ s=s[:-1]+''' public static int night(ServerPlayer p){
   String old=chest.get(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get());
   if(old==null)return 0;
   java.util.List<String> cards=new java.util.ArrayList<>(java.util.Arrays.asList(old.split(",")));
-  if(cards.contains("nightvision_on"))cards.remove("nightvision_on");
+  if(cards.contains("nightvision_on")){ cards.remove("nightvision_on"); p.removeEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION); }
   else cards.add("nightvision_on");
   chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),String.join(",",cards));
   return Command.SINGLE_SUCCESS;
