@@ -1717,3 +1717,78 @@ for gone in ("mending","unbreaking"):
 # Metadata for installed legacy cards is deliberately retained and can be
 # extracted, avoiding data loss in existing worlds.
 print("BUILD40_RENDER_MAPPING PASS: item definition, 15-slot grouped caps, 2x-level cards, disabled legacy cards")
+
+
+# BUILD42_OWN_SCREEN: bespoke sci-fi Armor Station front end on top of the
+# battle-tested server-authoritative chest-compatible 27-slot transport.
+# This changes only the CLIENT view: no dupes, no inventory/backup migration.
+screen=j/"powerarmor/ArmorStationScreen.java"
+screen.write_text(r'''package dev.obsidiannetwork.powerarmor;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.ChestScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ChestMenu;
+
+/** xSxLabs armored service console. Not the vanilla chest appearance. */
+public final class ArmorStationScreen extends ChestScreen {
+ public ArmorStationScreen(ChestMenu menu,Inventory inventory,Component title){
+  super(menu,inventory,title);
+ }
+ @Override protected void renderBg(GuiGraphics g,float partial,int mouseX,int mouseY){
+  int x=this.leftPos, y=this.topPos;
+  // Brushed graphite bezel, cyan conductive outline.
+  g.fill(x-3,y-3,x+179,y+this.imageHeight+3,0xff101820);
+  g.fill(x-2,y-2,x+178,y+this.imageHeight+2,0xff22cfe4);
+  g.fill(x,y,x+176,y+this.imageHeight,0xff1b2935);
+  g.fill(x+5,y+16,x+171,y+70,0xff0c161e);
+  g.fill(x+5,y+72,x+171,y+this.imageHeight-4,0xff263746);
+  // Four suit assembly sockets, status pane and 15 upgrade sockets.
+  for(int index=0;index<27;index++){
+   int sx=x+7+(index%9)*18;
+   int sy=y+17+(index/9)*18;
+   int line=(index<4)?0xffd4b35d:
+           (index==4)?0xff32d8d8:
+           (index>=9&&index<24)?0xff66aed9:0xff445e71;
+   g.fill(sx,sy,sx+18,sy+18,line);
+   g.fill(sx+1,sy+1,sx+17,sy+17,0xff17212e);
+  }
+  // Actual player inventory uses vanilla slot positions, but bespoke styling.
+  int offset=this.imageHeight-114;
+  for(int index=0;index<36;index++){
+   int col=index%9;
+   int row=index<27?index/9:3;
+   int sx=x+7+col*18;
+   int sy=y+offset+(index<27?84+row*18:142);
+   // Vanilla ChestScreen calculates its own slot foreground hitboxes.
+   g.fill(sx,sy,sx+18,sy+18,0xff3e637a);
+   g.fill(sx+1,sy+1,sx+17,sy+17,0xff233440);
+  }
+  g.fill(x+5,y+this.imageHeight-5,x+171,y+this.imageHeight-3,0xff16c9e5);
+ }
+}
+''',encoding="utf-8")
+# A client-only NeoForge event swaps only this menu based on its dedicated
+# title. Ordinary chests and other 9x3 menus are untouched.
+key=j/"powerarmor/PowerArmorExitKeyClient.java"
+code=key.read_text(encoding="utf-8")
+old=''' @SubscribeEvent public static void register(RegisterKeyMappingsEvent e){'''
+# That register method is already removed in stage2, so insert before the
+# public class' last brace instead of depending on a stale anchor.
+assert code.rstrip().endswith("}")
+insert=r'''
+ @SubscribeEvent public static void xsxArmorStationOpen(
+     net.neoforged.neoforge.client.event.ScreenEvent.Opening event){
+  if(!(event.getNewScreen() instanceof
+      net.minecraft.client.gui.screens.inventory.ChestScreen chest))return;
+  var name=chest.getTitle().getString();
+  if(!name.startsWith("Armor Station"))return;
+  var game=Minecraft.getInstance();
+  if(game.player==null)return;
+  event.setNewScreen(new ArmorStationScreen(chest.getMenu(),
+      game.player.getInventory(),chest.getTitle()));
+ }
+'''
+key.write_text(code.rstrip()[:-1]+insert+"}\\n",encoding="utf-8")
+print("BUILD42_OWN_SCREEN PASS: xSxLabs dark sci-fi station screen and 15 card sockets; ordinary chests untouched")
