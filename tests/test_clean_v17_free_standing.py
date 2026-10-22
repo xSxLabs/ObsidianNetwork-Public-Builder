@@ -43,7 +43,7 @@ class StationIndependence(unittest.TestCase):
 
  def test_station_only_manages_own_suit_upgrades(self):
   self.assertIn("PowerArmorSuitWorld.findNearby(level,pos,p)",PATCH)
-  self.assertIn("stand.getTags().contains(owner(player))",PATCH)
+  self.assertIn("stand.entityTags().contains(owner(player))",PATCH)
   self.assertIn("suits.size()==1",PATCH)
   self.assertIn("suitStand.setItemSlot(",PATCH)
   self.assertIn("Armor Station manages upgrades only.",PATCH)

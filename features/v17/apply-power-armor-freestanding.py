@@ -51,7 +51,7 @@ public final class PowerArmorSuitWorld {
  private PowerArmorSuitWorld(){}
  private static String owner(ServerPlayer player){return OWNER_PREFIX+player.getUUID();}
  private static boolean mine(ArmorStand stand,ServerPlayer player){
-  return stand.getTags().contains(MARKER)&&stand.getTags().contains(owner(player));
+  return stand.entityTags().contains(MARKER)&&stand.entityTags().contains(owner(player));
  }
  public static boolean full(ArmorStand stand){
   for(int i=0;i<4;i++){
@@ -135,7 +135,7 @@ public final class PowerArmorSuitWorld {
  // before vanilla swaps any of the suit pieces with the player's held item.
  @SubscribeEvent public static void interactSpecific(PlayerInteractEvent.EntityInteractSpecific event){
   Entity target=event.getTarget();
-  if(!(target instanceof ArmorStand stand)||!stand.getTags().contains(MARKER))return;
+  if(!(target instanceof ArmorStand stand)||!stand.entityTags().contains(MARKER))return;
   event.setCanceled(true);
   event.setCancellationResult(InteractionResult.SUCCESS);
   if(event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND)
@@ -143,7 +143,7 @@ public final class PowerArmorSuitWorld {
  }
  @SubscribeEvent public static void interact(PlayerInteractEvent.EntityInteract event){
   Entity target=event.getTarget();
-  if(!(target instanceof ArmorStand stand)||!stand.getTags().contains(MARKER))return;
+  if(!(target instanceof ArmorStand stand)||!stand.entityTags().contains(MARKER))return;
   event.setCanceled(true);
   event.setCancellationResult(InteractionResult.SUCCESS);
   if(event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND)
