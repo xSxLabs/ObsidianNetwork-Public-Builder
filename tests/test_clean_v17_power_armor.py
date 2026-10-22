@@ -19,7 +19,8 @@ class CleanV17Armor(unittest.TestCase):
   self.assertIn("ItemStack.OPTIONAL_CODEC.listOf()",PATCH)
  def test_energy_and_four_pieces(self):
   for piece in ("helmet","chestplate","leggings","boots"):
-   self.assertIn("power_armor_"+piece,PATCH)
+   self.assertIn('("'+piece+'",',PATCH)
+  self.assertIn('ITEMS.registerItem("power_armor_{name}"',PATCH)
   self.assertIn("ENERGY_TOOL_FE.get(),0L",PATCH)
   self.assertIn("EnergyTool.consume(",PATCH)
   self.assertIn("ARMOR_STATION",PATCH)
