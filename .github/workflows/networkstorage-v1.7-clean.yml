@@ -112,6 +112,12 @@ name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
 
 
 
+# Only the newest clean v1.7 candidate needs the long full 26.1 regression.
+# Cancel superseded runs, but NEVER touch the stable v1.6 build group.
+concurrency:
+  group: clean-v1.7-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions: {contents: read, issues: write}
 # Build 214 energy API trigger
 # Build 212 explicit trigger
@@ -2750,7 +2756,7 @@ jobs:
       - name: Upload v1.1.1 shared-conduit test JAR
         uses: actions/upload-artifact@v4
         with:
-          name: xsxlabs-network-storage-v1.6-performance-candidate
+          name: xsxlabs-network-storage-v1.7-clean-candidate
           path: dist/
           if-no-files-found: error
           retention-days: 14
