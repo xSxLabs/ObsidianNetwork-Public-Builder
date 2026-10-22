@@ -112,6 +112,11 @@ name: xSxLabs Network Storage v1.6
 
 
 
+concurrency:
+  # Preserve a running, possibly important candidate build; collapse only queued duplicates.
+  group: xsxlabs-network-storage-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions: {contents: read, issues: write}
 # Build 214 energy API trigger
 # Build 212 explicit trigger
@@ -138,6 +143,12 @@ jobs:
           path: private
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
+      # CI_SPEED_OPT_V1: this long-lived NON-default branch must write cache entries.
+      # Cache Gradle dependencies/transforms only, never reconstructed private mod sources.
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: false
+          cache-cleanup: on-success
       - name: Reconstruct v1.0.5 baseline and inspect Importer
         run: |
           set -euo pipefail
@@ -806,16 +817,10 @@ jobs:
           grep -R 'tests="' work/build/test-results/test/*.xml
           echo '===== BUILD 101 JUNIT PASS ====='
           echo '===== BUILD 101 DEDICATED SERVER STARTUP GATE ====='
-          set +e
-          timeout 90s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1
-          SERVER_RC=$?
-          set -e
-          cat /tmp/build101-server.log
-          # A healthy server normally remains running until timeout. Require evidence that NeoForge
-          # reached server startup and reject crashes/exceptions before accepting timeout 124.
-          if [ "$SERVER_RC" -ne 124 ]; then echo "server exited unexpectedly rc=$SERVER_RC"; exit 1; fi
-          grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/build101-server.log
-          if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
+          # CI_SPEED_OPT_V1: wait for actual Minecraft "Done", then run 5s more.
+          # The former unconditional 90s timeout burned ~50s AFTER readiness.
+          # This check still fails on early exit, crashes or >90s startup.
+          python3 tests/ci_server_startup_probe.py --workdir work --log /tmp/build101-server.log --timeout 90 --stability 5
           echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
           echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST GATE ====='
           # Test-only source/resource injection into the reconstructed CI worktree. Removed before packaging.
