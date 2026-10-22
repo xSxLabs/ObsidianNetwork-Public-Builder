@@ -232,7 +232,10 @@ s=s.replace("station.put(1,chest);",
 # Disallow normal station equipment and player entry. An old stored loadout
 # remains extractable via sneak+empty-hand for save compatibility.
 start=s.index("  if(!station.complete()){")
-end=s.index("   return InteractionResult.SUCCESS;",s.index("Power Armor engaged.",start))
+# Find the actual method return from its message, without assuming whitespace.
+message=s.index("Power Armor engaged.",start)
+end=s.index("\n",message)+1
+assert "return InteractionResult.SUCCESS;" in s[end:s.index("\n",end)]
 end=s.index("\n",end)+1
 assert "loadouts.save(p,old)" in s[start:end] and "station.clear();" in s[start:end]
 s=s[:start]+'''   p.sendSystemMessage(Component.literal(
