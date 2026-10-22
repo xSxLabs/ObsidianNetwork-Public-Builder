@@ -513,7 +513,7 @@ public final class PowerArmorExitKeyClient {
   while(EXIT.consumeClick()){
    Minecraft mc=Minecraft.getInstance();
    if(mc.player==null||mc.screen!=null)continue;
-   PacketDistributor.sendToServer(new PowerArmorExitPayload());
+   net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(new PowerArmorExitPayload());
   }
  }
 }

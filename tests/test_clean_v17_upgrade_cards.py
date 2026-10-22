@@ -12,7 +12,7 @@ class CleanV17Cards(unittest.TestCase):
   self.assertIn('fire_protection',PATCH)
   self.assertIn('night_vision',PATCH)
   self.assertIn('POWER_ARMOR_UPGRADES',PATCH)
-  self.assertIn('GRANTED_FLIGHT',PATCH)
+  self.assertIn('OWNED_FLIGHT',PATCH)
   self.assertIn('POWER_CARD_',PATCH)
   self.assertIn('PowerArmorExitKeyClient',PATCH)
  def test_workflow(self):

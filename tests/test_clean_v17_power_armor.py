@@ -36,7 +36,7 @@ class CleanV17Armor(unittest.TestCase):
   self.assertIn("RegisterKeyMappingsEvent",PATCH)
   self.assertIn("GLFW.GLFW_KEY_V",PATCH)
   self.assertIn("playToServer(TYPE,STREAM_CODEC",PATCH)
-  self.assertIn("PacketDistributor.sendToServer(new PowerArmorExitPayload())",PATCH)
+  self.assertIn("ClientPacketDistributor.sendToServer(new PowerArmorExitPayload())",PATCH)
   self.assertIn("PowerArmorCommands.exit(p)",PATCH)
   self.assertIn("if(backup==null||!PowerArmorRuntime.full(p))return 0;",PATCH)
  def test_station_flight_card_is_reversible(self):

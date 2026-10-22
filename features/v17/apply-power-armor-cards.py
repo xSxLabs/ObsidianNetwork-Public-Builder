@@ -85,14 +85,18 @@ addition='''  // CLEAN_V17_CARDS_V1: installation/deinstallation is station-only
     // Skip persistent toggle metadata; only actual installed cards are removable.
     while(i>=0&&PowerArmorCards.item(entries[i])==null)i--;
     if(i>=0){
-     String removed=entries[i];java.util.List<String> left=new java.util.ArrayList<>(java.util.Arrays.asList(entries));
+     String removed=entries[i];
+     var cardItem=PowerArmorCards.item(removed);
+     // Keep installed cards intact when the player has no free inventory slot.
+     if(!p.getInventory().add(new ItemStack(cardItem))){
+      p.sendSystemMessage(Component.literal("Armor Station: inventory full; upgrade retained."));
+      return InteractionResult.FAIL;
+     }
+     java.util.List<String> left=new java.util.ArrayList<>(java.util.Arrays.asList(entries));
      left.remove(i);
      chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),
           String.join(",",left));
      station.put(1,chest);
-     var cardItem=PowerArmorCards.item(removed);
-     if(!p.getInventory().add(new ItemStack(cardItem)))
-       net.minecraft.world.level.block.Block.popResource(level,pos,new ItemStack(cardItem));
      p.sendSystemMessage(Component.literal("Armor Station: removed "+removed));
      return InteractionResult.SUCCESS;
     }
@@ -108,6 +112,7 @@ runtime=j/"powerarmor/PowerArmorRuntime.java"
 s=runtime.read_text(encoding="utf-8")
 assert s.count("public final class PowerArmorRuntime {")==1
 # Stage1 owns its own flight grants, preserving flight from other mods.
+assert "OWNED_FLIGHT" in s, "Stage1 flight ownership guard missing"
 
 old='''  if(powered(p)){
    for(EquipmentSlot slot:SLOTS)EnergyTool.consume(p.getItemBySlot(slot),20L);
