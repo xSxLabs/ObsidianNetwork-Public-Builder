@@ -1899,6 +1899,9 @@ jobs:
           python3 patches/perf-bulk-preview-snapshot-elision.py
           # Autocrafting: don't allocate unchanged reservations on idle refill ticks.
           python3 patches/perf-autocraft-idle-reservation-elision.py
+          # v1.7: keep all currently available autocraft inputs out of Crafting Terminal.
+          # Cancellation uses existing persisted exact-descriptor restoration.
+          python3 patches/autocraft-eager-terminal-reservation-v17.py
           # Spark energy BFS micro-optimization, full old FE/capability semantics intact.
           # Spark v2 fixture includes the nested EnergyHandler; no game behavior relaxed.
           python3 patches/spark-energy-bfs-loop-invariants.py
