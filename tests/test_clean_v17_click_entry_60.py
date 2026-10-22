@@ -13,6 +13,7 @@ class RightClick(unittest.TestCase):
                   WF.index("python3 features/v17/apply-power-armor-enter-packet-60.py"))
  def test_client_packet_and_server_validation(self):
   self.assertIn("PlayerInteractEvent.EntityInteractSpecific",S)
+  self.assertIn("EventPriority.HIGHEST,receiveCanceled=true",S)
   self.assertIn("new PowerArmorEnterPayload(stand.getId())",S)
   self.assertIn("playToServer(TYPE,STREAM_CODEC",S)
   self.assertIn("PowerArmorSuitWorld.tryEnter(player,payload.entityId())",S)

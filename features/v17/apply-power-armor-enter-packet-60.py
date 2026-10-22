@@ -75,7 +75,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 @EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
 public final class PowerArmorEnterClient {
  private PowerArmorEnterClient(){}
- @SubscribeEvent public static void interact(PlayerInteractEvent.EntityInteractSpecific event){
+ @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.HIGHEST,receiveCanceled=true)
+ public static void interact(PlayerInteractEvent.EntityInteractSpecific event){
   if(event.getHand()!=InteractionHand.MAIN_HAND)return;
   if(!(event.getTarget() instanceof ArmorStand stand))return;
   // Do not cancel vanilla interaction: normal armor stands still work.
@@ -87,4 +88,4 @@ public final class PowerArmorEnterClient {
 ''',encoding="utf-8")
 assert "player.distanceToSqr(stand)>36.0D" in body
 assert "if(stand.isRemoved()||!mine(stand,player))return;" in body
-print("BUILD60_RIGHT_CLICK PASS: client click -> validated server entry for MK1/MK2; existing backup/FE untouched")
+print("BUILD61_RIGHT_CLICK_CANCEL_SAFE PASS: client click -> validated server entry for MK1/MK2; existing backup/FE untouched")
