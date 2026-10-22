@@ -131,15 +131,26 @@ public final class PowerArmorSuitWorld {
    "Power Armor exited. Original equipment restored; suit stands beside you."));
   return 1;
  }
+ // Armor stands normally consume the "interact at" route first; intercept it
+ // before vanilla swaps any of the suit pieces with the player's held item.
+ @SubscribeEvent public static void interactSpecific(PlayerInteractEvent.EntityInteractSpecific event){
+  Entity target=event.getTarget();
+  if(!(target instanceof ArmorStand stand)||!stand.getTags().contains(MARKER))return;
+  event.setCanceled(true);
+  event.setCancellationResult(InteractionResult.SUCCESS);
+  if(event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND)
+   enter(stand,event.getEntity());
+ }
  @SubscribeEvent public static void interact(PlayerInteractEvent.EntityInteract event){
   Entity target=event.getTarget();
   if(!(target instanceof ArmorStand stand)||!stand.getTags().contains(MARKER))return;
-  if(event.getHand()!=net.minecraft.world.InteractionHand.MAIN_HAND){
-   event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);return;
-  }
   event.setCanceled(true);
   event.setCancellationResult(InteractionResult.SUCCESS);
-  if(!(event.getEntity() instanceof ServerPlayer player))return;
+  if(event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND)
+   enter(stand,event.getEntity());
+ }
+ private static void enter(ArmorStand stand,net.minecraft.world.entity.player.Player actor){
+  if(!(actor instanceof ServerPlayer player))return;
   if(!mine(stand,player)){
    player.sendSystemMessage(Component.literal("Power Armor: this suit belongs to another player."));
    return;
