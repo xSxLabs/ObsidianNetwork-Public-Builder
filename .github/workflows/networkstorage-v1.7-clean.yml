@@ -1998,6 +1998,7 @@ jobs:
           # Clean new v1.7: code begins ONLY from confirmed v1.6 Build 379.
           # NEVER reference old networkstorage-v1.7 / private/v1.7 generators.
           python3 features/v17/apply-power-armor-stage1.py
+          python3 features/v17/apply-power-armor-cards.py
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
           # Build 301: live runtime component membership in one graph walk, with
