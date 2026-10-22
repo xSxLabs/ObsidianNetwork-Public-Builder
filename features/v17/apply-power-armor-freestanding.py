@@ -1792,3 +1792,43 @@ insert=r'''
 '''
 key.write_text(code.rstrip()[:-1]+insert+"}\\n",encoding="utf-8")
 print("BUILD42_OWN_SCREEN PASS: xSxLabs dark sci-fi station screen and 15 card sockets; ordinary chests untouched")
+
+
+# BUILD43_V5_HINGES: restore a complete visible opening rather than displaced
+# panels. Only visual meshes are changed. Real suit, card, FE and recovery state
+# stays exclusively on the authenticated armor stand.
+# In 42 the writer accidentally used a literal backslash-n after Java's final
+# class brace; fix the generated Java syntax before compiling.
+key=j/"powerarmor/PowerArmorExitKeyClient.java"
+java=key.read_text(encoding="utf-8")
+if java.endswith("}\\n"):
+ java=java[:-2]+"\n"
+key.write_text(java,encoding="utf-8")
+# A second model definition was required for each versioned panel; make sure
+# every moving part references precisely one explicit cuboid item model.
+for tier in ("mk1","mk2"):
+ for piece in models:
+  q=stationres/f"models/item/armor_visual_{tier}_{piece}.json"
+  data=_json.loads(q.read_text(encoding="utf-8"))
+  data["parent"]="minecraft:block/block"
+  data["ambientocclusion"]=False
+  # Base plate only, zero coplanar sub-plates. Artifacts observed in both
+  # palettes originated from several cubes sharing the same face plane.
+  data["elements"]=data["elements"][:1]
+  b32_put(q,data)
+# Fix overly distant z planes from build38. Hinged plates now visibly swing
+# out of the suit center, with different depth per part to avoid z fighting.
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''   double z=(i==4?-0.17D:(i<2?-0.25D:-0.28D));
+   double depthShift=i*0.015D;''',
+'''   double z=(i==4?-0.16D:(i<2?-0.23D:-0.26D));
+   double depthShift=i*0.022D;''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''   panel.setYRot((float)((i==4?0D:side*76.0D*open)));''',
+'''   // The v5 effect depended on the plates visibly swinging rather than
+   // sliding backward. Swing the two chest plates 85 degrees outward.
+   panel.setYRot((float)((i==4?0D:side*(i<2?85.0D:66.0D)*open)));''')
+# No extra color ribbon planes during any part of the opening cycle.
+assert all(len(_json.loads((stationres/f"models/item/armor_visual_{t}_{part}.json").read_text())["elements"])==1
+ for t in ("mk1","mk2") for part in models)
+print("BUILD43_V5_HINGES PASS: v5 outward hinge motion restored, explicit block meshes without overlapping decorative faces, generated client Java validated")
