@@ -182,10 +182,10 @@ old=''' @SubscribeEvent public static void register(RegisterKeyMappingsEvent e){
  }'''
 assert text.count(old)==1
 text=text.replace(old,"",1)
-old='''   PacketDistributor.sendToServer(new PowerArmorExitPayload());
+old='''   net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(new PowerArmorExitPayload());
   }
  }'''
-new='''   PacketDistributor.sendToServer(new PowerArmorExitPayload());
+new='''   net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(new PowerArmorExitPayload());
   }
   while(NIGHT.consumeClick()){
    Minecraft mc=Minecraft.getInstance();
