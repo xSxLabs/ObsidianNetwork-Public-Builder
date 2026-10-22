@@ -261,3 +261,338 @@ s=p.read_text(encoding="utf-8")
 # no runtime transition is initiated when entering or exiting in the new design.
 p.write_text(s,encoding="utf-8")
 print("CLEAN_V17_FREE_STANDING_SUIT PASS: deploy & exit spawn only owned armor stands; station upgrades nearby suits; no station is created/consumed")
+
+
+# BUILD32_COMPLETE: stage 5 executes after station-independent suit construction.
+# All safety-sensitive inventory changes remain server side; existing recovery
+# records and v1.6/autocrafting/elytra implementations remain untouched.
+import json as _json
+import zlib as _zlib
+import struct as _struct
+from math import hypot as _hypot
+
+def b32_edit(file,old,new):
+ p=j/file
+ s=p.read_text(encoding="utf-8")
+ assert s.count(old)==1,"BUILD32 source drift "+file+" "+str(s.count(old))
+ p.write_text(s.replace(old,new,1),encoding="utf-8")
+
+def b32_put(file,obj):
+ file.parent.mkdir(parents=True,exist_ok=True)
+ file.write_text(_json.dumps(obj,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+
+# Both models use the same power/upgrade logic; matching all four tier parts is
+# mandatory so armor from different tiers cannot accidentally form a suit.
+p=j/"ObsidianNetwork.java"
+s=p.read_text(encoding="utf-8")
+anchor="   public static final DeferredItem<dev.obsidiannetwork.powerarmor.UpgradeCardItem> POWER_ARMOR_UPGRADE ="
+assert s.count(anchor)==1
+addition=""
+for part,slot in (("helmet","HEAD"),("chestplate","CHEST"),("leggings","LEGS"),("boots","FEET")):
+ addition+=f'''   public static final DeferredItem<dev.obsidiannetwork.powerarmor.PowerArmorItem> POWER_ARMOR_MK2_{part.upper()} =
+      ITEMS.registerItem("power_armor_mk2_{part}", p -> new dev.obsidiannetwork.powerarmor.PowerArmorItem(
+        p.stacksTo(1).durability(4000000)
+          .component(net.minecraft.core.component.DataComponents.UNBREAKABLE, net.minecraft.util.Unit.INSTANCE)
+          .component(net.minecraft.core.component.DataComponents.EQUIPPABLE,
+            net.minecraft.world.item.equipment.Equippable.builder(net.minecraft.world.entity.EquipmentSlot.{slot})
+              .setAsset(net.minecraft.resources.ResourceKey.create(
+                net.minecraft.world.item.equipment.EquipmentAssets.ROOT_ID,
+                net.minecraft.resources.Identifier.fromNamespaceAndPath("obsidiannetwork","power_armor_mk2")))
+              .build())
+          .component(dev.obsidiannetwork.registry.ModDataComponents.ENERGY_TOOL_FE.get(),0L)
+      ));
+'''
+assert "POWER_ARMOR_MK2_HELMET" not in s
+s=s.replace(anchor,addition+anchor,1)
+tab='            output.accept((ItemLike)POWER_ARMOR_UPGRADE.get());'
+assert s.count(tab)==1
+s=s.replace(tab,tab+"\n"+'\n'.join(f'            output.accept((ItemLike)POWER_ARMOR_MK2_{part.upper()}.get());' for part in ("helmet","chestplate","leggings","boots")),1)
+p.write_text(s,encoding="utf-8")
+
+b32_edit("powerarmor/PowerArmorRuntime.java",
+''' public static boolean full(ServerPlayer p){
+  for(int i=0;i<SLOTS.length;i++)
+   if(!p.getItemBySlot(SLOTS[i]).is(ArmorStationBlockEntity.expected(i)))return false;
+  return true;
+ }''',
+''' public static boolean piece(ItemStack stack,int slot,boolean mk2){
+  if(mk2){
+   return switch(slot){
+    case 0->stack.is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_MK2_HELMET.get());
+    case 1->stack.is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_MK2_CHESTPLATE.get());
+    case 2->stack.is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_MK2_LEGGINGS.get());
+    case 3->stack.is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_MK2_BOOTS.get());
+    default->false;
+   };
+  }
+  return stack.is(ArmorStationBlockEntity.expected(slot));
+ }
+ public static boolean full(ServerPlayer p){
+  boolean mk2=piece(p.getItemBySlot(SLOTS[0]),0,true);
+  for(int i=0;i<SLOTS.length;i++)
+   if(!piece(p.getItemBySlot(SLOTS[i]),i,mk2))return false;
+  return true;
+ }''')
+
+b32_edit("powerarmor/PowerArmorSuitWorld.java",
+''' public static boolean full(ArmorStand stand){
+  for(int i=0;i<4;i++){
+   if(!stand.getItemBySlot(PowerArmorRuntime.SLOTS[i]).is(
+        ArmorStationBlockEntity.expected(i)))return false;
+  }
+  return true;
+ }''',
+''' public static boolean full(ArmorStand stand){
+  boolean mk2=PowerArmorRuntime.piece(stand.getItemBySlot(PowerArmorRuntime.SLOTS[0]),0,true);
+  for(int i=0;i<4;i++)
+   if(!PowerArmorRuntime.piece(stand.getItemBySlot(PowerArmorRuntime.SLOTS[i]),i,mk2))return false;
+  return true;
+ }''')
+b32_edit("powerarmor/PowerArmorSuitWorld.java",
+'''  for(int i=0;i<4;i++)if(!suit.get(i).is(ArmorStationBlockEntity.expected(i)))return false;''',
+'''  boolean mk2=PowerArmorRuntime.piece(suit.get(0),0,true);
+  for(int i=0;i<4;i++)if(!PowerArmorRuntime.piece(suit.get(i),i,mk2))return false;''')
+
+# Snap to a manually placed Armor Station only if suit is within two blocks
+# and the entire 2-block suit volume below that station is clear.
+b32_edit("powerarmor/PowerArmorSuitWorld.java",
+''' private static BlockPos available(ServerPlayer player){''',
+''' private static BlockPos underStation(ServerPlayer player){
+  Level level=player.level();
+  BlockPos origin=player.blockPosition();
+  BlockPos found=null;
+  double best=Double.MAX_VALUE;
+  for(int dx=-2;dx<=2;dx++)for(int dy=-2;dy<=3;dy++)for(int dz=-2;dz<=2;dz++){
+   BlockPos station=origin.offset(dx,dy,dz);
+   if(!(level.getBlockState(station).getBlock() instanceof ArmorStationBlock))continue;
+   BlockPos candidate=station.below(2);
+   if(candidate.distSqr(origin)>4.0D)continue;
+   if(!level.isEmptyBlock(candidate)||!level.isEmptyBlock(candidate.above()))continue;
+   if(!level.getEntitiesOfClass(ArmorStand.class,new AABB(candidate).inflate(0.25D)).isEmpty())continue;
+   double distance=candidate.distSqr(origin);
+   if(distance<best){best=distance;found=candidate;}
+  }
+  return found;
+ }
+ private static BlockPos available(ServerPlayer player){''')
+b32_edit("powerarmor/PowerArmorSuitWorld.java",
+'''  BlockPos pos=available(player);''',
+'''  BlockPos pos=underStation(player);
+  if(pos==null)pos=available(player);''')
+
+# Server authoritative 20-tick opening/closing pose animation. No duplication:
+# pending entry only animates an existing protected stand, then performs the
+# original atomic backup/equipment transfer after all checks are repeated.
+b32_edit("powerarmor/PowerArmorSuitWorld.java",
+''' private static final String OWNER_PREFIX="xsxlabs_power_armor_owner_";''',
+''' private static final String OWNER_PREFIX="xsxlabs_power_armor_owner_";
+ private record Animation(ArmorStand stand,int ticks,boolean entering){}
+ private static final java.util.Map<UUID,Animation> ACTIVE=new java.util.HashMap<>();
+ private static void pose(ArmorStand stand,int progress,boolean entering){
+  float open=(entering?progress:20-progress)/20.0F;
+  float spread=68.0F*Math.max(0.0F,Math.min(1.0F,open));
+  stand.setLeftArmPose(new net.minecraft.core.Rotations(-spread*0.35F,0F,-spread));
+  stand.setRightArmPose(new net.minecraft.core.Rotations(-spread*0.35F,0F,spread));
+  stand.setHeadPose(new net.minecraft.core.Rotations(-spread*0.25F,0F,0F));
+ }
+ @SubscribeEvent public static void transitionTick(net.neoforged.neoforge.event.tick.PlayerTickEvent.Post tick){
+  if(!(tick.getEntity() instanceof ServerPlayer player))return;
+  Animation animation=ACTIVE.get(player.getUUID());
+  if(animation==null)return;
+  ArmorStand stand=animation.stand();
+  if(stand.isRemoved()||!mine(stand,player)||!full(stand)){
+   ACTIVE.remove(player.getUUID());return;
+  }
+  int t=21-animation.ticks();
+  pose(stand,t,animation.entering());
+  if(animation.ticks()>1){
+   ACTIVE.put(player.getUUID(),new Animation(stand,animation.ticks()-1,animation.entering()));
+   return;
+  }
+  ACTIVE.remove(player.getUUID());
+  if(animation.entering())finishEntering(stand,player);
+  else pose(stand,0,false);
+ }
+ private static void finishEntering(ArmorStand stand,ServerPlayer player){
+  if(stand.isRemoved()||!mine(stand,player)||!full(stand))return;
+  ArmorLoadoutData saved=ArmorLoadoutData.get(player.level().getServer());
+  if(saved.has(player))return;
+  List<ItemStack> original=new ArrayList<>();
+  List<ItemStack> suit=new ArrayList<>();
+  for(EquipmentSlot slot:PowerArmorRuntime.SLOTS){
+   original.add(player.getItemBySlot(slot).copy());
+   suit.add(stand.getItemBySlot(slot).copy());
+  }
+  // World-persistent original-armor backup BEFORE any equipment changes.
+  if(!saved.save(player,original))return;
+  for(int i=0;i<4;i++)player.setItemSlot(PowerArmorRuntime.SLOTS[i],suit.get(i));
+  stand.discard();
+  player.sendSystemMessage(Component.literal(
+   "Power Armor engaged. Press the rebindable Exit Power Armor key to leave."));
+ }
+ @SubscribeEvent public static void animationLogout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e){
+  ACTIVE.remove(e.getEntity().getUUID());
+ }''')
+b32_edit("powerarmor/PowerArmorSuitWorld.java",
+'''  if(!level.addFreshEntity(stand))return false;
+  return true;''',
+'''  if(!level.addFreshEntity(stand))return false;
+  pose(stand,20,false);
+  ACTIVE.put(player.getUUID(),new Animation(stand,20,false));
+  return true;''')
+b32_edit("powerarmor/PowerArmorSuitWorld.java",
+'''  List<ItemStack> original=new ArrayList<>();
+  List<ItemStack> suit=new ArrayList<>();
+  for(EquipmentSlot slot:PowerArmorRuntime.SLOTS){
+   original.add(player.getItemBySlot(slot).copy());
+   suit.add(stand.getItemBySlot(slot).copy());
+  }
+  // Preserve the old armor FIRST. A failed backup must never touch either suit.
+  if(!saved.save(player,original))return;
+  for(int i=0;i<4;i++)player.setItemSlot(PowerArmorRuntime.SLOTS[i],suit.get(i));
+  // Remove the ACTUAL world entity; never leave a second, lootable suit behind.
+  stand.discard();
+  player.sendSystemMessage(Component.literal(
+   "Power Armor engaged. Press the rebindable Exit Power Armor key to leave."));''',
+'''  if(ACTIVE.containsKey(player.getUUID()))return;
+  ACTIVE.put(player.getUUID(),new Animation(stand,20,true));
+  player.sendSystemMessage(Component.literal("Power Armor opening..."));''')
+
+# Equipment textures: recolor the actual MK1 pixel art's indexed palette.
+# Crimson -> charcoal; warm gold -> brushed steel; lighting/dark lines retained.
+def mk2_palette_png(data):
+ assert data[:8]==b"\x89PNG\r\n\x1a\n","MK2 expected PNG"
+ out=bytearray(data[:8]);i=8;updated=False
+ while i<len(data):
+  n=_struct.unpack(">I",data[i:i+4])[0]
+  kind=data[i+4:i+8];part=bytearray(data[i+8:i+8+n]);i+=12+n
+  if kind==b"PLTE":
+   for off in range(0,len(part),3):
+    red,green,blue=part[off:off+3]
+    if red>70 and red>green*2 and red>blue*2:
+     shade=max(22,min(84,int(red*.40)))
+     part[off:off+3]=bytes((shade,shade+4,min(255,shade+12)))
+    elif red>110 and green>105 and blue>60 and red>blue*1.25:
+     shade=max(105,min(220,int((red+green)/2)))
+     part[off:off+3]=bytes((shade-7,shade-2,shade+8))
+   updated=True
+  out+=_struct.pack(">I",len(part))+kind+part
+  out+=_struct.pack(">I",_zlib.crc32(kind+part)&0xffffffff)
+ assert updated,"Expected palette-based suit texture"
+ return bytes(out)
+
+resources=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
+for layer in ("humanoid","humanoid_leggings"):
+ original=resources/f"textures/entity/equipment/{layer}/power_armor.png"
+ (original.parent/"power_armor_mk2.png").write_bytes(mk2_palette_png(original.read_bytes()))
+b32_put(resources/"equipment/power_armor_mk2.json",{"layers":{
+ "humanoid":[{"texture":"obsidiannetwork:power_armor_mk2"}],
+ "humanoid_leggings":[{"texture":"obsidiannetwork:power_armor_mk2"}]}})
+for part,material in (("helmet","netherite_helmet"),("chestplate","netherite_chestplate"),("leggings","netherite_leggings"),("boots","netherite_boots")):
+ original=resources/f"textures/item/power_armor_{part}.png"
+ (original.parent/f"power_armor_mk2_{part}.png").write_bytes(mk2_palette_png(original.read_bytes()))
+ name=f"power_armor_mk2_{part}"
+ b32_put(resources/f"models/item/{name}.json",{"parent":"minecraft:item/generated","textures":{"layer0":f"obsidiannetwork:item/{name}"}})
+ b32_put(resources/f"items/{name}.json",{"model":{"type":"minecraft:model","model":f"obsidiannetwork:item/{name}"}})
+ b32_put(Path(os.environ["V1_RESOURCE_ROOT"])/f"data/obsidiannetwork/recipe/{name}.json",{
+  "type":"minecraft:crafting_shaped","pattern":["ABA","CDC","AEA"],
+  "key":{"A":"minecraft:netherite_ingot","B":"minecraft:iron_block","C":"minecraft:diamond",
+         "D":"minecraft:"+material,"E":"minecraft:echo_shard"},
+  "result":{"id":"obsidiannetwork:"+name,"count":1}})
+
+# Hand-drawn 32px, technology-themed disk pixel sprites. Each upgrade has a
+# different recognizable 8px pictogram and a consistent steel/cyan drive.
+icons={
+ "flight":("00100100","01011010","11111111","00111100","00011000","00100100","01000010","10000001"),
+ "night_vision":("00000000","00111100","01000010","10011001","10100101","10011001","01000010","00111100"),
+ "water_breathing":("00001000","00010100","00010100","00100010","01000001","01000001","00111110","00000000"),
+ "protection":("00111100","01111110","11111111","11111111","01111110","00111100","00011000","00000000"),
+ "fire_protection":("00010000","00111000","00101100","01110110","11011111","11111111","01111110","00111100"),
+ "blast_protection":("10011001","01011010","00111100","11111111","11111111","00111100","01011010","10011001"),
+ "projectile_protection":("00000010","00000110","00001100","11111111","11111111","00001100","00000110","00000010"),
+ "feather_falling":("00000011","00000111","00001110","00011100","00111000","01110000","11100000","01000000"),
+ "respiration":("00011000","00100100","00100100","00011000","01000010","10100101","10000001","01000010"),
+ "aqua_affinity":("00011000","01011010","01011010","01011010","01111110","00011000","00011000","00011000"),
+ "thorns":("10011001","01011010","00111100","11111111","00111100","01011010","10011001","00011000"),
+ "unbreaking":("11111000","00111000","00111000","00111100","00111110","00100110","01100111","11000011"),
+ "mending":("00011000","00011000","00011000","11111111","11111111","00011000","00011000","00011000"),
+ "depth_strider":("00011000","00111100","00100100","00100100","01100110","11100111","11111111","00000000"),
+ "frost_walker":("10011001","01011010","00111100","11111111","11111111","00111100","01011010","10011001"),
+ "soul_speed":("00111100","01111110","11100111","11111111","10111101","10011001","01100110","00000000"),
+ "swift_sneak":("00001100","00011110","00111100","11111100","00111111","00001111","00110000","11000000")
+}
+assert len(icons)==17
+
+def disk_png(icon,accent,empty=False):
+ rows=[]
+ for y in range(32):
+  row=bytearray([0])
+  for x in range(32):
+   border=2<=x<30 and 2<=y<30
+   core=5<=x<27 and 7<=y<25
+   glow=core and (y==7 or y==24 or x==5 or x==26)
+   a=255 if border else 0
+   if not border: color=(0,0,0)
+   elif 3<=x<29 and 3<=y<29:
+    t=int((x+y)*0.4)
+    color=(29+t,39+t,51+t)
+   else: color=(9,14,20)
+   if core:color=(13,22,34)
+   if glow:color=accent
+   if 7<=x<25 and (y==4 or y==5):color=(102,122,141)
+   if x in (4,27) and 5<=y<26:color=(86,105,119)
+   if x in (6,25) and y in (27,28):color=(150,157,166)
+   if not empty and icon and 11<=x<19 and 12<=y<20:
+    if icon[y-12][x-11]=="1":color=accent
+   row.extend((*color,a))
+  rows.append(bytes(row))
+ raw=b"".join(rows)
+ def chunk(kind,data):
+  return _struct.pack(">I",len(data))+kind+data+_struct.pack(">I",_zlib.crc32(kind+data)&0xffffffff)
+ return b"\x89PNG\r\n\x1a\n"+chunk(b"IHDR",_struct.pack(">IIBBBBB",32,32,8,6,0,0,0))+chunk(b"IDAT",_zlib.compress(raw,9))+chunk(b"IEND",b"")
+
+palettes=[(84,218,255),(69,255,170),(69,168,255),(120,215,255),(255,98,66),
+(255,184,55),(255,220,125),(170,240,255),(100,210,255),(70,255,235),
+(245,102,202),(255,210,95),(78,255,154),(102,168,255),(125,227,255),(195,135,255),(255,185,91)]
+for k,(card,icon) in enumerate(icons.items()):
+ name="power_card_"+card
+ (resources/f"textures/item/{name}.png").write_bytes(disk_png(icon,palettes[k]))
+ b32_put(resources/f"models/item/{name}.json",{"parent":"minecraft:item/generated",
+                                                 "textures":{"layer0":f"obsidiannetwork:item/{name}"}})
+(resources/"textures/item/power_armor_upgrade.png").write_bytes(disk_png(None,(92,172,185),empty=True))
+b32_put(resources/"models/item/power_armor_upgrade.json",{
+ "parent":"minecraft:item/generated","textures":{"layer0":"obsidiannetwork:item/power_armor_upgrade"}})
+
+# Enforce substantial ingredients instead of the obsolete blank+feather recipes.
+unique={
+ "flight":"minecraft:elytra","night_vision":"minecraft:golden_carrot",
+ "water_breathing":"minecraft:heart_of_the_sea","protection":"minecraft:netherite_ingot",
+ "fire_protection":"minecraft:magma_cream","blast_protection":"minecraft:obsidian",
+ "projectile_protection":"minecraft:shield","feather_falling":"minecraft:phantom_membrane",
+ "respiration":"minecraft:nautilus_shell","aqua_affinity":"minecraft:prismarine_crystals",
+ "thorns":"minecraft:cactus","unbreaking":"minecraft:anvil",
+ "mending":"minecraft:experience_bottle","depth_strider":"minecraft:prismarine_shard",
+ "frost_walker":"minecraft:blue_ice","soul_speed":"minecraft:soul_soil",
+ "swift_sneak":"minecraft:echo_shard"
+}
+for card in icons:
+ rare=card=="flight"
+ b32_put(Path(os.environ["V1_RESOURCE_ROOT"])/f"data/obsidiannetwork/recipe/power_card_{card}.json",{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["ACA","BDB","AEA"],
+  "key":{"A":"minecraft:netherite_ingot" if rare else "minecraft:iron_ingot",
+         "B":"minecraft:nether_star" if rare else "minecraft:redstone_block",
+         "C":unique[card],"D":"obsidiannetwork:power_armor_upgrade",
+         "E":"minecraft:diamond_block" if rare else "minecraft:diamond"},
+  "result":{"id":"obsidiannetwork:power_card_"+card,"count":1}})
+
+for lang in ("en_us","de_de"):
+ p=resources/f"lang/{lang}.json"
+ names=_json.loads(p.read_text(encoding="utf-8"))
+ for part in ("helmet","chestplate","leggings","boots"):
+  names["item.obsidiannetwork.power_armor_mk2_"+part]=(
+   "Power Armor MK2 "+part.title() if lang=="en_us" else "Power-Rüstung MK2 "+part.title())
+ names["item.obsidiannetwork.power_armor_upgrade"]=(
+  "Blank Armor Upgrade Disk" if lang=="en_us" else "Leere Rüstungs-Upgrade-Disk")
+ b32_put(p,names)
+print("BUILD32_COMPLETE PASS: MK2 matching + War Machine palette; 18 unique disk icons; premium flight recipe; ArmorStand transition poses; station snap within 2 blocks; previous armor recovery unchanged")
