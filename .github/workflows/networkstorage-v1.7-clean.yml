@@ -2011,6 +2011,8 @@ jobs:
           python3 features/v17/apply-power-armor-animation.py
           # Free-standing Power Armor: hand-placed station is an upgrade bench ONLY.
           python3 features/v17/apply-power-armor-freestanding.py
+          # Apotheosis 26.1: optional affix/reforging/gem category overrides for both suit tiers.
+          python3 features/v17/apply-power-armor-apotheosis.py
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
           # Build 301: live runtime component membership in one graph walk, with
