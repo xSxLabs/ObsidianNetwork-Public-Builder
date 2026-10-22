@@ -107,6 +107,9 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class PowerArmorRuntime {
  public static final EquipmentSlot[] SLOTS={EquipmentSlot.HEAD,EquipmentSlot.CHEST,
   EquipmentSlot.LEGS,EquipmentSlot.FEET};
+ // The suit must never revoke flight granted by another installed mod.
+ private static final java.util.Set<java.util.UUID> OWNED_FLIGHT=
+   java.util.concurrent.ConcurrentHashMap.newKeySet();
  private PowerArmorRuntime(){}
  public static boolean full(ServerPlayer p){
   for(int i=0;i<SLOTS.length;i++)
@@ -139,6 +142,10 @@ public final class PowerArmorRuntime {
   }
   return false;
  }
+ @SubscribeEvent public static void logout(
+    net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event){
+  OWNED_FLIGHT.remove(event.getEntity().getUUID());
+ }
  @SubscribeEvent public static void playerTick(PlayerTickEvent.Post event){
   if(!(event.getEntity() instanceof ServerPlayer p))return;
   if(p.tickCount%5!=0)return;
@@ -146,8 +153,12 @@ public final class PowerArmorRuntime {
   // Suit-only Creative flight is removed when the suit empties. Never revoke
   // creative or spectator permissions.
   boolean natural=p.isCreative()||p.isSpectator();
-  if(canFly&&!p.getAbilities().mayfly){p.getAbilities().mayfly=true;p.onUpdateAbilities();}
-  if(!canFly&&!natural&&p.getAbilities().mayfly){
+  if(canFly&&!p.getAbilities().mayfly){
+   OWNED_FLIGHT.add(p.getUUID());
+   p.getAbilities().mayfly=true;p.onUpdateAbilities();
+  }
+  if(natural)OWNED_FLIGHT.remove(p.getUUID());
+  if(!canFly&&!natural&&OWNED_FLIGHT.remove(p.getUUID())){
    p.getAbilities().flying=false;p.getAbilities().mayfly=false;p.onUpdateAbilities();
   }
   if(powered(p)){
