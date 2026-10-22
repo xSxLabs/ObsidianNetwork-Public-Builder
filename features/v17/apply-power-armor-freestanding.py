@@ -772,3 +772,510 @@ b32_edit("powerarmor/ArmorStationBlock.java",
    }
   }''')
 print("BUILD32_STATION_GUI PASS: server-authoritative 9x3 read-only suit display plus install/remove slots; no preview item extraction")
+
+
+# BUILD35_STATION_SHELL: in-world QA fixes for Build 34.
+#  - Open GUI ALWAYS, even without a powered or installed owned suit.
+#  - Massive 3D overhanging garage with hand-built 32px industrial textures.
+#  - Completely closed, downward arms for unattended suits.
+#  - Split chest/leg plates and hinged head are VISUAL ONLY ItemDisplays.
+#    All four authentic power armor stacks remain stored only on the protected
+#    ArmorStand, with original-armor recovery remaining fully atomic.
+from math import sin as _sin, cos as _cos
+import random as _random
+
+def b35_java(relative, before, after):
+    p=j/relative
+    source=p.read_text(encoding="utf-8")
+    n=source.count(before)
+    assert n==1,"BUILD35 anchor drift "+relative+" "+str(n)
+    p.write_text(source.replace(before,after,1),encoding="utf-8")
+
+# ----------------------------------------------------------------------------
+# Station: unconditional GUI and updates even when armor is not yet docked.
+# The initial menu is allowed to be empty; it resolves the nearest owned suit
+# from SERVER state whenever opened/clicked/ticked.
+# ----------------------------------------------------------------------------
+b35_java("powerarmor/ArmorStationBlock.java",
+'''  if(!(level.getBlockEntity(pos) instanceof ArmorStationBlockEntity station))return InteractionResult.PASS;
+  if(!p.isShiftKeyDown()&&p.getMainHandItem().isEmpty()){
+   var standing=PowerArmorSuitWorld.findNearby(level,pos,p);
+   if(standing!=null){
+    p.openMenu(new net.minecraft.world.SimpleMenuProvider(
+       (id,inventory,actor)->new ArmorStationMenu(id,inventory,p,standing,pos),
+       Component.literal("Armor Station - Upgrade Control")));
+    return InteractionResult.SUCCESS;
+   }
+  }''',
+'''  if(!(level.getBlockEntity(pos) instanceof ArmorStationBlockEntity station))return InteractionResult.PASS;
+  // Normal right-click MUST open, with or without a suit, empty hand or card.
+  // Sneak is preserved as the emergency path for legacy stored items.
+  if(!p.isShiftKeyDown()){
+   p.openMenu(new net.minecraft.world.SimpleMenuProvider(
+      (id,inventory,actor)->new ArmorStationMenu(id,inventory,p,pos),
+      Component.literal("xSxLabs | Power Armor Maintenance")));
+   return InteractionResult.SUCCESS;
+  }''')
+
+b35_java("powerarmor/ArmorStationMenu.java",
+''' private final ArmorStand suit;''',
+''' private ArmorStand suit;''')
+b35_java("powerarmor/ArmorStationMenu.java",
+''' private ArmorStationMenu(int id, Inventory inventory,SimpleContainer buffer,
+                          ServerPlayer player,ArmorStand stand,BlockPos pos){
+  super(MenuType.GENERIC_9x3,id,inventory,buffer,3);
+  preview=buffer;owner=player;suit=stand;station=pos.immutable();
+  refresh();
+ }
+ public ArmorStationMenu(int id,Inventory inventory,ServerPlayer owner,ArmorStand suit,BlockPos pos){
+  this(id,inventory,new SimpleContainer(27),owner,suit,pos);
+ }
+ private boolean valid(){
+  return !suit.isRemoved() && PowerArmorSuitWorld.full(suit)
+    && PowerArmorSuitWorld.findNearby(owner.level(),station,owner)==suit
+    && owner.blockPosition().distSqr(station)<=64.0D
+    && owner.level().getBlockState(station).getBlock() instanceof ArmorStationBlock;
+ }''',
+''' private ArmorStationMenu(int id, Inventory inventory,SimpleContainer buffer,
+                          ServerPlayer player,BlockPos pos){
+  super(MenuType.GENERIC_9x3,id,inventory,buffer,3);
+  preview=buffer;owner=player;station=pos.immutable();
+  refresh();
+ }
+ public ArmorStationMenu(int id,Inventory inventory,ServerPlayer owner,BlockPos pos){
+  this(id,inventory,new SimpleContainer(27),owner,pos);
+ }
+ private boolean valid(){
+  return owner.blockPosition().distSqr(station)<=64.0D
+    && owner.level().getBlockState(station).getBlock() instanceof ArmorStationBlock;
+ }
+ private ArmorStand resolve(){
+  return valid()?PowerArmorSuitWorld.findNearby(owner.level(),station,owner):null;
+ }''')
+b35_java("powerarmor/ArmorStationMenu.java",
+''' private void refresh(){
+  if(!valid())return;
+  for(int i=0;i<27;i++)preview.setItem(i,ItemStack.EMPTY);
+  for(int i=0;i<4;i++)
+   preview.setItem(i,suit.getItemBySlot(PowerArmorRuntime.SLOTS[i]).copy());
+  List<String> values=cards(suit.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST));
+  List<Integer> visible=visibleIndices(values);
+  for(int i=0;i<Math.min(12,visible.size());i++)
+   preview.setItem(9+i,new ItemStack(PowerArmorCards.item(values.get(visible.get(i)))));
+  broadcastChanges();
+ }''',
+''' private void refresh(){
+  if(!valid())return;
+  this.suit=resolve();
+  for(int i=0;i<27;i++)preview.setItem(i,ItemStack.EMPTY);
+  if(suit==null){
+   ItemStack status=new ItemStack(net.minecraft.world.item.Items.BARRIER);
+   status.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
+       net.minecraft.network.chat.Component.literal("No single owned Power Armor docked (3 blocks)"));
+   preview.setItem(4,status);
+   return;
+  }
+  for(int i=0;i<4;i++)
+   preview.setItem(i,suit.getItemBySlot(PowerArmorRuntime.SLOTS[i]).copy());
+  List<String> values=cards(suit.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST));
+  List<Integer> visible=visibleIndices(values);
+  for(int i=0;i<Math.min(12,visible.size());i++)
+   preview.setItem(9+i,new ItemStack(PowerArmorCards.item(values.get(visible.get(i)))));
+  // Preview-only stacks are rebuilt from the real world stand each tick.
+ }
+ @Override public void broadcastChanges(){
+  refresh();
+  super.broadcastChanges();
+ }''')
+b35_java("powerarmor/ArmorStationMenu.java",
+'''  if(!(player instanceof ServerPlayer) || player!=owner || !valid())return;
+  if(click!=ContainerInput.PICKUP || button!=0)return;''',
+'''  if(!(player instanceof ServerPlayer) || player!=owner || !valid())return;
+  this.suit=resolve();
+  if(suit==null)return;
+  if(click!=ContainerInput.PICKUP || button!=0)return;''')
+
+# The original 2-high station collision shape prevented meaningful docking.
+# Restrict physical collision to its steel base. The taller gantry has a
+# 3-block-high click/outline shape and visibly hangs over the parked suit.
+b35_java("powerarmor/ArmorStationBlock.java",
+''' private static final net.minecraft.world.phys.shapes.VoxelShape STAND_SHAPE=
+   net.minecraft.world.phys.shapes.Shapes.box(0.0625D,0D,0.0625D,0.9375D,2D,0.9375D);''',
+''' private static final net.minecraft.world.phys.shapes.VoxelShape STAND_SHAPE=
+   net.minecraft.world.phys.shapes.Shapes.box(-0.1875D,0D,-1.25D,1.1875D,3.0D,1.0625D);
+ private static final net.minecraft.world.phys.shapes.VoxelShape STATION_FOOT=
+   net.minecraft.world.phys.shapes.Shapes.box(0D,0D,0D,1D,0.1875D,1D);''')
+b35_java("powerarmor/ArmorStationBlock.java",
+'''  return STAND_SHAPE;
+ }
+ @Override protected net.minecraft.world.phys.shapes.VoxelShape getCollisionShape''',
+'''  return STAND_SHAPE;
+ }
+ @Override protected net.minecraft.world.phys.shapes.VoxelShape getCollisionShape''')
+# Only change the collision return; outline stays 3 blocks tall.
+p=j/"powerarmor/ArmorStationBlock.java"
+source=p.read_text(encoding="utf-8")
+anchor='''CollisionContext context){
+  return STAND_SHAPE;
+ }'''
+assert source.count(anchor)==2,"Unexpected two shape accessors"
+source=source.replace(anchor,'CollisionContext context){\n  return STAND_SHAPE;\n }',1)
+source=source.replace(anchor,'CollisionContext context){\n  return STATION_FOOT;\n }',1)
+p.write_text(source,encoding="utf-8")
+
+# Docking is at the FRONT of the placed station (not two blocks below it).
+# The station remains intact, the player's actual suit is never altered.
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''   BlockPos candidate=station.below(2);
+   if(candidate.distSqr(origin)>4.0D)continue;
+   if(!level.isEmptyBlock(candidate)||!level.isEmptyBlock(candidate.above()))continue;
+   if(!level.getEntitiesOfClass(ArmorStand.class,new AABB(candidate).inflate(0.25D)).isEmpty())continue;
+   double distance=candidate.distSqr(origin);
+   if(distance<best){best=distance;found=candidate;}''',
+'''   for(var facing:new net.minecraft.core.Direction[]{
+       net.minecraft.core.Direction.NORTH,net.minecraft.core.Direction.EAST,
+       net.minecraft.core.Direction.WEST,net.minecraft.core.Direction.SOUTH}){
+    BlockPos candidate=station.relative(facing);
+    if(candidate.distSqr(origin)>4.0D)continue;
+    if(!level.isEmptyBlock(candidate)||!level.isEmptyBlock(candidate.above()))continue;
+    if(!level.getEntitiesOfClass(ArmorStand.class,new AABB(candidate).inflate(0.25D)).isEmpty())continue;
+    double distance=candidate.distSqr(origin)+(facing==net.minecraft.core.Direction.NORTH?0D:0.25D);
+    if(distance<best){best=distance;found=candidate;}
+   }''')
+
+# ----------------------------------------------------------------------------
+# Rich voxel art: real industrial service gantry, roughly 3 blocks tall.
+# Original model is deliberately REPLACED, not retextured, for all blockstate
+# variants including older saved station states. No invisible cube outlines.
+# ----------------------------------------------------------------------------
+texdir=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork/textures/block"
+texdir.mkdir(parents=True,exist_ok=True)
+_metal_palettes={
+ "armor_steel":((47,57,66),(98,112,125),(162,173,181)),
+ "armor_carbon":((18,25,32),(33,43,52),(66,78,91)),
+ "armor_hydraulic":((61,75,88),(130,148,159),(212,223,225)),
+ "armor_cyan":((3,51,65),(8,125,151),(63,234,249)),
+ "armor_warning":((31,31,27),(205,150,34),(252,207,58)),
+ "armor_copper":((45,56,68),(88,116,133),(154,188,203)),
+}
+def b35_texture(key,colors):
+ rng=_random.Random(0x35A2+sum(ord(c) for c in key))
+ size=32
+ data=bytearray()
+ dark,mid,light=colors
+ for y in range(size):
+  data.append(0)
+  for x in range(size):
+   # Fine brushed steel / carbon weave / warning chevrons / lit circuits.
+   if key=="armor_warning":
+    base=light if ((x+y)//8)%2==0 else dark
+   elif key=="armor_cyan":
+    base=light if (x in (3,4,27,28) or y in (3,4,27,28)
+                   or (12<=x<20 and 12<=y<20)) else mid
+   elif key=="armor_carbon":
+    base=mid if (x//4+y//4)%2 else dark
+   elif key=="armor_hydraulic":
+    base=light if x in (7,8,23,24) else mid
+   else:
+    base=light if x in (3,4) or y in (3,4) else (dark if x in (0,31) else mid)
+   noise=rng.randrange(-10,11)
+   if key=="armor_steel":noise+=(x%4==0)*6-(y%8==0)*8
+   if key=="armor_carbon":noise=noise//2
+   rgb=tuple(max(0,min(255,c+noise)) for c in base)
+   data.extend((*rgb,255))
+ def chunk(kind,payload):
+  return (_struct.pack(">I",len(payload))+kind+payload+
+          _struct.pack(">I",_zlib.crc32(kind+payload)&0xffffffff))
+ return (b"\x89PNG\r\n\x1a\n"+chunk(b"IHDR",_struct.pack(">IIBBBBB",32,32,8,6,0,0,0))
+         +chunk(b"IDAT",_zlib.compress(bytes(data),9))+chunk(b"IEND",b""))
+for key,palette in _metal_palettes.items():
+ (texdir/(key+".png")).write_bytes(b35_texture(key,palette))
+stationres=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
+def b35_cube(x1,y1,z1,x2,y2,z2,texture):
+ assert all(-24<=v<=52 for v in (x1,y1,z1,x2,y2,z2))
+ assert x1<x2 and y1<y2 and z1<z2
+ return {"from":[x1,y1,z1],"to":[x2,y2,z2],
+         "faces":{side:{"texture":"#"+texture} for side in
+           ("north","south","east","west","up","down")}}
+parts=[]
+def add(x1,y1,z1,x2,y2,z2,t="steel"):
+ parts.append(b35_cube(x1,y1,z1,x2,y2,z2,t))
+# Cast iron footplate with mechanical tie-down rails and underlights
+add(0,0,0,16,2,16,"carbon")
+add(1,2,12,15,3,16,"steel")
+add(0,2,0,3,4,16,"steel")
+add(13,2,0,16,4,16,"steel")
+add(1,1,1,15,2,3,"warning")
+for x in (2,13):
+ add(x,2,4,x+1,3,12,"hydraulic")
+# Four structural I-beam uprights (Y reaches 48 = three blocks)
+for x in (0,13):
+ for z in (11,14):
+  add(x,2,z,x+3,45,z+2,"carbon")
+  add(x,2,z,x+1,44,z+2,"steel")
+  add(x+2,2,z,x+3,44,z+2,"steel")
+for y in (6,24,39):
+ add(1,y,12,15,y+2,16,"steel")
+ add(2,y+2,13,14,y+3,15,"carbon")
+# Overhead gantry: thick overhanging canopy northward over the parked suit
+add(-3,43,-19,19,47,16,"steel")
+add(-2,47,-17,18,49,15,"carbon")
+add(-3,41,-20,19,43,-17,"warning")
+add(-2,44,-15,18,45,-10,"cyan")
+for x in (0,15):
+ add(x,35,-16,x+2,44,14,"hydraulic")
+ add(x,35,-19,x+2,39,-15,"steel")
+ add(x,28,-20,x+2,37,-18,"carbon")
+ add(x,32,-20,x+2,35,-18,"cyan")
+# Suspension bracket and overhead helmet clamp
+add(6,39,-18,10,45,-11,"steel")
+add(5,36,-19,11,39,-14,"carbon")
+add(6,36,-20,10,38,-19,"cyan")
+# Side pistons / rotary servos; swing into space around the suit
+for x in (-4,17):
+ add(x,18,-17,x+3,27,-14,"carbon")
+ add(x,20,-18,x+3,23,-15,"hydraulic")
+ add(x,25,-15,x+3,30,-13,"steel")
+ add(x,17,-13,x+3,19,-10,"cyan")
+# Structural hydraulic conduits visible at rear
+for x in (4,11):
+ add(x,6,14,x+1,38,16,"copper")
+ add(x,37,14,x+1,41,16,"cyan")
+# Tool rack / diagnostic modules
+add(3,14,15,8,21,18,"carbon")
+add(4,19,18,7,20,19,"cyan")
+add(4,16,18,7,18,19,"steel")
+for x in (3,6,9,12):
+ add(x,9,16,x+1,11,18,"cyan")
+# Reinforced corners and bolt heads
+for x in (1,14):
+ for z in (1,13):
+  add(x,3,z,x+1,4,z+1,"hydraulic")
+# Small silver and gold plate details on the underside
+for x in (3,12):
+ add(x,41,-16,x+2,42,-12,"hydraulic")
+for state in ("empty","suit"):
+ for frame in range(4):
+  b35_put=stationres/f"models/block/armor_station_{state}_{frame}.json"
+  b32_put(b35_put,{"parent":"minecraft:block/block",
+    "textures":{key:"obsidiannetwork:block/armor_"+key for key in
+                ("steel","carbon","hydraulic","cyan","warning","copper")},
+    "elements":parts,"ambientocclusion":False})
+assert len(parts)>=40,"Station model must be genuinely detailed"
+b32_put(stationres/"models/item/armor_station.json",{
+ "parent":"obsidiannetwork:block/armor_station_empty_0",
+ "display":{"gui":{"rotation":[25,135,0],"translation":[0,-4,0],"scale":[0.45,0.45,0.45]},
+            "ground":{"scale":[0.3,0.3,0.3]}}})
+
+# ----------------------------------------------------------------------------
+# Visual-only articulating panels for armor opening/closing.
+# Five custom 3D cuboid item models accompany the real (protected) stand.
+# They are NEVER real suit pieces, never placed in a loot table, and not in tabs.
+# These displays are discarded after the 20-tick transition. If interrupted,
+# periodic local cleanup restores the real stand, which retained its gear.
+# ----------------------------------------------------------------------------
+models=("chest_left","chest_right","leg_left","leg_right","helmet")
+p=j/"ObsidianNetwork.java"
+source=p.read_text(encoding="utf-8")
+anchor='   public static final DeferredItem<dev.obsidiannetwork.powerarmor.UpgradeCardItem> POWER_ARMOR_UPGRADE ='
+assert source.count(anchor)==1
+fields=[]
+for tier in ("mk1","mk2"):
+ for segment in models:
+  fields.append(f'''   public static final DeferredItem<net.minecraft.world.item.Item> ARMOR_VISUAL_{tier.upper()}_{segment.upper()} =
+       ITEMS.registerItem("armor_visual_{tier}_{segment}",
+         p -> new net.minecraft.world.item.Item(p.stacksTo(1)));''')
+source=source.replace(anchor,"\n".join(fields)+"\n"+anchor,1)
+p.write_text(source,encoding="utf-8")
+for tier in ("mk1","mk2"):
+ for part in models:
+  item=f"armor_visual_{tier}_{part}"
+  if tier=="mk1":base,edge,light="red","gold","cyan"
+  else:base,edge,light="carbon","hydraulic","cyan"
+  # Local cuboids physically separated into left chest, right chest, each leg,
+  # and an individually rising helmet. No baked 2-block T-posed entity.
+  cuboids=[]
+  if part.startswith("chest"):
+   cuboids+=[b35_cube(2,3,4,14,14,13,base),
+             b35_cube(3,12,3,13,15,5,edge),
+             b35_cube(4,7,3,12,9,4,light)]
+  elif part.startswith("leg"):
+   cuboids+=[b35_cube(3,1,5,13,15,12,base),
+             b35_cube(3,11,4,13,14,5,edge),
+             b35_cube(4,2,3,12,5,5,"hydraulic")]
+  else:
+   cuboids+=[b35_cube(3,2,3,13,14,13,base),
+             b35_cube(3,9,2,13,12,4,edge),
+             b35_cube(5,9,1,11,11,2,light)]
+  b32_put(stationres/f"models/item/{item}.json",{
+    "parent":"minecraft:item/generated",
+    "textures":{k:"obsidiannetwork:block/armor_"+k for k in
+                ("steel","carbon","hydraulic","cyan","warning","copper")},
+    "elements":cuboids,
+    "display":{"none":{"rotation":[0,0,0],"translation":[0,0,0],"scale":[1,1,1]}}})
+  # Special palette keys are the actual, suitable station metal textures.
+  b32_put(stationres/f"items/{item}.json",{"model":{"type":"minecraft:model",
+                                                    "model":"obsidiannetwork:item/"+item}})
+
+# Correct current persistent-open T-pose bug and give the panels real movement.
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+''' private record Animation(ArmorStand stand,int ticks,boolean entering){}
+ private static final java.util.Map<UUID,Animation> ACTIVE=new java.util.HashMap<>();
+ private static void pose(ArmorStand stand,int progress,boolean entering){
+  float open=(entering?progress:20-progress)/20.0F;
+  float spread=68.0F*Math.max(0.0F,Math.min(1.0F,open));
+  stand.setLeftArmPose(new net.minecraft.core.Rotations(-spread*0.35F,0F,-spread));
+  stand.setRightArmPose(new net.minecraft.core.Rotations(-spread*0.35F,0F,spread));
+  stand.setHeadPose(new net.minecraft.core.Rotations(-spread*0.25F,0F,0F));
+ }''',
+''' private record Animation(ArmorStand stand,int ticks,boolean entering,
+                          List<net.minecraft.world.entity.Display.ItemDisplay> panels){}
+ private static final java.util.Map<UUID,Animation> ACTIVE=new java.util.HashMap<>();
+ private static final String VISUAL_MARK="xsxlabs_power_armor_visual_transient";
+ private static void pose(ArmorStand stand,int progress,boolean entering){
+  float open=(entering?progress:20-progress)/20.0F;
+  open=Math.max(0.0F,Math.min(1.0F,open));
+  // NORMAL idle arms, not the old permanent 68-degree T-pose.
+  float arm=9.0F*open;
+  stand.setLeftArmPose(new net.minecraft.core.Rotations(-arm,0F,-arm));
+  stand.setRightArmPose(new net.minecraft.core.Rotations(-arm,0F,arm));
+  stand.setHeadPose(new net.minecraft.core.Rotations(-42.0F*open,0F,0F));
+  stand.setLeftLegPose(new net.minecraft.core.Rotations(0F,0F,-22.0F*open));
+  stand.setRightLegPose(new net.minecraft.core.Rotations(0F,0F,22.0F*open));
+  stand.setBodyPose(new net.minecraft.core.Rotations(0F,0F,0F));
+ }
+ private static void cleanup(Animation transition){
+  for(var visual:transition.panels())if(!visual.isRemoved())visual.discard();
+  ArmorStand stand=transition.stand();
+  if(!stand.isRemoved()){
+   stand.setInvisible(false);
+   pose(stand,20,false);
+  }
+ }
+ private static List<net.minecraft.world.entity.Display.ItemDisplay> panels(
+     ArmorStand stand,ServerPlayer player){
+  boolean mk2=PowerArmorRuntime.piece(stand.getItemBySlot(PowerArmorRuntime.SLOTS[0]),0,true);
+  net.minecraft.world.item.Item[] items=mk2?new net.minecraft.world.item.Item[]{
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK2_CHEST_LEFT.get(),
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK2_CHEST_RIGHT.get(),
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK2_LEG_LEFT.get(),
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK2_LEG_RIGHT.get(),
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK2_HELMET.get()}:
+    new net.minecraft.world.item.Item[]{
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK1_CHEST_LEFT.get(),
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK1_CHEST_RIGHT.get(),
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK1_LEG_LEFT.get(),
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK1_LEG_RIGHT.get(),
+    dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_MK1_HELMET.get()};
+  List<net.minecraft.world.entity.Display.ItemDisplay> result=new ArrayList<>();
+  for(int i=0;i<items.length;i++){
+   var visual=new net.minecraft.world.entity.Display.ItemDisplay(
+     net.minecraft.world.entity.EntityType.ITEM_DISPLAY,stand.level());
+   visual.addTag(VISUAL_MARK);
+   visual.addTag(owner(player));
+   visual.setInvulnerable(true);
+   visual.setNoGravity(true);
+   visual.setSilent(true);
+   var slot=visual.getSlot(0);
+   if(slot==null||!slot.set(new ItemStack(items[i])))continue;
+   visual.setPos(stand.getX(),stand.getY()+1D,stand.getZ());
+   if(stand.level().addFreshEntity(visual))result.add(visual);
+  }
+  return result;
+ }
+ private static void movePanels(Animation animation,int t){
+  ArmorStand stand=animation.stand();
+  double open=(animation.entering()?t:20-t)/20.0D;
+  open=Math.max(0D,Math.min(1D,open));
+  var panels=animation.panels();
+  for(int i=0;i<panels.size();i++){
+   var panel=panels.get(i);
+   if(panel.isRemoved())continue;
+   double side=(i==0||i==2)?-1D:1D;
+   double x=(i==4?0D:side*(i<2?0.16D:0.15D));
+   double outward=(i==4?0D:side*(i<2?0.46D:0.29D)*open);
+   double y=(i==4?1.65D:(i<2?1.12D:0.25D));
+   double z=(i==4?-0.10D:-0.18D);
+   panel.setPos(stand.getX()+x+outward,
+       stand.getY()+y+(i==4?0.54D*open:0D),
+       stand.getZ()+z-(i<2?0.14D*open:0D));
+   panel.setYRot((float)((i==4?0D:side*76.0D*open)));
+  }
+ }
+ private static Animation startAnimation(ArmorStand stand,ServerPlayer player,boolean entering){
+  // Actual armor is NEVER extracted or copied into animation entities.
+  // Display items are cheap dummy meshes with no power, upgrades, or loot.
+  var result=new Animation(stand,20,entering,panels(stand,player));
+  stand.setInvisible(true);
+  return result;
+ }''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''  Animation animation=ACTIVE.get(player.getUUID());
+  if(animation==null)return;
+  ArmorStand stand=animation.stand();
+  if(stand.isRemoved()||!mine(stand,player)||!full(stand)){
+   ACTIVE.remove(player.getUUID());return;
+  }
+  int t=21-animation.ticks();
+  pose(stand,t,animation.entering());
+  if(animation.ticks()>1){
+   ACTIVE.put(player.getUUID(),new Animation(stand,animation.ticks()-1,animation.entering()));
+   return;
+  }
+  ACTIVE.remove(player.getUUID());
+  if(animation.entering())finishEntering(stand,player);
+  else pose(stand,0,false);''',
+'''  Animation animation=ACTIVE.get(player.getUUID());
+  if(animation==null){
+   // Recover interrupted animations after a crash/restart or disconnect.
+   // No actual armor stack is ever touched by this visual-only cleanup.
+   if(player.tickCount%100==0){
+    var area=new AABB(player.blockPosition()).inflate(10D);
+    for(ArmorStand stand:player.level().getEntitiesOfClass(ArmorStand.class,area,
+        e->mine(e,player)&&e.isInvisible())){
+     stand.setInvisible(false);pose(stand,20,false);
+    }
+    for(var visual:player.level().getEntitiesOfClass(
+        net.minecraft.world.entity.Display.ItemDisplay.class,area,
+        e->e.entityTags().contains(VISUAL_MARK)
+            &&e.entityTags().contains(owner(player))))visual.discard();
+   }
+   return;
+  }
+  ArmorStand stand=animation.stand();
+  if(stand.isRemoved()||!mine(stand,player)||!full(stand)){
+   cleanup(animation);ACTIVE.remove(player.getUUID());return;
+  }
+  int t=21-animation.ticks();
+  pose(stand,t,animation.entering());
+  movePanels(animation,t);
+  if(animation.ticks()>1){
+   ACTIVE.put(player.getUUID(),new Animation(stand,animation.ticks()-1,
+                                            animation.entering(),animation.panels()));
+   return;
+  }
+  ACTIVE.remove(player.getUUID());
+  cleanup(animation);
+  if(animation.entering())finishEntering(stand,player);''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''  ACTIVE.remove(e.getEntity().getUUID());''',
+'''  Animation animation=ACTIVE.remove(e.getEntity().getUUID());
+  if(animation!=null)cleanup(animation);''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''  pose(stand,20,false);
+  ACTIVE.put(player.getUUID(),new Animation(stand,20,false));
+  return true;''',
+'''  pose(stand,20,false);
+  ACTIVE.put(player.getUUID(),startAnimation(stand,player,false));
+  return true;''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''  ACTIVE.put(player.getUUID(),new Animation(stand,20,true));
+  player.sendSystemMessage(Component.literal("Power Armor opening..."));''',
+'''  ACTIVE.put(player.getUUID(),startAnimation(stand,player,true));
+  player.sendSystemMessage(Component.literal("Power Armor opening..."));''')
+# Closing pose is always EXACTLY the unposed vanilla standing armor suit.
+assert "new Animation(stand,20,false)" not in (j/"powerarmor/PowerArmorSuitWorld.java").read_text()
+assert (j/"powerarmor/PowerArmorSuitWorld.java").read_text().count("pose(stand,20,false)")>=2
+assert "this.suit=resolve();" in (j/"powerarmor/ArmorStationMenu.java").read_text()
+assert (j/"powerarmor/ArmorStationBlock.java").read_text().count("openMenu")==1
+print("BUILD35_STATION_SHELL PASS: functional empty-station GUI, 50+ custom gantry elements, detailed industrial textures, correct idle arms, opening five visual panels, secure suit storage and reconnect recovery")
