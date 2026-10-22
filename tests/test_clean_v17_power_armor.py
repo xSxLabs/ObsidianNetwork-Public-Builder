@@ -39,12 +39,12 @@ class CleanV17Armor(unittest.TestCase):
   self.assertIn("ClientPacketDistributor.sendToServer(new PowerArmorExitPayload())",PATCH)
   self.assertIn("PowerArmorCommands.exit(p)",PATCH)
   self.assertIn("if(backup==null||!PowerArmorRuntime.full(p))return 0;",PATCH)
- def test_station_flight_card_is_reversible(self):
-  self.assertIn('String upgrades=chest.get(',PATCH)
-  self.assertIn('"flight"',PATCH)
-  self.assertIn("POWER_ARMOR_UPGRADE.get()",PATCH)
-  self.assertIn("Flight Upgrade returned.",PATCH)
-  self.assertLess(PATCH.index("p.getInventory().add(card)"),PATCH.index("chest.remove("))
+ def test_generic_board_is_not_free_flight(self):
+  self.assertIn("POWER_ARMOR_UPGRADE",PATCH)
+  self.assertIn("Power Armor Upgrade Board",PATCH)
+  self.assertNotIn("Flight Upgrade installed.",PATCH)
+  self.assertIn("useItemOn(ItemStack held",PATCH)
+  self.assertIn("held.getItem() instanceof UpgradeCardItem",PATCH)
  def test_only_owned_flight_is_revoked(self):
   self.assertIn("OWNED_FLIGHT.add(p.getUUID())",PATCH)
   self.assertIn("OWNED_FLIGHT.remove(p.getUUID())",PATCH)

@@ -318,6 +318,13 @@ public final class ArmorStationBlock extends BaseEntityBlock {
  @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos,BlockState state){
   return new ArmorStationBlockEntity(pos,state);
  }
+ @Override protected InteractionResult useItemOn(ItemStack held,BlockState state,Level level,BlockPos pos,
+    Player player,net.minecraft.world.InteractionHand hand,BlockHitResult hit){
+  if(hand!=net.minecraft.world.InteractionHand.MAIN_HAND)return InteractionResult.PASS;
+  if(!(held.getItem() instanceof PowerArmorItem)&&!(held.getItem() instanceof UpgradeCardItem))
+   return InteractionResult.PASS;
+  return useWithoutItem(state,level,pos,player,hit);
+ }
  @Override protected InteractionResult useWithoutItem(BlockState state,Level level,BlockPos pos,
     Player player,BlockHitResult hit){
   if(level.isClientSide())return InteractionResult.SUCCESS;
@@ -327,31 +334,8 @@ public final class ArmorStationBlock extends BaseEntityBlock {
   // Empty hand retrieves one installed item without overwriting an occupied inventory.
   if(p.isShiftKeyDown()){
    var stack=p.getMainHandItem();
-   if(stack.is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_UPGRADE.get())){
-    if(!station.complete())return InteractionResult.FAIL;
-    ItemStack chest=station.get(1).copy();
-    String upgrades=chest.get(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get());
-    if(upgrades!=null&&!upgrades.isEmpty())return InteractionResult.FAIL;
-    chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),"flight");
-    station.put(1,chest);
-    if(!p.isCreative())stack.shrink(1);
-    p.sendSystemMessage(Component.literal("Power Armor: Flight Upgrade installed."));
-    return InteractionResult.SUCCESS;
-   }
+   // The generic upgrade board is a crafting base, not an active flight card.
    if(stack.isEmpty()){
-    ItemStack chest=station.get(1).copy();
-    String upgrades=chest.get(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get());
-    if("flight".equals(upgrades)){
-     ItemStack card=new ItemStack(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_UPGRADE.get());
-     if(!p.getInventory().add(card)){
-      p.sendSystemMessage(Component.literal("Power Armor: inventory full; upgrade stays installed."));
-      return InteractionResult.FAIL;
-     }
-     chest.remove(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get());
-     station.put(1,chest);
-     p.sendSystemMessage(Component.literal("Power Armor: Flight Upgrade returned."));
-     return InteractionResult.SUCCESS;
-    }
     for(int i=3;i>=0;i--){
      ItemStack stored=station.get(i);
      if(stored.isEmpty())continue;
@@ -564,7 +548,7 @@ for locale in ("en_us","de_de"):
  "chestplate":("Power Armor Chestplate","Power-Rüstung Brustpanzer"),
  "leggings":("Power Armor Leggings","Power-Rüstung Beinschutz"),
  "boots":("Power Armor Boots","Power-Rüstung Stiefel"),
- "upgrade":("Power Armor Flight Upgrade","Power-Rüstung Flug-Upgrade")}
+ "upgrade":("Power Armor Upgrade Board","Power-Rüstung Upgrade-Platine")}
  for k,(en,de) in names.items():data["item.obsidiannetwork.power_armor_"+k]=en if locale=="en_us" else de
  data["block.obsidiannetwork.armor_station"]="Armor Station" if locale=="en_us" else "Rüstungsstation"
  put(p,data)

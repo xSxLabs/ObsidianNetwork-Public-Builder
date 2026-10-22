@@ -15,6 +15,11 @@ class CleanV17Cards(unittest.TestCase):
   self.assertIn('OWNED_FLIGHT',PATCH)
   self.assertIn('POWER_CARD_',PATCH)
   self.assertIn('PowerArmorExitKeyClient',PATCH)
+ def test_unique_crafting_inputs_and_safe_return(self):
+  self.assertIn("assert set(ingredients)==set(cards)",PATCH)
+  self.assertIn("ingredients[card]",PATCH)
+  self.assertIn("inventory full; upgrade retained.",PATCH)
+  self.assertLess(PATCH.index("p.getInventory().add(new ItemStack(cardItem))"),PATCH.index("left.remove(i)"))
  def test_workflow(self):
   self.assertIn("python3 features/v17/apply-power-armor-cards.py",WF)
   self.assertLess(WF.index("apply-power-armor-stage1.py"),WF.index("apply-power-armor-cards.py"))

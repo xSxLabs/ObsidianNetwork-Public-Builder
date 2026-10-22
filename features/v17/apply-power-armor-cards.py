@@ -228,6 +228,26 @@ s=s[:-1]+''' public static int night(ServerPlayer p){
 '''
 p.write_text(s,encoding="utf-8")
 
+ingredients={
+ "flight":"minecraft:feather",
+ "night_vision":"minecraft:golden_carrot",
+ "water_breathing":"minecraft:pufferfish",
+ "protection":"minecraft:netherite_scrap",
+ "fire_protection":"minecraft:magma_cream",
+ "blast_protection":"minecraft:obsidian",
+ "projectile_protection":"minecraft:shield",
+ "feather_falling":"minecraft:phantom_membrane",
+ "respiration":"minecraft:nautilus_shell",
+ "aqua_affinity":"minecraft:prismarine_crystals",
+ "thorns":"minecraft:cactus",
+ "unbreaking":"minecraft:anvil",
+ "mending":"minecraft:experience_bottle",
+ "depth_strider":"minecraft:heart_of_the_sea",
+ "frost_walker":"minecraft:blue_ice",
+ "soul_speed":"minecraft:soul_soil",
+ "swift_sneak":"minecraft:echo_shard"
+}
+assert set(ingredients)==set(cards) and len(set(ingredients.values()))==len(cards), "Distinct recipes required"
 for card in cards:
  # Item icon + in-game localized card name.
  put(r/f"assets/obsidiannetwork/models/item/power_card_{card}.json",
@@ -237,7 +257,7 @@ for card in cards:
  # Each special module uses the blank base upgrade board.
  recipe={
   "type":"minecraft:crafting_shapeless",
-  "ingredients":["obsidiannetwork:power_armor_upgrade","minecraft:lapis_lazuli"],
+  "ingredients":["obsidiannetwork:power_armor_upgrade",ingredients[card]],
   "result":{"id":"obsidiannetwork:power_card_"+card,"count":1}
  }
  put(r/f"data/obsidiannetwork/recipe/power_card_{card}.json",recipe)
