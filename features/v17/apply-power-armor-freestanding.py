@@ -1844,14 +1844,14 @@ _key_code=_key_code.replace(_stale,'CATEGORY')
 _needle=' public static final KeyMapping EXIT=new KeyMapping('
 assert _key_code.count(_needle)==1, "BUILD45 exit key anchor changed"
 _key_code=_key_code.replace(_needle,
- ' public static final KeyMapping.Category CATEGORY=new KeyMapping.Category(net.minecraft.resources.Identifier.fromNamespaceAndPath("obsidiannetwork","xsxlabs"));\\n'+_needle,1)
+ ' public static final KeyMapping.Category CATEGORY=new KeyMapping.Category(net.minecraft.resources.Identifier.fromNamespaceAndPath("obsidiannetwork","xsxlabs"));\n'+_needle,1)
 _key.write_text(_key_code,encoding="utf-8")
 _client=j/"client/ClientModEvents.java"
 _client_code=_client.read_text(encoding="utf-8")
 _reg='  event.register(dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient.EXIT);'
 assert _client_code.count(_reg)==1, "BUILD45 key registration anchor changed"
 _client_code=_client_code.replace(_reg,
- '  event.registerCategory(dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient.CATEGORY);\\n'+_reg,1)
+ '  event.registerCategory(dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient.CATEGORY);\n'+_reg,1)
 _client.write_text(_client_code,encoding="utf-8")
 for lang,label in (("de_de","xSxLabs Power-Rüstung"),("en_us","xSxLabs Power Armor")):
  _path=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork/lang"/(lang+".json")
