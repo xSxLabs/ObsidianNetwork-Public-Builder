@@ -1972,8 +1972,8 @@ b49_replace("powerarmor/ArmorStationMenu.java",
 # When all 15 distinct card sockets are filled, upgrades of an already-
 # installed card still fit their existing socket.
 b49_replace("powerarmor/ArmorStationMenu.java",
-'''   if(indices.size()>=15 || display>indices.size())return;''',
-'''   if(display>indices.size()||(indices.size()>=15&&!values.contains(card.upgradeId)))return;''')
+'''   if(indices.size()>=15)return;''',
+'''   if(indices.size()>=15&&!values.contains(card.upgradeId))return;''')
 b49_replace("powerarmor/ArmorStationMenu.java",
 '''  if(visibleIndices(values).size()>=15)return ItemStack.EMPTY;''',
 '''  if(visibleIndices(values).size()>=15&&!values.contains(card.upgradeId))return ItemStack.EMPTY;''')
