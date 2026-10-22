@@ -478,8 +478,53 @@ def mk2_palette_png(data):
    updated=True
   out+=_struct.pack(">I",len(part))+kind+part
   out+=_struct.pack(">I",_zlib.crc32(kind+part)&0xffffffff)
- assert updated,"Expected palette-based suit texture"
- return bytes(out)
+ if updated:return bytes(out)
+ # Some suit inventory textures are 8-bit RGBA PNGs rather than indexed.
+ # Decode all standard per-row PNG filters without external dependencies.
+ width,height=_struct.unpack(">II",data[16:24])
+ assert data[24]==8 and data[25]==6 and data[28]==0,"Unsupported RGBA PNG layout"
+ parts=[];offset=8
+ while offset<len(data):
+  size=_struct.unpack(">I",data[offset:offset+4])[0]
+  kind=data[offset+4:offset+8]
+  if kind==b"IDAT":parts.append(data[offset+8:offset+8+size])
+  offset+=size+12
+ packed=_zlib.decompress(b"".join(parts))
+ prev=bytearray(width*4);rows=[];offset=0
+ for y in range(height):
+  filter_type=packed[offset];offset+=1
+  current=bytearray(packed[offset:offset+width*4]);offset+=width*4
+  assert filter_type in (0,1,2,3,4),"Unknown PNG filter"
+  for k in range(width*4):
+   left=current[k-4] if k>=4 else 0
+   up=prev[k]
+   up_left=prev[k-4] if k>=4 else 0
+   if filter_type==1:predictor=left
+   elif filter_type==2:predictor=up
+   elif filter_type==3:predictor=(left+up)//2
+   elif filter_type==4:
+    p=left+up-up_left
+    d0,d1,d2=abs(p-left),abs(p-up),abs(p-up_left)
+    predictor=left if d0<=d1 and d0<=d2 else (up if d1<=d2 else up_left)
+   else:predictor=0
+   current[k]=(current[k]+predictor)&255
+  prev=current
+  for x in range(width):
+   off=x*4
+   red,green,blue,alpha=current[off:off+4]
+   if alpha==0:continue
+   if red>70 and red>green*2 and red>blue*2:
+    shade=max(22,min(84,int(red*.4)))
+    current[off:off+3]=bytes((shade,shade+4,min(255,shade+12)))
+   elif red>110 and green>105 and blue>60 and red>blue*1.25:
+    shade=max(105,min(220,int((red+green)/2)))
+    current[off:off+3]=bytes((shade-7,shade-2,shade+8))
+  rows.append(b"\x00"+current)
+ assert offset==len(packed),"Malformed RGBA PNG stream"
+ def chunk(kind,data):
+  return _struct.pack(">I",len(data))+kind+data+_struct.pack(">I",_zlib.crc32(kind+data)&0xffffffff)
+ return (b"\x89PNG\r\n\x1a\n"+chunk(b"IHDR",data[16:29])
+   +chunk(b"IDAT",_zlib.compress(b"".join(rows),9))+chunk(b"IEND",b""))
 
 resources=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
 for layer in ("humanoid","humanoid_leggings"):
@@ -596,3 +641,134 @@ for lang in ("en_us","de_de"):
   "Blank Armor Upgrade Disk" if lang=="en_us" else "Leere Rüstungs-Upgrade-Disk")
  b32_put(p,names)
 print("BUILD32_COMPLETE PASS: MK2 matching + War Machine palette; 18 unique disk icons; premium flight recipe; ArmorStand transition poses; station snap within 2 blocks; previous armor recovery unchanged")
+
+
+# Native vanilla-compatible 3-row station upgrade menu. No client custom menu
+# registration is needed, and virtual preview items can NEVER be extracted.
+gui=j/"powerarmor/ArmorStationMenu.java"
+assert not gui.exists(),"Station GUI already generated"
+gui.write_text(r'''package dev.obsidiannetwork.powerarmor;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+
+/** Native 9x3 armor preview and interactive card panel.
+ * The top grid is a VIRTUAL read-only preview, never a real item inventory.
+ * The only inventory mutations are validated against the owned suit and
+ * the server's actual carried card. Empty-hand click removes a card to cursor.
+ */
+public final class ArmorStationMenu extends ChestMenu {
+ private final SimpleContainer preview;
+ private final ServerPlayer owner;
+ private final ArmorStand suit;
+ private final BlockPos station;
+ private ArmorStationMenu(int id, Inventory inventory,SimpleContainer buffer,
+                          ServerPlayer player,ArmorStand stand,BlockPos pos){
+  super(MenuType.GENERIC_9x3,id,inventory,buffer,3);
+  preview=buffer;owner=player;suit=stand;station=pos.immutable();
+  refresh();
+ }
+ public ArmorStationMenu(int id,Inventory inventory,ServerPlayer owner,ArmorStand suit,BlockPos pos){
+  this(id,inventory,new SimpleContainer(27),owner,suit,pos);
+ }
+ private boolean valid(){
+  return !suit.isRemoved() && PowerArmorSuitWorld.full(suit)
+    && PowerArmorSuitWorld.findNearby(owner.level(),station,owner)==suit
+    && owner.blockPosition().distSqr(station)<=64.0D
+    && owner.level().getBlockState(station).getBlock() instanceof ArmorStationBlock;
+ }
+ @Override public boolean stillValid(Player player){
+  return player==owner && valid();
+ }
+ private List<String> cards(ItemStack chest){
+  String data=chest.get(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get());
+  return new ArrayList<>(data==null||data.isEmpty()?List.of():Arrays.asList(data.split(",")));
+ }
+ private List<Integer> visibleIndices(List<String> values){
+  List<Integer> out=new ArrayList<>();
+  for(int i=0;i<values.size();i++)
+   if(PowerArmorCards.item(values.get(i))!=null)out.add(i);
+  return out;
+ }
+ private void refresh(){
+  if(!valid())return;
+  for(int i=0;i<27;i++)preview.setItem(i,ItemStack.EMPTY);
+  for(int i=0;i<4;i++)
+   preview.setItem(i,suit.getItemBySlot(PowerArmorRuntime.SLOTS[i]).copy());
+  List<String> values=cards(suit.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST));
+  List<Integer> visible=visibleIndices(values);
+  for(int i=0;i<Math.min(12,visible.size());i++)
+   preview.setItem(9+i,new ItemStack(PowerArmorCards.item(values.get(visible.get(i)))));
+  broadcastChanges();
+ }
+ @Override public void clicked(int slotId,int button,ClickType click,Player player){
+  if(slotId<0||slotId>=27){
+   super.clicked(slotId,button,click,player);return;
+  }
+  // Ignore all client-side clicks: the server owns the preview and every card.
+  if(!(player instanceof ServerPlayer) || player!=owner || !valid())return;
+  if(click!=ClickType.PICKUP || button!=0)return;
+  if(slotId<9 || slotId>=21)return;
+  ItemStack chest=suit.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).copy();
+  List<String> values=cards(chest);
+  List<Integer> indices=visibleIndices(values);
+  int display=slotId-9;
+  ItemStack carried=getCarried();
+  if(carried.isEmpty()){
+   if(display>=indices.size())return;
+   int i=indices.get(display);
+   var item=PowerArmorCards.item(values.get(i));
+   if(item==null)return;
+   // Mutate card metadata exactly once and return one real card to cursor.
+   values.remove(i);
+   chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),
+       String.join(",",values));
+   suit.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,chest);
+   setCarried(new ItemStack(item));
+  }else if(carried.getItem() instanceof UpgradeCardItem card && !"blank".equals(card.upgradeId)){
+   if(indices.size()>=12 || display>indices.size())return;
+   int duplicate=0;
+   for(String id:values)if(id.equals(card.upgradeId))duplicate++;
+   if(duplicate>=(card.upgradeId.equals("protection")?8:1))return;
+   // Insert in clicked slot order while preserving toggle-only metadata.
+   int insertion=display==indices.size()?values.size():indices.get(display);
+   values.add(insertion,card.upgradeId);
+   chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),
+       String.join(",",values));
+   suit.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,chest);
+   if(!owner.isCreative())carried.shrink(1);
+  }else return;
+  refresh();
+ }
+ @Override public ItemStack quickMoveStack(Player player,int slot){
+  // No virtual equipment or card icons can be shift-taken or duplicated.
+  return ItemStack.EMPTY;
+ }
+}
+''',encoding="utf-8")
+
+# Empty hand on station opens the GUI; held-card interaction remains available.
+b32_edit("powerarmor/ArmorStationBlock.java",
+'''  if(!(level.getBlockEntity(pos) instanceof ArmorStationBlockEntity station))return InteractionResult.PASS;''',
+'''  if(!(level.getBlockEntity(pos) instanceof ArmorStationBlockEntity station))return InteractionResult.PASS;
+  if(!p.isShiftKeyDown()&&p.getMainHandItem().isEmpty()){
+   var standing=PowerArmorSuitWorld.findNearby(level,pos,p);
+   if(standing!=null){
+    p.openMenu(new net.minecraft.world.SimpleMenuProvider(
+       (id,inventory,actor)->new ArmorStationMenu(id,inventory,p,standing,pos),
+       Component.literal("Armor Station - Upgrade Control")));
+    return InteractionResult.SUCCESS;
+   }
+  }''')
+print("BUILD32_STATION_GUI PASS: server-authoritative 9x3 read-only suit display plus install/remove slots; no preview item extraction")
