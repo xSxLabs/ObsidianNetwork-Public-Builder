@@ -7,6 +7,7 @@ Unfilled future inputs stay pending until produced/inserted; return buffered
 inputs on cancellation through the existing capacity-checked restore path.
 """
 import os
+import re
 from pathlib import Path
 
 p=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/platform/MinecraftAutocraftingService.java"
@@ -32,8 +33,14 @@ new_refill="""// Hold any newly available input for the WHOLE outstanding job,
              this.runtime.storage().index().amount(b.descriptor().key())) : 0L;
          long taken = stock > 0L
              ? this.runtime.storage().extract(b.descriptor().key(), Math.min(missing, stock)) : 0L;"""
-assert s.count(old_refill)==1,"Deferred refill reservation anchor drift"
-s=s.replace(old_refill,new_refill,1)
+# Match the same two Java statements, allowing only leading whitespace to vary.
+# The fixture and decompiler format the second line differently.
+lines=old_refill.splitlines()
+pattern=re.compile(re.escape(lines[0])+r"\r?\n[ \t]*"+re.escape(lines[1].lstrip()))
+matches=list(pattern.finditer(s))
+assert len(matches)==1,"Deferred refill reservation anchor drift"
+match=matches[0]
+s=s[:match.start()]+new_refill+s[match.end():]
 
 # Restoration MUST remain capacity-guarded and exact; no rollback item may
 # silently spill into a player's inventory, vanish or be given twice.
