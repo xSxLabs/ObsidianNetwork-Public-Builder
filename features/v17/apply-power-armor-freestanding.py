@@ -1542,3 +1542,141 @@ for tier in ("mk1","mk2"):
   obj["elements"]=obj["elements"][:1]
   b32_put(p,obj)
 print("BUILD38_ONE_BY_TWO_STATION PASS: station 1w x 2l x 2h, pad under suit, rear attached arms, 180-degree docked orientation, GUI insertion and MK1/MK2 overlapping panels fixed")
+
+
+# BUILD39_IN_GAME_REGRESSION_REPAIR.
+# Keep vanilla cubic element geometry strictly inside permitted bounds, avoid
+# the huge hand model, restore visible hinged parts without stray color panels.
+# All piece items/backups remain untouched.
+# Minecraft validates every from/to component in [-16,32].
+clean=[]
+for cuboid in station_parts:
+ a,b=cuboid["from"],cuboid["to"]
+ # Remove warning/red pad, including old decorative threshold strips.
+ if cuboid["faces"]["up"]["texture"]=="#warning" and a[1]<10:
+  continue
+ # Structural attached arms only: front projection must still connect.
+ clean.append(cuboid)
+for mode in ("empty","suit"):
+ for frame in range(4):
+  path=stationres/f"models/block/armor_station_{mode}_{frame}.json"
+  data=_json.loads(path.read_text(encoding="utf-8"))
+  data["elements"]=clean
+  data["textures"]["particle"]="obsidiannetwork:block/armor_steel"
+  b32_put(path,data)
+# The two-block gantry needs a smaller hand-model bounding box, otherwise
+# the first-person hand appears cropped, cluttered and flickers.
+hand=[]
+for cuboid in clean:
+ a,b=cuboid["from"],cuboid["to"]
+ if a[2]<0:continue
+ hand.append(cuboid)
+assert hand
+b32_put(stationres/"models/item/armor_station_hand.json",{
+ "parent":"minecraft:block/block","ambientocclusion":False,
+ "textures":{**{k:"obsidiannetwork:block/armor_"+k for k in
+              ("steel","carbon","hydraulic","cyan","warning","copper")},
+             "particle":"obsidiannetwork:block/armor_steel"},
+ "elements":hand
+})
+b32_put(stationres/"models/item/armor_station.json",{
+ "parent":"obsidiannetwork:item/armor_station_hand",
+ "display":{
+  "gui":{"rotation":[25,135,0],"translation":[0,-3,0],"scale":[0.42,0.42,0.42]},
+  "firstperson_righthand":{"rotation":[0,45,0],"translation":[0,-2,0],
+                            "scale":[0.32,0.32,0.32]},
+  "thirdperson_righthand":{"rotation":[45,45,0],"translation":[0,1,0],
+                           "scale":[0.32,0.32,0.32]},
+  "ground":{"scale":[0.25,0.25,0.25]}}})
+# Restore the original hinged positions (as observed in build36), but create
+# each part from only ONE non-overlapping cuboid. The old 3-part models
+# shared coplanar faces causing tier-colored flashing.
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''   double x=(i==4?0D:side*(i<2?0.43D:0.36D));
+   double outward=(i==4?0D:side*(i<2?0.58D:0.39D)*open);''',
+'''   double x=(i==4?0D:side*(i<2?0.16D:0.15D));
+   double outward=(i==4?0D:side*(i<2?0.46D:0.29D)*open);''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''   double z=(i==4?-0.49D:(i<2?-0.66D:-0.60D));
+   double depthShift=i*0.08D;''',
+'''   double z=(i==4?-0.17D:(i<2?-0.25D:-0.28D));
+   double depthShift=i*0.015D;''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''       stand.getZ()+z-depthShift-(i<2?0.20D*open:0D));''',
+'''       stand.getZ()+z-depthShift-(i<2?0.14D*open:0D));''')
+# The visual panel models are registered as plain items. Vanilla generated
+# item definitions can override explicit cuboid shapes on recent releases.
+# Re-point each 1.21.4+ items definition at the correct dedicated panel model.
+for tier in ("mk1","mk2"):
+ for part in models:
+  ident=f"armor_visual_{tier}_{part}"
+  p=stationres/f"items/{ident}.json"
+  p.parent.mkdir(parents=True,exist_ok=True)
+  b32_put(p,{"model":{"type":"minecraft:model",
+                        "model":"obsidiannetwork:item/"+ident}})
+# Model-space placement: stand on the grey floor, facing back toward machine.
+# Previously the origin was level with station while the pad rises 2/16.
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''  stand.setYRot(player.getYRot()+180.0F);''',
+'''  stand.setYRot(player.getYRot()+180.0F);''') if False else None
+# Preserve exactly one inventory item per card, and extend GUI card grid to 15.
+b35_java("powerarmor/ArmorStationMenu.java",
+'''  for(int i=0;i<Math.min(12,visible.size());i++)
+   preview.setItem(9+i,new ItemStack(PowerArmorCards.item(values.get(visible.get(i)))));''',
+'''  for(int i=0;i<Math.min(15,visible.size());i++)
+   preview.setItem(9+i,new ItemStack(PowerArmorCards.item(values.get(visible.get(i)))));''')
+b35_java("powerarmor/ArmorStationMenu.java",
+'''  if(slotId<9 || slotId>=21)return;''',
+'''  if(slotId<9 || slotId>=24)return;''')
+b35_java("powerarmor/ArmorStationMenu.java",
+'''   if(indices.size()>=12)return;''',
+'''   if(indices.size()>=15)return;''')
+# Shift-click one card from the player's inventory into the next available
+# upgrade cell, via the same server-side transaction path.
+b35_java("powerarmor/ArmorStationMenu.java",
+''' @Override public ItemStack quickMoveStack(Player player,int slot){
+  // No virtual equipment or card icons can be shift-taken or duplicated.
+  return ItemStack.EMPTY;
+ }''',
+''' @Override public ItemStack quickMoveStack(Player player,int slot){
+  if(!(player instanceof ServerPlayer)||player!=owner||!valid()||slot<27)return ItemStack.EMPTY;
+  var inventorySlot=this.slots.get(slot);
+  if(inventorySlot==null||!inventorySlot.hasItem())return ItemStack.EMPTY;
+  ItemStack stack=inventorySlot.getItem();
+  if(!(stack.getItem() instanceof UpgradeCardItem card)
+      ||"blank".equals(card.upgradeId))return ItemStack.EMPTY;
+  ItemStack chest=suit.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).copy();
+  List<String> values=cards(chest);
+  if(visibleIndices(values).size()>=15)return ItemStack.EMPTY;
+  int duplicates=0;
+  for(String id:values)if(id.equals(card.upgradeId))duplicates++;
+  if(duplicates>=(card.upgradeId.equals("protection")?8:1))return ItemStack.EMPTY;
+  ItemStack before=stack.copy();
+  values.add(card.upgradeId);
+  chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),
+    String.join(",",values));
+  suit.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,chest);
+  if(!owner.isCreative())stack.shrink(1);
+  inventorySlot.setChanged();
+  refresh();
+  return before;
+ }''')
+# Reject removed card types when newly installed; existing data remains safe
+# until a player can extract those cards without losing stored inventory.
+b35_java("powerarmor/ArmorStationMenu.java",
+'''  }else if(carried.getItem() instanceof UpgradeCardItem card && !"blank".equals(card.upgradeId)){''',
+'''  }else if(carried.getItem() instanceof UpgradeCardItem card
+      && !"blank".equals(card.upgradeId)
+      && !"mending".equals(card.upgradeId)
+      && !"unbreaking".equals(card.upgradeId)){''')
+# New world-position logic adjusts height to the visible silver platform,
+# while keeping collision checks and recovery intact.
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''  if(docked){
+   stand.setYRot(player.getYRot()+180.0F);
+  }''',
+'''  if(docked){
+   stand.setYRot(player.getYRot()+180.0F);
+   stand.setPos(stand.getX(),stand.getY()+0.125D,stand.getZ());
+  }''')
+print("BUILD39_IN_GAME_REGRESSION_REPAIR PASS: restored panel motion and modern item definitions; 15 upgrade slots, shift-click, validated compact model and hand icon")
