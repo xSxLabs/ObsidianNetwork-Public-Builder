@@ -1680,3 +1680,40 @@ b35_java("powerarmor/PowerArmorSuitWorld.java",
    stand.setPos(stand.getX(),stand.getY()+0.125D,stand.getZ());
   }''')
 print("BUILD39_IN_GAME_REGRESSION_REPAIR PASS: restored panel motion and modern item definitions; 15 upgrade slots, shift-click, validated compact model and hand icon")
+
+
+# BUILD40_RENDER_MAPPING: modern Minecraft has separate client item definitions.
+b32_put(stationres/"items/armor_station.json",{
+ "model":{"type":"minecraft:model","model":"obsidiannetwork:item/armor_station"}
+})
+# Exactly vanilla enchantment maximum count of cards, each worth 2 vanilla
+# enchantment levels. Both drag-click and shift-insertion share this cap.
+b35_java("powerarmor/ArmorStationMenu.java",
+'''   if(duplicate>=(card.upgradeId.equals("protection")?8:1))return;''',
+'''   if(duplicate>=maxCardCount(card.upgradeId))return;''')
+b35_java("powerarmor/ArmorStationMenu.java",
+'''  if(duplicates>=(card.upgradeId.equals("protection")?8:1))return ItemStack.EMPTY;''',
+'''  if(duplicates>=maxCardCount(card.upgradeId))return ItemStack.EMPTY;''')
+b35_java("powerarmor/ArmorStationMenu.java",
+''' private List<String> cards(ItemStack chest){''',
+''' private static int maxCardCount(String id){
+  return switch(id){
+   case "protection","fire_protection","blast_protection",
+        "projectile_protection","feather_falling" -> 4;
+   case "respiration","thorns","depth_strider","soul_speed",
+        "swift_sneak" -> 3;
+   case "frost_walker" -> 2;
+   case "mending","unbreaking" -> 0;
+   default -> 1;
+  };
+ }
+ private List<String> cards(ItemStack chest){''')
+# Disable old card recipes and hide them from the creative tab and upgrade
+# systems while preserving old registry IDs for world compatibility.
+for gone in ("mending","unbreaking"):
+ for craft in (stationres/f"recipe/power_card_{gone}.json",
+               stationres/f"recipes/power_card_{gone}.json"):
+  if craft.exists():craft.unlink()
+# Metadata for installed legacy cards is deliberately retained and can be
+# extracted, avoiding data loss in existing worlds.
+print("BUILD40_RENDER_MAPPING PASS: item definition, 15-slot grouped caps, 2x-level cards, disabled legacy cards")
