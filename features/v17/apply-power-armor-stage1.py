@@ -15,7 +15,8 @@ registration=r"""
    // XSXLABS_POWER_ARMOR_V17: distinct FE suit (original v1.6 Elytra untouched).
    public static final DeferredBlock<dev.obsidiannetwork.powerarmor.ArmorStationBlock> ARMOR_STATION =
       BLOCKS.registerBlock("armor_station", dev.obsidiannetwork.powerarmor.ArmorStationBlock::new,
-         p -> p.mapColor(MapColor.METAL).strength(4.0F,10.0F).noOcclusion());
+         p -> p.mapColor(MapColor.METAL).strength(4.0F,3600000.0F)
+          .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK).noOcclusion());
    public static final DeferredItem<BlockItem> ARMOR_STATION_ITEM=ITEMS.registerSimpleBlockItem("armor_station",ARMOR_STATION);
 """
 for name,slot in [("helmet","HEAD"),("chestplate","CHEST"),("leggings","LEGS"),("boots","FEET")]:
@@ -108,9 +109,19 @@ public final class PowerArmorRuntime {
   EquipmentSlot.LEGS,EquipmentSlot.FEET};
  private PowerArmorRuntime(){}
  public static boolean full(ServerPlayer p){
-  for(EquipmentSlot slot:SLOTS)
-   if(!(p.getItemBySlot(slot).getItem() instanceof PowerArmorItem))return false;
+  for(int i=0;i<SLOTS.length;i++)
+   if(!p.getItemBySlot(SLOTS[i]).is(ArmorStationBlockEntity.expected(i)))return false;
   return true;
+ }
+ @SubscribeEvent public static void protectLoadedStand(net.neoforged.neoforge.event.level.BlockEvent.BreakEvent event){
+  if(!(event.getState().getBlock() instanceof ArmorStationBlock))return;
+  if(event.getLevel().getBlockEntity(event.getPos()) instanceof ArmorStationBlockEntity station
+      && station.occupied()){
+    event.setCanceled(true);
+    if(event.getPlayer() instanceof ServerPlayer p)
+      p.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+        "Power Armor: remove all suit pieces before dismantling the station."));
+  }
  }
  public static boolean powered(ServerPlayer p){
   if(!full(p))return false;
@@ -219,11 +230,34 @@ public final class ArmorStationBlockEntity extends BlockEntity {
   super(ModBlockEntities.ARMOR_STATION.get(),p,state);
  }
  public ItemStack get(int i){return suit[i];}
+ public static net.minecraft.world.item.Item expected(int i){
+  return switch(i){
+   case 0->dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_HELMET.get();
+   case 1->dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_CHESTPLATE.get();
+   case 2->dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_LEGGINGS.get();
+   case 3->dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_BOOTS.get();
+   default->throw new IndexOutOfBoundsException(i);
+  };
+ }
+ public boolean occupied(){
+  for(ItemStack stack:suit)if(!stack.isEmpty())return true;
+  return false;
+ }
  public boolean complete(){
-  for(ItemStack stack:suit)if(!(stack.getItem() instanceof PowerArmorItem))return false;
+  for(int i=0;i<4;i++)if(!suit[i].is(expected(i)))return false;
   return true;
  }
- public void put(int i,ItemStack stack){suit[i]=stack.copy();setChanged();}
+ public void put(int i,ItemStack stack){
+  if(!stack.isEmpty()&&!stack.is(expected(i)))
+   throw new IllegalArgumentException("Incorrect suit piece for armor slot "+i);
+  suit[i]=stack.copy();setChanged();
+ }
+ public ItemStack take(int i){
+  ItemStack current=suit[i].copy();
+  suit[i]=ItemStack.EMPTY;
+  setChanged();
+  return current;
+ }
  public List<ItemStack> snapshot(){
   return Arrays.stream(suit).map(ItemStack::copy).toList();
  }
@@ -278,19 +312,35 @@ public final class ArmorStationBlock extends BaseEntityBlock {
   if(level.isClientSide())return InteractionResult.SUCCESS;
   if(!(player instanceof ServerPlayer p))return InteractionResult.PASS;
   if(!(level.getBlockEntity(pos) instanceof ArmorStationBlockEntity station))return InteractionResult.PASS;
-  // First test prototype: the four suit items go into the stand via sneak + right-click.
+  // Sneak + right click mounts a component into its matching suit slot.
+  // Empty hand retrieves one installed item without overwriting an occupied inventory.
   if(p.isShiftKeyDown()){
    var stack=p.getMainHandItem();
-   if(!(stack.getItem() instanceof PowerArmorItem))return InteractionResult.PASS;
+   if(stack.isEmpty()){
+    for(int i=3;i>=0;i--){
+     ItemStack stored=station.get(i);
+     if(stored.isEmpty())continue;
+     ItemStack returned=stored.copy();
+     if(!p.getInventory().add(returned)){
+       p.sendSystemMessage(Component.literal("Power Armor: inventory full; suit kept safe."));
+       return InteractionResult.FAIL;
+     }
+     station.take(i);
+     p.sendSystemMessage(Component.literal("Power Armor: removed component "+(i+1)+"/4"));
+     return InteractionResult.SUCCESS;
+    }
+    return InteractionResult.PASS;
+   }
    for(int i=0;i<4;i++){
-    if(station.get(i).isEmpty()){
+    if(stack.is(ArmorStationBlockEntity.expected(i))){
+     if(!station.get(i).isEmpty())return InteractionResult.FAIL;
      if(!p.isCreative())station.put(i,stack.split(1));
      else station.put(i,stack.copyWithCount(1));
      p.sendSystemMessage(Component.literal("Power Armor: mounted component "+(i+1)+"/4"));
      return InteractionResult.SUCCESS;
     }
    }
-   return InteractionResult.FAIL;
+   return InteractionResult.PASS;
   }
   if(!station.complete()){
    p.sendSystemMessage(Component.literal("Power Armor: install all four suit parts first"));
