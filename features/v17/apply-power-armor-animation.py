@@ -125,8 +125,8 @@ def model(filled,frame):
   cubes.extend([
    cuboid(4,2,5,7,13,11,"red"),cuboid(9,2,5,12,13,11,"red"),
    cuboid(4,13,5,12,25,12,"red"),
-   cuboid(5,25+lift,5,11,31+lift,11,"red"),
-   cuboid(6,26+lift,4,10,29+lift,5,"gold"),
+   cuboid(5,24+lift,5,11,28+lift,11,"red"),
+   cuboid(6,25+lift,4,10,28+lift,5,"gold"),
    cuboid(7,18,3,9,20,5,"reactor"),
    cuboid(1-out,15,6,4-out,25,12,"red"),
    cuboid(12+out,15,6,15+out,25,12,"red"),
