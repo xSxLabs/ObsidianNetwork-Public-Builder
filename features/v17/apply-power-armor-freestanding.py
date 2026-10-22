@@ -1863,3 +1863,64 @@ assert "ContainerScreen" in screen.read_text(encoding="utf-8")
 assert "extractBackground" in screen.read_text(encoding="utf-8")
 assert "GuiGraphics;" not in screen.read_text(encoding="utf-8")
 print("BUILD45_26_1_2_UI_KEYS PASS: modern ContainerScreen GUI, correct title, registered Identifier key category")
+
+
+# BUILD47_STATION_GUI_SAFETY: stale/no-dock shift-click must never NPE;
+# preview sync writes only changed slots; render grid overlays real hitboxes.
+# All 4 genuine item stacks continue to live ONLY on the server-owned stand.
+_gui_file=j/"powerarmor/ArmorStationMenu.java"
+_gui_source=_gui_file.read_text(encoding="utf-8")
+_b47_start=_gui_source.index(" private void refresh(){")
+_b47_end=_gui_source.index(" @Override public void broadcastChanges(){",_b47_start)
+_b47_previous=_gui_source[_b47_start:_b47_end]
+assert "this.suit=resolve();" in _b47_previous
+assert "Math.min(15,visible.size())" in _b47_previous
+assert "for(int i=0;i<27;i++)preview.setItem(i,ItemStack.EMPTY);" in _b47_previous
+_b47_refresh=r''' private void refresh(){
+  if(!valid())return;
+  this.suit=resolve();
+  ItemStack[] desired=new ItemStack[27];
+  Arrays.fill(desired,ItemStack.EMPTY);
+  if(suit==null){
+   ItemStack status=new ItemStack(net.minecraft.world.item.Items.BARRIER);
+   status.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
+       net.minecraft.network.chat.Component.literal("No single owned Power Armor docked (3 blocks)"));
+   desired[4]=status;
+  }else{
+   for(int i=0;i<4;i++)
+    desired[i]=suit.getItemBySlot(PowerArmorRuntime.SLOTS[i]).copy();
+   List<String> values=cards(suit.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST));
+   List<Integer> visible=visibleIndices(values);
+   for(int i=0;i<Math.min(15,visible.size());i++)
+    desired[9+i]=new ItemStack(PowerArmorCards.item(values.get(visible.get(i))));
+  }
+  // Avoid 27-46 unnecessary container mutations/broadcasts on every tick.
+  for(int i=0;i<desired.length;i++)
+   if(!ItemStack.matches(preview.getItem(i),desired[i]))preview.setItem(i,desired[i]);
+ }
+'''
+_gui_file.write_text(_gui_source[:_b47_start]+_b47_refresh+_gui_source[_b47_end:],encoding="utf-8")
+
+# Shift-click is a separate server transaction route from ordinary clicks:
+# validate the current suit and slot number immediately before touching it.
+b35_java("powerarmor/ArmorStationMenu.java",
+'''  if(!(player instanceof ServerPlayer)||player!=owner||!valid()||slot<27)return ItemStack.EMPTY;
+  var inventorySlot=this.slots.get(slot);''',
+'''  if(!(player instanceof ServerPlayer)||player!=owner||!valid()
+      ||slot<27||slot>=this.slots.size())return ItemStack.EMPTY;
+  this.suit=resolve();
+  if(suit==null)return ItemStack.EMPTY;
+  var inventorySlot=this.slots.get(slot);''')
+
+# ChestMenu 9x3 player inventory starts at y+103 (slot outline at y+102),
+# with hotbar at y+161 (outline at y+160). The old overlay was 36px too low.
+b35_java("powerarmor/ArmorStationScreen.java",
+'''  int offset=this.getImageHeight()-114;''',
+'''  int invTop=this.getImageHeight()-66;''')
+b35_java("powerarmor/ArmorStationScreen.java",
+'''   int sy=y+offset+(index<27?84+row*18:142);''',
+'''   int sy=y+invTop+(index<27?row*18:58);''')
+assert "if(suit==null)return ItemStack.EMPTY;" in (j/"powerarmor/ArmorStationMenu.java").read_text(encoding="utf-8")
+assert "ItemStack.matches(preview.getItem(i),desired[i])" in (j/"powerarmor/ArmorStationMenu.java").read_text(encoding="utf-8")
+assert "int invTop=this.getImageHeight()-66;" in (j/"powerarmor/ArmorStationScreen.java").read_text(encoding="utf-8")
+print("BUILD47_STATION_GUI_SAFETY PASS: dock-validated shift-click, differential preview, inventory UI aligned")
