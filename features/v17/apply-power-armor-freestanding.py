@@ -1944,25 +1944,25 @@ b49_replace("powerarmor/ArmorStationMenu.java",
 ''' private static int maxCardCount(String id){''',
 ''' public static int maxCardCount(String id){''')
 b49_replace("powerarmor/ArmorStationMenu.java",
-'''  private List<Integer> visibleIndices(List<String> values){
-   List<Integer> out=new ArrayList<>();
-   for(int i=0;i<values.size();i++)
-    if(PowerArmorCards.item(values.get(i))!=null)out.add(i);
-   return out;
-  }''',
-'''  private List<Integer> visibleIndices(List<String> values){
-   List<Integer> out=new ArrayList<>();
-   java.util.HashSet<String> seen=new java.util.HashSet<>();
-   for(int i=0;i<values.size();i++){
-    String id=values.get(i);
-    if(PowerArmorCards.item(id)!=null && seen.add(id))out.add(i);
-   }
-   return out;
-  }''')
+''' private List<Integer> visibleIndices(List<String> values){
+  List<Integer> out=new ArrayList<>();
+  for(int i=0;i<values.size();i++)
+   if(PowerArmorCards.item(values.get(i))!=null)out.add(i);
+  return out;
+ }''',
+''' private List<Integer> visibleIndices(List<String> values){
+  List<Integer> out=new ArrayList<>();
+  java.util.HashSet<String> seen=new java.util.HashSet<>();
+  for(int i=0;i<values.size();i++){
+   String id=values.get(i);
+   if(PowerArmorCards.item(id)!=null && seen.add(id))out.add(i);
+  }
+  return out;
+ }''')
 # Actual station socket now displays the combined quantity of installed cards.
 # Removing with an empty cursor removes exactly ONE, never a whole stack.
 b49_replace("powerarmor/ArmorStationMenu.java",
-'''     desired[9+i]=new ItemStack(PowerArmorCards.item(values.get(visible.get(i))));''',
+'''    desired[9+i]=new ItemStack(PowerArmorCards.item(values.get(visible.get(i))));''',
 '''    {
      String id=values.get(visible.get(i));
      ItemStack disk=new ItemStack(PowerArmorCards.item(id));
