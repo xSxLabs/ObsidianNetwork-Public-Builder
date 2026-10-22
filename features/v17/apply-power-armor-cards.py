@@ -55,7 +55,8 @@ public final class PowerArmorCards {
 
 # The station installs exactly one specific card at a time in its suit
 # chest core. Sneak + empty hand removes and returns the LAST installed card.
-guard='''  // First test prototype: the four suit items go into the stand via sneak + right-click.
+guard='''  // Sneak + right click mounts a component into its matching suit slot.
+  // Empty hand retrieves one installed item without overwriting an occupied inventory.
   if(p.isShiftKeyDown()){'''
 addition='''  // CLEAN_V17_CARDS_V1: installation/deinstallation is station-only.
   ItemStack held=p.getMainHandItem();
@@ -97,51 +98,21 @@ addition='''  // CLEAN_V17_CARDS_V1: installation/deinstallation is station-only
     }
    }
   }
-  // Install actual armor pieces with sneak-right-click; no client-side item loss.
+  // Sneak + right click mounts a component into its matching suit slot.
+  // Empty hand retrieves one installed item without overwriting an occupied inventory.
   if(p.isShiftKeyDown()){'''
 replace("powerarmor/ArmorStationBlock.java",guard,addition)
 
-# Explicit safety: do not install a duplicate helmet into a legs slot etc.
-replace("powerarmor/ArmorStationBlock.java",
- '''    if(station.get(i).isEmpty()){
-     if(!p.isCreative())station.put(i,stack.split(1));''',
- '''    boolean matching=switch(i){
-     case 0 -> stack.is(ObsidianNetwork.POWER_ARMOR_HELMET.get());
-     case 1 -> stack.is(ObsidianNetwork.POWER_ARMOR_CHESTPLATE.get());
-     case 2 -> stack.is(ObsidianNetwork.POWER_ARMOR_LEGGINGS.get());
-     case 3 -> stack.is(ObsidianNetwork.POWER_ARMOR_BOOTS.get());
-     default -> false; };
-    if(matching&&station.get(i).isEmpty()){
-     if(!p.isCreative())station.put(i,stack.split(1));''')
-replace("powerarmor/ArmorStationBlockEntity.java",
- '''  for(ItemStack stack:suit)if(!(stack.getItem() instanceof PowerArmorItem))return false;''',
- '''  if(!suit[0].is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_HELMET.get()))return false;
-  if(!suit[1].is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_CHESTPLATE.get()))return false;
-  if(!suit[2].is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_LEGGINGS.get()))return false;
-  if(!suit[3].is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_BOOTS.get()))return false;''')
-
+# Stage1 now enforces exact slot identities and safe item retrieval.
 runtime=j/"powerarmor/PowerArmorRuntime.java"
 s=runtime.read_text(encoding="utf-8")
 assert s.count("public final class PowerArmorRuntime {")==1
-s=s.replace("public final class PowerArmorRuntime {",'''public final class PowerArmorRuntime {
- private static final java.util.Set<java.util.UUID> GRANTED_FLIGHT=
-     java.util.concurrent.ConcurrentHashMap.newKeySet();
-''',1)
-old='''  if(canFly&&!p.getAbilities().mayfly){p.getAbilities().mayfly=true;p.onUpdateAbilities();}
-  if(!canFly&&!natural&&p.getAbilities().mayfly){
-   p.getAbilities().flying=false;p.getAbilities().mayfly=false;p.onUpdateAbilities();
-  }
-  if(powered(p)){
+# Stage1 owns its own flight grants, preserving flight from other mods.
+
+old='''  if(powered(p)){
    for(EquipmentSlot slot:SLOTS)EnergyTool.consume(p.getItemBySlot(slot),20L);
   }'''
-new='''  if(canFly&&!p.getAbilities().mayfly){
-   GRANTED_FLIGHT.add(p.getUUID());
-   p.getAbilities().mayfly=true;p.onUpdateAbilities();
-  }
-  if(!canFly&&!natural&&GRANTED_FLIGHT.remove(p.getUUID())){
-   p.getAbilities().flying=false;p.getAbilities().mayfly=false;p.onUpdateAbilities();
-  }
-  if(powered(p)){
+new='''  if(powered(p)){
    for(EquipmentSlot slot:SLOTS)EnergyTool.consume(p.getItemBySlot(slot),20L);
    if(hasCard(p,"water_breathing"))
     p.addEffect(new net.minecraft.world.effect.MobEffectInstance(

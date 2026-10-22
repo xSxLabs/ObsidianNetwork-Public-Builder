@@ -25,7 +25,7 @@ class CleanV17Armor(unittest.TestCase):
   self.assertIn("EnergyTool.consume(",PATCH)
   self.assertIn("ARMOR_STATION",PATCH)
  def test_station_does_not_lose_or_misslot_armor(self):
-  self.assertIn("BlockEvent.BreakEvent",PATCH)
+  self.assertIn("BreakBlockEvent",PATCH)
   self.assertIn("station.occupied()",PATCH)
   self.assertIn("3600000.0F",PATCH)
   self.assertIn("ArmorStationBlockEntity.expected(i)",PATCH)

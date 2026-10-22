@@ -116,7 +116,7 @@ public final class PowerArmorRuntime {
    if(!p.getItemBySlot(SLOTS[i]).is(ArmorStationBlockEntity.expected(i)))return false;
   return true;
  }
- @SubscribeEvent public static void protectLoadedStand(net.neoforged.neoforge.event.level.BlockEvent.BreakEvent event){
+ @SubscribeEvent public static void protectLoadedStand(net.neoforged.neoforge.event.level.block.BreakBlockEvent event){
   if(!(event.getState().getBlock() instanceof ArmorStationBlock))return;
   if(event.getLevel().getBlockEntity(event.getPos()) instanceof ArmorStationBlockEntity station
       && station.occupied()){
