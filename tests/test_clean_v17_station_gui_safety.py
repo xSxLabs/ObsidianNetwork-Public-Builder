@@ -18,8 +18,9 @@ class ArmorStationGui47(unittest.TestCase):
   self.assertIn("||slot<27||slot>=this.slots.size()",tail)
   self.assertIn("this.suit=resolve();",tail)
   self.assertIn("if(suit==null)return ItemStack.EMPTY;",tail)
-  self.assertLess(tail.index("this.suit=resolve();",tail.index("# Shift-click")),
-                  tail.index("var inventorySlot=this.slots.get(slot);"))
+  guarded=tail.index("||slot<27||slot>=this.slots.size()")
+  self.assertLess(tail.index("this.suit=resolve();",guarded),
+                  tail.index("var inventorySlot=this.slots.get(slot);",guarded))
  def test_preview_never_rebroadcasts_unchanged_stacks(self):
   tail=PATCH.split("# BUILD47_STATION_GUI_SAFETY",1)[1]
   self.assertIn("Arrays.fill(desired,ItemStack.EMPTY)",tail)
