@@ -1333,3 +1333,74 @@ for tier in ("mk1","mk2"):
   })
   b32_put(model,data)
 print("BUILD36_FINAL_GUI PASS: no-suit title and tooltip, normal right-click with any held item, installed-upgrade preview, valid red/gold animated plate materials")
+
+
+# BUILD37_RENDER_FIX: build35 rendered a missing-model cube because vanilla
+# baked block models refuse individual cuboids outside supported model bounds.
+# Transform the giant invalid Y=49 / Z=-20 cuboids into well-formed <=32
+# units. The two-block animated suite retains enough height to fit under it.
+# Never change registration IDs, any inventory data, or backup/recovery logic.
+def b37_remodel():
+    paths=list((stationres/"models/block").glob("armor_station_*.json"))
+    assert len(paths)==8,"Station states must retain all eight model variants"
+    for path in paths:
+        obj=_json.loads(path.read_text(encoding="utf-8"))
+        old=obj["elements"]
+        repaired=[]
+        for element in old:
+            before=element["from"]
+            after=element["to"]
+            # Minecraft's vanilla block model parser has a hard limit on
+            # cuboid coordinates. Clamp and skip wholly outside components.
+            y0,y1=before[1],after[1]
+            z0,z1=before[2],after[2]
+            x0,x1=before[0],after[0]
+            if y0>=32 or y1<=0 or z0>=32 or z1<=-16 or x0>=32 or x1<=-16:
+                continue
+            x0=max(-16,min(32,x0));x1=max(-16,min(32,x1))
+            y0=max(0,min(32,y0));y1=max(0,min(32,y1))
+            z0=max(-16,min(32,z0));z1=max(-16,min(32,z1))
+            if x1<=x0 or y1<=y0 or z1<=z0:continue
+            part=dict(element)
+            part["from"]=[x0,y0,z0]
+            part["to"]=[x1,y1,z1]
+            repaired.append(part)
+        assert len(repaired)>=15,"Station model unexpectedly empty"
+        obj["elements"]=repaired
+        b32_put(path,obj)
+    # Vanilla item json must reference the repaired model.
+    b32_put(stationres/"models/item/armor_station.json",{
+      "parent":"obsidiannetwork:block/armor_station_empty_0",
+      "display":{"gui":{"rotation":[25,135,0],"translation":[0,-4,0],
+                        "scale":[0.45,0.45,0.45]}}})
+    assert all((texdir/(k+".png")).is_file() for k in
+      ("armor_steel","armor_carbon","armor_hydraulic","armor_cyan",
+       "armor_warning","armor_copper","armor_red","armor_gold"))
+b37_remodel()
+
+# The panels were all rendered together at z almost coincident with the real
+# stand, producing tier-colored and black z-fighting. Panels now advance into
+# the foreground progressively while the real stand remains invisible during
+# its own cinematic transition. Normal idle stand is still opaque/closed.
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''   double z=(i==4?-0.10D:-0.18D);
+   panel.setPos(stand.getX()+x+outward,
+       stand.getY()+y+(i==4?0.54D*open:0D),
+       stand.getZ()+z-(i<2?0.14D*open:0D));''',
+'''   // Keep each moving plate in its own depth plane, avoiding Z-fighting.
+   double z=(i==4?-0.24D:(i<2?-0.33D:-0.40D));
+   double depthShift=i*0.038D;
+   panel.setPos(stand.getX()+x+outward,
+       stand.getY()+y+(i==4?0.54D*open:0D),
+       stand.getZ()+z-depthShift-(i<2?0.20D*open:0D));''')
+# Replace the cuboid item models' generated parent with a conventional
+# block/item mesh parent. A generated parent with explicit elements may be
+# treated as layered billboard under alternate shader/resource packs.
+for tier in ("mk1","mk2"):
+ for part in models:
+  p=stationres/f"models/item/armor_visual_{tier}_{part}.json"
+  obj=_json.loads(p.read_text(encoding="utf-8"))
+  obj["parent"]="minecraft:block/block"
+  obj["ambientocclusion"]=False
+  b32_put(p,obj)
+print("BUILD37_RENDER_FIX PASS: all 8 station blockstates bounded to Minecraft's model coordinates; textures present; animated plates separated in depth, no shared z-plane")
