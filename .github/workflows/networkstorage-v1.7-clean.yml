@@ -2017,6 +2017,8 @@ jobs:
           # Build 56 GeckoLib v5: replace five independently rendered panel Items with
           # one fully articulated, transient mesh; leave armor ownership intact.
           python3 features/v17/apply-power-armor-geckolib.py
+          # Build 59: server-safe manual-suit exit; no deploy, no overwrites.
+          python3 features/v17/apply-power-armor-transitions-59.py
           python3 -m json.tool work/src/main/resources/data/apotheosis/data_maps/item/loot_category_overrides.json >/dev/null
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
