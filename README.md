@@ -1,3 +1,7 @@
+# NOT USE — OLD v1.7
+
+The historical `networkstorage-v1.7` branch and `.github/workflows/networkstorage-v1.7.yml` are **NOT USE / OBSOLETE**. They are not the source for a clean new v1.7. See [`NOT_USE_OLD_V1_7.md`](NOT_USE_OLD_V1_7.md). The v1.6 code and its approved build remain separate.
+
 # ObsidianNetwork-Public-Builder
 
 RC11_BUILD_TRIGGER=B670-de9b44a5863b3a26deb6255e8e3c91c28177a3eb

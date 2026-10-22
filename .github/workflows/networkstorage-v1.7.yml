@@ -1,3 +1,5 @@
+# NOT USE — OLD v1.7 WORKFLOW — RETIRED / DISABLED / DO NOT RUN
+# Historical implementation only; new clean v1.7 starts separately from an approved v1.6 base.
 # v1.7 ONLY: workflow_dispatch and branch push CI; v1.6 frozen workflow remains untouched.
 # Build iteration: port drop BLOCK_ENTITY_DATA component 6266d23b.
 # Build #12 compile repair: facing null and constrained renderer regex
@@ -7,7 +9,7 @@
 # Retry after fixing conduit ownership gate in private f4f3e03
 # User-authorized compile of additional mixed ITEM/FLUID fixes (e71b24e)
 # v1.6 compile retry: correct facade interaction variable names (private 70d7c46)
-name: xSxLabs Network Storage v1.7
+name: 'NOT USE - OLD Network Storage v1.7 - DISABLED'
 # User-authorized corrected v1.6 build #5 succeeded; manual dispatch retained.
 # BUILD LOCK ACTIVE after successful run #5 (37959480117).
 # Original public workflow unchanged.
@@ -30,9 +32,7 @@ name: xSxLabs Network Storage v1.7
 # Re-enable only after the user explicitly requests "build".
 'on':
   workflow_dispatch:
-  push:
-    branches: [networkstorage-v1.7]
-    paths: ['.github/workflows/networkstorage-v1.7.yml']
+  # NOT USE — automatic push trigger removed for retired v1.7.
 
 
 
@@ -47,6 +47,8 @@ permissions: {contents: read}
 # Build 236 inspect real Energy Cell API for capability-backed transfer GameTest
 jobs:
   inspect:
+    # NOT USE: legacy v1.7 CI must never build a JAR, even if manually dispatched.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
