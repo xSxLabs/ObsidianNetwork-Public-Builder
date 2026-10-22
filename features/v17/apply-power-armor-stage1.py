@@ -316,7 +316,31 @@ public final class ArmorStationBlock extends BaseEntityBlock {
   // Empty hand retrieves one installed item without overwriting an occupied inventory.
   if(p.isShiftKeyDown()){
    var stack=p.getMainHandItem();
+   if(stack.is(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_UPGRADE.get())){
+    if(!station.complete())return InteractionResult.FAIL;
+    ItemStack chest=station.get(1).copy();
+    String upgrades=chest.get(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get());
+    if(upgrades!=null&&!upgrades.isEmpty())return InteractionResult.FAIL;
+    chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),"flight");
+    station.put(1,chest);
+    if(!p.isCreative())stack.shrink(1);
+    p.sendSystemMessage(Component.literal("Power Armor: Flight Upgrade installed."));
+    return InteractionResult.SUCCESS;
+   }
    if(stack.isEmpty()){
+    ItemStack chest=station.get(1).copy();
+    String upgrades=chest.get(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get());
+    if("flight".equals(upgrades)){
+     ItemStack card=new ItemStack(dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_UPGRADE.get());
+     if(!p.getInventory().add(card)){
+      p.sendSystemMessage(Component.literal("Power Armor: inventory full; upgrade stays installed."));
+      return InteractionResult.FAIL;
+     }
+     chest.remove(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get());
+     station.put(1,chest);
+     p.sendSystemMessage(Component.literal("Power Armor: Flight Upgrade returned."));
+     return InteractionResult.SUCCESS;
+    }
     for(int i=3;i>=0;i--){
      ItemStack stored=station.get(i);
      if(stored.isEmpty())continue;
@@ -417,6 +441,72 @@ public final class PowerArmorCommands {
  }
 }
 ''')
+
+write("PowerArmorExitPayload.java",r'''package dev.obsidiannetwork.powerarmor;
+
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+
+/** Server-authoritative, empty serverbound exit intent. Never trust client inventory state. */
+public record PowerArmorExitPayload() implements CustomPacketPayload {
+ public static final Type<PowerArmorExitPayload> TYPE = new Type<>(
+   Identifier.fromNamespaceAndPath("obsidiannetwork","power_armor_exit"));
+ public static final StreamCodec<RegistryFriendlyByteBuf, PowerArmorExitPayload> STREAM_CODEC =
+   StreamCodec.unit(new PowerArmorExitPayload());
+ @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
+ @EventBusSubscriber(modid="obsidiannetwork")
+ public static final class Handler {
+  private Handler(){}
+  @SubscribeEvent public static void register(RegisterPayloadHandlersEvent e) {
+   e.registrar("1").playToServer(TYPE,STREAM_CODEC,
+     (payload,context)->{
+      if(context.player() instanceof ServerPlayer p)PowerArmorCommands.exit(p);
+     });
+  }
+ }
+}
+''')
+
+write("PowerArmorExitKeyClient.java",r'''package dev.obsidiannetwork.powerarmor;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+import org.lwjgl.glfw.GLFW;
+
+/** V exits only; entering is by right click on the suit at the station.
+ * Registered in vanilla Controls so the player can rebind it.
+ */
+@EventBusSubscriber(modid="obsidiannetwork", value=Dist.CLIENT)
+public final class PowerArmorExitKeyClient {
+ private PowerArmorExitKeyClient(){}
+ private static final KeyMapping EXIT=new KeyMapping(
+   "key.obsidiannetwork.power_armor_exit",
+   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.MISC);
+ @SubscribeEvent public static void register(RegisterKeyMappingsEvent e){
+  e.register(EXIT);
+ }
+ @SubscribeEvent public static void tick(ClientTickEvent.Post e){
+  while(EXIT.consumeClick()){
+   Minecraft mc=Minecraft.getInstance();
+   if(mc.player==null||mc.screen!=null)continue;
+   PacketDistributor.sendToServer(new PowerArmorExitPayload());
+  }
+ }
+}
+''')
 def put(path,v):
  path.parent.mkdir(parents=True,exist_ok=True)
  path.write_text(json.dumps(v,indent=2)+"\n",encoding="utf-8")
@@ -455,7 +545,7 @@ for locale in ("en_us","de_de"):
  "chestplate":("Power Armor Chestplate","Power-Rüstung Brustpanzer"),
  "leggings":("Power Armor Leggings","Power-Rüstung Beinschutz"),
  "boots":("Power Armor Boots","Power-Rüstung Stiefel"),
- "upgrade":("Power Armor Upgrade Card","Power-Rüstung Upgrade-Karte")}
+ "upgrade":("Power Armor Flight Upgrade","Power-Rüstung Flug-Upgrade")}
  for k,(en,de) in names.items():data["item.obsidiannetwork.power_armor_"+k]=en if locale=="en_us" else de
  data["block.obsidiannetwork.armor_station"]="Armor Station" if locale=="en_us" else "Rüstungsstation"
  put(p,data)
@@ -473,4 +563,4 @@ put(r/"data/obsidiannetwork/recipe/power_armor_upgrade.json",
     {"type":"minecraft:crafting_shaped","pattern":["IRI","RDR","IRI"],
      "key":{"I":"minecraft:iron_ingot","R":"minecraft:redstone","D":"minecraft:diamond"},
      "result":{"id":"obsidiannetwork:power_armor_upgrade","count":1}})
-print("POWER_ARMOR_CLEAN_V17_STAGE1 PASS: four FE armor pieces, persistent loadout backup, safe exit station, restore command; NO legacy v1.7 scripts")
+print("POWER_ARMOR_CLEAN_V17_STAGE1 PASS: four FE armor pieces, persistent backups, protected station, flight card install/remove, configurable server-checked exit key; NO legacy v1.7 scripts")
