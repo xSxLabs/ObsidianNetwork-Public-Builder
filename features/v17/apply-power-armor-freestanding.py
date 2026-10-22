@@ -658,7 +658,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
@@ -712,13 +712,13 @@ public final class ArmorStationMenu extends ChestMenu {
    preview.setItem(9+i,new ItemStack(PowerArmorCards.item(values.get(visible.get(i)))));
   broadcastChanges();
  }
- @Override public void clicked(int slotId,int button,ClickType click,Player player){
+ @Override public void clicked(int slotId,int button,ContainerInput click,Player player){
   if(slotId<0||slotId>=27){
    super.clicked(slotId,button,click,player);return;
   }
   // Ignore all client-side clicks: the server owns the preview and every card.
   if(!(player instanceof ServerPlayer) || player!=owner || !valid())return;
-  if(click!=ClickType.PICKUP || button!=0)return;
+  if(click!=ContainerInput.PICKUP || button!=0)return;
   if(slotId<9 || slotId>=21)return;
   ItemStack chest=suit.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).copy();
   List<String> values=cards(chest);
