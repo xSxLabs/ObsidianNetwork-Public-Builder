@@ -190,7 +190,14 @@ bones=[
  bone("right_arm",[6.3,23,0],[([5.4,13,-3.4],[4.0,11,6.8],[52,17])]),
  bone("left_leg",[-2.8,14.8,0],[([-5.1,0,-3.6],[4.9,14.3,7.2],[0,47])]),
  bone("right_leg",[2.8,14.8,0],[([0.2,0,-3.6],[4.9,14.3,7.2],[18,47])]),
+ # Separate hinged detail meshes, with deliberate depth offsets to avoid
+ # equal-depth coplanar faces (the old red/black Z-fighting problem).
+ bone("visor",[0,29,0],[([-3.5,27.6,-4.78],[7.0,2.0,0.26],[68,0])],"helmet"),
+ bone("reactor",[0,19,0],[([-1.3,18,-4.10],[2.6,2.6,0.55],[68,14])],"spine"),
+ bone("left_shoulder",[-6.4,23.2,0],[([-10.0,21.8,-3.8],[4.6,3.3,7.6],[68,32])],"left_arm"),
+ bone("right_shoulder",[6.4,23.2,0],[([5.4,21.8,-3.8],[4.6,3.3,7.6],[92,32])],"right_arm"),
 ]
+assert len(bones)==13 and len({b["name"] for b in bones})==13
 animation_open={
  "animation_length":1.0,"loop":"hold_on_last_frame",
  "bones":{
@@ -221,12 +228,20 @@ def png(tier):
  for y in range(h):
   line=bytearray([0])
   for x in range(w):
-   if y<42: col=main if x<64 else edge
-   elif y<82:col=edge if x<42 else main
-   else:col=main if x<78 else scan
+   u=x%32;v=y%32
+   col=main if (x//32+y//32)%3 else edge
+   # Dark engraved plate seams, tiny rivets and mechanical air intakes.
+   if u in (0,1,30,31) or v in (0,1,30,31):col=(17,24,31)
+   elif u in (5,26) and v in (5,26):col=edge
+   elif v in (8,9) and 10<=u<=22:col=(18,24,30)
+   elif v in (11,12) and 10<=u<=22:col=edge
+   # Individually colored eyes and chest arc reactor, not a solid RGB sheet.
+   if 68<=x<90 and 0<=y<8:col=scan if 70<=x<88 and 1<=y<7 else (16,23,30)
+   if 68<=x<78 and 14<=y<26:col=scan if 70<=x<76 and 16<=y<24 else (16,23,30)
+   if 68<=x<118 and 32<=y<40 and x%7<2:col=(16,23,30)
    drift=((x*17+y*13)%11)-5
-   stripe=13 if (x+y//4)%19<3 else 0
-   v=tuple(max(0,min(255,k+drift+stripe)) for k in col)
+   brushed=4 if (x+2*y)%13<3 else -2
+   v=tuple(max(0,min(255,k+drift+brushed)) for k in col)
    line.extend((*v,255))
   rows.append(bytes(line))
  header=b'\x89PNG\r\n\x1a\n'
@@ -256,4 +271,4 @@ meta=metadata.read_text(encoding="utf-8")
 assert 'modId="geckolib"' not in meta, "Duplicate GeckoLib dependency"
 meta += '\n[[dependencies.obsidiannetwork]]\nmodId="geckolib"\ntype="required"\nversionRange="[5.5.2,)"\nordering="AFTER"\nside="BOTH"\n'
 metadata.write_text(meta,encoding="utf-8")
-print("BUILD56_GECKOLIB PASS: single mesh/bone animation, 2 tiers, 8 bones each, recovery untouched")
+print("BUILD58_GECKOLIB_DETAIL PASS: 2 tiers, 13 detailed animated bones; recovery untouched")
