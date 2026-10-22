@@ -1924,3 +1924,140 @@ assert "if(suit==null)return ItemStack.EMPTY;" in (j/"powerarmor/ArmorStationMen
 assert "ItemStack.matches(preview.getItem(i),desired[i])" in (j/"powerarmor/ArmorStationMenu.java").read_text(encoding="utf-8")
 assert "int invTop=this.getImageHeight()-66;" in (j/"powerarmor/ArmorStationScreen.java").read_text(encoding="utf-8")
 print("BUILD47_STATION_GUI_SAFETY PASS: dock-validated shift-click, differential preview, inventory UI aligned")
+
+
+# BUILD49_GROUPED_FIVE_AND_FACING: one displayed stack per upgrade type.
+# The CSV component remains byte-compatible with all already-installed cards,
+# and four armor pieces plus player loadout/recovery code remain unchanged.
+def b49_replace(relative,old,new):
+ path=j/relative
+ data=path.read_text(encoding="utf-8")
+ assert data.count(old)==1, f"BUILD49 anchor drift {relative}: {old[:75]} ({data.count(old)})"
+ path.write_text(data.replace(old,new,1),encoding="utf-8")
+
+b49_replace("powerarmor/ArmorStationMenu.java",
+'''    case "protection","fire_protection","blast_protection",
+         "projectile_protection","feather_falling" -> 4;''',
+'''    case "protection","fire_protection","blast_protection",
+         "projectile_protection","feather_falling" -> 5;''')
+b49_replace("powerarmor/ArmorStationMenu.java",
+''' private static int maxCardCount(String id){''',
+''' public static int maxCardCount(String id){''')
+b49_replace("powerarmor/ArmorStationMenu.java",
+'''  private List<Integer> visibleIndices(List<String> values){
+   List<Integer> out=new ArrayList<>();
+   for(int i=0;i<values.size();i++)
+    if(PowerArmorCards.item(values.get(i))!=null)out.add(i);
+   return out;
+  }''',
+'''  private List<Integer> visibleIndices(List<String> values){
+   List<Integer> out=new ArrayList<>();
+   java.util.HashSet<String> seen=new java.util.HashSet<>();
+   for(int i=0;i<values.size();i++){
+    String id=values.get(i);
+    if(PowerArmorCards.item(id)!=null && seen.add(id))out.add(i);
+   }
+   return out;
+  }''')
+# Actual station socket now displays the combined quantity of installed cards.
+# Removing with an empty cursor removes exactly ONE, never a whole stack.
+b49_replace("powerarmor/ArmorStationMenu.java",
+'''     desired[9+i]=new ItemStack(PowerArmorCards.item(values.get(visible.get(i))));''',
+'''    {
+     String id=values.get(visible.get(i));
+     ItemStack disk=new ItemStack(PowerArmorCards.item(id));
+     disk.setCount(Math.min(16,java.util.Collections.frequency(values,id)));
+     desired[9+i]=disk;
+    }''')
+# When all 15 distinct card sockets are filled, upgrades of an already-
+# installed card still fit their existing socket.
+b49_replace("powerarmor/ArmorStationMenu.java",
+'''   if(indices.size()>=15 || display>indices.size())return;''',
+'''   if(display>indices.size()||(indices.size()>=15&&!values.contains(card.upgradeId)))return;''')
+b49_replace("powerarmor/ArmorStationMenu.java",
+'''  if(visibleIndices(values).size()>=15)return ItemStack.EMPTY;''',
+'''  if(visibleIndices(values).size()>=15&&!values.contains(card.upgradeId))return ItemStack.EMPTY;''')
+# Shift-click an inventory stack installs up to its remaining level capacity
+# in ONE server-authoritative transaction (e.g. five protection discs).
+b49_replace("powerarmor/ArmorStationMenu.java",
+'''  ItemStack before=stack.copy();
+  values.add(card.upgradeId);
+  chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),''',
+'''  ItemStack before=stack.copy();
+  int take=Math.min(stack.getCount(),maxCardCount(card.upgradeId)-duplicates);
+  if(take<=0)return ItemStack.EMPTY;
+  for(int n=0;n<take;n++)values.add(card.upgradeId);
+  chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),''')
+b49_replace("powerarmor/ArmorStationMenu.java",
+'''  if(!owner.isCreative())stack.shrink(1);
+  inventorySlot.setChanged();''',
+'''  if(!owner.isCreative())stack.shrink(take);
+  inventorySlot.setChanged();''')
+# Sneak-right-click has to obey the same cap and must reject obsolete cards.
+b49_replace("powerarmor/ArmorStationBlock.java",
+'''if(held.getItem() instanceof UpgradeCardItem card && !"blank".equals(card.upgradeId)){''',
+'''if(held.getItem() instanceof UpgradeCardItem card
+       && !"blank".equals(card.upgradeId)
+       && !"mending".equals(card.upgradeId)
+       && !"unbreaking".equals(card.upgradeId)){''')
+b49_replace("powerarmor/ArmorStationBlock.java",
+'''if(entries.length>=15||count>=(card.upgradeId.equals("protection")?4:1))return InteractionResult.FAIL;''',
+'''if(count>=ArmorStationMenu.maxCardCount(card.upgradeId))return InteractionResult.FAIL;
+   if(new java.util.HashSet<>(java.util.Arrays.asList(entries)).size()>=15&&count==0)return InteractionResult.FAIL;''')
+# Keep legacy item IDs registered for worlds/saves but remove from creative tab;
+# existing installed legacy discs remain individually recoverable at the bench.
+for obsolete in ("MENDING","UNBREAKING"):
+ b49_replace("ObsidianNetwork.java",
+ f'            output.accept((ItemLike)POWER_CARD_{obsolete}.get());\n','')
+# 5 modules = the equivalent of ten vanilla Protection levels (4%/level).
+# Damaged armor is never created; a successful shield instead spends FE.
+b49_replace("powerarmor/PowerArmorRuntime.java",
+'''  float reduction=Math.min(0.995f,Math.min(4,protection)*0.245f);
+  var source=event.getSource();
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE))reduction+=Math.min(4,fire)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION))reduction+=Math.min(4,blast)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE))reduction+=Math.min(4,projectile)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FALL))reduction+=Math.min(4,feather)*0.02f;
+  reduction=Math.min(0.995f,reduction);
+  long cost=Math.max(400,(long)(amount*1200.0f*(1.0f+protection*0.5f)));''',
+'''  // Each module doubles the corresponding vanilla enchantment level.
+  float reduction=Math.min(5,protection)*0.08f;
+  var source=event.getSource();
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE))reduction+=Math.min(5,fire)*0.16f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION))reduction+=Math.min(5,blast)*0.16f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE))reduction+=Math.min(5,projectile)*0.16f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FALL))reduction+=Math.min(5,feather)*0.24f;
+  // Same upper bound as vanilla enchantment damage protection: 80%.
+  reduction=Math.min(0.80f,reduction);
+  if(reduction<=0.0f)return;
+  int levels=Math.min(5,protection)+Math.min(5,fire)+Math.min(5,blast)
+            +Math.min(5,projectile)+Math.min(5,feather);
+  long cost=Math.max(400L,(long)(amount*(800.0f+levels*450.0f)));''')
+# Armor Station render faces player on placement. Older stations default north.
+b49_replace("powerarmor/ArmorStationBlock.java",
+'''   net.minecraft.world.level.block.state.properties.BooleanProperty.create("filled");''',
+'''   net.minecraft.world.level.block.state.properties.BooleanProperty.create("filled");
+ public static final net.minecraft.world.level.block.state.properties.DirectionProperty FACING =
+   net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;''')
+b49_replace("powerarmor/ArmorStationBlock.java",
+'''stateDefinition.any().setValue(FRAME,0).setValue(FILLED,false));''',
+'''stateDefinition.any().setValue(FRAME,0).setValue(FILLED,false)
+   .setValue(FACING,net.minecraft.core.Direction.NORTH));''')
+b49_replace("powerarmor/ArmorStationBlock.java",
+'''  b.add(FRAME,FILLED);''',
+'''  b.add(FRAME,FILLED,FACING);''')
+b49_replace("powerarmor/ArmorStationBlock.java",
+'''  return super.getStateForPlacement(context);''',
+'''  return super.getStateForPlacement(context)
+      .setValue(FACING,context.getHorizontalDirection().getOpposite());''')
+statefile=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork/blockstates/armor_station.json"
+states=json.loads(statefile.read_text(encoding="utf-8"))
+assert len(states["variants"])==8 and all("facing=" not in key for key in states["variants"])
+faced={}
+for key,value in states["variants"].items():
+ for facing,yrot in (("north",0),("east",90),("south",180),("west",270)):
+  faced[key+",facing="+facing]=dict(value,y=yrot)
+states["variants"]=faced
+statefile.write_text(json.dumps(states,indent=2)+"\n",encoding="utf-8")
+assert len(faced)==32
+print("BUILD49_GROUPED_FIVE_AND_FACING PASS: five cards/one slot; batch shift-click, 80pct FE shield, hidden obsolete discs, 4 rotations")
