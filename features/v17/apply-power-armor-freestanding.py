@@ -231,7 +231,7 @@ s=s.replace("station.put(1,chest);",
             "suitStand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,chest);")
 # Disallow normal station equipment and player entry. An old stored loadout
 # remains extractable via sneak+empty-hand for save compatibility.
-start=s.index("   if(!station.complete()){")
+start=s.index("  if(!station.complete()){")
 end=s.index("   return InteractionResult.SUCCESS;",s.index("Power Armor engaged.",start))
 end=s.index("\n",end)+1
 assert "loadouts.save(p,old)" in s[start:end] and "station.clear();" in s[start:end]
@@ -241,8 +241,8 @@ s=s[:start]+'''   p.sendSystemMessage(Component.literal(
 '''+s[end:]
 # Original method closing brace must remain; explicitly reject inserting new
 # individual armor items into a player-placed upgrade bench.
-start=s.index("    for(int i=0;i<4;i++){",s.index("// Sneak + right click mounts"))
-end=s.index("    return InteractionResult.PASS;",start)
+start=s.index("   for(int i=0;i<4;i++){",s.index("// Sneak + right click mounts"))
+end=s.index("   return InteractionResult.PASS;",start)
 assert "station.put(i,stack.split(1))" in s[start:end]
 s=s[:start]+'''    p.sendSystemMessage(Component.literal(
       "Armor Station is for upgrades. Deploy a full suit with /powerarmor deploy."));
