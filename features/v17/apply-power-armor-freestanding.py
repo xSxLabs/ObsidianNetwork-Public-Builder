@@ -1404,3 +1404,141 @@ for tier in ("mk1","mk2"):
   obj["ambientocclusion"]=False
   b32_put(p,obj)
 print("BUILD37_RENDER_FIX PASS: all 8 station blockstates bounded to Minecraft's model coordinates; textures present; animated plates separated in depth, no shared z-plane")
+
+
+# BUILD38_ONE_BY_TWO_STATION: Build 37 ingame report.
+# Station front (north) is one full block of service floor; back block contains
+# structural rails. Width exactly 1, total length 2, height exactly 2 blocks.
+# No free-floating cuboids and no new blocks or persistent item entities.
+station_parts=[]
+def stage(x1,y1,z1,x2,y2,z2,material):
+ assert 0<=x1<x2<=16 and 0<=y1<y2<=32 and -16<=z1<z2<=16
+ station_parts.append(b35_cube(x1,y1,z1,x2,y2,z2,material))
+# Full two-block grey floor so the parked suit STANDS ON it.
+stage(0,0,-16,16,2,16,"steel")
+stage(1,2,-15,15,3,-1,"carbon")
+stage(2,3,-13,14,4,-3,"steel")
+stage(1,2,0,15,3,15,"carbon")
+stage(0,3,12,16,5,16,"steel")
+# 2-block-high rear frame, all linked physically to base and roof.
+for a,b in ((0,3),(13,16)):
+ stage(a,4,10,b,29,16,"carbon")
+ stage(a,4,11,a+1,29,16,"steel")
+ stage(b-1,4,11,b,29,16,"hydraulic")
+ for h in (9,17,25):
+  stage(a,h,7,b,h+2,13,"steel")
+  stage(a+1,h+1,6,b-1,h+2,8,"cyan")
+# Top crossbeam and central hydraulic head, tied to both uprights.
+stage(0,29,9,16,32,16,"steel")
+stage(1,27,10,15,29,15,"carbon")
+stage(4,28,8,12,30,11,"warning")
+stage(6,24,8,10,29,13,"hydraulic")
+stage(7,23,7,9,25,9,"cyan")
+# Two compact service arms connected to the rear pillars, projecting over pad.
+for a,b in ((1,4),(12,15)):
+ stage(a,19,1,b,22,12,"hydraulic")
+ stage(a,18,-3,b,21,3,"carbon")
+ stage(a+1,19,-5,b-1,21,-2,"steel")
+ stage(a+1,19,-6,b-1,20,-5,"cyan")
+# Rear diagnostic console and energy conduits.
+stage(4,12,14,12,20,16,"carbon")
+stage(5,17,13,11,19,14,"cyan")
+stage(5,14,13,11,16,14,"hydraulic")
+for a in (2,5,8,11,14):
+ stage(a,6,14,a+1,8,16,"warning")
+for state in ("empty","suit"):
+ for frame in range(4):
+  b32_put(stationres/f"models/block/armor_station_{state}_{frame}.json",{
+   "parent":"minecraft:block/block","ambientocclusion":False,
+   "textures":{k:"obsidiannetwork:block/armor_"+k for k in
+      ("steel","carbon","hydraulic","cyan","warning","copper")},
+   "elements":station_parts})
+b32_put(stationres/"models/item/armor_station.json",{
+ "parent":"obsidiannetwork:block/armor_station_empty_0",
+ "display":{
+  "gui":{"rotation":[28,135,0],"translation":[0,-3,0],"scale":[0.48,0.48,0.48]},
+  "firstperson_righthand":{"rotation":[0,45,0],"translation":[0,-2,0],
+                            "scale":[0.38,0.38,0.38]},
+  "thirdperson_righthand":{"rotation":[45,45,0],"translation":[0,1,0],
+                           "scale":[0.35,0.35,0.35]},
+  "ground":{"scale":[0.28,0.28,0.28]}}})
+assert all(0<=v<=32 for cube in station_parts for v in (
+ cube["from"][0],cube["to"][0],cube["from"][1],cube["to"][1]))
+assert all(-16<=v<=16 for cube in station_parts for v in (
+ cube["from"][2],cube["to"][2]))
+
+# Park only on the forward grey pad, NOT to one side of the frame.
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''   for(var facing:new net.minecraft.core.Direction[]{
+       net.minecraft.core.Direction.NORTH,net.minecraft.core.Direction.EAST,
+       net.minecraft.core.Direction.WEST,net.minecraft.core.Direction.SOUTH}){
+    BlockPos candidate=station.relative(facing);
+    if(candidate.distSqr(origin)>4.0D)continue;
+    if(!level.isEmptyBlock(candidate)||!level.isEmptyBlock(candidate.above()))continue;
+    if(!level.getEntitiesOfClass(ArmorStand.class,new AABB(candidate).inflate(0.25D)).isEmpty())continue;
+    double distance=candidate.distSqr(origin)+(facing==net.minecraft.core.Direction.NORTH?0D:0.25D);
+    if(distance<best){best=distance;found=candidate;}
+   }''',
+'''   BlockPos candidate=station.north();
+   if(candidate.distSqr(origin)>4.0D)continue;
+   if(!level.isEmptyBlock(candidate)||!level.isEmptyBlock(candidate.above()))continue;
+   if(!level.getEntitiesOfClass(ArmorStand.class,new AABB(candidate).inflate(0.25D)).isEmpty())continue;
+   double distance=candidate.distSqr(origin);
+   if(distance<best){best=distance;found=candidate;}''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''  BlockPos pos=underStation(player);
+  if(pos==null)pos=available(player);''',
+'''  BlockPos pos=underStation(player);
+  boolean docked=pos!=null;
+  if(pos==null)pos=available(player);''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''  stand.setShowArms(true);
+  stand.setNoBasePlate(true);''',
+'''  stand.setShowArms(true);
+  stand.setNoBasePlate(true);
+  // Only docked suits get the requested 180-degree rotation.
+  if(docked){
+   stand.setYRot(player.getYRot()+180.0F);
+   stand.setYHeadRot(stand.getYRot());
+   stand.setYBodyRot(stand.getYRot());
+  }''')
+# The last two yaw setters are avoidable mapping risks; ArmorStand body follows
+# YRot on its own, so use only the public reliable orientation method.
+p=j/"powerarmor/PowerArmorSuitWorld.java"
+ss=p.read_text(encoding="utf-8")
+ss=ss.replace('   stand.setYHeadRot(stand.getYRot());\n   stand.setYBodyRot(stand.getYRot());\n','')
+p.write_text(ss,encoding="utf-8")
+
+# The GUI wrongly refused clicking an empty upgrade position if it was after
+# the last installed upgrade. Accept all 12 upgrade cells, insert after last.
+b35_java("powerarmor/ArmorStationMenu.java",
+'''   if(indices.size()>=12 || display>indices.size())return;''',
+'''   if(indices.size()>=12)return;''')
+b35_java("powerarmor/ArmorStationMenu.java",
+'''   int insertion=display==indices.size()?values.size():indices.get(display);''',
+'''   int insertion=display>=indices.size()?values.size():indices.get(display);''')
+
+# Distinct depth planes, lateral separation to prevent red/black polygons
+# from overlapping during panel swing. No changes to actual item stacks.
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''   double x=(i==4?0D:side*(i<2?0.16D:0.15D));
+   double outward=(i==4?0D:side*(i<2?0.46D:0.29D)*open);''',
+'''   double x=(i==4?0D:side*(i<2?0.43D:0.36D));
+   double outward=(i==4?0D:side*(i<2?0.58D:0.39D)*open);''')
+b35_java("powerarmor/PowerArmorSuitWorld.java",
+'''   double z=(i==4?-0.24D:(i<2?-0.33D:-0.40D));
+   double depthShift=i*0.038D;''',
+'''   double z=(i==4?-0.49D:(i<2?-0.66D:-0.60D));
+   double depthShift=i*0.08D;''')
+
+# The item model for panel cubes was built with faces touching coincident
+# ornamental plates. Remove coplanar narrow ribbons; use non-overlapping base
+# panels to prevent sparkle on both MK1 and MK2.
+for tier in ("mk1","mk2"):
+ for piece in models:
+  p=stationres/f"models/item/armor_visual_{tier}_{piece}.json"
+  obj=_json.loads(p.read_text(encoding="utf-8"))
+  assert len(obj["elements"])==3
+  obj["elements"]=obj["elements"][:1]
+  b32_put(p,obj)
+print("BUILD38_ONE_BY_TWO_STATION PASS: station 1w x 2l x 2h, pad under suit, rear attached arms, 180-degree docked orientation, GUI insertion and MK1/MK2 overlapping panels fixed")
