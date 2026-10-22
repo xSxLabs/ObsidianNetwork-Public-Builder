@@ -420,6 +420,14 @@ public final class PowerArmorCommands {
 def put(path,v):
  path.parent.mkdir(parents=True,exist_ok=True)
  path.write_text(json.dumps(v,indent=2)+"\n",encoding="utf-8")
+# Install the user's supplied red-gold suit textures as shipped resources.
+assets=Path(__file__).parent/"assets"/"textures/entity/equipment"
+for layer in ("humanoid","humanoid_leggings"):
+ src=assets/layer/"power_armor.png"
+ assert src.is_file(), "provided power armor texture missing: "+str(src)
+ target=r/"assets/obsidiannetwork/textures/entity/equipment"/layer/"power_armor.png"
+ target.parent.mkdir(parents=True,exist_ok=True)
+ target.write_bytes(src.read_bytes())
 for name in ("helmet","chestplate","leggings","boots","upgrade"):
  put(r/f"assets/obsidiannetwork/models/item/power_armor_{name}.json",
      {"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/netherite_"+("chestplate" if name=="upgrade" else name)}})
