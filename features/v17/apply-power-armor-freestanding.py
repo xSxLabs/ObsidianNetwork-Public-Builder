@@ -1725,25 +1725,25 @@ print("BUILD40_RENDER_MAPPING PASS: item definition, 15-slot grouped caps, 2x-le
 screen=j/"powerarmor/ArmorStationScreen.java"
 screen.write_text(r'''package dev.obsidiannetwork.powerarmor;
 
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.ChestScreen;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
 
 /** xSxLabs armored service console. Not the vanilla chest appearance. */
-public final class ArmorStationScreen extends ChestScreen {
+public final class ArmorStationScreen extends ContainerScreen {
  public ArmorStationScreen(ChestMenu menu,Inventory inventory,Component title){
   super(menu,inventory,title);
  }
- @Override protected void renderBg(GuiGraphics g,float partial,int mouseX,int mouseY){
-  int x=this.leftPos, y=this.topPos;
+ @Override public void extractBackground(GuiGraphicsExtractor g,int mouseX,int mouseY,float partial){
+  int x=this.getLeftPos(), y=this.getTopPos();
   // Brushed graphite bezel, cyan conductive outline.
-  g.fill(x-3,y-3,x+179,y+this.imageHeight+3,0xff101820);
-  g.fill(x-2,y-2,x+178,y+this.imageHeight+2,0xff22cfe4);
-  g.fill(x,y,x+176,y+this.imageHeight,0xff1b2935);
+  g.fill(x-3,y-3,x+179,y+this.getImageHeight()+3,0xff101820);
+  g.fill(x-2,y-2,x+178,y+this.getImageHeight()+2,0xff22cfe4);
+  g.fill(x,y,x+176,y+this.getImageHeight(),0xff1b2935);
   g.fill(x+5,y+16,x+171,y+70,0xff0c161e);
-  g.fill(x+5,y+72,x+171,y+this.imageHeight-4,0xff263746);
+  g.fill(x+5,y+72,x+171,y+this.getImageHeight()-4,0xff263746);
   // Four suit assembly sockets, status pane and 15 upgrade sockets.
   for(int index=0;index<27;index++){
    int sx=x+7+(index%9)*18;
@@ -1755,7 +1755,7 @@ public final class ArmorStationScreen extends ChestScreen {
    g.fill(sx+1,sy+1,sx+17,sy+17,0xff17212e);
   }
   // Actual player inventory uses vanilla slot positions, but bespoke styling.
-  int offset=this.imageHeight-114;
+  int offset=this.getImageHeight()-114;
   for(int index=0;index<36;index++){
    int col=index%9;
    int row=index<27?index/9:3;
@@ -1765,7 +1765,7 @@ public final class ArmorStationScreen extends ChestScreen {
    g.fill(sx,sy,sx+18,sy+18,0xff3e637a);
    g.fill(sx+1,sy+1,sx+17,sy+17,0xff233440);
   }
-  g.fill(x+5,y+this.imageHeight-5,x+171,y+this.imageHeight-3,0xff16c9e5);
+  g.fill(x+5,y+this.getImageHeight()-5,x+171,y+this.getImageHeight()-3,0xff16c9e5);
  }
 }
 ''',encoding="utf-8")
@@ -1781,9 +1781,9 @@ insert=r'''
  @SubscribeEvent public static void xsxArmorStationOpen(
      net.neoforged.neoforge.client.event.ScreenEvent.Opening event){
   if(!(event.getNewScreen() instanceof
-      net.minecraft.client.gui.screens.inventory.ChestScreen chest))return;
+      net.minecraft.client.gui.screens.inventory.ContainerScreen chest))return;
   var name=chest.getTitle().getString();
-  if(!name.startsWith("Armor Station"))return;
+  if(!name.equals("xSxLabs | Power Armor Maintenance"))return;
   var game=Minecraft.getInstance();
   if(game.player==null)return;
   event.setNewScreen(new ArmorStationScreen(chest.getMenu(),
@@ -1832,3 +1832,34 @@ b35_java("powerarmor/PowerArmorSuitWorld.java",
 assert all(len(_json.loads((stationres/f"models/item/armor_visual_{t}_{part}.json").read_text())["elements"])==1
  for t in ("mk1","mk2") for part in models)
 print("BUILD43_V5_HINGES PASS: v5 outward hinge motion restored, explicit block meshes without overlapping decorative faces, generated client Java validated")
+
+
+# BUILD45_NEOFORGE_26_1_2: generate the CURRENT key-binding category API
+# after stage2 keys, leaving actual exit / night-vision controls unchanged.
+_key=j/"powerarmor/PowerArmorExitKeyClient.java"
+_key_code=_key.read_text(encoding="utf-8")
+_stale='KeyMapping.Category.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("obsidiannetwork","xsxlabs"))'
+assert _key_code.count(_stale)==2, "BUILD45 key category anchor changed"
+_key_code=_key_code.replace(_stale,'CATEGORY')
+_needle=' public static final KeyMapping EXIT=new KeyMapping('
+assert _key_code.count(_needle)==1, "BUILD45 exit key anchor changed"
+_key_code=_key_code.replace(_needle,
+ ' public static final KeyMapping.Category CATEGORY=new KeyMapping.Category(net.minecraft.resources.Identifier.fromNamespaceAndPath("obsidiannetwork","xsxlabs"));\\n'+_needle,1)
+_key.write_text(_key_code,encoding="utf-8")
+_client=j/"client/ClientModEvents.java"
+_client_code=_client.read_text(encoding="utf-8")
+_reg='  event.register(dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient.EXIT);'
+assert _client_code.count(_reg)==1, "BUILD45 key registration anchor changed"
+_client_code=_client_code.replace(_reg,
+ '  event.registerCategory(dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient.CATEGORY);\\n'+_reg,1)
+_client.write_text(_client_code,encoding="utf-8")
+for lang,label in (("de_de","xSxLabs Power-Rüstung"),("en_us","xSxLabs Power Armor")):
+ _path=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork/lang"/(lang+".json")
+ _values=_json.loads(_path.read_text(encoding="utf-8"))
+ _values["key.category.obsidiannetwork.xsxlabs"]=label
+ b32_put(_path,_values)
+assert "GuiGraphicsExtractor" in screen.read_text(encoding="utf-8")
+assert "ContainerScreen" in screen.read_text(encoding="utf-8")
+assert "extractBackground" in screen.read_text(encoding="utf-8")
+assert "GuiGraphics;" not in screen.read_text(encoding="utf-8")
+print("BUILD45_26_1_2_UI_KEYS PASS: modern ContainerScreen GUI, correct title, registered Identifier key category")
