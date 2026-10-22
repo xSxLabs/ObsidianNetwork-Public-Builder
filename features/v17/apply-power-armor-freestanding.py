@@ -2051,13 +2051,13 @@ b49_replace("powerarmor/ArmorStationBlock.java",
 '''  return super.getStateForPlacement(context)
       .setValue(FACING,context.getHorizontalDirection().getOpposite());''')
 statefile=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork/blockstates/armor_station.json"
-states=json.loads(statefile.read_text(encoding="utf-8"))
+states=_json.loads(statefile.read_text(encoding="utf-8"))
 assert len(states["variants"])==8 and all("facing=" not in key for key in states["variants"])
 faced={}
 for key,value in states["variants"].items():
  for facing,yrot in (("north",0),("east",90),("south",180),("west",270)):
   faced[key+",facing="+facing]=dict(value,y=yrot)
 states["variants"]=faced
-statefile.write_text(json.dumps(states,indent=2)+"\n",encoding="utf-8")
+statefile.write_text(_json.dumps(states,indent=2)+"\n",encoding="utf-8")
 assert len(faced)==32
 print("BUILD49_GROUPED_FIVE_AND_FACING PASS: five cards/one slot; batch shift-click, 80pct FE shield, hidden obsolete discs, 4 rotations")
