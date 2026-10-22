@@ -50,7 +50,7 @@ import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.RawAnimation;
-import com.geckolib.cache.object.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.util.GeckoLibUtil;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -75,7 +75,7 @@ public final class PowerArmorVisualEntity extends ArmorStand implements GeoEntit
  }
  public void begin(boolean entering){entityData.set(ENTERING,entering);}
  @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers){
-  controllers.add(new AnimationController<>(this,"suit",0,state ->
+  controllers.add(new AnimationController<>("suit",0,state ->
    state.setAndContinue(RawAnimation.begin().thenPlay(
      entityData.get(ENTERING)?"animation.power_armor.close":"animation.power_armor.open"))));
  }
@@ -249,4 +249,11 @@ for tier in ("mk1","mk2"):
    "animation.power_armor.open":animation_open,
    "animation.power_armor.close":reversed_animation(animation_open)}},indent=2)+"\n",encoding="utf-8")
  texture.write_bytes(png(tier))
+# Missing GeckoLib is now reported clearly by NeoForge before loading client classes.
+metadata=resources/"META-INF/neoforge.mods.toml"
+assert metadata.exists(), "Expected NeoForge mod metadata for mandatory GeckoLib"
+meta=metadata.read_text(encoding="utf-8")
+assert 'modId="geckolib"' not in meta, "Duplicate GeckoLib dependency"
+meta += '\n[[dependencies.obsidiannetwork]]\nmodId="geckolib"\ntype="required"\nversionRange="[5.5.2,)"\nordering="AFTER"\nside="BOTH"\n'
+metadata.write_text(meta,encoding="utf-8")
 print("BUILD56_GECKOLIB PASS: single mesh/bone animation, 2 tiers, 8 bones each, recovery untouched")
