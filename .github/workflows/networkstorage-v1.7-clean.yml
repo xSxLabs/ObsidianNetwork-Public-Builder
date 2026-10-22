@@ -186,9 +186,9 @@ jobs:
           plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.147' }
           version=mod_version; group=mod_group_id; base { archivesName='xSxLabs-Network-Storage' }
           java.toolchain.languageVersion=JavaLanguageVersion.of(25)
-          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' } }
+          repositories { maven { url='https://maven.blamejared.com' }; maven { url='https://maven.theillusivec4.top/' }; exclusiveContent { forRepository { maven { name='GeckoLib'; url='https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' } }; filter { includeGroupAndSubgroups('com.geckolib') } } }
           neoForge { version=project.neo_version; mods { obsidiannetwork { sourceSet(sourceSets.main) } } }
-          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api' }
+          dependencies { compileOnly 'mezz.jei:jei-26.1.2-neoforge:29.5.0.26'; compileOnly 'top.theillusivec4.curios:curios-neoforge:15.0.0+26.1.2:api'; implementation 'com.geckolib:geckolib-neoforge-26.1.2:5.5.2' }
           tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
           EOF
           export V1_SOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/java" V1_RESOURCE_ROOT="$GITHUB_WORKSPACE/work/src/main/resources" V1_PROJECT_ROOT="$GITHUB_WORKSPACE/work"
@@ -2014,6 +2014,9 @@ jobs:
           # Build 55: Apotheosis 26.1 affix + socket category data map for BOTH armor tiers.
           # Keep this data-only and optional; no hard dependency or power-armor component migrations.
           python3 features/v17/apply-power-armor-apotheosis.py
+          # Build 56 GeckoLib v5: replace five independently rendered panel Items with
+          # one fully articulated, transient mesh; leave armor ownership intact.
+          python3 features/v17/apply-power-armor-geckolib.py
           python3 -m json.tool work/src/main/resources/data/apotheosis/data_maps/item/loot_category_overrides.json >/dev/null
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
