@@ -24,6 +24,24 @@ edit("powerarmor/ArmorStationBlock.java",
  @Override protected void createBlockStateDefinition(
    net.minecraft.world.level.block.state.StateDefinition.Builder<net.minecraft.world.level.block.Block,BlockState> b){
   b.add(FRAME,FILLED);
+ }
+ // The rendered suit rises two blocks. Do not place it into a ceiling.
+ @Override @Nullable public BlockState getStateForPlacement(
+    net.minecraft.world.item.context.BlockPlaceContext context){
+  if(!context.getLevel().isEmptyBlock(context.getClickedPos().above()))return null;
+  return super.getStateForPlacement(context);
+ }
+ private static final net.minecraft.world.phys.shapes.VoxelShape STAND_SHAPE=
+   net.minecraft.world.phys.shapes.Shapes.box(0.0625D,0D,0.0625D,0.9375D,2D,0.9375D);
+ @Override public net.minecraft.world.phys.shapes.VoxelShape getShape(
+     BlockState state,net.minecraft.world.level.BlockGetter level,BlockPos pos,
+     net.minecraft.world.phys.shapes.CollisionContext context){
+  return STAND_SHAPE;
+ }
+ @Override protected net.minecraft.world.phys.shapes.VoxelShape getCollisionShape(
+     BlockState state,net.minecraft.world.level.BlockGetter level,BlockPos pos,
+     net.minecraft.world.phys.shapes.CollisionContext context){
+  return STAND_SHAPE;
  }''')
 edit("powerarmor/ArmorStationBlock.java",
  ''' @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos,BlockState state){
@@ -77,8 +95,15 @@ edit("powerarmor/ArmorStationBlockEntity.java",
   int frame=be.opening?Math.min(3,1+progress/6):Math.max(0,3-progress/6);
   be.draw(true,frame);
   be.animationTicks--;
-  if(be.animationTicks==0)be.draw(be.occupied(),0);
-  be.setChanged();
+  if(be.animationTicks==0){
+   // The station is a temporary animation carrier on entry. It must not
+   // remain behind as a free second station when exiting elsewhere.
+   boolean empty=!be.occupied();
+   be.setChanged();
+   if(be.opening&&empty){
+    if(level.getBlockEntity(pos)==be)level.removeBlock(pos,false);
+   }else be.draw(be.occupied(),0);
+  }else be.setChanged();
  }''')
 edit("powerarmor/ArmorStationBlockEntity.java",
  '''  suit[i]=stack.copy();setChanged();''',

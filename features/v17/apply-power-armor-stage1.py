@@ -119,11 +119,11 @@ public final class PowerArmorRuntime {
  @SubscribeEvent public static void protectLoadedStand(net.neoforged.neoforge.event.level.block.BreakBlockEvent event){
   if(!(event.getState().getBlock() instanceof ArmorStationBlock))return;
   if(event.getLevel().getBlockEntity(event.getPos()) instanceof ArmorStationBlockEntity station
-      && station.occupied()){
+      && (station.occupied()||station.isAnimating())){
     event.setCanceled(true);
     if(event.getPlayer() instanceof ServerPlayer p)
       p.sendSystemMessage(net.minecraft.network.chat.Component.literal(
-        "Power Armor: remove all suit pieces before dismantling the station."));
+        "Power Armor: remove installed suit pieces or finish the transition first."));
   }
  }
  public static boolean powered(ServerPlayer p){

@@ -16,6 +16,10 @@ class ArmorAnimationModelTests(unittest.TestCase):
         self.assertIn("python3 features/v17/apply-power-armor-animation.py", WORKFLOW)
         self.assertLess(WORKFLOW.index("apply-power-armor-cards.py"), WORKFLOW.index("apply-power-armor-animation.py"))
         self.assertIn("ArmorStationBlockEntity::serverTick", SCRIPT)
+        self.assertIn("getStateForPlacement(", SCRIPT)
+        self.assertIn("STAND_SHAPE", SCRIPT)
+        self.assertIn("context.getClickedPos().above()", SCRIPT)
+        self.assertIn("level.removeBlock(pos,false)", SCRIPT)
         self.assertIn("animationTicks=20", SCRIPT)
         self.assertIn("out.putInt(\"power_armor_anim\"", SCRIPT)
         self.assertIn("in.getIntOr(\"power_armor_anim\"", SCRIPT)
@@ -52,6 +56,8 @@ class ArmorAnimationModelTests(unittest.TestCase):
         self.assertIn("station.startOpen()", SCRIPT)
         self.assertIn("out.store(\"armor_suit\"", SCRIPT)
         self.assertIn("if(station.isAnimating())return InteractionResult.FAIL;", SCRIPT)
+        self.assertIn("if(be.opening&&empty)",SCRIPT)
+        self.assertIn("level.getBlockEntity(pos)==be",SCRIPT)
 
 
 if __name__ == "__main__":
