@@ -25,7 +25,7 @@ def probe(code, timeout=4, stability=0.3):
 
 class CiServerStartupSpeedTests(unittest.TestCase):
     def test_exits_after_ready_stability_not_whole_timeout(self):
-        result=probe('import time;print("Done (0.4s)! For help, type \\"help\\"");time.sleep(5)')
+        result=probe('import time;print("Done (0.4s)!");time.sleep(5)')
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         self.assertIn("CI_SERVER_STARTUP_PASS",result.stdout)
 
@@ -51,7 +51,7 @@ class CiServerStartupSpeedTests(unittest.TestCase):
             "build103-curios-installed-gametest.log",
             "verify_compiled_network_elytra_speedcheck.py",
             "gradle --no-daemon --no-configuration-cache clean build",
-            "tests/test_perf_",
+            "python3 -m unittest discover -s tests -p 'test_perf_*.py' -v",
         ):
             self.assertIn(contract,w)
 
