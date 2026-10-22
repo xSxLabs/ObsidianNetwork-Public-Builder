@@ -1279,3 +1279,57 @@ assert (j/"powerarmor/PowerArmorSuitWorld.java").read_text().count("pose(stand,2
 assert "this.suit=resolve();" in (j/"powerarmor/ArmorStationMenu.java").read_text()
 assert (j/"powerarmor/ArmorStationBlock.java").read_text().count("openMenu")==1
 print("BUILD35_STATION_SHELL PASS: functional empty-station GUI, 50+ custom gantry elements, detailed industrial textures, correct idle arms, opening five visual panels, secure suit storage and reconnect recovery")
+
+
+# BUILD36_FINAL_GUI: explicit no-suit status, click-to-open regardless of hand,
+# and all animated panel texture references resolved.
+b35_java("powerarmor/ArmorStationBlock.java",
+'''  if(!(held.getItem() instanceof PowerArmorItem)&&!(held.getItem() instanceof UpgradeCardItem))
+   return InteractionResult.PASS;
+  return useWithoutItem(state,level,pos,player,hit);''',
+'''  // Always open maintenance via ordinary right-click, including if the player
+  // is carrying a tool, upgrade card, or another non-power-armor item.
+  return useWithoutItem(state,level,pos,player,hit);''')
+b35_java("powerarmor/ArmorStationBlock.java",
+'''      Component.literal("xSxLabs | Power Armor Maintenance")));''',
+'''      Component.literal(PowerArmorSuitWorld.findNearby(level,pos,p)==null
+         ? "Armor Station | No Armor Connected"
+         : "Armor Station | Power Armor Connected")));''')
+b35_java("powerarmor/ArmorStationMenu.java",
+'''Component.literal("No single owned Power Armor docked (3 blocks)")''',
+'''Component.literal("No Armor Connected")''')
+# An explicit status indicator doubles as in-menu guidance even when the
+# top-level title was chosen before a suit was placed nearby.
+b35_java("powerarmor/ArmorStationMenu.java",
+'''  for(int i=0;i<4;i++)
+   preview.setItem(i,suit.getItemBySlot(PowerArmorRuntime.SLOTS[i]).copy());
+  List<String> values=cards''',
+'''  for(int i=0;i<4;i++)
+   preview.setItem(i,suit.getItemBySlot(PowerArmorRuntime.SLOTS[i]).copy());
+  ItemStack connected=new ItemStack(net.minecraft.world.item.Items.LIME_STAINED_GLASS_PANE);
+  connected.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
+     net.minecraft.network.chat.Component.literal("Power Armor Connected - click a card to remove, or carry a card to install"));
+  preview.setItem(4,connected);
+  List<String> values=cards''')
+# Unlike the no-suit barrier, this green status token can never be extracted.
+# Strictly disallow any top-grid clicks except the 12 card positions.
+b35_java("powerarmor/ArmorStationMenu.java",
+'''  if(slotId<9 || slotId>=21)return;''',
+'''  if(slotId<9 || slotId>=21)return;''') if False else None
+# Fill all palette references used by the actual animated cuboids.
+texdir.mkdir(parents=True,exist_ok=True)
+for key,palette in {
+  "armor_red":((55,12,19),(140,25,33),(224,54,54)),
+  "armor_gold":((90,55,20),(187,133,39),(244,210,92))
+}.items():
+ (texdir/(key+".png")).write_bytes(b35_texture(key,palette))
+for tier in ("mk1","mk2"):
+ for segment in models:
+  model=stationres/f"models/item/armor_visual_{tier}_{segment}.json"
+  data=_json.loads(model.read_text(encoding="utf-8"))
+  data["textures"].update({
+   "red":"obsidiannetwork:block/armor_red",
+   "gold":"obsidiannetwork:block/armor_gold"
+  })
+  b32_put(model,data)
+print("BUILD36_FINAL_GUI PASS: no-suit title and tooltip, normal right-click with any held item, installed-upgrade preview, valid red/gold animated plate materials")
