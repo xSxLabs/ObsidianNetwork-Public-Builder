@@ -2037,7 +2037,7 @@ b49_replace("powerarmor/PowerArmorRuntime.java",
 b49_replace("powerarmor/ArmorStationBlock.java",
 '''   net.minecraft.world.level.block.state.properties.BooleanProperty.create("filled");''',
 '''   net.minecraft.world.level.block.state.properties.BooleanProperty.create("filled");
- public static final net.minecraft.world.level.block.state.properties.DirectionProperty FACING =
+ public static final net.minecraft.world.level.block.state.properties.EnumProperty<net.minecraft.core.Direction> FACING =
    net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;''')
 b49_replace("powerarmor/ArmorStationBlock.java",
 '''stateDefinition.any().setValue(FRAME,0).setValue(FILLED,false));''',
