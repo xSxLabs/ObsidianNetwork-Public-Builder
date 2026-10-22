@@ -168,7 +168,7 @@ exitKey=j/"powerarmor/PowerArmorExitKeyClient.java"
 text=exitKey.read_text(encoding="utf-8")
 old=''' private static final KeyMapping EXIT=new KeyMapping(
    "key.obsidiannetwork.power_armor_exit",
-   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("obsidiannetwork","xsxlabs")));'''
+   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.MISC);'''
 new=''' public static final KeyMapping EXIT=new KeyMapping(
    "key.obsidiannetwork.power_armor_exit",
    InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("obsidiannetwork","xsxlabs")));
