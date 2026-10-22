@@ -186,40 +186,47 @@ extra=''' @SubscribeEvent public static void onDamage(net.neoforged.neoforge.eve
 '''
 s=s[:idx]+extra+s[idx:]
 runtime.write_text(s,encoding="utf-8")
-# User-rebindable exit hotkey, and Night Vision separately toggleable.
-key=j/"client/PowerArmorHotkeys.java"
-assert not key.exists()
-key.write_text('''package dev.obsidiannetwork.client;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.KeyMapping;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import com.mojang.blaze3d.platform.InputConstants;
-import org.lwjgl.glfw.GLFW;
-@EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
-public final class PowerArmorHotkeys {
- public static final KeyMapping EXIT=new KeyMapping("key.obsidiannetwork.power_armor_exit",
-     InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_J,KeyMapping.Category.MISC);
- public static final KeyMapping NIGHT=new KeyMapping("key.obsidiannetwork.power_armor_nightvision",
-     InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.MISC);
- @SubscribeEvent public static void onTick(ClientTickEvent.Post event){
-  var mc=Minecraft.getInstance();
-  if(mc.player==null||mc.player.connection==null)return;
-  while(EXIT.consumeClick())mc.player.connection.sendCommand("powerarmor exit");
-  while(NIGHT.consumeClick())mc.player.connection.sendCommand("powerarmor nightvision");
- }
-}
-''',encoding="utf-8")
+# Extend the Stage-1 server-validated exit payload, not a second exit key.
+# Register both keys in the EXISTING mod-bus client registry, preventing duplicates.
+exitKey=j/"powerarmor/PowerArmorExitKeyClient.java"
+text=exitKey.read_text(encoding="utf-8")
+old=''' private static final KeyMapping EXIT=new KeyMapping(
+   "key.obsidiannetwork.power_armor_exit",
+   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.MISC);'''
+new=''' public static final KeyMapping EXIT=new KeyMapping(
+   "key.obsidiannetwork.power_armor_exit",
+   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_V,KeyMapping.Category.MISC);
+ public static final KeyMapping NIGHT=new KeyMapping(
+   "key.obsidiannetwork.power_armor_nightvision",
+   InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_J,KeyMapping.Category.MISC);'''
+assert text.count(old)==1,"Stage1 exit key changed"
+text=text.replace(old,new,1)
+old=''' @SubscribeEvent public static void register(RegisterKeyMappingsEvent e){
+  e.register(EXIT);
+ }'''
+assert text.count(old)==1
+text=text.replace(old,"",1)
+old='''   PacketDistributor.sendToServer(new PowerArmorExitPayload());
+  }
+ }'''
+new='''   PacketDistributor.sendToServer(new PowerArmorExitPayload());
+  }
+  while(NIGHT.consumeClick()){
+   Minecraft mc=Minecraft.getInstance();
+   if(mc.player!=null && mc.screen==null && mc.player.connection!=null)
+    mc.player.connection.sendCommand("powerarmor nightvision");
+  }
+ }'''
+assert text.count(old)==1
+exitKey.write_text(text.replace(old,new,1),encoding="utf-8")
 client=j/"client/ClientModEvents.java"
 s=client.read_text(encoding="utf-8").rstrip()
-assert s.endswith("}") and "PowerArmorHotkeys.EXIT" not in s
+assert s.endswith("}") and "PowerArmorExitKeyClient.EXIT" not in s
 client.write_text(s[:-1]+'''
  @net.neoforged.bus.api.SubscribeEvent
  public static void xsxRegisterPowerArmorKeys(net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent event){
-  event.register(PowerArmorHotkeys.EXIT);
-  event.register(PowerArmorHotkeys.NIGHT);
+  event.register(dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient.EXIT);
+  event.register(dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient.NIGHT);
  }
 }
 ''',encoding="utf-8")

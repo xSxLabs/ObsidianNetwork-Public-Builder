@@ -14,7 +14,7 @@ class CleanV17Cards(unittest.TestCase):
   self.assertIn('POWER_ARMOR_UPGRADES',PATCH)
   self.assertIn('GRANTED_FLIGHT',PATCH)
   self.assertIn('POWER_CARD_',PATCH)
-  self.assertIn('PowerArmorHotkeys',PATCH)
+  self.assertIn('PowerArmorExitKeyClient',PATCH)
  def test_workflow(self):
   self.assertIn("python3 features/v17/apply-power-armor-cards.py",WF)
   self.assertLess(WF.index("apply-power-armor-stage1.py"),WF.index("apply-power-armor-cards.py"))
