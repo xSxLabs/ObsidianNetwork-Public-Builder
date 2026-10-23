@@ -223,8 +223,9 @@ public final class PowerArmorFirstPersonArms {
   part.zRot=event.getArm()==HumanoidArm.RIGHT?0.1f:-0.1f;
   Identifier texture=Identifier.fromNamespaceAndPath("obsidiannetwork",
       "textures/entity/power_armor_firstperson_mk"+tier+".png");
-  event.getSubmitNodeCollector().submitModelPart(
-    part,event.getPoseStack(),RenderTypes.entityTranslucent(texture),
+  // Minecraft 26.1 SubmitNodeCollector uses ordered, six-argument model submission.
+  event.getSubmitNodeCollector().order(0).submitModelPart(
+    part,event.getPoseStack(),model.renderType(texture),
     event.getPackedLight(),OverlayTexture.NO_OVERLAY,null);
   event.setCanceled(true);
  }
