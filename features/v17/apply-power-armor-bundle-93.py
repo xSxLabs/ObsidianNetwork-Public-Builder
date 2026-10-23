@@ -181,6 +181,25 @@ put(runtime,s)
 
 world=java/"powerarmor/PowerArmorSuitWorld.java"
 s=load(world)
+# The station accepts exactly one full, owned suit with its feet on the
+# red pad in the single block directly ahead of the station FACING.
+# No radius-based matching: neighboring, rear and diagonal suits stay ignored.
+finder_old=''' public static ArmorStand findNearby(Level level,BlockPos station,ServerPlayer player){
+  List<ArmorStand> suits=level.getEntitiesOfClass(ArmorStand.class,
+      new AABB(station).inflate(3.0D), e->mine(e,player)&&full(e));
+  return suits.size()==1?suits.get(0):null;
+ }'''
+finder_new=''' public static ArmorStand findNearby(Level level,BlockPos station,ServerPlayer player){
+  var state=level.getBlockState(station);
+  if(!(state.getBlock() instanceof ArmorStationBlock))return null;
+  BlockPos pad=station.relative(state.getValue(ArmorStationBlock.FACING));
+  List<ArmorStand> suits=level.getEntitiesOfClass(ArmorStand.class,
+      new AABB(pad), e->mine(e,player)&&full(e)
+          &&e.blockPosition().equals(pad));
+  return suits.size()==1?suits.get(0):null;
+ }'''
+assert s.count(finder_old)==1,"Build94 strict front-pad search anchor changed"
+s=s.replace(finder_old,finder_new,1)
 beg=s.index(' public static boolean full(ArmorStand stand){')
 end=s.index(' }',beg)+2
 previous=s[beg:end]
@@ -200,14 +219,14 @@ assert s.count(find)==1,"Build62 spawn prevalidation anchor changed"
 s=s.replace(find,'''  int suitTier=PowerArmorRuntime.tier(suit.get(0),0);
   if(suitTier==0)return null;
   for(int i=1;i<4;i++)if(PowerArmorRuntime.tier(suit.get(i),i)!=suitTier)return null;''',1)
-# Build38 assumed fixed north; Build49 added actual FACING property, so use
-# the modeled front direction and measure radius from station, not parking pad.
+# Build38 assumed fixed north; Build49 added FACING. The ONLY valid dock
+# is the red pad one horizontal block in front, not a nearby-radius scan.
 assert s.count('BlockPos candidate=station.north();')==1
 s=s.replace('BlockPos candidate=station.north();',
  '''BlockPos candidate=station.relative(level.getBlockState(station).getValue(ArmorStationBlock.FACING));''',1)
 assert s.count('if(candidate.distSqr(origin)>4.0D)continue;')==1
 s=s.replace('if(candidate.distSqr(origin)>4.0D)continue;',
-            'if(station.distSqr(origin)>4.0D)continue;',1)
+            'if(!candidate.equals(origin))continue;',1)
 # Select GeckoLib transition model from the actual suit tier.
 find='''  boolean mk2=PowerArmorRuntime.piece(
      stand.getItemBySlot(PowerArmorRuntime.SLOTS[0]),0,true);
@@ -224,6 +243,13 @@ selection+='''   default -> dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_ENT
   };'''
 s=s.replace(find,selection,1)
 put(world,s)
+# The GUI's disconnected status should explain the now-exact placement.
+menu=java/"powerarmor/ArmorStationMenu.java"
+ms=load(menu)
+disconnected="No single owned Power Armor docked (3 blocks)"
+assert ms.count(disconnected)==1,"Build94 station GUI status drift"
+put(menu,ms.replace(disconnected,
+    "Place your complete Power Armor on the red pad one block in front",1))
 
 # GeckoLib transition entities remain cosmetic and ephemeral. Add an animated
 # renderer for each variant, with the exact same 13-bone MK1 mesh/animation.
@@ -380,7 +406,9 @@ for tier,(english,german,primary,secondary,dye) in finishes.items():
 assert sum(load(mod).count(f'ITEMS.registerItem("power_armor_mk{t}_') for t in finishes)==40
 assert all(f"ARMOR_VISUAL_ENTITY_MK{t}" in load(mod) for t in finishes)
 assert 'getValue(ArmorStationBlock.FACING)' in load(world)
-assert 'if(station.distSqr(origin)>4.0D)continue;' in load(world)
+assert 'if(!candidate.equals(origin))continue;' in load(world)
+assert 'new AABB(pad), e->mine(e,player)&&full(e)' in load(world)
+assert 'e.blockPosition().equals(pad)' in load(world)
 assert 'oldArmor.recover(p)' in load(runtime)
 assert 'DataComponents.ATTRIBUTE_MODIFIERS' in load(mod)
-print("BUILD93_POWER_ARMOR_PASS: manual unequip recovery, real vanilla attributes, facing-aware 2-block front docking, MK3-MK12 complete matching sets, dedicated recipes, original MK1/MK2 art preserved and 10 color-matched animated GeckoLib meshes")
+print("BUILD93_POWER_ARMOR_PASS: manual unequip recovery, real vanilla attributes, facing-aware exact 1-block red-pad docking, MK3-MK12 complete matching sets, dedicated recipes, original MK1/MK2 art preserved and 10 color-matched animated GeckoLib meshes")
