@@ -5,23 +5,6 @@ Run after apply-power-armor-geckolib.py. No inventory/entity transaction changes
 import json, os
 from pathlib import Path
 root=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork/geckolib/animations/entity"
-def keys(values):
-    return {f"{i/20:.2f}": {"vector":v,"easing":"easeInOutSine"} for i,v in values}
-def track(*values):
-    return keys(values)
-# 20 ticks / 1 second. Stage: unlatch -> split -> raise -> hold.
-moves={
- "chest_left":{"rotation":track([0,0,0],[0,-8,0],[0,-35,-3],[0,-67,-7],[0,-74,-8]),
-               "position":track([0,0,0],[-.3,0,0],[-2,0,-.6],[-4,0,-1.6],[-5,0,-2])},
- "chest_right":{"rotation":track([0,0,0],[0,8,0],[0,35,3],[0,67,7],[0,74,8]),
-               "position":track([0,0,0],[.3,0,0],[2,0,-.6],[4,0,-1.6],[5,0,-2])},
- "helmet":{"rotation":track([0,0,0],[0,0,0],[-8,0,0],[-34,0,0],[-50,0,0]),
-           "position":track([0,0,0],[0,0,0],[0,1,0],[0,5,0],[0,7,0])},
- "left_arm":{"rotation":track([0,0,0],[0,0,0],[0,0,-12],[0,0,-31],[0,0,-38])},
- "right_arm":{"rotation":track([0,0,0],[0,0,0],[0,0,12],[0,0,31],[0,0,38])},
- "left_leg":{"rotation":track([0,0,0],[0,0,0],[0,0,-4],[0,0,-13],[0,0,-17])},
- "right_leg":{"rotation":track([0,0,0],[0,0,0],[0,0,4],[0,0,13],[0,0,17])}
-}
 # Spread keyframes across 0, 0.15, 0.4, 0.75, 1 seconds.
 times=["0.0","0.15","0.4","0.75","1.0"]
 def normalized(data):
