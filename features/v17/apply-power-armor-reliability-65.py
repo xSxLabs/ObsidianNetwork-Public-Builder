@@ -78,7 +78,8 @@ edit("powerarmor/PowerArmorSuitWorld.java",
 ''' private static void pose(ArmorStand stand,int progress,boolean entering){
   if(stand.isRemoved())return;
   float t=Math.max(0F,Math.min(1F,progress/20F));
-  float open=entering?1F-t:t;
+  // Exit begins opened and closes; enter begins closed and opens.
+  float open=entering?t:1F-t;
   float spread=55F*open;
   // Visible server-synchronized fallback, independent of GeckoLib's mesh.
   stand.setLeftArmPose(new net.minecraft.core.Rotations(-15F*open,0F,-spread));

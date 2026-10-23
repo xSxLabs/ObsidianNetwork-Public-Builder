@@ -22,6 +22,7 @@ class Reliable65(unittest.TestCase):
   self.assertIn("mine(stand,player)&&full(stand)",S)
  def test_valid_armor_animation_and_diagnostics(self):
   self.assertIn("float spread=55F*open;",S)
+  self.assertIn("float open=entering?t:1F-t;",S)
   self.assertIn('?"animation.power_armor.open":"animation.power_armor.close"',S)
   self.assertIn('Commands.literal("status")',S)
   self.assertIn("owned_stands=",S)
