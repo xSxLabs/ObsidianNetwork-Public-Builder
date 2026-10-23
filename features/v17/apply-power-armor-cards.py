@@ -119,6 +119,29 @@ old='''  if(powered(p)){
   }'''
 new='''  if(powered(p)){
    for(EquipmentSlot slot:SLOTS)EnergyTool.consume(p.getItemBySlot(slot),20L);
+   // Build 72: apply enhancement effects only while the powered suit is worn.
+   String installedCards="";
+   for(EquipmentSlot armorSlot:SLOTS){
+    String value=p.getItemBySlot(armorSlot).get(ModDataComponents.POWER_ARMOR_UPGRADES.get());
+    if(value!=null)installedCards+=","+value;
+   }
+   for(String effectId:new String[]{"strength","resistance","speed","haste","regeneration","fire_resistance","jump_boost"}){
+    int count=0;
+    for(String entry:installedCards.split(","))if(entry.equals(effectId))count++;
+    if(count==0)continue;
+    int max=switch(effectId){case "strength","speed","haste"->3;case "resistance","regeneration","jump_boost"->2;default->1;};
+    var effect=switch(effectId){
+     case "strength"->net.minecraft.world.effect.MobEffects.STRENGTH;
+     case "resistance"->net.minecraft.world.effect.MobEffects.RESISTANCE;
+     case "speed"->net.minecraft.world.effect.MobEffects.SPEED;
+     case "haste"->net.minecraft.world.effect.MobEffects.HASTE;
+     case "regeneration"->net.minecraft.world.effect.MobEffects.REGENERATION;
+     case "fire_resistance"->net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE;
+     default->net.minecraft.world.effect.MobEffects.JUMP_BOOST;
+    };
+    p.addEffect(new net.minecraft.world.effect.MobEffectInstance(effect,125,Math.min(max,count)-1,true,false,false));
+    for(EquipmentSlot armorSlot:SLOTS)EnergyTool.consume(p.getItemBySlot(armorSlot),25L*count);
+   }
    if(hasCard(p,"water_breathing"))
     p.addEffect(new net.minecraft.world.effect.MobEffectInstance(
       net.minecraft.world.effect.MobEffects.WATER_BREATHING,125,0,true,false,false));
