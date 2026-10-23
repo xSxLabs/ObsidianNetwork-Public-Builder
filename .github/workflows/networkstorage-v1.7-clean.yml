@@ -1943,6 +1943,7 @@ jobs:
           # Build 347: Spark 345 energyCable/energyOpen DeferredHolder.get hotpath.
           python3 patches/spark-energy-registered-block-type-cache.py
           python3 patches/energy-cable-crossmod-loop-guard.py
+          python3 features/v17/verify-crossmod-energy-loop-85.py
           grep -Fq 'XSXLABS_ENERGY_REGISTERED_BLOCK_LAZY_TYPES_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           grep -Fq 'XSXLABS_ENERGY_HELPER_DUPLICATE_BLOCKTYPE_ELISION_V1' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
           # AFK Spark: controller POSITIONS, revision-gated, live fallback on topology changes.
