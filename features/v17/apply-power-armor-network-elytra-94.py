@@ -74,10 +74,13 @@ s=change(s,
 s=change(s,
  '''                    chest.remove(DataComponents.GLIDER);''',
  '''                    if (!armorElytra) chest.remove(DataComponents.GLIDER);''')
+# Both surviving lines have the same indentation after the 20-space
+# inner failure handler was guarded. Patch both, never silently select one.
 s=change(s,
  '''                chest.remove(DataComponents.GLIDER);''',
- '''                if (!armorElytra) chest.remove(DataComponents.GLIDER);''')
-assert s.count("if (!armorElytra) chest.remove(DataComponents.GLIDER);")==2
+ '''                if (!armorElytra) chest.remove(DataComponents.GLIDER);''',
+ expected=2)
+assert s.count("if (!armorElytra) chest.remove(DataComponents.GLIDER);")==3
 assert "SHIFT_COST_PER_5_TICKS = 1500L" in s
 assert "BOOST_MAX_SPEED = 2.4D" in s
 write(server_path,s)
