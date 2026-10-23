@@ -64,6 +64,9 @@ test_class = r'''
                   net.minecraft.world.item.Items.IRON_LEGGINGS,
                   net.minecraft.world.item.Items.IRON_BOOTS
                 };
+                // The full five-level upgrade stack must survive every physical
+                // suit transfer, even with vanilla armor saved/restored.
+                final String protectionFive="protection,protection,protection,protection,protection";
                 for(int tier=0;tier<2;tier++){
                   var parts=tier==0?new net.minecraft.world.item.Item[]{
                     ObsidianNetwork.POWER_ARMOR_HELMET.get(),
@@ -78,6 +81,8 @@ test_class = r'''
                   };
                   check(owned(level,base,player).isEmpty(),"old world stand remains before tier "+tier);
                   for(int i=0;i<4;i++)player.setItemSlot(slots[i],new net.minecraft.world.item.ItemStack(parts[i]));
+                  player.getItemBySlot(slots[1]).set(
+                    dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),protectionFive);
                   check(dev.obsidiannetwork.powerarmor.PowerArmorRuntime.full(player),"missing tier "+tier+" before first exit");
                   // First-ever V exit: no previous equipment backup exists.
                   check(dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.exit(player)==1,"first exit failed, tier "+tier);
@@ -85,6 +90,9 @@ test_class = r'''
                   var stands=owned(level,base,player);
                   check(stands.size()==1,"first exit created "+stands.size()+" world suits, tier "+tier);
                   var stand=stands.get(0);
+                  check(protectionFive.equals(stand.getItemBySlot(slots[1]).get(
+                    dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get())),
+                    "all five Protection cards must survive first exit");
                   check(!stand.isInvisible(),"exited suit is invisible, tier "+tier);
                   for(int i=0;i<4;i++){
                     check(player.getItemBySlot(slots[i]).isEmpty(),"player retains duplicated piece "+i);
@@ -99,6 +107,9 @@ test_class = r'''
                     "early item overwrite from repeated entry packet "+i);
                   completeTransition(player);
                   check(stand.isRemoved(),"entered world suit still exists, tier "+tier);
+                  check(protectionFive.equals(player.getItemBySlot(slots[1]).get(
+                    dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get())),
+                    "all five Protection cards must survive re-entry");
                   check(owned(level,base,player).isEmpty(),"second owned stand after enter, tier "+tier);
                   for(int i=0;i<4;i++)check(player.getItemBySlot(slots[i]).getItem()==parts[i],
                     "player missing transferred piece "+i);
@@ -109,12 +120,15 @@ test_class = r'''
                     "prior vanilla armor not restored "+i);
                   stands=owned(level,base,player);
                   check(stands.size()==1,"re-exit not exactly one world suit, tier "+tier);
+                  check(protectionFive.equals(stands.get(0).getItemBySlot(slots[1]).get(
+                    dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get())),
+                    "all five Protection cards must survive second exit");
                   for(int i=0;i<4;i++)check(stands.get(0).getItemBySlot(slots[i]).getItem()==parts[i],
                     "re-exit corrupted original suit "+i);
                   stands.get(0).discard();
                   for(int i=0;i<4;i++)player.setItemSlot(slots[i],net.minecraft.world.item.ItemStack.EMPTY);
                   System.out.println("POWER_ARMOR_REAL_ROUNDTRIP_V69 PASS tier=MK"+(tier+1)+
-                      " first_exit=true duplicate_click_guard=true previous_armor_restored=true");
+                      " first_exit=true duplicate_click_guard=true previous_armor_restored=true protection5_roundtrip=true");
                 }
                 helper.succeed();
               }
