@@ -2021,6 +2021,8 @@ jobs:
           python3 features/v17/apply-power-armor-transitions-59.py
           # Build 60: explicit authenticated client/server right-click suit interaction.
           python3 features/v17/apply-power-armor-enter-packet-60.py
+          # Build 62: remove-first transfers, rollback + guaranteed click input and animations.
+          python3 features/v17/apply-power-armor-critical-62.py
           python3 -m json.tool work/src/main/resources/data/apotheosis/data_maps/item/loot_category_overrides.json >/dev/null
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
