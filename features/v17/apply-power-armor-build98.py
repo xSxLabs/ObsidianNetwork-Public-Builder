@@ -111,7 +111,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
-import net.neoforged.neoforge.event.tick.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** BUILD98_POWER_ARMOR_VISUAL_AND_PLACEMENT: all cosmetic effects are local. */
 @EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
