@@ -291,7 +291,8 @@ for card in cards:
   "ingredients":["obsidiannetwork:power_armor_upgrade",ingredients[card]] + (["minecraft:netherite_ingot","minecraft:diamond_block"] if card in {"strength","resistance","speed","haste","regeneration","fire_resistance","jump_boost","network_elytra"} else []),
   "result":{"id":"obsidiannetwork:power_card_"+card,"count":1}
  }
- put(r/f"data/obsidiannetwork/recipe/power_card_{card}.json",recipe)
+ if card not in {"mending","unbreaking"}:
+  put(r/f"data/obsidiannetwork/recipe/power_card_{card}.json",recipe)
 for lang in ("en_us","de_de"):
  path=r/f"assets/obsidiannetwork/lang/{lang}.json"
  obj=json.loads(path.read_text(encoding="utf-8"))
