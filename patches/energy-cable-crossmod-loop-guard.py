@@ -24,25 +24,24 @@ def end_brace(source,at):
     return i
 end=end_brace(s,s.index('{',start.start()))
 handler=s[start.start():end]
-fields=[]
+field="energyActiveTransfer"
 for name,ret in (("getAmountAsLong","0L"),("extract","0"),("insert","0")):
     match=re.search(r'\b'+name+r'\s*\([^)]*\)\s*\{',handler)
     assert match, "missing energy method: "+name
     brace=match.end()-1
     finish=end_brace(handler,brace)
     body=handler[brace+1:finish-1]
-    field="energyActive"+name[0].upper()+name[1:]
-    fields.append("   private static final ThreadLocal<java.util.Set<Object>> "+field+
-       " = ThreadLocal.withInitial(() -> java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>()));")
-    replacement="{\n      var active = "+field+".get();\n"+
-      "      if (!active.add(this)) return "+ret+";\n"+
-      "      try {"+body+"\n      } finally {\n"+
-      "         active.remove(this);\n"+
-      "         if (active.isEmpty()) "+field+".remove();\n"+
-      "      }\n   }"
+
+    replacement=(
+      "{\\n      var active = "+field+".get();\\n"
+      "      if (!active.add(EnergyCableBlockEntity.this)) return "+ret+";\\n"
+      "      try {"+body+"\\n      } finally {\\n"
+      "         active.remove(EnergyCableBlockEntity.this);\\n"
+      "         if (active.isEmpty()) "+field+".remove();\\n"
+      "      }\\n   }")
     handler=handler[:brace]+replacement+handler[finish:]
 s=s[:start.start()]+handler+s[end:]
-s=s.replace(cls,cls+"\n   // "+marker+"\n"+"\n".join(fields),1)
+s=s.replace(cls,cls+"\n   // "+marker+"\n   private static final ThreadLocal<java.util.Set<Object>> "+field+" = ThreadLocal.withInitial(() -> java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>()));",1)
 assert s.count(marker)==1
 p.write_text(s,encoding="utf-8")
 print("CROSSMOD_ENERGY_LOOP_GUARD_PASS: cyclic FE reentry blocked, transactions untouched")
