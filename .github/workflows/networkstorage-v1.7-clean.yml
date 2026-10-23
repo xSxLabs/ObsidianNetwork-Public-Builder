@@ -2440,6 +2440,8 @@ jobs:
           python3 patches/inject-drive-50-menu-server-stress-gametest.py
           # New features: real 50-drive capacity and item-level FE glider GameTest.
           python3 patches/inject-network-elytra-storage-meter-gametest.py
+          # Build 69: headless MK1/MK2 real server ownership/backup/duplication GameTest.
+          python3 features/v17/inject-power-armor-roundtrip-gametest-69.py
           # Build 289: real 9-slot BE handler mutation/no-op stress (postpatch only).
           python3 patches/inject-terminal-craft-slot-noop-gametest.py
           # Build 291: run actual menu QUICK_MOVE on 50-drive, 800-cell network.
@@ -2589,7 +2591,11 @@ jobs:
           grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'NETWORK_ELYTRA_AND_LIVE_STORAGE_50_DRIVE_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'POWER_ARMOR_REAL_ROUNDTRIP_V69 PASS tier=MK1' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'POWER_ARMOR_REAL_ROUNDTRIP_V69 PASS tier=MK2' /tmp/build103-postpatch-gametest.log
           grep -Fq 'NETWORK_ELYTRA_AND_LIVE_STORAGE_50_DRIVE_GAMETEST_V1 PASS' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'POWER_ARMOR_REAL_ROUNDTRIP_V69 PASS tier=MK1' /tmp/build103-curios-installed-gametest.log
+          grep -Fq 'POWER_ARMOR_REAL_ROUNDTRIP_V69 PASS tier=MK2' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'REAL_50_DRIVE_TERMINAL_STORAGE_METER_SYNC_V1 PASS' /tmp/build103-postpatch-gametest.log
