@@ -2034,6 +2034,8 @@ jobs:
                               print("TESSERACT_OWNER_DIAG_CALLSITE",k+1,ls[k][:1600])
           print("TESSERACT_OWNER_DIAG_PASS")
           PY
+          # Build 92: persistent, per-player private Tesseract channels and cross-owner isolation.
+          python3 features/v17/apply-tesseract-private-channels.py
           python3 features/v17/apply-power-armor-stage1.py
           python3 features/v17/apply-power-armor-cards.py
           python3 features/v17/apply-power-armor-animation.py
