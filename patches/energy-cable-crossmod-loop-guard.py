@@ -33,12 +33,12 @@ for name,ret in (("getAmountAsLong","0L"),("extract","0"),("insert","0")):
     body=handler[brace+1:finish-1]
 
     replacement=(
-      "{\\n      var active = "+field+".get();\\n"
-      "      if (!active.add(EnergyCableBlockEntity.this)) return "+ret+";\\n"
-      "      try {"+body+"\\n      } finally {\\n"
-      "         active.remove(EnergyCableBlockEntity.this);\\n"
-      "         if (active.isEmpty()) "+field+".remove();\\n"
-      "      }\\n   }")
+      "{\n      var active = "+field+".get();\n"
+      "      if (!active.add(EnergyCableBlockEntity.this)) return "+ret+";\n"
+      "      try {"+body+"\n      } finally {\n"
+      "         active.remove(EnergyCableBlockEntity.this);\n"
+      "         if (active.isEmpty()) "+field+".remove();\n"
+      "      }\n   }")
     handler=handler[:brace]+replacement+handler[finish:]
 s=s[:start.start()]+handler+s[end:]
 s=s.replace(cls,cls+"\n   // "+marker+"\n   private static final ThreadLocal<java.util.Set<Object>> "+field+" = ThreadLocal.withInitial(() -> java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>()));",1)
