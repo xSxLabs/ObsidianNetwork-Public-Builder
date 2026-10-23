@@ -2072,6 +2072,13 @@ jobs:
           grep -Fq 'BUILD94_POWER_ARMOR_NETWORK_ELYTRA' work/src/main/java/dev/obsidiannetwork/item/NetworkElytraItem.java
           grep -Fq 'new AABB(pad)' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorSuitWorld.java
           test -f work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorElytraBridge.java
+          # Build 95: optional Jade 26.1.2 entity HUD displays actual saved upgrade bonuses
+          # while looking at a full, real ArmorStand suit; no Jade hard dependency.
+          python3 features/v17/apply-power-armor-jade-95.py
+          grep -Fq 'BUILD95_JADE_POWER_ARMOR_BONUS' work/src/main/java/dev/obsidiannetwork/compat/PowerArmorJadePlugin.java
+          grep -Fq "compileOnly 'maven.modrinth:jade:26.1.12+neoforge'" work/build.gradle
+          python3 -m json.tool work/src/main/resources/assets/obsidiannetwork/lang/de_de.json >/dev/null
+          python3 -m json.tool work/src/main/resources/assets/obsidiannetwork/lang/en_us.json >/dev/null
           python3 - <<'PY'
           from pathlib import Path
           import json
