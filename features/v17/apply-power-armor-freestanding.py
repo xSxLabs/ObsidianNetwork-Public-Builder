@@ -2012,12 +2012,12 @@ for obsolete in ("MENDING","UNBREAKING"):
 # 5 modules = the equivalent of ten vanilla Protection levels (4%/level).
 # Damaged armor is never created; a successful shield instead spends FE.
 b49_replace("powerarmor/PowerArmorRuntime.java",
-'''  float reduction=Math.min(0.995f,Math.min(4,protection)*0.245f);
+'''  float reduction=Math.min(0.995f,Math.min(5,protection)*0.195f);
   var source=event.getSource();
-  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE))reduction+=Math.min(4,fire)*0.02f;
-  if(source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION))reduction+=Math.min(4,blast)*0.02f;
-  if(source.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE))reduction+=Math.min(4,projectile)*0.02f;
-  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FALL))reduction+=Math.min(4,feather)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE))reduction+=Math.min(5,fire)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION))reduction+=Math.min(5,blast)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE))reduction+=Math.min(5,projectile)*0.02f;
+  if(source.is(net.minecraft.tags.DamageTypeTags.IS_FALL))reduction+=Math.min(5,feather)*0.02f;
   reduction=Math.min(0.995f,reduction);
   long cost=Math.max(400,(long)(amount*1200.0f*(1.0f+protection*0.5f)));''',
 '''  // Each module doubles the corresponding vanilla enchantment level.
