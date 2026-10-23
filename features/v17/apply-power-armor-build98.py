@@ -142,8 +142,8 @@ public final class PowerArmorBuild98Client {
   g.fill(x-1,y-2,x+91,y+10,0x9b101923);
   g.fill(x,y+5,x+90,y+8,0xff243642);
   g.fill(x,y+5,x+(int)Math.round(90*fraction),y+8,col);
-  g.drawString(mc.font,"POWER ARMOR",x,y-5,0xffb9d6df);
-  g.drawString(mc.font,pct+"%",x+72,y-5,col);
+  g.text(mc.font,"POWER ARMOR",x,y-5,0xffb9d6df);
+  g.text(mc.font,pct+"%",x+72,y-5,col);
  }
 
  @SubscribeEvent public static void jetThrusters(ClientTickEvent.Post event){
@@ -217,8 +217,7 @@ public final class PowerArmorFirstPersonArms {
   for(int i=1;i<PowerArmorRuntime.SLOTS.length;i++)
    if(PowerArmorRuntime.tier(mc.player.getItemBySlot(PowerArmorRuntime.SLOTS[i]),i)!=tier)return;
   var renderer=mc.getEntityRenderDispatcher().getPlayerRenderer(event.getPlayer());
-  if(!(renderer instanceof AvatarRenderer<?> avatar))return;
-  var model=avatar.getModel();
+  var model=renderer.getModel();
   var part=event.getArm()==HumanoidArm.RIGHT?model.rightArm:model.leftArm;
   part.resetPose();
   part.zRot=event.getArm()==HumanoidArm.RIGHT?0.1f:-0.1f;
