@@ -629,8 +629,17 @@ unique={
  "thorns":"minecraft:cactus","unbreaking":"minecraft:anvil",
  "mending":"minecraft:experience_bottle","depth_strider":"minecraft:prismarine_shard",
  "frost_walker":"minecraft:blue_ice","soul_speed":"minecraft:soul_soil",
- "swift_sneak":"minecraft:echo_shard"
+ "swift_sneak":"minecraft:echo_shard",
+ "strength":"minecraft:blaze_rod",
+ "resistance":"minecraft:nether_star",
+ "speed":"minecraft:sugar",
+ "haste":"minecraft:beacon",
+ "regeneration":"minecraft:totem_of_undying",
+ "fire_resistance":"minecraft:ancient_debris",
+ "jump_boost":"minecraft:rabbit_foot",
+ "network_elytra":"obsidiannetwork:network_elytra"
 }
+assert set(icons)==set(unique), "BUILD95 all 25 card textures need matching recipes"
 for card in icons:
  rare=card=="flight"
  b32_put(Path(os.environ["V1_RESOURCE_ROOT"])/f"data/obsidiannetwork/recipe/power_card_{card}.json",{
