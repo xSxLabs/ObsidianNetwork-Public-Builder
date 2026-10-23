@@ -2062,6 +2062,10 @@ jobs:
           # Build 70: register AttributeSupplier for all four GeckoLib ArmorStand-derived entity types.
           python3 features/v17/apply-power-armor-attributes-70.py
           grep -Fq 'EntityAttributeCreationEvent event' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorAttributes.java
+          # Build 93: verified physical equipment protection + front dock + MK3..MK12.
+          python3 features/v17/apply-power-armor-bundle-93.py
+          test -f work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorStats.java
+          grep -Fq 'BUILD93_POWER_ARMOR_PASS' features/v17/apply-power-armor-bundle-93.py
           python3 -m json.tool work/src/main/resources/data/apotheosis/data_maps/item/loot_category_overrides.json >/dev/null
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
