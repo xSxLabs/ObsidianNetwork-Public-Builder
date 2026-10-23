@@ -2011,6 +2011,7 @@ jobs:
           python3 features/v17/apply-power-armor-animation.py
           # Free-standing Power Armor: hand-placed station is an upgrade bench ONLY.
           python3 features/v17/apply-power-armor-freestanding.py
+          python3 features/v17/apply-power-armor-effect-caps-78.py
           # Build 55: Apotheosis 26.1 affix + socket category data map for BOTH armor tiers.
           # Keep this data-only and optional; no hard dependency or power-armor component migrations.
           python3 features/v17/apply-power-armor-apotheosis.py
