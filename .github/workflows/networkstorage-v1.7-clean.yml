@@ -2025,6 +2025,8 @@ jobs:
           python3 features/v17/apply-power-armor-critical-62.py
           # Build 63: persistent interactable GeckoLib suit entity, owned equipment, Apotheosis equipment classification.
           python3 features/v17/apply-power-armor-geckolib-world-63.py
+          # Build 65: stable vanilla persistent suit, verified client right-click and GeckoLib fallback.
+          python3 features/v17/apply-power-armor-reliability-65.py
           python3 -m json.tool work/src/main/resources/data/apotheosis/data_maps/item/loot_category_overrides.json >/dev/null
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
