@@ -68,7 +68,7 @@ addition='''  // CLEAN_V17_CARDS_V1: installation/deinstallation is station-only
    String[] entries=installed.isEmpty()?new String[0]:installed.split(",");
    // No duplicate effect cards, except protection (8 levels maximum).
    int count=0;for(String id:entries)if(id.equals(card.upgradeId))count++;
-   if(entries.length>=15||count>=java.util.Map.of("protection",5,"strength",3,"resistance",2,"speed",3,"haste",3,"regeneration",2,"jump_boost",2).getOrDefault(card.upgradeId,1))return InteractionResult.FAIL;
+   if(entries.length>=15||count>=(card.upgradeId.equals("protection")?4:1))return InteractionResult.FAIL;
    chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),
        installed.isEmpty()?card.upgradeId:installed+","+card.upgradeId);
    station.put(1,chest);
