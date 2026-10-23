@@ -17,13 +17,12 @@ class Reliable65(unittest.TestCase):
   self.assertIn("PowerArmorVisualEntity.java",S)
  def test_client_not_cancelled_and_server_validation(self):
   self.assertIn("if(event.getEntity() instanceof ServerPlayer player)",S)
-  self.assertIn("PlayerArmor",S) if False else None
   self.assertIn("stand.getBoundingBox().getCenter().subtract(eye).normalize().dot(look)>0.90D",S)
   self.assertIn("new PowerArmorEnterPayload(-1)",S)
   self.assertIn("mine(stand,player)&&full(stand)",S)
  def test_valid_armor_animation_and_diagnostics(self):
   self.assertIn("float spread=55F*open;",S)
   self.assertIn('?"animation.power_armor.open":"animation.power_armor.close"',S)
-  self.assertIn("Commands.literal(\\"status\\")",S)
+  self.assertIn('Commands.literal("status")',S)
   self.assertIn("owned_stands=",S)
 if __name__=="__main__":unittest.main()
