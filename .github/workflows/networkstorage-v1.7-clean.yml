@@ -2076,6 +2076,22 @@ jobs:
           # while looking at a full, real ArmorStand suit; no Jade hard dependency.
           python3 features/v17/apply-power-armor-jade-95.py
           grep -Fq 'BUILD95_JADE_POWER_ARMOR_BONUS' work/src/main/java/dev/obsidiannetwork/compat/PowerArmorJadePlugin.java
+          # Build 98: five combined player-requested HUD, FX, station-exit and 1P features.
+          python3 features/v17/apply-power-armor-build98.py
+          grep -Fq 'BUILD98_SUIT_REPLACEABLE' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorSuitWorld.java
+          grep -Fq 'RenderArmEvent' work/src/main/java/dev/obsidiannetwork/client/PowerArmorFirstPersonArms.java
+          grep -Fq 'RenderGuiEvent.Post' work/src/main/java/dev/obsidiannetwork/client/PowerArmorBuild98Client.java
+          grep -Fq 'displayClientMessage' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorCommands.java
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+          r=Path("work/src/main/resources/assets/obsidiannetwork/textures/entity")
+          for tier in range(1,13):
+           f=r/f"power_armor_firstperson_mk{tier}.png"
+           assert f.is_file() and f.read_bytes().startswith(b"\\x89PNG\\r\\n\\x1a\\n"),f
+           assert struct.unpack(">II",f.read_bytes()[16:24])==(64,64),f
+          print("BUILD98_TWELVE_FIRST_PERSON_ARM_ASSETS PASS")
+          PY
           grep -Fq "compileOnly 'maven.modrinth:jade:26.1.12+neoforge'" work/build.gradle
           python3 -m json.tool work/src/main/resources/assets/obsidiannetwork/lang/de_de.json >/dev/null
           python3 -m json.tool work/src/main/resources/assets/obsidiannetwork/lang/en_us.json >/dev/null
