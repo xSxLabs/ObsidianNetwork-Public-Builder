@@ -19,6 +19,7 @@ class WorldEntity63(unittest.TestCase):
    "Entity#interactAt was removed",
    "setNoGravity(true);",
    "PowerArmorStand stand=new PowerArmorStand(type,level)",
+   "var type=mk2?",
    "if(stand instanceof PowerArmorStand worldSuit)",
    "worldSuit.animate(entering);",
    "worldSuit.stopAnimation();"):

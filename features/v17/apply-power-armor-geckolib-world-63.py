@@ -132,7 +132,7 @@ renderer.write_text(source,encoding="utf-8")
 world="powerarmor/PowerArmorSuitWorld.java"
 change(world,
  '''  ArmorStand stand=new ArmorStand(level,pos.getX()+0.5D,pos.getY(),pos.getZ()+0.5D);''',
- '''  boolean mk2=PowerArmorRuntime.piece(suit.get(0),0,true);
+ '''  // mk2 was already validated at the start of spawn(); reuse that value.
   var type=mk2?dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_WORLD_MK2.get()
               :dev.obsidiannetwork.ObsidianNetwork.POWER_ARMOR_WORLD_MK1.get();
   PowerArmorStand stand=new PowerArmorStand(type,level);
