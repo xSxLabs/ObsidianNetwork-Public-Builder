@@ -6,7 +6,7 @@ j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 r=Path(os.environ["V1_RESOURCE_ROOT"])
 cards=["flight","night_vision","water_breathing","protection","fire_protection","blast_protection",
        "projectile_protection","feather_falling","respiration","aqua_affinity","thorns",
-       "unbreaking","mending","depth_strider","frost_walker","soul_speed","swift_sneak"]
+       "unbreaking","mending","depth_strider","frost_walker","soul_speed","swift_sneak","strength","resistance","speed","haste","regeneration","fire_resistance","jump_boost","network_elytra"]
 def replace(path,old,new):
  p=j/path
  s=p.read_text(encoding="utf-8")
@@ -68,7 +68,7 @@ addition='''  // CLEAN_V17_CARDS_V1: installation/deinstallation is station-only
    String[] entries=installed.isEmpty()?new String[0]:installed.split(",");
    // No duplicate effect cards, except protection (8 levels maximum).
    int count=0;for(String id:entries)if(id.equals(card.upgradeId))count++;
-   if(entries.length>=15||count>=(card.upgradeId.equals("protection")?4:1))return InteractionResult.FAIL;
+   if(entries.length>=15||count>=java.util.Map.of("protection",5,"strength",3,"resistance",2,"speed",3,"haste",3,"regeneration",2,"jump_boost",2).getOrDefault(card.upgradeId,1))return InteractionResult.FAIL;
    chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),
        installed.isEmpty()?card.upgradeId:installed+","+card.upgradeId);
    station.put(1,chest);
@@ -245,7 +245,15 @@ ingredients={
  "depth_strider":"minecraft:heart_of_the_sea",
  "frost_walker":"minecraft:blue_ice",
  "soul_speed":"minecraft:soul_soil",
- "swift_sneak":"minecraft:echo_shard"
+ "swift_sneak":"minecraft:echo_shard",
+ "strength":"minecraft:blaze_rod",
+ "resistance":"minecraft:nether_star",
+ "speed":"minecraft:sugar",
+ "haste":"minecraft:beacon",
+ "regeneration":"minecraft:totem_of_undying",
+ "fire_resistance":"minecraft:ancient_debris",
+ "jump_boost":"minecraft:rabbit_foot",
+ "network_elytra":"obsidiannetwork:network_elytra"
 }
 assert set(ingredients)==set(cards) and len(set(ingredients.values()))==len(cards), "Distinct recipes required"
 for card in cards:
@@ -257,7 +265,7 @@ for card in cards:
  # Each special module uses the blank base upgrade board.
  recipe={
   "type":"minecraft:crafting_shapeless",
-  "ingredients":["obsidiannetwork:power_armor_upgrade",ingredients[card]],
+  "ingredients":["obsidiannetwork:power_armor_upgrade",ingredients[card]] + (["minecraft:netherite_ingot","minecraft:diamond_block"] if card in {"strength","resistance","speed","haste","regeneration","fire_resistance","jump_boost","network_elytra"} else []),
   "result":{"id":"obsidiannetwork:power_card_"+card,"count":1}
  }
  put(r/f"data/obsidiannetwork/recipe/power_card_{card}.json",recipe)
