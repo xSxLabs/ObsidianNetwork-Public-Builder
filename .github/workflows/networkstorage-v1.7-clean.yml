@@ -2066,6 +2066,24 @@ jobs:
           python3 features/v17/apply-power-armor-bundle-93.py
           test -f work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorStats.java
           grep -Fq 'BUILD93_POWER_ARMOR_PASS' features/v17/apply-power-armor-bundle-93.py
+          # Build 94: exact facing-red-pad station + 25 matching disk textures +
+          # full-suit Network Elytra gliding/Shift boost, no extra Elytra slot.
+          python3 features/v17/apply-power-armor-network-elytra-94.py
+          grep -Fq 'BUILD94_POWER_ARMOR_NETWORK_ELYTRA' work/src/main/java/dev/obsidiannetwork/item/NetworkElytraItem.java
+          grep -Fq 'new AABB(pad)' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorSuitWorld.java
+          test -f work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorElytraBridge.java
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          r=Path("work/src/main/resources/assets/obsidiannetwork")
+          cards=("strength","resistance","speed","haste","regeneration","fire_resistance","jump_boost","network_elytra")
+          for card in cards:
+           key="power_card_"+card
+           model=json.loads((r/"models/item"/(key+".json")).read_text())
+           assert model["textures"]["layer0"]=="obsidiannetwork:item/"+key,key
+           assert (r/"textures/item"/(key+".png")).is_file(),key
+          print("BUILD94_ALL_EIGHT_NEW_DISK_TEXTURES PASS")
+          PY
           python3 -m json.tool work/src/main/resources/data/apotheosis/data_maps/item/loot_category_overrides.json >/dev/null
           # Project Performance + Wireless: bundle several menu and terminal
           # hotpath optimizations into a single fully validated test JAR.
