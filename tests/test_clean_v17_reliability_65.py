@@ -13,7 +13,7 @@ class Reliable65(unittest.TestCase):
  def test_restore_vanilla_real_world_entity_with_geo_visual(self):
   self.assertIn("ArmorStand stand=new ArmorStand(level,pos.getX()",S)
   self.assertIn("stand.setInvisible(false)",S)
-  self.assertIn("stand.setInvisible(true);"+" not in w",S)
+  self.assertIn('assert "stand.setInvisible(true);" not in w',S)
   self.assertIn("PowerArmorVisualEntity.java",S)
  def test_client_not_cancelled_and_server_validation(self):
   self.assertIn("if(event.getEntity() instanceof ServerPlayer player)",S)
