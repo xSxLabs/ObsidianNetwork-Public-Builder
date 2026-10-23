@@ -2008,6 +2008,32 @@ jobs:
           python3 features/wireless-energy/apply-network-elytra-speedcheck.py
           # Clean new v1.7: code begins ONLY from confirmed v1.6 Build 379.
           # NEVER reference old networkstorage-v1.7 / private/v1.7 generators.
+          # Build 91: inspect final Tesseract channel API before altering channel ownership.
+          # Read-only diagnostics; do not mutate transport or release sources.
+          python3 - <<'PY'
+          from pathlib import Path
+          J=Path("work/src/main/java/dev/obsidiannetwork")
+          for rel in ("blockentity/TesseractBlockEntity.java","block/TesseractBlock.java",
+                      "menu/TesseractMenu.java","client/TesseractScreen.java"):
+              p=J/rel
+              print("TESSERACT_OWNER_DIAG_FILE",rel,"exists",p.exists())
+              if not p.exists(): continue
+              src=p.read_text(encoding="utf-8")
+              print("TESSERACT_OWNER_DIAG_BEGIN",rel,len(src))
+              print(src[:21000])
+              print("TESSERACT_OWNER_DIAG_END",rel)
+          for p in sorted(J.rglob("*.java")):
+              if p.name in ("TesseractBlockEntity.java","TesseractBlock.java","TesseractMenu.java","TesseractScreen.java"):continue
+              src=p.read_text(encoding="utf-8")
+              if "setChannel(" in src or ("Tesseract" in src and ("Payload" in p.name or "Packet" in p.name)):
+                  print("TESSERACT_OWNER_DIAG_CALLER",p.relative_to(J))
+                  ls=src.splitlines()
+                  for i,line in enumerate(ls):
+                      if "setChannel(" in line or ("Tesseract" in line and ("Payload" in p.name or "Packet" in p.name)):
+                          for k in range(max(0,i-3),min(len(ls),i+4)):
+                              print("TESSERACT_OWNER_DIAG_CALLSITE",k+1,ls[k][:1600])
+          print("TESSERACT_OWNER_DIAG_PASS")
+          PY
           python3 features/v17/apply-power-armor-stage1.py
           python3 features/v17/apply-power-armor-cards.py
           python3 features/v17/apply-power-armor-animation.py
