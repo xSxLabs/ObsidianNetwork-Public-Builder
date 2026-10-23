@@ -81,13 +81,15 @@ public final class PowerArmorJadePlugin implements IWailaPlugin {
    // anything and does not expose saved previous armor or owner UUIDs.
    Map<String,Integer> cards=new LinkedHashMap<>();
    boolean powered=true;
+   boolean nightVisionOn=false;
    for(EquipmentSlot slot:PowerArmorRuntime.SLOTS){
     ItemStack piece=stand.getItemBySlot(slot);
     if(EnergyTool.energy(piece)<20L)powered=false;
     String raw=piece.get(ModDataComponents.POWER_ARMOR_UPGRADES.get());
     if(raw==null || raw.isBlank())continue;
     for(String id:raw.split(",")){
-     if(id.isBlank()||id.equals("nightvision_on"))continue;
+     if(id.equals("nightvision_on")){nightVisionOn=true;continue;}
+     if(id.isBlank())continue;
      cards.merge(id,1,Integer::sum);
     }
    }
@@ -113,7 +115,7 @@ public final class PowerArmorJadePlugin implements IWailaPlugin {
      case "jump_boost" -> label(tooltip,"jump_boost",Math.min(2,n));
      case "water_breathing" -> simple(tooltip,"water_breathing");
      case "night_vision" -> {
-      if(cards.containsKey("nightvision_on"))simple(tooltip,"night_vision_on");
+      if(nightVisionOn)simple(tooltip,"night_vision_on");
       else simple(tooltip,"night_vision_off");
      }
      // Damage reduction is FE-dependent, shared total capped at 80 percent.
