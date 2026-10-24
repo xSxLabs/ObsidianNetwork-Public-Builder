@@ -2305,6 +2305,37 @@ jobs:
           assert "stored+=Math.max(0L,EnergyTool.energy(item));" in src
           print("BUILD121_UNFRAMED_VIOLET_FE_HUD PASS")
           PY
+          # Build122: Bliss 2.1.2 + vanilla: remove entity-translucent
+          # body membrane; render sparse 1-bit honeycomb in armor cutout.
+          python3 features/v17/apply-power-armor-shader-cutout-122.py
+          grep -Fq 'BUILD122_BLISS_SAFE_ARMOR_CUTOUT' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          python3 - <<'PY'
+          import struct,zlib
+          from pathlib import Path
+          src=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
+          assert "RenderTypes.armorCutoutNoCull(SKIN)" in src
+          assert "RenderTypes.entityTranslucent(SKIN)" not in src
+          assert ".setColor(red,green,blue,255)" in src
+          assert ".setLight(0x00F000F0)" not in src
+          assert "BUILD120_ELYTRA_SHIELD_POSE" in src
+          assert src.count("submitPart(stack,collector,model.")==6
+          assert "EnergyTool.energy(armor)<20L" in src
+          tex=Path("work/src/main/resources/assets/obsidiannetwork/textures/entity/power_armor_shield_hex.png").read_bytes()
+          assert tex[:8]==b"\\x89PNG\\r\\n\\x1a\\n"
+          assert struct.unpack(">II",tex[16:24])==(64,64)
+          # Decode non-filtered RGBA PNG and ensure no semi-transparent texels.
+          pos=8;buf=b""
+          while pos<len(tex):
+           size=struct.unpack(">I",tex[pos:pos+4])[0]
+           kind=tex[pos+4:pos+8]
+           if kind==b"IDAT":buf+=tex[pos+8:pos+8+size]
+           pos+=size+12
+          raw=zlib.decompress(buf)
+          assert len(raw)==64*(1+64*4)
+          opacities=[raw[y*257+1+x*4+3] for y in range(64) for x in range(64)]
+          assert set(opacities)=={0,255}
+          print("BUILD122_BLISS_SAFE_ARMOR_CUTOUT PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
