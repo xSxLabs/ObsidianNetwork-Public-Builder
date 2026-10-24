@@ -16,7 +16,7 @@ class Build98(unittest.TestCase):
   self.assertNotIn("BlockTags.REPLACEABLE)",SRC)
   self.assertNotIn("level.destroyBlock(",SRC)
  def test_actionbar_not_chat(self):
-  self.assertIn("p.displayClientMessage(Component.translatable(",SRC)
+  self.assertIn("ClientboundSetActionBarTextPacket(",SRC)
   self.assertIn('"message.obsidiannetwork.power_armor.night_on"',SRC)
   self.assertIn('"message.obsidiannetwork.power_armor.night_off"',SRC)
  def test_particles_and_percent(self):
