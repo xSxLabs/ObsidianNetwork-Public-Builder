@@ -6,7 +6,7 @@ j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 r=Path(os.environ["V1_RESOURCE_ROOT"])
 cards=["flight","night_vision","water_breathing","protection","fire_protection","blast_protection",
        "projectile_protection","feather_falling","respiration","aqua_affinity","thorns",
-       "unbreaking","mending","depth_strider","frost_walker","soul_speed","swift_sneak","strength","resistance","speed","haste","regeneration","fire_resistance","jump_boost","network_elytra"]
+       "unbreaking","mending","depth_strider","frost_walker","soul_speed","swift_sneak","strength","resistance","speed","haste","regeneration","fire_resistance","jump_boost","network_elytra","energy_shield"]
 def replace(path,old,new):
  p=j/path
  s=p.read_text(encoding="utf-8")
