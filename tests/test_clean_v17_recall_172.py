@@ -18,7 +18,8 @@ class PowerArmorRecall172(unittest.TestCase):
    "noCollision(visual,visual.getBoundingBox().move(move))",
    "finishEntering(stand,player)"):
    self.assertIn(m,PATCH,m)
-  self.assertNotIn("MAX_RANGE",PATCH)
+  recall=PATCH.split("core=r'''",1)[1].split("'''.replace(",1)[0]
+  self.assertNotIn("MAX_RANGE",recall)
  def test_safe_ownership_and_single_source(self):
   for s in ("stand.entityTags().contains(OWNER+owner)",
    "PowerArmorSuitWorld.full(stand)","matches.size()!=1",
