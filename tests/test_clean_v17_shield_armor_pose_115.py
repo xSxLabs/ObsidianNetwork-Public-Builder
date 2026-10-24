@@ -14,7 +14,7 @@ class ArmorPose115(unittest.TestCase):
     "stack.mulPose(Axis.YP.rotationDegrees(180.0F-state.bodyRot));",
     "stack.scale(-1.0F,-1.0F,1.0F);",
     "stack.translate(0.0F,-1.501F,0.0F);",
-    "s.count('submitPart(stack,collector,model.')==6",
+    's.count("submitPart(stack,collector,model.")==6',
     "joint.translateAndRotate(stack);",
     "phase*phase*(3F-2F*phase)",
     "Math.sin(time*.042D)",
