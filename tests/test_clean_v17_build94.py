@@ -24,9 +24,9 @@ class Build94(unittest.TestCase):
       isinstance(target,ast.Name) and target.id=="icons" for target in node.targets):
     icons=ast.literal_eval(node.value)
     break
-  self.assertEqual(len(icons),25)
+  self.assertEqual(len(icons),26)
   for item in ("strength","resistance","speed","haste","regeneration",
-               "fire_resistance","jump_boost","network_elytra"):
+               "fire_resistance","jump_boost","network_elytra","energy_shield"):
    self.assertIn(item,icons)
    self.assertEqual(len(icons[item]),8)
    self.assertTrue(all(len(row)==8 for row in icons[item]))
