@@ -135,12 +135,13 @@ FEATURE_INGREDIENT={
  "fire_resistance":"minecraft:ancient_debris",
  "jump_boost":"minecraft:rabbit_foot",
  "network_elytra":"obsidiannetwork:network_elytra",
+ "energy_shield":"obsidiannetwork:advanced_energy_cell",
 }
 RARE={
  "flight","strength","resistance","speed","haste",
- "regeneration","fire_resistance","jump_boost","network_elytra",
+ "regeneration","fire_resistance","jump_boost","network_elytra","energy_shield",
 }
-assert len(FEATURE_INGREDIENT)==23 and RARE<=set(FEATURE_INGREDIENT)
+assert len(FEATURE_INGREDIENT)==24 and RARE<=set(FEATURE_INGREDIENT)
 card_signatures=set()
 for card,token in FEATURE_INGREDIENT.items():
  ident="power_card_"+card
@@ -162,11 +163,13 @@ for card,token in FEATURE_INGREDIENT.items():
  assert signature not in card_signatures,("Duplicate module card",card)
  card_signatures.add(signature)
  write_recipe(ident,obj)
-assert len(card_signatures)==23
+assert len(card_signatures)==24
 for disabled in ("mending","unbreaking"):
- assert not (recipes/("power_card_"+disabled+".json")).exists(),disabled
+ obsolete=recipes/("power_card_"+disabled+".json")
+ if obsolete.exists():obsolete.unlink()
+ assert not obsolete.exists(),disabled
 
 # Source integrity: the generator only touches recipes from existing items;
 # all completed suits, SavedData backups, station inventories and FE remain
 # exactly as they were before the overlay.
-print("BUILD103_POWER_ARMOR_EXPENSIVE_RECIPES PASS: 96 armor recipes, one Basic Energy Cell per item, uniform MK1..MK24 price, unique dyes, one premium blank board, 23 costly upgrade cards and 2 disabled legacy cards")
+print("BUILD103_POWER_ARMOR_EXPENSIVE_RECIPES PASS: 96 armor recipes, one Basic Energy Cell per item, uniform MK1..MK24 price, unique dyes, one premium blank board, 24 costly upgrade cards and 2 disabled legacy cards")
