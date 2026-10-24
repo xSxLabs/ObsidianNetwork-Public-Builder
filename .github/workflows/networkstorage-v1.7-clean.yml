@@ -76,7 +76,7 @@
 # Retry after fixing conduit ownership gate in private f4f3e03
 # User-authorized compile of additional mixed ITEM/FLUID fixes (e71b24e)
 # v1.6 compile retry: correct facade interaction variable names (private 70d7c46)
-name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
+name: 'xSxLabs Network Storage v1.7.32 RECALL (isolated)'
 # User-authorized corrected v1.6 build #5 succeeded; manual dispatch retained.
 # BUILD LOCK ACTIVE after successful run #5 (37959480117).
 # Original public workflow unchanged.
@@ -100,7 +100,7 @@ name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.7, v1.7.2]
+    branches: [v1.7.32]
     paths:
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - 'patches/**'

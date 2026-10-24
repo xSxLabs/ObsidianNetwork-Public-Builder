@@ -37,7 +37,8 @@ class PowerArmorRecall172(unittest.TestCase):
   self.assertNotIn("stand.entityTags().contains(MARKER)&&!PowerArmorSuitWorld.full(stand)",PATCH)
   self.assertIn("stand.getRemovalReason()",PATCH)
  def test_branch_pipeline(self):
-  self.assertIn("branches: [v1.7, v1.7.2]",WF)
+  self.assertIn("branches: [v1.7.32]",WF)
+  self.assertNotIn("branches: [v1.7, v1.7.2]",WF)
   self.assertLess(WF.index("apply-power-armor-subtle-shield-125.py"),WF.index("apply-power-armor-recall.py"))
   self.assertIn("V172_UNLIMITED_CROSS_DIM_RECALL PASS",WF)
 if __name__=="__main__":unittest.main()
