@@ -434,6 +434,23 @@ for tier,(english,german,primary,secondary,dye) in finishes.items():
  (res/f"textures/entity/power_armor_visual_mk{tier}.png").write_bytes(
     recolor_png(png.read_bytes(),primary,secondary))
 
+# Match the already-installed optional Apotheosis loot categories for ALL
+# variants, not just the historic MK1/MK2 mappings.
+apoth=Path(os.environ["V1_RESOURCE_ROOT"])/"data/apotheosis/data_maps/item/loot_category_overrides.json"
+assert apoth.exists(),"Apotheosis compatibility overlay missing"
+apoth_data=json.loads(load(apoth))
+assert isinstance(apoth_data.get("values"),dict)
+for tier in range(3,25):
+ for part,_,_,_ in parts:
+  key=f"obsidiannetwork:power_armor_mk{tier}_{part}"
+  category=f"apotheosis:{part}"
+  assert apoth_data["values"].get(key) in (None,category),key
+  apoth_data["values"][key]=category
+assert sum(1 for tier in range(1,25) for part,_,_,_ in parts
+ if apoth_data["values"].get("obsidiannetwork:power_armor_"+
+ (f"mk{tier}_" if tier>1 else "")+part)==f"apotheosis:{part}")==96
+dump(apoth,apoth_data)
+
 assert sum(load(mod).count(f'ITEMS.registerItem("power_armor_mk{t}_') for t in finishes)==88
 assert all(f"ARMOR_VISUAL_ENTITY_MK{t}" in load(mod) for t in finishes)
 assert 'getValue(ArmorStationBlock.FACING)' in load(world)
