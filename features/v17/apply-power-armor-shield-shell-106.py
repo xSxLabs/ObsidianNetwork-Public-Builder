@@ -33,7 +33,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
@@ -50,7 +50,7 @@ import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 @EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
 public final class PowerArmorShieldClient {
  private PowerArmorShieldClient(){}
- private static final ResourceLocation SKIN=ResourceLocation.fromNamespaceAndPath(
+ private static final Identifier SKIN=Identifier.fromNamespaceAndPath(
       "obsidiannetwork","textures/entity/power_armor_shield_hex.png");
  private static final RenderType SHIELD_RENDER=RenderTypes.entityTranslucent(SKIN);
  private static final int LONGITUDE=28;
