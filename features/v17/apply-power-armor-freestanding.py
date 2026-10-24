@@ -573,9 +573,10 @@ icons={
  "regeneration":("00011000","00011000","00111100","11111111","11111111","00111100","00011000","00011000"),
  "fire_resistance":("00011000","00111100","01100110","11011011","11111111","01111110","00111100","00011000"),
  "jump_boost":("00011000","00111100","01111110","00011000","00011000","00111100","01100110","11000011"),
- "network_elytra":("10000001","11000011","11100111","01111110","00111100","00011000","00011000","00100100")
+ "network_elytra":("10000001","11000011","11100111","01111110","00111100","00011000","00011000","00100100"),
+ "energy_shield":("00111100","01100110","11000011","10011001","10011001","11000011","01100110","00111100")
 }
-assert len(icons)==25
+assert len(icons)==26
 
 def disk_png(icon,accent,empty=False):
  rows=[]
@@ -608,8 +609,8 @@ def disk_png(icon,accent,empty=False):
 palettes=[(84,218,255),(69,255,170),(69,168,255),(120,215,255),(255,98,66),
 (255,184,55),(255,220,125),(170,240,255),(100,210,255),(70,255,235),
 (245,102,202),(255,210,95),(78,255,154),(102,168,255),(125,227,255),(195,135,255),(255,185,91),
-(255,102,95),(112,218,255),(255,195,72),(237,175,80),(113,255,166),(255,132,83),(105,190,255),(137,105,255)]
-assert len(palettes)==len(icons)==25
+(255,102,95),(112,218,255),(255,195,72),(237,175,80),(113,255,166),(255,132,83),(105,190,255),(137,105,255),(80,220,255)]
+assert len(palettes)==len(icons)==26
 for k,(card,icon) in enumerate(icons.items()):
  name="power_card_"+card
  (resources/f"textures/item/{name}.png").write_bytes(disk_png(icon,palettes[k]))
@@ -637,7 +638,8 @@ unique={
  "regeneration":"minecraft:totem_of_undying",
  "fire_resistance":"minecraft:ancient_debris",
  "jump_boost":"minecraft:rabbit_foot",
- "network_elytra":"obsidiannetwork:network_elytra"
+ "network_elytra":"obsidiannetwork:network_elytra",
+ "energy_shield":"obsidiannetwork:advanced_energy_cell"
 }
 assert set(icons)==set(unique), "BUILD95 all 25 card textures need matching recipes"
 for card in icons:
