@@ -27,6 +27,18 @@ finishes={
 10:("Navy Copper","Marineblau-Kupfer",(23,41,69),(202,117,62),"orange_dye"),
 11:("Forest Champagne","Waldgrün-Champagner",(28,92,57),(194,171,112),"lime_dye"),
 12:("Ice Cobalt","Eis-Kobalt",(218,235,239),(38,101,207),"light_blue_dye"),
+13:("Titanium Orange","Titanorange",(174,181,186),(255,114,27),"light_gray_dye"),
+14:("Desert Storm","Wüstensturm",(198,173,119),(34,184,191),"brown_dye"),
+15:("Toxic Shadow","Toxischer Schatten",(25,28,32),(164,245,0),"black_dye"),
+16:("Magma","Magma",(198,82,32),(53,60,69),"orange_dye"),
+17:("Royal Sentinel","Königswache",(24,82,209),(243,201,79),"blue_dye"),
+18:("Emerald Knight","Smaragdritter",(16,166,108),(227,232,227),"green_dye"),
+19:("Copper Ghost","Kupfergeist",(180,106,64),(231,219,193),"orange_dye"),
+20:("Imperial Violet","Imperiales Violett",(69,16,104),(221,175,64),"purple_dye"),
+21:("Rose Phantom","Rosenphantom",(207,115,157),(41,46,54),"pink_dye"),
+22:("Chrome Reactor","Chromreaktor",(204,213,222),(165,220,36),"light_gray_dye"),
+23:("Canyon Tech","Canyon-Technik",(98,69,50),(54,213,237),"brown_dye"),
+24:("Solar Wasp","Solarwespe",(242,202,39),(23,26,32),"yellow_dye"),
 }
 
 def load(p):return p.read_text(encoding="utf-8")
