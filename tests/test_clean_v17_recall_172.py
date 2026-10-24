@@ -29,6 +29,13 @@ class PowerArmorRecall172(unittest.TestCase):
   recall=PATCH.split("core=r'''",1)[1].split("'''.replace(",1)[0]
   self.assertNotIn("setItemSlot(",recall)
   self.assertNotIn("addFreshEntity(stand)",recall)
+ def test_normal_entry_does_not_leave_stale_index(self):
+  # A normal (non-recall) interaction discards a complete suit.
+  # Destroyed stands must be unindexed; chunk-unloaded stands kept.
+  self.assertIn("V172_STALE_INDEX_GUARD",PATCH)
+  self.assertIn("reason.shouldDestroy()",PATCH)
+  self.assertNotIn("stand.entityTags().contains(MARKER)&&!PowerArmorSuitWorld.full(stand)",PATCH)
+  self.assertIn("stand.getRemovalReason()",PATCH)
  def test_branch_pipeline(self):
   self.assertIn("branches: [v1.7, v1.7.2]",WF)
   self.assertLess(WF.index("apply-power-armor-subtle-shield-125.py"),WF.index("apply-power-armor-recall.py"))

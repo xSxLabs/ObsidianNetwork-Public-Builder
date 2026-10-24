@@ -276,9 +276,14 @@ VISUAL_CASES
   }
  }
  @SubscribeEvent public static void leave(EntityLeaveLevelEvent e){
-  if(e.getLevel() instanceof ServerLevel world
-     &&e.getEntity() instanceof ArmorStand stand
-     &&stand.entityTags().contains(MARKER)&&!PowerArmorSuitWorld.full(stand))
+  if(!(e.getLevel() instanceof ServerLevel world)
+     ||!(e.getEntity() instanceof ArmorStand stand)
+     ||!stand.entityTags().contains(MARKER))return;
+  // V172_STALE_INDEX_GUARD: suit activation discards the world entity
+  // while it still contains all four armor pieces. Unloading a chunk
+  // must NOT erase the durable cross-dimension location entry.
+  var reason=stand.getRemovalReason();
+  if(reason!=null&&reason.shouldDestroy())
    PowerArmorRecallIndex.get(world.getServer()).remove(stand.getUUID());
  }
  @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){
