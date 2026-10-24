@@ -100,7 +100,7 @@ name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.7]
+    branches: [v1.7, v1.7.2]
     paths:
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - 'patches/**'
@@ -2382,6 +2382,31 @@ jobs:
           assert set(opacity)=={0,255}
           assert .045<sum(a==255 for a in opacity)/4096<.065
           print("BUILD125_SUBTLE_SHIELD PASS")
+          PY
+          # v1.7.2: unlimited-range cross-dimension Power Armor recall.
+          python3 features/v172/apply-power-armor-recall.py
+          python3 - <<'PY'
+          from pathlib import Path
+          j=Path("work/src/main/java/dev/obsidiannetwork/powerarmor")
+          w=(j/"PowerArmorSuitWorld.java").read_text()
+          r=(j/"PowerArmorRecall.java").read_text()
+          i=(j/"PowerArmorRecallIndex.java").read_text()
+          tickets=(j/"PowerArmorRecallTickets.java").read_text()
+          visual=(j/"PowerArmorVisualEntity.java").read_text()
+          assert "public static boolean recallEquip(ArmorStand stand,ServerPlayer player)" in w
+          assert "finishEntering(stand,player);" in w
+          assert "V172_UNLIMITED_CROSS_DIM_RECALL" in r
+          assert "PowerArmorRecallTickets.ticket(world,player.getUUID()" in r
+          assert "PowerArmorSuitWorld.recallEquip(stand,player)" in r
+          assert "PlayerTickEvent.Post" in r and "ServerStartedEvent" in r
+          assert "PowerArmorRecall.isVisualActive(getUUID())" in visual
+          assert "Location.CODEC.listOf()" in i
+          assert "RegisterTicketControllersEvent" in tickets
+          assert "MAX_RANGE" not in r
+          assert "setItemSlot(" not in r
+          assert (j/"PowerArmorRecallPayload.java").exists()
+          assert (j/"PowerArmorRecallKeyClient.java").exists()
+          print("V172_UNLIMITED_CROSS_DIM_RECALL PASS")
           PY
           python3 - <<'PY'
           from pathlib import Path

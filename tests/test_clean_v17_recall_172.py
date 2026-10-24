@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""v1.7.2: owner-only original-source recall across dimensions."""
+import ast
+import unittest
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+PATCH=(ROOT/"features/v172/apply-power-armor-recall.py").read_text(encoding="utf-8")
+WF=(ROOT/".github/workflows/networkstorage-v1.7-clean.yml").read_text(encoding="utf-8")
+class PowerArmorRecall172(unittest.TestCase):
+ def test_syntax(self):ast.parse(PATCH)
+ def test_any_distance_and_dimensions(self):
+  for m in ("V172_UNLIMITED_CROSS_DIM_RECALL","V172_DURABLE_SUIT_INDEX",
+   "PowerArmorRecallTickets.ticket(world,player.getUUID()",
+   "ServerStartedEvent","isVisualActive(getUUID())",
+   "PlayerTickEvent.Post","RegisterTicketControllersEvent",
+   "PowerArmorSuitWorld.recallEquip(stand,player)",
+   "locate(player,visual)","dir.scale(16D)",
+   "noCollision(visual,visual.getBoundingBox().move(move))",
+   "finishEntering(stand,player)"):
+   self.assertIn(m,PATCH,m)
+  self.assertNotIn("MAX_RANGE",PATCH)
+ def test_safe_ownership_and_single_source(self):
+  for s in ("stand.entityTags().contains(OWNER+owner)",
+   "PowerArmorSuitWorld.full(stand)","matches.size()!=1",
+   "ArmorLoadoutData.get(player.level().getServer()).has(player)",
+   "PowerArmorRecallIndex.get(player.level().getServer()).remove(stand.getUUID())"):
+   self.assertIn(s,PATCH,s)
+  recall=PATCH.split("core=r'''",1)[1].split("'''.replace(",1)[0]
+  self.assertNotIn("setItemSlot(",recall)
+  self.assertNotIn("addFreshEntity(stand)",recall)
+ def test_branch_pipeline(self):
+  self.assertIn("branches: [v1.7, v1.7.2]",WF)
+  self.assertLess(WF.index("apply-power-armor-subtle-shield-125.py"),WF.index("apply-power-armor-recall.py"))
+  self.assertIn("V172_UNLIMITED_CROSS_DIM_RECALL PASS",WF)
+if __name__=="__main__":unittest.main()

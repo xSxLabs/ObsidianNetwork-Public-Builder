@@ -115,7 +115,8 @@ edit("powerarmor/PowerArmorSuitWorld.java",
 edit("powerarmor/PowerArmorVisualEntity.java",
  '''  if(!level().isClientSide()&&tickCount>23)discard();''',
  '''  if(!level().isClientSide()&&tickCount>23
-    &&!entityTags().contains("xsxlabs_power_armor_recall_visual_v172"))discard();''')
+    &&(!entityTags().contains("xsxlabs_power_armor_recall_visual_v172")
+    ||!PowerArmorRecall.isVisualActive(getUUID())))discard();''')
 
 visual_cases="\n".join(
  f"   case {k} -> dev.obsidiannetwork.ObsidianNetwork.ARMOR_VISUAL_ENTITY_MK{k}.get();"
@@ -143,6 +144,7 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 /** V172_UNLIMITED_CROSS_DIM_RECALL:
  * Original suit NEVER MOVES during flight, never clones stacks.
@@ -158,6 +160,22 @@ public final class PowerArmorRecall {
  private record Flight(PowerArmorRecallIndex.Location loc,UUID visual,int ticks,boolean ready){}
  private static final Map<UUID,Flight> ACTIVE=new HashMap<>();
  private PowerArmorRecall(){}
+ /** Abandoned flight visuals disappear after server restart. */
+ public static boolean isVisualActive(UUID visual){
+  for(Flight f:ACTIVE.values())if(visual.equals(f.visual()))return true;
+  return false;
+ }
+ @SubscribeEvent public static void startup(ServerStartedEvent event){
+  // Tickets persist through crashes; clear old recall-only chunk tickets.
+  var server=event.getServer();
+  for(var loc:PowerArmorRecallIndex.get(server).all()){
+   ServerLevel old=source(server,loc);
+   if(old==null)continue;
+   BlockPos bp=BlockPos.containing(loc.x(),loc.y(),loc.z());
+   PowerArmorRecallTickets.ticket(old,UUID.fromString(loc.owner()),
+       bp.getX()>>4,bp.getZ()>>4,false);
+  }
+ }
  private static void tell(ServerPlayer p,String message){
   p.sendSystemMessage(Component.literal("Power Armor Recall: "+message));
  }
@@ -235,7 +253,9 @@ VISUAL_CASES
   if(world==null){tell(player,"original dimension is unavailable.");return 0;}
   BlockPos bp=BlockPos.containing(loc.x(),loc.y(),loc.z());
   // NeoForge source ticket supports unloaded chunks and remote dimensions.
-  if(!PowerArmorRecallTickets.ticket(world,player.getUUID(),bp.getX()>>4,bp.getZ()>>4,true)){
+  boolean ticketed=PowerArmorRecallTickets.ticket(world,player.getUUID(),
+    bp.getX()>>4,bp.getZ()>>4,true);
+  if(!ticketed&&!world.hasChunkAt(bp)){
    tell(player,"unable to load original suit chunk.");return 0;
   }
   ACTIVE.put(player.getUUID(),new Flight(loc,null,0,false));
@@ -404,5 +424,5 @@ assert "V172_UNLIMITED_CROSS_DIM_RECALL" in core
 assert "PowerArmorRecallTickets.ticket(world,player.getUUID()" in core
 assert "PowerArmorSuitWorld.recallEquip(stand,player)" in core
 assert "nearby" not in core and "MAX_RANGE" not in core
-assert "never" in __doc__.lower()
+assert "On any failure" in __doc__
 print("V172_UNLIMITED_CROSS_DIM_RECALL PASS: indexed cross-dimension/any-distance, 16-block GeckoLib flight, native source backup remains until safe final entry")
