@@ -30,7 +30,6 @@ import dev.obsidiannetwork.core.EnergyTool;
 import dev.obsidiannetwork.powerarmor.PowerArmorRuntime;
 import dev.obsidiannetwork.registry.ModDataComponents;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -125,7 +124,7 @@ public final class PowerArmorShieldClient {
      .setColor(93,221,255,alpha)
      .setUv(u,v)
      .setOverlay(OverlayTexture.NO_OVERLAY)
-     .setLight(LightTexture.FULL_BRIGHT)
+     .setLight(0x00F000F0) // FULL_BRIGHT packed lighting in 26.1
      .setNormal(pose,nx,s,nz);
  }
 }

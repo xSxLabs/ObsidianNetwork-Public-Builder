@@ -12,7 +12,7 @@ class TestVisual106(unittest.TestCase):
             'RenderTypes.entityTranslucent(SKIN)','LATITUDE=16','LONGITUDE=28',
             'for(int y=0;y<LATITUDE;y++)','for(int x=0;x<LONGITUDE;x++)',
             'float impact=Math.min','wearer.hurtTime','alpha+(int)(hit*25F*ripple)',
-            'setUv(u,v)','setNormal(pose,nx,s,nz)','FULL_BRIGHT',
+            'setUv(u,v)','setNormal(pose,nx,s,nz)','0x00F000F0',
             'PowerArmorRuntime.tier(armor,i)!=tier','EnergyTool.energy(armor)<20L',
             'id.equals("energy_shield")','assert not tex.exists()',
             'power_armor_shield_hex.png'):
