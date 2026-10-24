@@ -2261,6 +2261,20 @@ jobs:
           assert "ArmorStand stand=spawn(player,worn);" in java
           print("BUILD117_EXIT_FRONT_FACING PASS")
           PY
+          # Build119: smaller Power Armor FE meter aligned above the hunger row.
+          # Client-only display; Power Armor logic and FE accounting untouched.
+          python3 features/v17/apply-power-armor-compact-hud-119.py
+          grep -Fq 'BUILD119_HUNGER_ALIGNED_COMPACT_HUD' work/src/main/java/dev/obsidiannetwork/client/PowerArmorBuild98Client.java
+          python3 - <<'PY'
+          from pathlib import Path
+          java=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorBuild98Client.java").read_text()
+          assert java.count("getGuiScaledWidth()/2+10")==1
+          assert java.count("getGuiScaledHeight()-59")==1
+          assert "final int width=80;" in java
+          assert "mc.font.width(percent)" in java
+          assert "stored+=Math.max(0L,EnergyTool.energy(item));" in java
+          print("BUILD119_HUNGER_ALIGNED_COMPACT_HUD PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
