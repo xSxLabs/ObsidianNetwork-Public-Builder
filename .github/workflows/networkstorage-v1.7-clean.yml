@@ -2408,6 +2408,14 @@ jobs:
           assert (j/"PowerArmorRecallKeyClient.java").exists()
           print("V172_UNLIMITED_CROSS_DIM_RECALL PASS")
           PY
+          # Build131: last worn selected automatically; category in controls;
+          # hand-instant Armor Station with old occupancy protection.
+          python3 features/v172/apply-power-armor-recall-last-worn-131.py
+          grep -Fq 'BUILD131_PREFER_LAST_WORN' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorRecall.java
+          grep -Fq 'BUILD131_VERIFIED_EXIT_FAVORITE' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorSuitWorld.java
+          grep -Fq 'BUILD131_MOD_KEY_CATEGORY' work/src/main/java/dev/obsidiannetwork/powerarmor/ObsidianKeyCategory.java
+          grep -Fq 'strength(0.0F,3600000.0F)' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          echo "BUILD131_LAST_WORN_RECALL PASS"
           python3 - <<'PY'
           from pathlib import Path
           import json
