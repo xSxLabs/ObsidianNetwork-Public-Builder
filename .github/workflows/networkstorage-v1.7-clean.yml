@@ -2416,6 +2416,12 @@ jobs:
           grep -Fq 'PowerArmorExitKeyClient.CATEGORY' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorRecallKeyClient.java
           grep -Fq 'strength(0.0F,3600000.0F)' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           echo "BUILD131_LAST_WORN_RECALL PASS"
+          # Build138: NO extra block or dependency. Normal Create mechanical
+          # pistons/elevators automatically carry standing, real Power Armor.
+          python3 features/v172/apply-power-armor-create-carrier-138.py
+          grep -Fq 'BUILD138_CREATE_MOVING_PLATFORM_COMPAT' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorCreateCarrier.java
+          grep -Fq 'PowerArmorRecallIndex.get(level.getServer()).index(stand,level,owner)' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorCreateCarrier.java
+          echo "BUILD138_CREATE_PLATFORM_AUTOMATIC PASS"
           # v1.7.2 Build136: Create elevator/piston support and Network Planter.
           python3 features/v172/apply-network-planter-135.py
           python3 features/v172/apply-power-armor-create-platform-136.py
