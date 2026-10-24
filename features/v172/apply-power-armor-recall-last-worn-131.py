@@ -98,15 +98,39 @@ edit("powerarmor/PowerArmorRecall.java",
 
 # The exit transaction has already checked the equipment was transferred
 # only once, that the new stand survived and original gear is restored.
-edit("powerarmor/PowerArmorSuitWorld.java",
- '''   if(backup!=null)saved.finish(player);
-   player.sendSystemMessage(Component.literal(
-    "Power Armor disengaged. Right-click the standing suit to enter."));''',
- '''   if(backup!=null)saved.finish(player);
-   // BUILD131_VERIFIED_EXIT_FAVORITE: a new stand gets a NEW suit UUID.
-   PowerArmorRecall.rememberLastWorn(player,stand);
-   player.sendSystemMessage(Component.literal(
-    "Power Armor disengaged. Right-click the standing suit to enter."));''')
+# The exact exit message and backup statement changed during v1.7.
+# Match the actual exit METHOD, not older Build62 text. Its one final
+# successful return is reached only after the pre-existing rollback guards.
+import re
+world=root/"powerarmor/PowerArmorSuitWorld.java"
+source=world.read_text(encoding="utf-8")
+header="public static int exit(ServerPlayer player){"
+assert source.count(header)==1,("exit method missing",source.count(header))
+start=source.index(header)
+opening=source.index("{",start)
+depth=0
+end=None
+for pos in range(opening,len(source)):
+ if source[pos]=="{":depth+=1
+ if source[pos]=="}":
+  depth-=1
+  if depth==0:
+   end=pos+1
+   break
+assert end is not None,"unterminated exit method"
+body=source[start:end]
+assert "ArmorStand stand=spawn(player,worn);" in body,"exit no longer deposits real armor"
+assert "if(!valid)" in body,"verified exit rollback missing"
+returns=list(re.finditer(r"(?m)^([ ]*)return 1;[ ]*$",body))
+assert len(returns)==1,("expected one successful exit return",len(returns))
+last=returns[0]
+# BUILD131_VERIFIED_EXIT_FAVORITE: remember precisely the stand created
+# by the successful transaction. A failed spawn or verification never saves.
+replacement=(last.group(1)+"// BUILD131_VERIFIED_EXIT_FAVORITE: only after exit success.\n"
+             +last.group(1)+"PowerArmorRecall.rememberLastWorn(player,stand);\n"
+             +last.group(0))
+body=body[:last.start()]+replacement+body[last.end():]
+world.write_text(source[:start]+body+source[end:],encoding="utf-8")
 
 category=root/"powerarmor/ObsidianKeyCategory.java"
 assert not category.exists()
