@@ -87,13 +87,14 @@ for block in blocks:
             for coord in ("from", "to"):
                 assert all(-16 <= n <= 32 for n in piece[coord]), (target.name, coord)
         plant = key.split("plant=", 1)[1]
-        if plant in ("melon", "pumpkin", "azalea", "flowering_azalea"):
-            if plant in ("melon", "pumpkin"):
-                expected = "minecraft:block/" + plant + "_stem"
+        if plant in ("melon", "pumpkin"):
+            assert textures["plant"] == "minecraft:block/" + plant + "_stem", target.name
+        elif plant in ("azalea", "flowering_azalea"):
+            if "plant" in textures:
+                assert textures["plant"] == "minecraft:block/" + plant + "_plant", target.name
             else:
-                expected = "minecraft:block/" + plant + "_plant"
-            assert expected in textures.values() or (plant in ("azalea", "flowering_azalea") and
-                any(k.endswith("_plant") for k in textures.values())), (target.name, expected)
+                # Later tree stages display actual foliage rather than sapling planes.
+                assert textures["foliage"] == "minecraft:block/" + plant + "_leaves", target.name
         target.write_text(json.dumps(obj, separators=(",", ":")) + "\n", encoding="utf-8")
         total += 1
 
