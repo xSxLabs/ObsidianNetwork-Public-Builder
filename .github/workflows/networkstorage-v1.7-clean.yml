@@ -2187,6 +2187,19 @@ jobs:
           assert "mc.level.addParticle(" not in java
           print("BUILD111_ARMOR_SHAPED_SHIELD PASS")
           PY
+          # Build112: vanilla humanoid model-to-entity transform for the
+          # six bone-tracking shell segments; fixes upside-down head/limbs.
+          python3 features/v17/apply-power-armor-shield-orientation-112.py
+          grep -Fq 'BUILD112_MODEL_COORDS' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          python3 - <<'PY'
+          from pathlib import Path
+          java=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
+          assert java.count("stack.scale(-1.0F,-1.0F,1.0F);")==1
+          assert java.count("stack.translate(0.0F,-1.501F,0.0F);")==1
+          assert java.count("stack.pushPose();")==java.count("stack.popPose();")==2
+          assert java.count("submitPart(stack,collector,model.")==6
+          print("BUILD112_MODEL_COORDS_PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
