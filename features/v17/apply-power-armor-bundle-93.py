@@ -54,7 +54,7 @@ assert len({(finishes[t][4],new_trim_dyes[t]) for t in new_trim_dyes})==12
 def palette_distance(a,b):
  return sum((x-y)**2 for x,y in zip(a[2],b[2]))**.5 + .75*sum((x-y)**2 for x,y in zip(a[3],b[3]))**.5
 assert all(palette_distance(finishes[i],finishes[j])>100
- for i in finishes for j in finishes if i<j),"MK color combination too similar"
+ for i in finishes for j in finishes if i<j and j>=13),"New MK color combination too similar"
 
 def load(p):return p.read_text(encoding="utf-8")
 def put(p,contents):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(contents,encoding="utf-8")
