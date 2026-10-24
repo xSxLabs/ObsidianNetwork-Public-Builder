@@ -2430,6 +2430,11 @@ jobs:
           python3 features/v172/apply-network-planter-146.py
           python3 features/v172/apply-power-armor-recall-jade-146.py
           python3 features/v172/apply-network-planter-gui-model-148.py
+          python3 features/v172/apply-network-planter-specific-growth-150.py
+          grep -Fq 'BUILD150_SINGLE_GUI_TITLE' work/src/main/java/dev/obsidiannetwork/client/NetworkPlanterScreen.java
+          grep -Fq 'EMPTY(Items.AIR' work/src/main/java/dev/obsidiannetwork/block/NetworkPlanterBlock.java
+          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_oak_age3.json
+          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_stripped_cherry_cherry_age3.json
           grep -Fq 'BUILD148_PLANTER_TRUE_SLOT_LAYOUT' work/src/main/java/dev/obsidiannetwork/menu/NetworkPlanterMenu.java
           grep -Fq 'BUILD148_PLANTER_CUSTOM_SCREEN' work/src/main/java/dev/obsidiannetwork/client/NetworkPlanterScreen.java
           test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_dark_oak_age0.json || test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_stripped_dark_oak_oak_age0.json
