@@ -2244,6 +2244,23 @@ jobs:
           assert java.index("stack.mulPose(Axis.YP.rotationDegrees(180.0F-state.bodyRot));") < java.index("stack.scale(-1.0F,-1.0F,1.0F);")
           print("BUILD115_ARMOR_POSE_LOCK PASS")
           PY
+          # Build 117 (ignore build116): Front-block-only exit and persistent
+          # GeckoLib suit faces its owner for every horizontal player direction.
+          python3 features/v17/apply-power-armor-exit-facing-117.py
+          grep -Fq 'BUILD117_EXIT_FRONT_FACING' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorSuitWorld.java
+          grep -Fq 'BUILD117_STAND_LOOKS_AT_OWNER' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorSuitWorld.java
+          python3 - <<'PY'
+          from pathlib import Path
+          java=Path("work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorSuitWorld.java").read_text()
+          assert java.count("BlockPos p=player.blockPosition().relative(player.getDirection());")==1
+          assert java.count("player.getDirection().getOpposite().toYRot()")==1
+          assert "stand.setYRot(faceOwner);" in java
+          assert "stand.setYBodyRot(faceOwner);" in java
+          assert "stand.setYHeadRot(faceOwner);" in java
+          assert "if(!clearSuitVolume(level,pos))return null;" in java
+          assert "ArmorStand stand=spawn(player,worn);" in java
+          print("BUILD117_EXIT_FRONT_FACING PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
