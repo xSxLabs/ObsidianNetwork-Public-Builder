@@ -126,6 +126,7 @@ public final class PowerArmorJadePlugin implements IWailaPlugin {
      case "feather_falling" -> effect(tooltip,"feather_falling",Math.min(5,n),Math.min(80,Math.min(5,n)*24));
      case "flight" -> simple(tooltip,"flight");
      case "network_elytra" -> simple(tooltip,"network_elytra");
+     case "energy_shield" -> simple(tooltip,"energy_shield");
      // Show other installed card identities/counts, without claiming bonuses
      // whose actual runtime effects have not been implemented/verified.
      default -> tooltip.add(Component.translatable(
