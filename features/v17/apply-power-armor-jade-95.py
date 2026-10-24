@@ -73,7 +73,7 @@ public final class PowerArmorJadePlugin implements IWailaPlugin {
    // Cosmetic GeckoLib transition entities carry NO real item stacks.
    if(!PowerArmorSuitWorld.full(stand))return;
    int tier=PowerArmorRuntime.tier(stand.getItemBySlot(EquipmentSlot.HEAD),0);
-   if(tier<1 || tier>12)return;
+   if(tier<1 || tier>24)return;
    tooltip.add(Component.translatable("jade.obsidiannetwork.power_armor.title",tier)
        .withStyle(ChatFormatting.GOLD));
 
@@ -214,4 +214,4 @@ assert "@WailaPlugin" in out.read_text(encoding="utf-8")
 assert "registerEntityComponent(SuitBonusProvider.INSTANCE, ArmorStand.class)" in out.read_text(encoding="utf-8")
 assert "PowerArmorSuitWorld.full(stand)" in out.read_text(encoding="utf-8")
 assert "cards.merge(id,1,Integer::sum)" in out.read_text(encoding="utf-8")
-print(marker+" PASS: optional Jade entity provider, MK1..12, real installed card counts, true effect caps and numeric bonuses, no armor transfer")
+print(marker+" PASS: optional Jade entity provider, MK1..24, real installed card counts, true effect caps and numeric bonuses, no armor transfer")
