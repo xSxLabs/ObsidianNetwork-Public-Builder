@@ -42,7 +42,7 @@ class Shield104(unittest.TestCase):
    'DustParticleOptions(0x8debff,0.95F)',
    'if(wearer.tickCount%3!=0||!hasActiveShield(wearer))continue;',
    'if(wearer.hurtTime>=8)',
-   'ServerLevel world=p.serverLevel()',
+   'ServerLevel world=(ServerLevel)p.level()',
    'world.sendParticles(ParticleTypes.END_ROD',
    'if(++drawn>12)break;',
    'if(tier<1||tier>24)return false;',
