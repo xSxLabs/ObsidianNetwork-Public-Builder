@@ -148,7 +148,7 @@ for lang in ("de_de","en_us"):
  p=assets/"lang"/(lang+".json")
  d=json.loads(p.read_text(encoding="utf-8"))
  assert "key.category.obsidiannetwork.xsxlabs" in d
- p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")
+ p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 # Zero hardness, unchanged high blast resistance and occupied-station break guard.
 edit("ObsidianNetwork.java",".strength(4.0F,3600000.0F)",".strength(0.0F,3600000.0F)")
 print("BUILD131_LAST_WORN_RECALL PASS; REUSED_EXISTING_XSXLABS_CATEGORY; STATION_HAND_INSTANT PASS")
