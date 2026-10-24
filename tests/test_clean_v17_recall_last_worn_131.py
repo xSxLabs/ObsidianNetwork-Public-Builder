@@ -19,7 +19,9 @@ class LastWorn131(unittest.TestCase):
             "PowerArmorRecall.rememberLastWorn(player,stand);"):self.assertIn(s,PATCH)
  def test_exit_commit_required(self):
   self.assertIn("BUILD131_VERIFIED_EXIT_FAVORITE",PATCH)
-  self.assertIn("if(backup!=null)saved.finish(player);",PATCH)
+  self.assertIn('assert "if(!valid)" in body',PATCH)
+  self.assertIn("expected one successful exit return",PATCH)
+  self.assertIn("PowerArmorRecall.rememberLastWorn(player,stand);",PATCH)
  def test_rebindable_grouped_controls(self):
   for s in ("ObsidianKeyCategory","e.registerCategory(CATEGORY)",
             "powerarmor/PowerArmorExitKeyClient.java",
