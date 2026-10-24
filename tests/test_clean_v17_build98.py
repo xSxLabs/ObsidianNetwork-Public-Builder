@@ -30,9 +30,9 @@ class Build98(unittest.TestCase):
             "textures/entity/equipment/humanoid","power_armor_firstperson_mk",
             "image[16+y][40+x]","image[16+y][55-x]"):
    self.assertIn(q,SRC)
-  self.assertIn("for tier in range(1,13):",SRC)
+  self.assertIn("for tier in range(1,25):",SRC)
  def test_ci_order(self):
   self.assertLess(WF.index("python3 features/v17/apply-power-armor-jade-95.py"),
                   WF.index("python3 features/v17/apply-power-armor-build98.py"))
-  self.assertIn("BUILD98_TWELVE_FIRST_PERSON_ARM_ASSETS PASS",WF)
+  self.assertIn("BUILD102_24_FIRST_PERSON_ARM_ASSETS PASS",WF)
 if __name__=="__main__":unittest.main()
