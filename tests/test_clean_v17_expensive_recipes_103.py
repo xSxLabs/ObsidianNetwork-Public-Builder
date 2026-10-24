@@ -33,13 +33,13 @@ class ExpensivePowerArmorRecipes(unittest.TestCase):
    '"minecraft:nether_star" if rare',
    '"minecraft:iron_block"',
    '"minecraft:diamond_block"',
-   'assert len(card_signatures)==23',
+   'assert len(card_signatures)==24',
    '("mending","unbreaking")',
   ):self.assertIn(key,SOURCE)
  def test_workflow_and_legacy(self):
   self.assertLess(WF.index("apply-power-armor-build98.py"),
                   WF.index("apply-power-armor-expensive-recipes-103.py"))
-  self.assertIn("BUILD103_96_ARMOR_23_UPGRADE_RECIPES PASS",WF)
+  self.assertIn("BUILD104_96_ARMOR_24_UPGRADE_RECIPES PASS",WF)
   self.assertNotIn('write("PowerArmorSuitWorld.java"',SOURCE)
   self.assertNotIn('ModDataComponents.POWER_ARMOR_UPGRADES',SOURCE)
 
