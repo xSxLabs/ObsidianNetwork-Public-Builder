@@ -183,9 +183,11 @@ public final class NetworkPlanterBlockEntity extends BlockEntity implements Cont
  private void status(Player p){
   String s=soil.isEmpty()?"none":soil.getHoverName().getString();
   String c=seed.isEmpty()?"none":seed.getHoverName().getString();
-  p.displayClientMessage(Component.literal("Network Planter | Soil: "+s+" | Seed: "+c+
-    " | Speed "+upgrades+"/16 | Growth "+progress+"/"+period()+
-    " | Stored "+output.getCount()),true);
+  if(p instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
+   serverPlayer.connection.send(new net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket(
+    Component.literal("Network Planter | Soil: "+s+" | Seed: "+c+
+     " | Speed "+upgrades+"/16 | Growth "+progress+"/"+period()+
+     " | Stored "+output.getCount())));
  }
  private int period(){
   // 0 = 30 seconds, 16 = ~2.5 seconds; every upgrade improves production.
