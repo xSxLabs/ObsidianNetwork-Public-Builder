@@ -2142,6 +2142,23 @@ jobs:
           grep -Fq 'BUILD104_FORCEFIELD_AURA' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
           test -f work/src/main/resources/assets/obsidiannetwork/textures/item/power_card_energy_shield.png
           grep -Fq '"basic_energy_cell"' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          # Build 105: additive Air Mining disk; cancel only the fivefold airborne
+          # dig-speed penalty while creative-style flying in a full powered suit.
+          python3 features/v17/apply-power-armor-air-mining-105.py
+          grep -Fq 'BUILD105_AIR_MINING' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorAirMining.java
+          test -f work/src/main/resources/assets/obsidiannetwork/textures/item/power_card_air_mining.png
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path("work/src/main/resources")
+          card=json.loads((root/"data/obsidiannetwork/recipe/power_card_air_mining.json").read_text())
+          assert card["pattern"]==["ABA","CDC","AEA"]
+          assert card["key"]["D"]=="obsidiannetwork:power_armor_upgrade"
+          assert card["key"]["E"]=="obsidiannetwork:advanced_energy_cell"
+          assert card["result"]["id"]=="obsidiannetwork:power_card_air_mining"
+          assert json.loads((root/"assets/obsidiannetwork/items/power_card_air_mining.json").read_text())["model"]["model"]=="obsidiannetwork:item/power_card_air_mining"
+          print("BUILD105_AIR_MINING_RECIPE_AND_ASSETS PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
