@@ -132,42 +132,23 @@ replacement=(last.group(1)+"// BUILD131_VERIFIED_EXIT_FAVORITE: only after exit 
 body=body[:last.start()]+replacement+body[last.end():]
 world.write_text(source[:start]+body+source[end:],encoding="utf-8")
 
-category=root/"powerarmor/ObsidianKeyCategory.java"
-assert not category.exists()
-category.write_text(r'''package dev.obsidiannetwork.powerarmor;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.resources.Identifier;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-/** BUILD131_MOD_KEY_CATEGORY: all mod bindings grouped in vanilla controls. */
-@EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
-public final class ObsidianKeyCategory {
- private ObsidianKeyCategory(){}
- public static final KeyMapping.Category CATEGORY=new KeyMapping.Category(
-   Identifier.fromNamespaceAndPath("obsidiannetwork","controls"));
- @SubscribeEvent public static void register(RegisterKeyMappingsEvent e){
-  e.registerCategory(CATEGORY);
- }
-}
-''',encoding="utf-8")
-grouped=[]
-for file in sorted(root.rglob("*.java")):
- if file==category:continue
- content=file.read_text(encoding="utf-8")
- if '"key.obsidiannetwork.' not in content or 'KeyMapping.Category.MISC' not in content:continue
- file.write_text(content.replace('KeyMapping.Category.MISC',
-   'dev.obsidiannetwork.powerarmor.ObsidianKeyCategory.CATEGORY'),encoding="utf-8")
- grouped.append(file.relative_to(root).as_posix())
-assert "powerarmor/PowerArmorRecallKeyClient.java" in grouped,grouped
-assert "powerarmor/PowerArmorExitKeyClient.java" in grouped,grouped
+# Stage 2 already created and registered the xSxLabs key category in
+# PowerArmorExitKeyClient for V and Night Vision J. Reuse THAT SAME category;
+# registering a second category would duplicate controls.
+client=root/"powerarmor/PowerArmorExitKeyClient.java"
+existing=client.read_text(encoding="utf-8")
+assert 'KeyMapping.Category CATEGORY=new KeyMapping.Category(' in existing
+assert '"obsidiannetwork","xsxlabs"' in existing
+recall_key=root/"powerarmor/PowerArmorRecallKeyClient.java"
+binding=recall_key.read_text(encoding="utf-8")
+assert binding.count("KeyMapping.Category.MISC")==1
+recall_key.write_text(binding.replace("KeyMapping.Category.MISC",
+ "PowerArmorExitKeyClient.CATEGORY"),encoding="utf-8")
 for lang in ("de_de","en_us"):
  p=assets/"lang"/(lang+".json")
  d=json.loads(p.read_text(encoding="utf-8"))
- d["key.category.obsidiannetwork.controls"]="xSxLabs Network Storage"
- p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-
+ assert "key.category.obsidiannetwork.xsxlabs" in d
+ p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")
 # Zero hardness, unchanged high blast resistance and occupied-station break guard.
 edit("ObsidianNetwork.java",".strength(4.0F,3600000.0F)",".strength(0.0F,3600000.0F)")
-print("BUILD131_LAST_WORN_RECALL PASS; GROUPED="+",".join(grouped)+"; STATION_HAND_INSTANT PASS")
+print("BUILD131_LAST_WORN_RECALL PASS; REUSED_EXISTING_XSXLABS_CATEGORY; STATION_HAND_INSTANT PASS")

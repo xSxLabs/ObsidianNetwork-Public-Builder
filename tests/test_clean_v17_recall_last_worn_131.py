@@ -23,10 +23,10 @@ class LastWorn131(unittest.TestCase):
   self.assertIn("expected one successful exit return",PATCH)
   self.assertIn("PowerArmorRecall.rememberLastWorn(player,stand);",PATCH)
  def test_rebindable_grouped_controls(self):
-  for s in ("ObsidianKeyCategory","e.registerCategory(CATEGORY)",
+  for s in ("PowerArmorExitKeyClient.CATEGORY",
             "powerarmor/PowerArmorExitKeyClient.java",
             "powerarmor/PowerArmorRecallKeyClient.java",
-            "key.category.obsidiannetwork.controls"):self.assertIn(s,PATCH)
+            "key.category.obsidiannetwork.xsxlabs"):self.assertIn(s,PATCH)
  def test_safe_instant_hand_break(self):
   self.assertIn(".strength(4.0F,3600000.0F)",PATCH)
   self.assertIn(".strength(0.0F,3600000.0F)",PATCH)
