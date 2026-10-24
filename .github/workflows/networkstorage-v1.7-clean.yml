@@ -2062,7 +2062,7 @@ jobs:
           # Build 70: register AttributeSupplier for all four GeckoLib ArmorStand-derived entity types.
           python3 features/v17/apply-power-armor-attributes-70.py
           grep -Fq 'EntityAttributeCreationEvent event' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorAttributes.java
-          # Build 93: verified physical equipment protection + front dock + MK3..MK12.
+          # Build 102: preserve previous MK1..MK12 and add visually distinct MK13..MK24.
           python3 features/v17/apply-power-armor-bundle-93.py
           test -f work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorStats.java
           grep -Fq 'BUILD93_POWER_ARMOR_PASS' features/v17/apply-power-armor-bundle-93.py
@@ -2086,11 +2086,11 @@ jobs:
           from pathlib import Path
           import struct
           r=Path("work/src/main/resources/assets/obsidiannetwork/textures/entity")
-          for tier in range(1,13):
+          for tier in range(1,25):
            f=r/f"power_armor_firstperson_mk{tier}.png"
            assert f.is_file() and f.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"),f
            assert struct.unpack(">II",f.read_bytes()[16:24])==(64,64),f
-          print("BUILD98_TWELVE_FIRST_PERSON_ARM_ASSETS PASS")
+          print("BUILD102_24_FIRST_PERSON_ARM_ASSETS PASS")
           PY
           grep -Fq "compileOnly 'maven.modrinth:jade:26.1.12+neoforge'" work/build.gradle
           python3 -m json.tool work/src/main/resources/assets/obsidiannetwork/lang/de_de.json >/dev/null
