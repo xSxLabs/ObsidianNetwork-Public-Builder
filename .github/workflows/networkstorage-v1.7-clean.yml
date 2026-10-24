@@ -2174,6 +2174,19 @@ jobs:
           assert "wearer.hurtTime" in java and "PowerArmorRuntime.tier(armor,i)!=tier" in java
           print("BUILD106_3D_HEX_ENERGY_SHELL PASS")
           PY
+          # Build 111: six articulated energy-shell sections bound to actual
+          # player head, torso, arms and legs, keeping Build110 translucency.
+          python3 features/v17/apply-power-armor-shaped-shield-111.py
+          grep -Fq 'BUILD111_POSED_ARMOR_SHIELD' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          python3 - <<'PY'
+          from pathlib import Path
+          java=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
+          assert java.count("submitPart(stack,collector,model.")==6
+          assert "joint.translateAndRotate(stack);" in java
+          assert "hasActiveShield(wearer)" in java
+          assert "mc.level.addParticle(" not in java
+          print("BUILD111_ARMOR_SHAPED_SHIELD PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
