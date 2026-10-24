@@ -100,6 +100,43 @@ public final class NetworkPlanterScreen extends AbstractContainerScreen<ChestMen
  private static final int CYAN=0xff25d5dc,INK=0xff0c151e;
  public NetworkPlanterScreen(ChestMenu menu,Inventory inv,Component title){
   super(menu,inv,title,252,246);
+  remapClientSlots(menu,inv);
+ }
+ /** The client receives a vanilla ChestMenu from the menu protocol.
+  * Rebuild its slots at the SAME actual hit coordinates as the server menu.
+  * Without this step the xSxLabs panel would be drawn correctly but clicked
+  * through an invisible 9x3 vanilla chest grid.
+  */
+ private static void remapClientSlots(ChestMenu menu,Inventory playerInv){
+  for(int i=0;i<27;i++){
+   final int slotId=i;
+   final boolean active=i<3||i>=9&&i<18;
+   final int sx=i==0?28:i==1?28:i==2?104:
+     i>=9&&i<18?174+(i-9)%3*18:-900;
+   final int sy=i==0?39:i==1?64:i==2?52:
+     i>=9&&i<18?36+(i-9)/3*18:-900;
+   net.minecraft.world.inventory.Slot before=menu.slots.get(i);
+   net.minecraft.world.inventory.Slot replacement=
+       new net.minecraft.world.inventory.Slot(before.container,before.getContainerSlot(),sx,sy){
+    @Override public boolean isActive(){return active;}
+    @Override public boolean mayPickup(net.minecraft.world.entity.player.Player p){
+     return active&&super.mayPickup(p);
+    }
+    @Override public boolean mayPlace(net.minecraft.world.item.ItemStack stack){
+     return active&&slotId<3;
+    }
+   };
+   replacement.index=i;menu.slots.set(i,replacement);
+  }
+  for(int i=27;i<63;i++){
+   net.minecraft.world.inventory.Slot previous=menu.slots.get(i);
+   final int x,y;
+   if(i<54){int offset=i-27;x=47+(offset%9)*18;y=158+(offset/9)*18;}
+   else {x=47+(i-54)*18;y=219;}
+   net.minecraft.world.inventory.Slot shifted=
+       new net.minecraft.world.inventory.Slot(playerInv,previous.getContainerSlot(),x,y);
+   shifted.index=i;menu.slots.set(i,shifted);
+  }
  }
  private void socket(GuiGraphicsExtractor g,int x,int y,int border){
   g.fill(x-1,y-1,x+17,y+17,border);
@@ -114,11 +151,11 @@ public final class NetworkPlanterScreen extends AbstractContainerScreen<ChestMen
   g.fill(x+5,y+5,x+247,y+27,0xff0b1823);
   g.text(this.font,"xSxLabs  /  NETWORK PLANTER",x+12,y+11,0xffd6f9ff,false);
   // Soil and seed at left, speed in centre, 9 output slots on right.
-  g.fill(x+9,y+29,x+68,y+100,INK);
+  g.fill(x+9,y+29,x+78,y+100,INK);
   g.fill(x+80,y+29,x+145,y+100,INK);
   g.fill(x+160,y+29,x+242,y+100,INK);
-  g.text(this.font,"SOIL",x+13,y+32,0xffbdd5df,false);
-  g.text(this.font,"SEED",x+13,y+58,0xffbdd5df,false);
+  g.text(this.font,"SOIL",x+47,y+42,0xffbdd5df,false);
+  g.text(this.font,"SEED",x+47,y+67,0xffbdd5df,false);
   g.text(this.font,"SPEED",x+87,y+35,0xffbdd5df,false);
   g.text(this.font,"OUTPUT  3x3",x+165,y+21,0xffbdd5df,false);
   socket(g,x+27,y+38,0xff91b771);
