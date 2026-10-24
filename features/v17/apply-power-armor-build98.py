@@ -150,7 +150,7 @@ public final class PowerArmorBuild98Client {
   Minecraft mc=Minecraft.getInstance();
   if(mc.level==null||mc.player==null)return;
   var p=mc.player;
-  // Only complete MK1-MK12 suit with the actual Network Elytra module.
+  // Only complete MK1-MK24 suit with the actual Network Elytra module.
   if(!p.isFallFlying() || p.onGround())return;
   var chest=PowerArmorElytraBridge.chest(p);
   if(chest.isEmpty()||EnergyTool.energy(chest)<125L)return;
@@ -205,7 +205,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderArmEvent;
 
-/** BUILD98 actual MK1..MK12 first-person arms, no player-skin rewriting. */
+/** BUILD98 actual MK1..MK24 first-person arms, no player-skin rewriting. */
 @EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
 public final class PowerArmorFirstPersonArms {
  private PowerArmorFirstPersonArms(){}
@@ -213,7 +213,7 @@ public final class PowerArmorFirstPersonArms {
   Minecraft mc=Minecraft.getInstance();
   if(event.getPlayer()!=mc.player)return;
   int tier=PowerArmorRuntime.tier(mc.player.getItemBySlot(EquipmentSlot.HEAD),0);
-  if(tier<1||tier>12)return;
+  if(tier<1||tier>24)return;
   for(int i=1;i<PowerArmorRuntime.SLOTS.length;i++)
    if(PowerArmorRuntime.tier(mc.player.getItemBySlot(PowerArmorRuntime.SLOTS[i]),i)!=tier)return;
   var renderer=mc.getEntityRenderDispatcher().getPlayerRenderer(event.getPlayer());
@@ -233,7 +233,7 @@ public final class PowerArmorFirstPersonArms {
 ''')
 
 # A tiny self-contained PNG decoder avoids adding Python image dependencies.
-# Handles paletted MK1/MK2 and truecolor RGBA MK3..MK12 armor atlases.
+# Handles paletted MK1/MK2 and truecolor RGBA MK3..MK24 armor atlases.
 def png_pixels(data):
  assert data[:8]==b"\x89PNG\r\n\x1a\n"
  chunks=[];k=8
@@ -291,7 +291,7 @@ def make_arms(original):
  return (b"\x89PNG\r\n\x1a\n"+
    part(b"IHDR",struct.pack(">IIBBBBB",64,64,8,6,0,0,0))+
    part(b"IDAT",zlib.compress(raw,9))+part(b"IEND",b""))
-for tier in range(1,13):
+for tier in range(1,25):
  name="power_armor"+(f"_mk{tier}" if tier>1 else "")+".png"
  source=res/"textures/entity/equipment/humanoid"/name
  assert source.is_file(),f"missing actual armor skin for MK{tier}: {source}"
@@ -311,5 +311,5 @@ for lang,on,off in (
 
 assert "suitVolumeClearable(level,pos)" in read(world)
 assert "ClientboundSetActionBarTextPacket(" in read(cmd)
-assert all((res/f"textures/entity/power_armor_firstperson_mk{i}.png").is_file() for i in range(1,13))
-print(MARK+" PASS: safe air/light/snow/grass/flower/bush replacement; 12 matching first-person suit arms; 4-limb white flight particles; actionbar nightvision; compact FE HUD")
+assert all((res/f"textures/entity/power_armor_firstperson_mk{i}.png").is_file() for i in range(1,25))
+print(MARK+" PASS: safe air/light/snow/grass/flower/bush replacement; 24 matching first-person suit arms; 4-limb white flight particles; actionbar nightvision; compact FE HUD")
