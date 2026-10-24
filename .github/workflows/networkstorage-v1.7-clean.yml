@@ -2416,6 +2416,14 @@ jobs:
           grep -Fq 'PowerArmorExitKeyClient.CATEGORY' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorRecallKeyClient.java
           grep -Fq 'strength(0.0F,3600000.0F)' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           echo "BUILD131_LAST_WORN_RECALL PASS"
+          # v1.7.2 Build136: Create elevator/piston support and Network Planter.
+          python3 features/v172/apply-network-planter-135.py
+          python3 features/v172/apply-power-armor-create-platform-136.py
+          grep -Fq 'V172_NETWORK_PLANTER_SAFE_INSERT' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPlanterBlockEntity.java
+          grep -Fq 'V172_PLANTER_BOTTOM_OUTPUT' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPlanterCapabilities.java
+          grep -Fq 'V172_CREATE_MOVING_PLATFORM' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorCreatePlatformSupport.java
+          test -f work/src/main/resources/data/obsidiannetwork/recipe/network_planter.json
+          echo "V172_CREATE_AND_NETWORK_PLANTER_B136 PASS"
           python3 - <<'PY'
           from pathlib import Path
           import json
