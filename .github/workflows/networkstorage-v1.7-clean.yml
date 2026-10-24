@@ -2425,6 +2425,16 @@ jobs:
           # v1.7.2 Build136: Create elevator/piston support and Network Planter.
           python3 features/v172/apply-network-planter-135.py
           python3 features/v172/apply-power-armor-create-platform-136.py
+          # Build146: mature 9-slot planter UI, creative/JEI, Create-safe world
+          # visuals, stripped wood variants, tree drops, Jade and recall 32m.
+          python3 features/v172/apply-network-planter-146.py
+          python3 features/v172/apply-power-armor-recall-jade-146.py
+          grep -Fq 'BUILD146_PLANTER_ATOMIC_NINE_SLOT' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPlanterBlockEntity.java
+          grep -Fq 'BUILD146_JADE_PLANTER_STATUS' work/src/main/java/dev/obsidiannetwork/compat/PowerArmorJadePlugin.java
+          grep -Fq 'Math.sqrt(1024D-' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorRecall.java
+          test -f work/src/main/resources/data/obsidiannetwork/recipe/network_planter_stripped_dark_oak.json
+          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_grow_oak_3.json
+          echo 'BUILD146_NETWORK_PLANTER_UI_TREE_GROWTH_RECALL32 PASS'
           grep -Fq 'V172_NETWORK_PLANTER_SAFE_INSERT' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPlanterBlockEntity.java
           grep -Fq 'V172_PLANTER_BOTTOM_OUTPUT' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPlanterCapabilities.java
           grep -Fq 'V172_CREATE_MOVING_PLATFORM' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorCreatePlatformSupport.java
