@@ -2434,20 +2434,23 @@ jobs:
           # Build151: repair missing 26.1.2 crop/azalea sprites and remove
           # obsolete forced render type; validate all 1,248 state models.
           python3 features/v172/apply-network-planter-texture-fix-151.py
-          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_melon_age3.json
+          # Build153: full Botany-Pots-style native plant model renderer,
+          # 26.1 submit/render-state API; remove ALL homebrew crop geometries.
+          python3 features/v172/apply-network-planter-native-render-153.py
+          grep -Fq 'BUILD153_NATIVE_PLANTER_RENDER' work/src/main/java/dev/obsidiannetwork/client/NetworkPlanterRenderer.java
+          grep -Fq 'BUILD153_NATIVE_PLANTER_REGISTER' work/src/main/java/dev/obsidiannetwork/client/NetworkPlanterClientRenderRegistration.java
+          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_wood_cherry.json
+          ! test -e work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_oak_age3.json
+          echo 'BUILD153_NATIVE_CROP_RENDER_PIPELINE_PASS'
           echo 'BUILD151_PLANTER_TEXTURE_ATLAS_VALIDATED PASS'
           grep -Fq 'BUILD150_SINGLE_GUI_TITLE' work/src/main/java/dev/obsidiannetwork/client/NetworkPlanterScreen.java
           grep -Fq 'EMPTY(Items.AIR' work/src/main/java/dev/obsidiannetwork/block/NetworkPlanterBlock.java
-          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_oak_age3.json
-          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_stripped_cherry_cherry_age3.json
           grep -Fq 'BUILD148_PLANTER_TRUE_SLOT_LAYOUT' work/src/main/java/dev/obsidiannetwork/menu/NetworkPlanterMenu.java
           grep -Fq 'BUILD148_PLANTER_CUSTOM_SCREEN' work/src/main/java/dev/obsidiannetwork/client/NetworkPlanterScreen.java
-          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_dark_oak_age0.json || test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_stripped_dark_oak_oak_age0.json
           grep -Fq 'BUILD146_PLANTER_ATOMIC_NINE_SLOT' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPlanterBlockEntity.java
           grep -Fq 'BUILD146_JADE_PLANTER_STATUS' work/src/main/java/dev/obsidiannetwork/compat/PowerArmorJadePlugin.java
           grep -Fq 'Math.sqrt(1024D-' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorRecall.java
           test -f work/src/main/resources/data/obsidiannetwork/recipe/network_planter_stripped_dark_oak.json
-          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_grow_oak_3.json
           echo 'BUILD146_NETWORK_PLANTER_UI_TREE_GROWTH_RECALL32 PASS'
           grep -Fq 'V172_NETWORK_PLANTER_SAFE_INSERT' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPlanterBlockEntity.java
           grep -Fq 'V172_PLANTER_BOTTOM_OUTPUT' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPlanterCapabilities.java
