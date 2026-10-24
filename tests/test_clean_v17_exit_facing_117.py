@@ -14,6 +14,7 @@ class ExitFacing117(unittest.TestCase):
    "suitVolumeClearable(level,p)",
    "new AABB(p).inflate(0.25D)",
    "player.getDirection().getOpposite().toYRot()",
+   "ArmorStand stand=new ArmorStand(level,pos.getX()+0.5D,pos.getY(),pos.getZ()+0.5D);",
    "stand.setYRot(faceOwner);",
    "stand.setYBodyRot(faceOwner);",
    "stand.setYHeadRot(faceOwner);",

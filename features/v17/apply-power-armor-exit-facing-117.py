@@ -56,12 +56,12 @@ assert method.count(old)==1,("front placement anchor not unique",method[:1500])
 method=method.replace(old,new,1)
 s=s[:beg]+method+s[end:]
 
-# The real persistent GeckoLib stand is the only suit owner.
+# The reliable vanilla ArmorStand is the only persistent suit owner; GeckoLib is transition-only.
 # Face back toward the player, i.e. exactly opposite the player look direction.
 # All render-facing channels must agree to avoid first-tick spin/jitter.
-standAnchor='''   stand.setPos(pos.getX()+0.5D,pos.getY(),pos.getZ()+0.5D);'''
+standAnchor='''  ArmorStand stand=new ArmorStand(level,pos.getX()+0.5D,pos.getY(),pos.getZ()+0.5D);'''
 assert s.count(standAnchor)==1, ("world suit setPos anchor drift",s.count(standAnchor))
-standNew='''   stand.setPos(pos.getX()+0.5D,pos.getY(),pos.getZ()+0.5D);
+standNew='''  ArmorStand stand=new ArmorStand(level,pos.getX()+0.5D,pos.getY(),pos.getZ()+0.5D);
    // BUILD117_STAND_LOOKS_AT_OWNER: opposite horizontal look, all 4 facings.
    float faceOwner=player.getDirection().getOpposite().toYRot();
    stand.setYRot(faceOwner);
