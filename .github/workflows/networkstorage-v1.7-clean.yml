@@ -2354,6 +2354,35 @@ jobs:
           assert "BUILD121_UNFRAMED_VIOLET_FE_HUD" in java
           print("BUILD124_SHARED_ELYTRA_PARTICLES PASS")
           PY
+          # Build125: fine, softly glowing hexes in the same shader-safe
+          # cutout renderer; keep the bright flash when actually hit.
+          python3 features/v17/apply-power-armor-subtle-shield-125.py
+          grep -Fq 'BUILD125_SUBTLE_IDLE_AND_HIT_FLASH' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct,zlib
+          java=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
+          assert "RenderTypes.armorCutoutNoCull(SKIN)" in java
+          assert "RenderTypes.entityTranslucent(SKIN)" not in java
+          assert "float easedGlow=energyGlow*energyGlow;" in java
+          assert "int blue=(int)(42F+213F*easedGlow);" in java
+          assert "BUILD120_ELYTRA_SHIELD_POSE" in java
+          assert java.count("submitPart(stack,collector,model.")==6
+          assert ".setColor(red,green,blue,255)" in java
+          tex=Path("work/src/main/resources/assets/obsidiannetwork/textures/entity/power_armor_shield_hex.png").read_bytes()
+          assert tex[:8]==b"\x89PNG\r\n\x1a\n"
+          assert struct.unpack(">II",tex[16:24])==(64,64)
+          pos=8; compressed=b""
+          while pos<len(tex):
+           n=struct.unpack(">I",tex[pos:pos+4])[0]
+           if tex[pos+4:pos+8]==b"IDAT":compressed+=tex[pos+8:pos+8+n]
+           pos+=n+12
+          scan=zlib.decompress(compressed)
+          opacity=[scan[y*257+4+4*x] for y in range(64) for x in range(64)]
+          assert set(opacity)=={0,255}
+          assert .045<sum(a==255 for a in opacity)/4096<.065
+          print("BUILD125_SUBTLE_SHIELD PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
