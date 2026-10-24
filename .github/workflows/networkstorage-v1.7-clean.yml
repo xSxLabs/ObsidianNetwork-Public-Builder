@@ -2142,21 +2142,6 @@ jobs:
           grep -Fq 'BUILD104_FORCEFIELD_AURA' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
           test -f work/src/main/resources/assets/obsidiannetwork/textures/item/power_card_energy_shield.png
           grep -Fq '"basic_energy_cell"' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
-          # Build 106: Draconic-inspired continuous translucent energy shield mesh.
-          # Visual-only overlay AFTER the old FE/damage/backup-safe systems.
-          python3 features/v17/apply-power-armor-shield-shell-106.py
-          grep -Fq 'BUILD106_DRACONIC_STYLE_SHIELD_SHELL' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
-          test -f work/src/main/resources/assets/obsidiannetwork/textures/entity/power_armor_shield_hex.png
-          python3 - <<'PY'
-          from pathlib import Path
-          import struct
-          tex=Path("work/src/main/resources/assets/obsidiannetwork/textures/entity/power_armor_shield_hex.png").read_bytes()
-          assert tex[:8]==b"\x89PNG\r\n\x1a\n" and struct.unpack(">II",tex[16:24])==(64,64)
-          java=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
-          assert "submitCustomGeometry(" in java and "DustParticleOptions" not in java
-          assert "wearer.hurtTime" in java and "PowerArmorRuntime.tier(armor,i)!=tier" in java
-          print("BUILD106_3D_HEX_ENERGY_SHELL PASS")
-          PY
           # Build 105: additive Air Mining disk; cancel only the fivefold airborne
           # dig-speed penalty while creative-style flying in a full powered suit.
           python3 features/v17/apply-power-armor-air-mining-105.py
@@ -2173,6 +2158,21 @@ jobs:
           assert card["result"]["id"]=="obsidiannetwork:power_card_air_mining"
           assert json.loads((root/"assets/obsidiannetwork/items/power_card_air_mining.json").read_text())["model"]["model"]=="obsidiannetwork:item/power_card_air_mining"
           print("BUILD105_AIR_MINING_RECIPE_AND_ASSETS PASS")
+          PY
+          # Build 106: Draconic-inspired continuous translucent energy shield mesh.
+          # Visual-only overlay AFTER the old FE/damage/backup-safe systems.
+          python3 features/v17/apply-power-armor-shield-shell-106.py
+          grep -Fq 'BUILD106_DRACONIC_STYLE_SHIELD_SHELL' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          test -f work/src/main/resources/assets/obsidiannetwork/textures/entity/power_armor_shield_hex.png
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+          tex=Path("work/src/main/resources/assets/obsidiannetwork/textures/entity/power_armor_shield_hex.png").read_bytes()
+          assert tex[:8]==b"\x89PNG\r\n\x1a\n" and struct.unpack(">II",tex[16:24])==(64,64)
+          java=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
+          assert "submitCustomGeometry(" in java and "DustParticleOptions" not in java
+          assert "wearer.hurtTime" in java and "PowerArmorRuntime.tier(armor,i)!=tier" in java
+          print("BUILD106_3D_HEX_ENERGY_SHELL PASS")
           PY
           python3 - <<'PY'
           from pathlib import Path
