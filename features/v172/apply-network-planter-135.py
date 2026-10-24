@@ -19,7 +19,7 @@ def resource(rel,obj):
  assert not p.exists(),rel
  p.write_text(json.dumps(obj,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 edit("ObsidianNetwork.java",
- '''    public static final DeferredItem<BlockItem> ARMOR_STATION_ITEM=ITEMS.registerSimpleBlockItem("armor_station",ARMOR_STATION);''',
+ '''   public static final DeferredItem<BlockItem> ARMOR_STATION_ITEM=ITEMS.registerSimpleBlockItem("armor_station",ARMOR_STATION);''',
  '''    public static final DeferredItem<BlockItem> ARMOR_STATION_ITEM=ITEMS.registerSimpleBlockItem("armor_station",ARMOR_STATION);
     // V172_NETWORK_PLANTER: crop factory with native xSxLabs cable injection.
     public static final DeferredBlock<dev.obsidiannetwork.block.NetworkPlanterBlock> NETWORK_PLANTER =
