@@ -2321,7 +2321,7 @@ jobs:
           assert src.count("submitPart(stack,collector,model.")==6
           assert "EnergyTool.energy(armor)<20L" in src
           tex=Path("work/src/main/resources/assets/obsidiannetwork/textures/entity/power_armor_shield_hex.png").read_bytes()
-          assert tex[:8]==b"\\x89PNG\\r\\n\\x1a\\n"
+          assert tex[:8]==b"\x89PNG\r\n\x1a\n"
           assert struct.unpack(">II",tex[16:24])==(64,64)
           # Decode non-filtered RGBA PNG and ensure no semi-transparent texels.
           pos=8;buf=b""
