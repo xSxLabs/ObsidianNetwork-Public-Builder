@@ -64,7 +64,7 @@ public final class PowerArmorEnergyShield {
 
   // Immediately replicate the bright shield impact to nearby clients,
   // even if armor prevents the usual full knockback/hurt flash.
-  ServerLevel world=p.serverLevel();
+  ServerLevel world=(ServerLevel)p.level();
   world.sendParticles(new DustParticleOptions(0x74dfff,1.3F),
       p.getX(),p.getY()+.95D,p.getZ(),44,.68D,.88D,.68D,.015D);
   world.sendParticles(ParticleTypes.END_ROD,
