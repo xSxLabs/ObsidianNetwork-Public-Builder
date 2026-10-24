@@ -2200,6 +2200,20 @@ jobs:
           assert java.count("submitPart(stack,collector,model.")==6
           print("BUILD112_MODEL_COORDS_PASS")
           PY
+          # Build113: remove the extra X reflection while preserving the
+          # successful Build112 Y-up and feet-origin coordinate correction.
+          python3 features/v17/apply-power-armor-shield-animation-113.py
+          grep -Fq 'BUILD113_UNMIRRORED_ANIMATION' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          python3 - <<'PY'
+          from pathlib import Path
+          source=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
+          assert source.count("stack.scale(1.0F,-1.0F,1.0F);")==1
+          assert "stack.scale(-1.0F,-1.0F,1.0F);" not in source
+          assert source.count("submitPart(stack,collector,model.")==6
+          assert "joint.translateAndRotate(stack);" in source
+          assert "stack.translate(0.0F,-1.501F,0.0F);" in source
+          print("BUILD113_UNMIRRORED_ANIMATION PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
