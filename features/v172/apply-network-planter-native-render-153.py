@@ -44,7 +44,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.obsidiannetwork.block.NetworkPlanterBlock;
 import dev.obsidiannetwork.blockentity.NetworkPlanterBlockEntity;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.BlockDisplayContext;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -254,6 +254,7 @@ target=java/"client/NetworkPlanterClientRenderRegistration.java"
 assert not target.exists(),target
 target.write_text(registration,encoding="utf-8")
 
+assert "import net.minecraft.client.renderer.block.model.BlockDisplayContext;" in renderer
 assert "BlockModelResolver" in renderer
 assert "resolver.update(out.plantModel,nativeState,DISPLAY_CONTEXT)" in renderer
 assert "case OAK->Blocks.OAK_SAPLING.defaultBlockState()" in renderer
