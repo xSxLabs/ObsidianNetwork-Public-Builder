@@ -2227,6 +2227,23 @@ jobs:
           assert java.index("stack.mulPose(Axis.YP.rotationDegrees(180.0F-state.bodyRot));")<java.index("submitPart(stack,collector,model.head")
           print("BUILD114_BODY_FACING_LOCK PASS")
           PY
+          # Build115: use the identical vanilla armor-root transform for all
+          # six posed player ModelParts; slow smooth translucent-blue fade.
+          python3 features/v17/apply-power-armor-pose-locked-shield-115.py
+          grep -Fq 'BUILD115_ARMOR_POSE_LOCK' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          grep -Fq 'BUILD115_SLOW_BLUE_BREATH' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          python3 - <<'PY'
+          from pathlib import Path
+          java=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
+          assert java.count("stack.scale(-1.0F,-1.0F,1.0F);")==1
+          assert "stack.scale(1.0F,-1.0F,1.0F);" not in java
+          assert java.count("submitPart(stack,collector,model.")==6
+          assert "phase*phase*(3F-2F*phase)" in java
+          assert "Math.sin(time*.042D)" in java
+          assert "wearer.hurtTime" in java
+          assert java.index("stack.mulPose(Axis.YP.rotationDegrees(180.0F-state.bodyRot));") < java.index("stack.scale(-1.0F,-1.0F,1.0F);")
+          print("BUILD115_ARMOR_POSE_LOCK PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
