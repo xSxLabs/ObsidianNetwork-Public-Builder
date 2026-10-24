@@ -2290,6 +2290,21 @@ jobs:
           assert "BUILD115_SLOW_BLUE_BREATH" in s
           print("BUILD120_ELYTRA_SHIELD_POSE PASS")
           PY
+          # Build121: tidy FE overlay directly above food row, violet
+          # normal, yellow low, red critical, without the large border panel.
+          python3 features/v17/apply-power-armor-violet-hud-121.py
+          grep -Fq 'BUILD121_UNFRAMED_VIOLET_FE_HUD' work/src/main/java/dev/obsidiannetwork/client/PowerArmorBuild98Client.java
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorBuild98Client.java").read_text()
+          assert src.count("getGuiScaledHeight()-52")==1
+          assert "getGuiScaledHeight()-59" not in src
+          assert "0xffbf80ff" in src and "0xffffdc45" in src and "0xffff4545" in src
+          assert "0x9b101923" not in src
+          assert "g.fill(x-1,y-2,x+width+1,y+12" not in src
+          assert "stored+=Math.max(0L,EnergyTool.energy(item));" in src
+          print("BUILD121_UNFRAMED_VIOLET_FE_HUD PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
