@@ -2431,6 +2431,11 @@ jobs:
           python3 features/v172/apply-power-armor-recall-jade-146.py
           python3 features/v172/apply-network-planter-gui-model-148.py
           python3 features/v172/apply-network-planter-specific-growth-150.py
+          # Build151: repair missing 26.1.2 crop/azalea sprites and remove
+          # obsolete forced render type; validate all 1,248 state models.
+          python3 features/v172/apply-network-planter-texture-fix-151.py
+          test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_melon_age3.json
+          echo 'BUILD151_PLANTER_TEXTURE_ATLAS_VALIDATED PASS'
           grep -Fq 'BUILD150_SINGLE_GUI_TITLE' work/src/main/java/dev/obsidiannetwork/client/NetworkPlanterScreen.java
           grep -Fq 'EMPTY(Items.AIR' work/src/main/java/dev/obsidiannetwork/block/NetworkPlanterBlock.java
           test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_oak_age3.json
