@@ -2081,7 +2081,7 @@ jobs:
           grep -Fq 'BUILD98_SUIT_REPLACEABLE' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorSuitWorld.java
           grep -Fq 'RenderArmEvent' work/src/main/java/dev/obsidiannetwork/client/PowerArmorFirstPersonArms.java
           grep -Fq 'RenderGuiEvent.Post' work/src/main/java/dev/obsidiannetwork/client/PowerArmorBuild98Client.java
-          grep -Fq 'displayClientMessage' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorCommands.java
+          grep -Fq 'ClientboundSetActionBarTextPacket' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorCommands.java
           python3 - <<'PY'
           from pathlib import Path
           import struct
