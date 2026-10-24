@@ -2336,6 +2336,24 @@ jobs:
           assert set(opacities)=={0,255}
           print("BUILD122_BLISS_SAFE_ARMOR_CUTOUT PASS")
           PY
+          # Build124: visualize all multiplayer players' network-Elytra
+          # thrusters on each tracking client, not only its own mc.player.
+          python3 features/v17/apply-power-armor-multiplayer-jets-124.py
+          grep -Fq 'BUILD124_SHARED_ELYTRA_PARTICLES' work/src/main/java/dev/obsidiannetwork/client/PowerArmorBuild98Client.java
+          python3 - <<'PY'
+          from pathlib import Path
+          java=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorBuild98Client.java").read_text()
+          start=java.index("jetThrusters(ClientTickEvent.Post event)")
+          jets=java[start:]
+          assert "for(var p:mc.level.players())" in jets
+          assert "var p=mc.player;" not in jets
+          assert "p.distanceToSqr(mc.player)>64D*64D" in jets
+          assert "PowerArmorElytraBridge.chest(p)" in jets
+          assert jets.count("for(int limb=0;limb<4;limb++)")==1
+          assert "ParticleTypes.END_ROD" in jets and "ParticleTypes.CLOUD" in jets
+          assert "BUILD121_UNFRAMED_VIOLET_FE_HUD" in java
+          print("BUILD124_SHARED_ELYTRA_PARTICLES PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
