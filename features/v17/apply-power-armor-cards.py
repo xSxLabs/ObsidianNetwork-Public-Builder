@@ -276,7 +276,8 @@ ingredients={
  "regeneration":"minecraft:totem_of_undying",
  "fire_resistance":"minecraft:ancient_debris",
  "jump_boost":"minecraft:rabbit_foot",
- "network_elytra":"obsidiannetwork:network_elytra"
+ "network_elytra":"obsidiannetwork:network_elytra",
+ "energy_shield":"obsidiannetwork:advanced_energy_cell"
 }
 assert set(ingredients)==set(cards) and len(set(ingredients.values()))==len(cards), "Distinct recipes required"
 for card in cards:
