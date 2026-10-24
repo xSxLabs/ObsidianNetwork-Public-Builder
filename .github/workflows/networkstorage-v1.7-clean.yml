@@ -2131,6 +2131,55 @@ jobs:
           assert len(all_recipes)==48 and len(all_skins)==24
           print("BUILD102_MK24_SUITS_AND_ASSETS PASS")
           PY
+          # Build 103: all MK1..MK24 powered suits consume one actual
+          # ObsidianNetwork Basic Energy Cell per armor part; premium boards
+          # and 23 costly disks; old mending/unbreaking remain uncraftable.
+          python3 features/v17/apply-power-armor-expensive-recipes-103.py
+          grep -Fq '"basic_energy_cell"' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path("work/src/main/resources/data/obsidiannetwork/recipe")
+          names=("helmet","chestplate","leggings","boots")
+          signatures=set()
+          for tier in range(1,25):
+           for part in names:
+            stem="power_armor_"+(f"mk{tier}_" if tier>1 else "")+part
+            recipe=json.loads((root/(stem+".json")).read_text())
+            assert recipe["type"]=="minecraft:crafting_shaped",stem
+            assert recipe["pattern"]==["ANA","BCB","DEF"],stem
+            assert recipe["result"]["id"]=="obsidiannetwork:"+stem,stem
+            keys=recipe["key"]
+            assert sum(keys.get(c)=="obsidiannetwork:basic_energy_cell"
+             for row in recipe["pattern"] for c in row)==1,stem
+            assert keys["C"]=="minecraft:netherite_"+part,stem
+            assert keys["B"]=="minecraft:diamond_block",stem
+            signature=json.dumps([recipe["pattern"],keys],sort_keys=True)
+            assert signature not in signatures,stem
+            signatures.add(signature)
+          assert len(signatures)==96
+          board=json.loads((root/"power_armor_upgrade.json").read_text())
+          assert board["pattern"]==["IRI","NCN","IRI"]
+          cards=("flight","night_vision","water_breathing","protection",
+           "fire_protection","blast_protection","projectile_protection",
+           "feather_falling","respiration","aqua_affinity","thorns",
+           "depth_strider","frost_walker","soul_speed","swift_sneak",
+           "strength","resistance","speed","haste","regeneration",
+           "fire_resistance","jump_boost","network_elytra")
+          card_signatures=set()
+          for card in cards:
+           recipe=json.loads((root/("power_card_"+card+".json")).read_text())
+           assert recipe["pattern"]==["ABA","CDC","AEA"],card
+           assert recipe["key"]["D"]=="obsidiannetwork:power_armor_upgrade",card
+           assert recipe["key"]["E"]=="minecraft:diamond_block",card
+           signature=json.dumps([recipe["pattern"],recipe["key"]],sort_keys=True)
+           assert signature not in card_signatures,card
+           card_signatures.add(signature)
+          assert len(card_signatures)==23
+          for gone in ("mending","unbreaking"):
+           assert not (root/("power_card_"+gone+".json")).exists(),gone
+          print("BUILD103_96_ARMOR_23_UPGRADE_RECIPES PASS")
+          PY
           grep -Fq "compileOnly 'maven.modrinth:jade:26.1.12+neoforge'" work/build.gradle
           python3 -m json.tool work/src/main/resources/assets/obsidiannetwork/lang/de_de.json >/dev/null
           python3 -m json.tool work/src/main/resources/assets/obsidiannetwork/lang/en_us.json >/dev/null
