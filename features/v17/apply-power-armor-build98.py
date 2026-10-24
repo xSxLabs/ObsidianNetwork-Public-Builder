@@ -24,10 +24,10 @@ old='''  chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UP
  }'''
 new='''  chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),String.join(",",cards));
   // BUILD98: temporary action bar (true), NEVER the chat log.
-  p.displayClientMessage(Component.translatable(
-    cards.contains("nightvision_on")?
+  p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket(
+    Component.translatable(cards.contains("nightvision_on")?
       "message.obsidiannetwork.power_armor.night_on":
-      "message.obsidiannetwork.power_armor.night_off"),true);
+      "message.obsidiannetwork.power_armor.night_off")));
   return Command.SINGLE_SUCCESS;
  }'''
 write(cmd,once(s,old,new,"nightvision command"))
@@ -310,6 +310,6 @@ for lang,on,off in (
  write(target,json.dumps(data,ensure_ascii=False,indent=2)+"\n")
 
 assert "suitVolumeClearable(level,pos)" in read(world)
-assert "p.displayClientMessage(Component.translatable(" in read(cmd)
+assert "ClientboundSetActionBarTextPacket(" in read(cmd)
 assert all((res/f"textures/entity/power_armor_firstperson_mk{i}.png").is_file() for i in range(1,13))
 print(MARK+" PASS: safe air/light/snow/grass/flower/bush replacement; 12 matching first-person suit arms; 4-limb white flight particles; actionbar nightvision; compact FE HUD")
