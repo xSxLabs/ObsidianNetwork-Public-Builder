@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build 93: loss-safe manual Power Armor unequip, front-pad station docking,
-vanilla attributes for Jade, and ten cosmetically distinct additional MK tiers.
+vanilla attributes for Jade, and twenty-two cosmetically distinct additional MK tiers.
 
 Execute AFTER all existing 70/78/91 overlays. Do not touch MK1/MK2 assets,
 SavedData codecs, or the successful Build92 Tesseract/channel implementation.
@@ -40,6 +40,21 @@ finishes={
 23:("Canyon Tech","Canyon-Technik",(98,69,50),(54,213,237),"brown_dye"),
 24:("Solar Wasp","Solarwespe",(242,202,39),(23,26,32),"yellow_dye"),
 }
+
+# MK13..MK24 use two color-dye ingredients, so their new recipe
+# bottom row differs from every MK3..MK12 dye recipe.
+new_trim_dyes={
+ 13:"orange_dye",14:"cyan_dye",15:"lime_dye",16:"gray_dye",
+ 17:"yellow_dye",18:"white_dye",19:"white_dye",20:"yellow_dye",
+ 21:"gray_dye",22:"lime_dye",23:"light_blue_dye",24:"black_dye",
+}
+assert set(new_trim_dyes)==set(range(13,25))
+assert len({(finishes[t][4],new_trim_dyes[t]) for t in new_trim_dyes})==12
+# Reject visually close duplicate combinations, not just equal hex codes.
+def palette_distance(a,b):
+ return sum((x-y)**2 for x,y in zip(a[2],b[2]))**.5 + .75*sum((x-y)**2 for x,y in zip(a[3],b[3]))**.5
+assert all(palette_distance(finishes[i],finishes[j])>100
+ for i in finishes for j in finishes if i<j),"MK color combination too similar"
 
 def load(p):return p.read_text(encoding="utf-8")
 def put(p,contents):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(contents,encoding="utf-8")
@@ -136,7 +151,7 @@ for tier in finishes:
 anchor='   public static final DeferredItem<dev.obsidiannetwork.powerarmor.UpgradeCardItem> POWER_ARMOR_UPGRADE ='
 assert code.count(anchor)==1
 code=code.replace(anchor,addition+anchor,1)
-# Creative inventory exposure for all forty additional pieces.
+# Creative inventory exposure for all 88 additional pieces.
 tab='            output.accept((ItemLike)POWER_ARMOR_MK2_BOOTS.get());'
 assert code.count(tab)==1,"Missing Build32 MK2 creative slot"
 code=code.replace(tab,tab+'\n'+'\n'.join(
@@ -145,12 +160,12 @@ code=code.replace(tab,tab+'\n'+'\n'.join(
 put(mod,code)
 
 runtime=java/"powerarmor/PowerArmorRuntime.java"
-# All 48 pieces uniquely identify their tier. Never infer tier=MK1 from an
+# All 96 pieces uniquely identify their tier. Never infer tier=MK1 from an
 # invalid helmet or accept mismatched chest/legs/boots.
 tiermethod=''' public static int tier(ItemStack stack,int slot){
   if(stack.isEmpty())return 0;
 '''
-for tier in range(1,13):
+for tier in range(1,25):
  for idx,(part,_,_,_) in enumerate(parts):
   var=(f"POWER_ARMOR_MK{tier}_{part.upper()}" if tier>1 else f"POWER_ARMOR_{part.upper()}")
   tiermethod+=f"  if(slot=={idx}&&stack.is(dev.obsidiannetwork.ObsidianNetwork.{var}.get()))return {tier};\n"
@@ -387,11 +402,15 @@ for tier,(english,german,primary,secondary,dye) in finishes.items():
          "textures":{"layer0":"obsidiannetwork:item/"+ident}})
   dump(res/f"items/{ident}.json",{"model":{"type":"minecraft:model",
          "model":"obsidiannetwork:item/"+ident}})
-  # Distinct dye ensures no conflicting recipe outputs for ten variants.
+  # Unique dual-color dye pair ensures no new recipe conflicts with legacy variants.
+  pattern=["ABA","CDC","EFE"] if tier>=13 else ["ABA","CDC","AEA"]
+  ingredients={"A":"minecraft:netherite_ingot","B":"minecraft:iron_block",
+               "C":"minecraft:diamond","D":"minecraft:"+material,
+               "E":"minecraft:"+dye}
+  if tier>=13:ingredients["F"]="minecraft:"+new_trim_dyes[tier]
   dump(recipes/(ident+".json"),{
-   "type":"minecraft:crafting_shaped","pattern":["ABA","CDC","AEA"],
-   "key":{"A":"minecraft:netherite_ingot","B":"minecraft:iron_block",
-          "C":"minecraft:diamond","D":"minecraft:"+material,"E":"minecraft:"+dye},
+   "type":"minecraft:crafting_shaped","pattern":pattern,
+   "key":ingredients,
    "result":{"id":"obsidiannetwork:"+ident,"count":1}})
  for lang,title in (("en_us",english),("de_de",german)):
   path=res/f"lang/{lang}.json"
@@ -415,7 +434,7 @@ for tier,(english,german,primary,secondary,dye) in finishes.items():
  (res/f"textures/entity/power_armor_visual_mk{tier}.png").write_bytes(
     recolor_png(png.read_bytes(),primary,secondary))
 
-assert sum(load(mod).count(f'ITEMS.registerItem("power_armor_mk{t}_') for t in finishes)==40
+assert sum(load(mod).count(f'ITEMS.registerItem("power_armor_mk{t}_') for t in finishes)==88
 assert all(f"ARMOR_VISUAL_ENTITY_MK{t}" in load(mod) for t in finishes)
 assert 'getValue(ArmorStationBlock.FACING)' in load(world)
 assert 'if(!candidate.equals(origin))continue;' in load(world)
@@ -423,4 +442,4 @@ assert 'new AABB(pad), e->mine(e,player)&&full(e)' in load(world)
 assert 'e.blockPosition().equals(pad)' in load(world)
 assert 'oldArmor.recover(p)' in load(runtime)
 assert 'DataComponents.ATTRIBUTE_MODIFIERS' in load(mod)
-print("BUILD93_POWER_ARMOR_PASS: manual unequip recovery, real vanilla attributes, facing-aware exact 1-block red-pad docking, MK3-MK12 complete matching sets, dedicated recipes, original MK1/MK2 art preserved and 10 color-matched animated GeckoLib meshes")
+print("BUILD93_POWER_ARMOR_PASS: manual unequip recovery, real vanilla attributes, facing-aware exact 1-block red-pad docking, MK3-MK24 complete matching sets, dedicated recipes, original MK1/MK2 art preserved and 10 color-matched animated GeckoLib meshes")
