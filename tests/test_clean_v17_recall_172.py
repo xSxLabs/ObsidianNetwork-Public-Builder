@@ -14,7 +14,7 @@ class PowerArmorRecall172(unittest.TestCase):
    "ServerStartedEvent","isVisualActive(getUUID())",
    "PlayerTickEvent.Post","RegisterTicketControllersEvent",
    "PowerArmorSuitWorld.recallEquip(stand,player)",
-   "locate(player,visual)","dir.scale(16D)",
+   "locate(player,visual)","V172_TRUE_16_BLOCK_LIMIT",
    "noCollision(visual,visual.getBoundingBox().move(move))",
    "finishEntering(stand,player)"):
    self.assertIn(m,PATCH,m)
@@ -36,6 +36,16 @@ class PowerArmorRecall172(unittest.TestCase):
   self.assertIn("reason.shouldDestroy()",PATCH)
   self.assertNotIn("stand.entityTags().contains(MARKER)&&!PowerArmorSuitWorld.full(stand)",PATCH)
   self.assertIn("stand.getRemovalReason()",PATCH)
+ def test_strict_16_block_3d_teleport(self):
+  self.assertIn("double radius=Math.sqrt(256D-(double)height*height)-0.25D;",PATCH)
+  self.assertIn("dest.distanceToSqr(p.position())>256D",PATCH)
+  self.assertNotIn("dir.scale(16D)",PATCH)
+ def test_restart_and_portal_cleanup(self):
+  self.assertIn("V172_SERVER_RESTART_GUARD",PATCH)
+  self.assertIn("ACTIVE.clear();",PATCH)
+  self.assertIn("V172_DIMENSION_CLEANUP",PATCH)
+  self.assertIn("for(ServerLevel dimension:player.level().getServer().getAllLevels())",PATCH)
+  self.assertIn("dimension.getEntity(flight.visual())",PATCH)
  def test_branch_pipeline(self):
   self.assertIn("branches: [v1.7, v1.7.2]",WF)
   self.assertLess(WF.index("apply-power-armor-subtle-shield-125.py"),WF.index("apply-power-armor-recall.py"))

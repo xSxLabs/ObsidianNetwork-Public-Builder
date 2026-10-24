@@ -166,6 +166,9 @@ public final class PowerArmorRecall {
   return false;
  }
  @SubscribeEvent public static void startup(ServerStartedEvent event){
+  // V172_SERVER_RESTART_GUARD: no flight can survive a server restart.
+  // Keep the saved suit locations; only volatile flight state is cleared.
+  ACTIVE.clear();
   // Tickets persist through crashes; clear old recall-only chunk tickets.
   var server=event.getServer();
   for(var loc:PowerArmorRecallIndex.get(server).all()){
@@ -196,8 +199,12 @@ public final class PowerArmorRecall {
    PowerArmorRecallTickets.ticket(world,player.getUUID(),pos.getX()>>4,pos.getZ()>>4,false);
   }
   if(flight.visual()!=null){
-   Entity v=player.level().getEntity(flight.visual());
-   if(v!=null&&!v.isRemoved())v.discard();
+   // V172_DIMENSION_CLEANUP: the player can leave through a portal mid-flight.
+   // Remove the cosmetic visual from its original level, not just the new level.
+   for(ServerLevel dimension:player.level().getServer().getAllLevels()){
+    Entity v=dimension.getEntity(flight.visual());
+    if(v!=null&&!v.isRemoved())v.discard();
+   }
   }
   ACTIVE.remove(player.getUUID());
  }
@@ -216,13 +223,17 @@ VISUAL_CASES
   forward=new Vec3(forward.x,0D,forward.z);
   if(forward.lengthSqr()<.001D)forward=new Vec3(1D,0D,0D);
   forward=forward.normalize();
-  // In front if clear, otherwise search the 16-block ring, safely airborne.
+  // V172_TRUE_16_BLOCK_LIMIT: the whole 3D distance must be <=16,
+  // including vertical offset (the old 16 horizontal + height exceeded it).
+  // Search different bearings/heights; never teleport inside solid blocks.
   for(int a=0;a<8;a++){
    double angle=a*Math.PI/4D;
    Vec3 dir=new Vec3(forward.x*Math.cos(angle)-forward.z*Math.sin(angle),
                      0D,forward.x*Math.sin(angle)+forward.z*Math.cos(angle));
    for(int height:new int[]{2,5,9}){
-    Vec3 dest=p.position().add(dir.scale(16D)).add(0D,height,0D);
+    double radius=Math.sqrt(256D-(double)height*height)-0.25D;
+    Vec3 dest=p.position().add(dir.scale(radius)).add(0D,height,0D);
+    if(dest.distanceToSqr(p.position())>256D)continue;
     if(!p.level().hasChunkAt(BlockPos.containing(dest)))continue;
     visual.setPos(dest.x,dest.y,dest.z);
     if(p.level().noCollision(visual,visual.getBoundingBox()))return true;
