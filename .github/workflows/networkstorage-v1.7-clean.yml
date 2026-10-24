@@ -2133,8 +2133,14 @@ jobs:
           PY
           # Build 103: all MK1..MK24 powered suits consume one actual
           # ObsidianNetwork Basic Energy Cell per armor part; premium boards
-          # and 23 costly disks; old mending/unbreaking remain uncraftable.
+          # and 24 costly disks; old mending/unbreaking remain uncraftable.
           python3 features/v17/apply-power-armor-expensive-recipes-103.py
+          # Build 104: always-visible Energy Shield only when its card is
+          # installed; server validates real FE before absorbing damage.
+          python3 features/v17/apply-power-armor-energy-shield-104.py
+          grep -Fq 'BUILD104_FORCEFIELD' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorEnergyShield.java
+          grep -Fq 'BUILD104_FORCEFIELD_AURA' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          test -f work/src/main/resources/assets/obsidiannetwork/textures/item/power_card_energy_shield.png
           grep -Fq '"basic_energy_cell"' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           python3 - <<'PY'
           from pathlib import Path
@@ -2165,7 +2171,7 @@ jobs:
            "feather_falling","respiration","aqua_affinity","thorns",
            "depth_strider","frost_walker","soul_speed","swift_sneak",
            "strength","resistance","speed","haste","regeneration",
-           "fire_resistance","jump_boost","network_elytra")
+           "fire_resistance","jump_boost","network_elytra","energy_shield")
           card_signatures=set()
           for card in cards:
            recipe=json.loads((root/("power_card_"+card+".json")).read_text())
@@ -2175,10 +2181,10 @@ jobs:
            signature=json.dumps([recipe["pattern"],recipe["key"]],sort_keys=True)
            assert signature not in card_signatures,card
            card_signatures.add(signature)
-          assert len(card_signatures)==23
+          assert len(card_signatures)==24
           for gone in ("mending","unbreaking"):
            assert not (root/("power_card_"+gone+".json")).exists(),gone
-          print("BUILD103_96_ARMOR_23_UPGRADE_RECIPES PASS")
+          print("BUILD104_96_ARMOR_24_UPGRADE_RECIPES PASS")
           PY
           grep -Fq "compileOnly 'maven.modrinth:jade:26.1.12+neoforge'" work/build.gradle
           python3 -m json.tool work/src/main/resources/assets/obsidiannetwork/lang/de_de.json >/dev/null
