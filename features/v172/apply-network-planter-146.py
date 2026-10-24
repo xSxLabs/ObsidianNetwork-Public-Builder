@@ -233,6 +233,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.minecraft.core.Direction;
+/** V172_PLANTER_BOTTOM_OUTPUT: only outputs exposed to downward item pipes. */
 @EventBusSubscriber(modid="obsidiannetwork")
 public final class NetworkPlanterCapabilities {
  private NetworkPlanterCapabilities(){}
@@ -272,6 +273,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 /** BUILD146_PLANTER_ATOMIC_NINE_SLOT: 0 soil, 1 seed, 2 speed, 9..17 output.
+ * V172_NETWORK_PLANTER_SAFE_INSERT retained: multiple persistent outputs.
  * Nine independent persistent output stacks. Never insert more than capacity,
  * never consume an unacknowledged network/adjacent container transfer.
  */
