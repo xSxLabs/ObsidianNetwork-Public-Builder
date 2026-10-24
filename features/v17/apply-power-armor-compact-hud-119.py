@@ -13,15 +13,15 @@ source=p.read_text(encoding="utf-8")
 assert "BUILD98_POWER_ARMOR_VISUAL_AND_PLACEMENT" in source
 assert "public static void hud(RenderGuiEvent.Post event)" in source
 assert "capacity+=Math.max(0L,EnergyTool.capacity(item));" in source
-old='''   int x=mc.getWindow().getGuiScaledWidth()/2-91;
-   int y=mc.getWindow().getGuiScaledHeight()-70;
-   GuiGraphicsExtractor g=event.getGuiGraphics();
-   int col=fraction<0.15?0xffdf5050:fraction<0.32?0xffe9b34e:0xff63cbea;
-   g.fill(x-1,y-2,x+91,y+10,0x9b101923);
-   g.fill(x,y+5,x+90,y+8,0xff243642);
-   g.fill(x,y+5,x+(int)Math.round(90*fraction),y+8,col);
-   g.text(mc.font,"POWER ARMOR",x,y-5,0xffb9d6df);
-   g.text(mc.font,pct+"%",x+72,y-5,col);'''
+old='''  int x=mc.getWindow().getGuiScaledWidth()/2-91;
+  int y=mc.getWindow().getGuiScaledHeight()-70;
+  GuiGraphicsExtractor g=event.getGuiGraphics();
+  int col=fraction<0.15?0xffdf5050:fraction<0.32?0xffe9b34e:0xff63cbea;
+  g.fill(x-1,y-2,x+91,y+10,0x9b101923);
+  g.fill(x,y+5,x+90,y+8,0xff243642);
+  g.fill(x,y+5,x+(int)Math.round(90*fraction),y+8,col);
+  g.text(mc.font,"POWER ARMOR",x,y-5,0xffb9d6df);
+  g.text(mc.font,pct+"%",x+72,y-5,col);'''
 new='''   // BUILD119_HUNGER_ALIGNED_COMPACT_HUD
    // Vanilla hunger icons occupy centered X + 10..91 and Y = height-39.
    // Keep this slim 80px meter directly ABOVE those icons, never over hearts,

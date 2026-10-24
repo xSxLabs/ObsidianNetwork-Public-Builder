@@ -2275,6 +2275,21 @@ jobs:
           assert "stored+=Math.max(0L,EnergyTool.energy(item));" in java
           print("BUILD119_HUNGER_ALIGNED_COMPACT_HUD PASS")
           PY
+          # Build 120: render client shield root with the same Elytra pitch,
+          # travel yaw and swimming pose used by Minecraft's AvatarRenderer.
+          python3 features/v17/apply-power-armor-shield-flight-pose-120.py
+          grep -Fq 'BUILD120_ELYTRA_SHIELD_POSE' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
+          assert "state.isFallFlying" in s
+          assert "state.fallFlyingScale()" in s
+          assert "Axis.XP.rotationDegrees(glide*(-90.0F-state.xRot))" in s
+          assert "Axis.YP.rotation(state.flyingYRot)" in s
+          assert s.count("submitPart(stack,collector,model.")==6
+          assert "BUILD115_SLOW_BLUE_BREATH" in s
+          print("BUILD120_ELYTRA_SHIELD_POSE PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
