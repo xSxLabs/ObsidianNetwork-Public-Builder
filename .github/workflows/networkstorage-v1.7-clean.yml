@@ -2214,6 +2214,19 @@ jobs:
           assert "stack.translate(0.0F,-1.501F,0.0F);" in source
           print("BUILD113_UNMIRRORED_ANIMATION PASS")
           PY
+          # Build114: rotate complete six-piece energy skin by interpolated
+          # avatar BODY yaw (not camera yaw or a fixed compass direction).
+          python3 features/v17/apply-power-armor-shield-player-facing-114.py
+          grep -Fq 'BUILD114_BODY_FACING_LOCK' work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java
+          python3 - <<'PY'
+          from pathlib import Path
+          java=Path("work/src/main/java/dev/obsidiannetwork/client/PowerArmorShieldClient.java").read_text()
+          assert java.count("stack.mulPose(Axis.YP.rotationDegrees(180.0F-state.bodyRot));")==1
+          assert java.count("stack.scale(1.0F,-1.0F,1.0F);")==1
+          assert java.count("submitPart(stack,collector,model.")==6
+          assert java.index("stack.mulPose(Axis.YP.rotationDegrees(180.0F-state.bodyRot));")<java.index("submitPart(stack,collector,model.head")
+          print("BUILD114_BODY_FACING_LOCK PASS")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import json
