@@ -12,7 +12,9 @@ target=j/"PowerArmorCreateCarrier.java"
 assert not target.exists()
 target.write_text(r'''package dev.obsidiannetwork.powerarmor;
 
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -54,17 +56,27 @@ public final class PowerArmorCreateCarrier {
  }
  private static Vec3 local(Entity contraption,Vec3 pos){
   try{
-   Method transform=contraption.getClass().getMethod("toLocalVector",Vec3.class,float.class);
+   // DEDICATED_SERVER_CREATE_SAFE_HOTFIX: exact MethodHandle lookup prevents
+   // Class#getMethod from resolving unrelated Create client/PoseStack methods.
+   MethodHandle transform=MethodHandles.publicLookup().findVirtual(
+      contraption.getClass(),"toLocalVector",
+      MethodType.methodType(Vec3.class,Vec3.class,float.class));
    return (Vec3)transform.invoke(contraption,pos,1.0F);
-  }catch(ReflectiveOperationException|ClassCastException|LinkageError ignored){
+  }catch(Throwable failure){
+   if(failure instanceof VirtualMachineError fatal)throw fatal;
+   if(failure instanceof ThreadDeath fatal)throw fatal;
    return null;
   }
  }
  private static Vec3 global(Entity contraption,Vec3 pos){
   try{
-   Method transform=contraption.getClass().getMethod("toGlobalVector",Vec3.class,float.class);
+   MethodHandle transform=MethodHandles.publicLookup().findVirtual(
+      contraption.getClass(),"toGlobalVector",
+      MethodType.methodType(Vec3.class,Vec3.class,float.class));
    return (Vec3)transform.invoke(contraption,pos,1.0F);
-  }catch(ReflectiveOperationException|ClassCastException|LinkageError ignored){
+  }catch(Throwable failure){
+   if(failure instanceof VirtualMachineError fatal)throw fatal;
+   if(failure instanceof ThreadDeath fatal)throw fatal;
    return null;
   }
  }
@@ -75,11 +87,21 @@ public final class PowerArmorCreateCarrier {
   BlockPos underneath=BlockPos.containing(localFeet.add(0D,-.125D,0D));
   if(Math.abs(localFeet.y-(underneath.getY()+1D))>.5D)return false;
   try{
-   Object moving=contraption.getClass().getMethod("getContraption").invoke(contraption);
+   Class<?> type=Class.forName("com.simibubi.create.content.contraptions.Contraption",
+       false,contraption.getClass().getClassLoader());
+   MethodHandle get=MethodHandles.publicLookup().findVirtual(contraption.getClass(),
+       "getContraption",MethodType.methodType(type));
+   Object moving=get.invoke(contraption);
    if(moving==null)return false;
-   Object map=moving.getClass().getMethod("getBlocks").invoke(moving);
+   MethodHandle blocksHandle=MethodHandles.publicLookup().findVirtual(moving.getClass(),
+       "getBlocks",MethodType.methodType(Map.class));
+   Object map=blocksHandle.invoke(moving);
    return map instanceof Map<?,?> blocks&&blocks.containsKey(underneath);
-  }catch(ReflectiveOperationException|LinkageError ignored){return false;}
+  }catch(Throwable failure){
+   if(failure instanceof VirtualMachineError fatal)throw fatal;
+   if(failure instanceof ThreadDeath fatal)throw fatal;
+   return false;
+  }
  }
  private static Entity find(ServerLevel level,UUID uuid,AABB nearby){
   for(Entity e:level.getEntitiesOfClass(Entity.class,nearby,
