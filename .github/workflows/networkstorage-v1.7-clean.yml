@@ -100,7 +100,7 @@ name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.7, v1.7.2]
+    branches: [v1.7, v1.7.2, v1.7.2-hotfix]
     paths:
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - 'patches/**'
@@ -2425,6 +2425,19 @@ jobs:
           # v1.7.2 Build136: Create elevator/piston support and Network Planter.
           python3 features/v172/apply-network-planter-135.py
           python3 features/v172/apply-power-armor-create-platform-136.py
+          # HOTFIX V172 dedicated-server crash gate: never enumerate Create
+          # method signatures (may resolve client-only PoseStack class).
+          python3 - <<'PY_V172_DEDICATED_SAFE'
+          from pathlib import Path
+          for name in ('PowerArmorCreatePlatformSupport','PowerArmorCreateCarrier'):
+              f=Path('work/src/main/java/dev/obsidiannetwork/powerarmor')/(name+'.java')
+              src=f.read_text(encoding='utf-8')
+              assert 'MethodHandles.publicLookup().findVirtual' in src,name
+              assert '.getMethod(' not in src and '.getDeclaredMethods(' not in src,name
+              assert 'import com.mojang.blaze3d' not in src,name
+              assert 'import net.minecraft.client' not in src,name
+          print('V172_CREATE_DEDICATED_SAFE_HOTFIX_PASS')
+          PY_V172_DEDICATED_SAFE
           # Build146: mature 9-slot planter UI, creative/JEI, Create-safe world
           # visuals, stripped wood variants, tree drops, Jade and recall 32m.
           python3 features/v172/apply-network-planter-146.py
