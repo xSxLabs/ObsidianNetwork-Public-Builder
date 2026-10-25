@@ -5,6 +5,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 PL=(ROOT/"features/v172/apply-network-planter-135.py").read_text()
 CR=(ROOT/"features/v172/apply-power-armor-create-platform-136.py").read_text()
+CAR=(ROOT/"features/v172/apply-power-armor-create-carrier-138.py").read_text()
 WF=(ROOT/".github/workflows/networkstorage-v1.7-clean.yml").read_text()
 class Build136(unittest.TestCase):
  def test_python_syntax(self):ast.parse(PL);ast.parse(CR)
@@ -23,16 +24,20 @@ class Build136(unittest.TestCase):
   self.assertIn("Math.min(16-upgrades,held.getCount())",PL)
   self.assertIn("600D/(1D+0.70D*upgrades)",PL)
  def test_create_carries_original_and_updates_recall(self):
-  for x in ("V172_CREATE_MOVING_PLATFORM",
-            "com.simibubi.create.content.contraptions.AbstractContraptionEntity",
-            "getContraption","getBlocks","toGlobalVector",
-            "suit.setPos(target.x,target.y,target.z)",
-            "PowerArmorRecallIndex.get(world.getServer()).index"):
-   self.assertIn(x,CR)
-  for x in ("new ArmorStand(","addFreshEntity(","suit.setItemSlot("):
-   self.assertNotIn(x,CR)
+  # Only the carrier moves real suit entities; the old platform handler
+  # must never duplicate motion or enumerate client-only Create signatures.
+  self.assertIn("V172_CREATE_MOVING_PLATFORM",CR)
+  self.assertIn("PowerArmorCreateCarrier",CR)
+  self.assertNotIn("@EventBusSubscriber",CR)
+  self.assertNotIn(".getMethod(",CR)
+  for x in ("getContraption","getBlocks","toGlobalVector",
+            "stand.setPos(dest.x,dest.y,dest.z)",
+            "PowerArmorRecallIndex.get(level.getServer()).index"):
+   self.assertIn(x,CAR)
+  for x in ("new ArmorStand(","addFreshEntity(","stand.setItemSlot("):
+   self.assertNotIn(x,CAR)
  def test_correct_branch_and_pipeline(self):
-  self.assertIn("branches: [v1.7, v1.7.2]",WF)
+  self.assertIn("branches: [v1.7, v1.7.2, v1.7.2-hotfix]",WF)
   self.assertIn("python3 features/v172/apply-network-planter-135.py",WF)
   self.assertIn("python3 features/v172/apply-power-armor-create-platform-136.py",WF)
 if __name__=="__main__":unittest.main()
