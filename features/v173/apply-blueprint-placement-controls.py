@@ -513,8 +513,11 @@ rep("blockentity/NetworkDeviceBlockEntity.java",
    if(!(level instanceof ServerLevel world)){
     setStatus("PRINTER SERVER NOT READY");return false;
    }
+   if(blueprint.isEmpty()){
+    setStatus("PRINTER NEEDS BLUEPRINT");return false;
+   }
    int[] dims=size();
-   if(dims.length!=3 || dims[0]<=0 || dims[1]<=0 || dims[2]<=0 ||
+   if(dims==null || dims.length!=3 || dims[0]<=0 || dims[1]<=0 || dims[2]<=0 ||
       (long)dims[0]*dims[1]*dims[2]!=planLength()){
     setStatus("INVALID SAVED BLUEPRINT");return false;
    }
@@ -611,6 +614,8 @@ action=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
 carrier=(J/"powerarmor/PowerArmorCreateCarrier.java").read_text(encoding="utf-8")
 assert "blueprintReadyToPrint()" in device
 assert "BLUEPRINT TOO LARGE" in device
+assert "PRINTER NEEDS BLUEPRINT" in device
+assert "dims==null || dims.length!=3" in device
 assert "dims[0]<=0" in device
 assert "running=false;missing=ItemStack.EMPTY" in device
 assert device.count("entity.noPhysics=true;")>=2
