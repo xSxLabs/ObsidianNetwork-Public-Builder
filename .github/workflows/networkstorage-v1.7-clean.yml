@@ -2494,6 +2494,13 @@ jobs:
           python3 features/v173/apply-wireless-cable-entry-guard.py
           # Build200: persistent Portal A and one-shot short-lived Portal B.
           python3 features/v173/apply-network-portals.py
+          # Build201: portals are Power Armor upgrade-card gated, not standalone magic.
+          python3 features/v173/apply-portal-powerarmor-upgrade.py
+          grep -Fq 'V173_PORTAL_SERVER_ARMOR_GATE' work/src/main/java/dev/obsidiannetwork/portal/PortalActionPayload.java
+          grep -Fq 'V173_PORTAL_ENTRY_ARMOR_GATE' work/src/main/java/dev/obsidiannetwork/portal/PortalGateBlockEntity.java
+          grep -Fq 'V173_PORTAL_A_ARMOR_PLACEMENT' work/src/main/java/dev/obsidiannetwork/portal/PortalAItem.java
+          grep -Fq 'POWER_CARD_PORTAL' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          echo 'V173_PORTAL_ARMOR_UPGRADE_BUILD201_SOURCES_PASS'
           grep -Fq 'V173_PORTAL_INDEX' work/src/main/java/dev/obsidiannetwork/portal/PortalIndex.java
           grep -Fq 'V173_PORTAL_ONE_SHOT' work/src/main/java/dev/obsidiannetwork/portal/PortalGateBlockEntity.java
           grep -Fq 'V173_PORTAL_ACTIONS' work/src/main/java/dev/obsidiannetwork/portal/PortalActionPayload.java
