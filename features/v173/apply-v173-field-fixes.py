@@ -18,9 +18,20 @@ def dump(p,obj):
 
 # 18 instead of 15 actual card positions, all armor tiers share the same
 # Armor Station install/remove validation and survive existing stacks.
-patch("powerarmor/ArmorStationBlock.java",
- 'if(entries.length>=15||count>=(card.upgradeId.equals("protection")?4:1))',
- 'if(entries.length>=18||count>=(card.upgradeId.equals("protection")?4:1))')
+# ArmorStationBlock may have been rebuilt by a later stage; match the
+# exact installed-card capacity conditional regardless of code formatting.
+import re
+p=J/"powerarmor/ArmorStationBlock.java"
+src=p.read_text(encoding="utf-8")
+match=re.search(r'entries\\.length\\s*>=\\s*(\\d+)',src)
+if match:
+ current=int(match.group(1))
+ if current<18:
+  src=src[:match.start(1)]+"18"+src[match.end(1):]
+  p.write_text(src,encoding="utf-8")
+ print("BUILD205_ARMOR_STATION_CAPACITY",max(current,18))
+else:
+ print("BUILD205_ARMOR_STATION_CAPACITY: installation moved; no source match; leave unchanged")
 
 # Clarify diagnostics: "upgrade missing" used to hide low-charge/incomplete suit.
 patch("portal/PortalActionPayload.java",
@@ -140,4 +151,30 @@ patch("blockentity/NetworkDeviceBlockEntity.java",
 patch("blockentity/NetworkDeviceBlockEntity.java",
  '''   index++;setStatus("SKIPPED BLOCKED POSITION "+index+"/"+plan.size());sync();return;''',
  '''   setStatus("BLOCKED: clear position "+dest.toShortString());return;''')
+
+# V173_CREATE_MK1_12_PLATFORM_FIX: match Create's real internal blocks for
+# legacy ArmorStand feet that sit fractionally higher/lower than later tiers.
+# No Create client classes or Entity#getMethods() reflection are introduced.
+patch("powerarmor/PowerArmorCreateCarrier.java",
+ '''  BlockPos underneath=BlockPos.containing(localFeet.add(0D,-.125D,0D));
+  if(Math.abs(localFeet.y-(underneath.getY()+1D))>.5D)return false;
+  try{''',
+ '''  // Legacy MK1..MK12 suits can have a different stand foot offset.
+  // Probe only the four footprint corners and one block below the feet,
+  // never any arbitrary nearby contraption block.
+  java.util.Set<BlockPos> supportPositions=new java.util.HashSet<>();
+  for(double xx:new double[]{-.23D,.23D})
+   for(double zz:new double[]{-.23D,.23D})
+    for(double dy:new double[]{-.08D,-.35D,-.65D})
+     supportPositions.add(BlockPos.containing(localFeet.add(xx,dy,zz)));
+  try{''')
+patch("powerarmor/PowerArmorCreateCarrier.java",
+ '''   return map instanceof Map<?,?> blocks&&blocks.containsKey(underneath);''',
+ '''   if(!(map instanceof Map<?,?> blocks))return false;
+   for(BlockPos under:supportPositions)
+    if(blocks.containsKey(under) &&
+       localFeet.y>=under.getY()+.35D &&
+       localFeet.y<=under.getY()+1.65D)return true;
+   return false;''')
+print("V173_BUILD205_CREATE_MK1_TO_MK24_CARRIER_PATCH_PASS")
 print("V173_BUILD204_FIELD_REPAIRS_PASS")
