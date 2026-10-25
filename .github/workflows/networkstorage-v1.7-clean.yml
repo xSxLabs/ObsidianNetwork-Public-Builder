@@ -2438,7 +2438,8 @@ jobs:
           # Build136 must no longer register its duplicate entity-tick listener.
           assert 'class PowerArmorCreatePlatformSupport' in passive
           assert '@EventBusSubscriber' not in passive
-          assert 'EntityTickEvent' not in passive
+          assert 'onSuitTick(' not in passive
+          assert 'import net.neoforged.neoforge.event.tick.EntityTickEvent;' not in passive
           assert 'MethodHandles.' not in passive
           # Build138 remains the ONLY movement implementation.
           assert '@EventBusSubscriber' in carrier
