@@ -93,8 +93,8 @@ change("menu/NetworkPrinterMenu.java",
  'return s.getItem() instanceof dev.obsidiannetwork.item.NetworkBlueprintItem;',
  'return s.is(dev.obsidiannetwork.ObsidianNetwork.NETWORK_BLUEPRINT.get());')
 change("blockentity/NetworkDeviceBlockEntity.java",
- 's.getItem() instanceof NetworkBlueprintItem',
- 's.is(ObsidianNetwork.NETWORK_BLUEPRINT.get())')
+ 'if(slot==0&&(s.isEmpty()||s.getItem() instanceof NetworkBlueprintItem)){',
+ 'if(slot==0&&(s.isEmpty()||s.is(ObsidianNetwork.NETWORK_BLUEPRINT.get()))){')
 # The last predicate occurs in the same file: canPlaceItem.
 change("blockentity/NetworkDeviceBlockEntity.java",
  'return slot==0?s.getItem() instanceof NetworkBlueprintItem:',
