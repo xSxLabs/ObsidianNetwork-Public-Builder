@@ -147,7 +147,7 @@ rep(' private void printer(ServerLevel world,NetworkRuntime net){',
   return (BlockState)property.getValue(val).map(value->state.setValue(property,(Comparable)value)).orElse(state);
  }
  private void printer(ServerLevel world,NetworkRuntime net){''')
-rep('   if(fromBuffer>0L){energyBuffer-=fromBuffer;setChanged();}',
+rep('  if(fromBuffer>0L){energyBuffer-=fromBuffer;setChanged();}',
     '   if(fromBuffer>0L){energyBuffer-=fromBuffer;sync();}')
 e.write_text(s)
 
