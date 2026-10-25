@@ -257,4 +257,25 @@ edit("blockentity/NetworkDeviceBlockEntity.java",
  ''' @Override public ItemStack removeItemNoUpdate(int slot){
   if(slot<0||slot>=2)return ItemStack.EMPTY;''')
 print("V173_PRINTER_MISSING_GHOST_LOCK217_PASS: no fake-item extraction, live status sync")
+# Build219: battery + cable FE must both count toward the visible GUI
+# capacity. Receiving cable energy must sync to client even when printer is idle.
+edit("blockentity/NetworkDeviceBlockEntity.java",
+ 'if(before!=energyBuffer)setChanged();',
+ '''if(before!=energyBuffer)sync();''')
+edit("client/NetworkPrinterScreen.java",
+ '''   long fe=be.availableFE(),capacity=be.ENERGY_CAPACITY;
+    int fill=(int)Math.max(0L,Math.min(95L,fe*95L/Math.max(1L,capacity)));''',
+ '''   long fe=be.availableFE();
+    long cellCapacity=Math.max(0L,dev.obsidiannetwork.core.EnergyTool.capacity(be.getItem(1)));
+    long capacity=cellCapacity>Long.MAX_VALUE-be.ENERGY_CAPACITY
+       ?Long.MAX_VALUE:be.ENERGY_CAPACITY+cellCapacity;
+    int fill=(int)Math.round(95D*Math.min(1D,
+       Math.max(0D,(double)fe/Math.max(1D,(double)capacity))));''')
+# Guard against source drift before attempting a lengthy CI build.
+src=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
+gui=(J/"client/NetworkPrinterScreen.java").read_text(encoding="utf-8")
+assert "if(before!=energyBuffer)sync();" in src
+assert "long cellCapacity=Math.max(0L,dev.obsidiannetwork.core.EnergyTool.capacity(be.getItem(1)))" in gui
+assert "Math.round(95D*Math.min(1D," in gui
+print("V173_PRINTER_LIVE_FE_CAPACITY_BUILD219_PASS: cable sync + cell-aware gauge")
 print("V173_PRINTER_PLACEMENT_GUI174_PASS: Blueprint position/rotation/mirror, blockstates, START PAUSE STOP, FE/progress console")
