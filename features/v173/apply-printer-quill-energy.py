@@ -132,9 +132,16 @@ new=''' private ItemStack blueprint=ItemStack.EMPTY,energy=ItemStack.EMPTY;
  public net.neoforged.neoforge.transfer.energy.EnergyHandler energyPort(){return energyPort;}
  public long availableFE(){return energyBuffer+EnergyTool.energy(energy);}
  private boolean spendFE(long amount){
-  if(energyBuffer>=amount){energyBuffer-=amount;setChanged();return true;}
-  if(EnergyTool.energy(energy)>=amount){EnergyTool.consume(energy,amount);sync();return true;}
-  return false;
+  // Consume cable FE first, and allow the installed cell to cover a shortfall.
+  // Validate the complete payment before mutating either energy source.
+  if(amount<0L||availableFE()<amount)return false;
+  long fromBuffer=Math.min(energyBuffer,amount);
+  long fromCell=amount-fromBuffer;
+  if(fromCell>0L&&EnergyTool.energy(energy)<fromCell)return false;
+  if(fromCell>0L)EnergyTool.consume(energy,fromCell);
+  if(fromBuffer>0L){energyBuffer-=fromBuffer;setChanged();}
+  if(fromCell>0L)sync();
+  return true;
  }
  private int index=0,completed=0;'''
 assert source.count(old)==1

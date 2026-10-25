@@ -77,7 +77,8 @@ public final class NetworkPrinterScreen extends ContainerScreen {
    g.fill(sx,sy,sx+17,sy+17,0xff183342);
   }
   // Vanilla player inventory uses ChestMenu's original slot positions.
-  int off=getImageHeight()-114;
+  // ChestMenu already uses 84 / 142 for the 9x3 inventory layout.
+  int off=0;
   for(int i=0;i<36;i++){
    int sx=x+8+(i%9)*18,sy=y+off+(i<27?84+(i/9)*18:142);
    g.fill(sx-1,sy-1,sx+18,sy+18,0xff315464);

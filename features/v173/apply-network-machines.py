@@ -435,7 +435,7 @@ public final class NetworkDeviceBlockEntity extends BlockEntity implements Conta
   return slot==0?s.getItem() instanceof NetworkBlueprintItem:slot==1&&EnergyTool.capacity(s)>0;
  }
  @Override public boolean stillValid(Player p){return !isRemoved()&&p.distanceToSqr(worldPosition.getX()+.5,worldPosition.getY()+.5,worldPosition.getZ()+.5)<=64D;}
- @Override public void clearContent(){blueprint=energy=tool=ItemStack.EMPTY;index=completed=0;sync();}
+ @Override public void clearContent(){blueprint=energy=ItemStack.EMPTY;index=completed=0;sync();}
 }
 ''')
 for name,(field,kind) in [(v[0],(k,v[1])) for k,v in newblocks.items()]:
