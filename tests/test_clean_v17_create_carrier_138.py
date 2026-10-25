@@ -10,7 +10,9 @@ class CreateArmorCarrier138(unittest.TestCase):
  def test_no_custom_block_and_no_required_create_dependency(self):
   self.assertIn("BUILD138_CREATE_MOVING_PLATFORM_COMPAT",PATCH)
   self.assertIn("com.simibubi.create.content.contraptions.AbstractContraptionEntity",PATCH)
-  self.assertIn("getMethod",PATCH)
+  self.assertNotIn(".getMethod(",PATCH)
+  self.assertIn('lookup.findVirtual(base,"toLocalVector"',PATCH)
+  self.assertIn('lookup.findVirtual(base,"toGlobalVector"',PATCH)
   self.assertNotIn("import com.simibubi.create",PATCH)
   self.assertNotIn('registerBlock(',PATCH)
   self.assertNotIn('registerSimpleBlockItem(',PATCH)

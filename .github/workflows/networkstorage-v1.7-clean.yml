@@ -162,6 +162,10 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_wireless_*.py' -v
           python3 -m unittest discover -s tests -p 'test_network_elytra_*.py' -v
           python3 -m unittest discover -s tests -p 'test_clean_v17_*.py' -v
+          # Regression: Create class references client-only PoseStack but it
+          # must be missing during the dedicated-server JVM test; assert
+          # powered piston UP and DOWN preserve original suit position.
+          python3 -m unittest discover -s tests -p 'test_v172_create_dedicated_hotfix.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           mkdir -p work/src/main/java work/src/main/resources
           curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
@@ -2425,6 +2429,30 @@ jobs:
           # v1.7.2 Build136: Create elevator/piston support and Network Planter.
           python3 features/v172/apply-network-planter-135.py
           python3 features/v172/apply-power-armor-create-platform-136.py
+          # Dedicated Create API safety: no PoseStack class loading or
+          # duplicate motion subscribers, one server-authoritative handler.
+          python3 - <<'PY_V173_CREATE_SAFE'
+          from pathlib import Path
+          root=Path('work/src/main/java/dev/obsidiannetwork/powerarmor')
+          passive=(root/'PowerArmorCreatePlatformSupport.java').read_text(encoding='utf-8')
+          carrier=(root/'PowerArmorCreateCarrier.java').read_text(encoding='utf-8')
+          assert 'class PowerArmorCreatePlatformSupport' in passive
+          assert '@EventBusSubscriber' not in passive
+          assert 'onSuitTick(' not in passive
+          assert 'import net.neoforged.neoforge.event.tick.EntityTickEvent;' not in passive
+          assert 'MethodHandles.' not in passive
+          assert '@EventBusSubscriber' in carrier
+          assert 'stand.setPos(dest.x,dest.y,dest.z)' in carrier
+          assert 'PowerArmorRecallIndex.get(level.getServer()).index' in carrier
+          for descriptor in ('toLocalVector','toGlobalVector','getContraption'):
+              assert 'lookup.findVirtual(base,"'+descriptor+'"' in carrier
+          assert 'lookup.findVirtual(contraptionType,"getBlocks"' in carrier
+          for name,src in (('platform',passive),('carrier',carrier)):
+              assert '.getMethod(' not in src and '.getDeclaredMethods(' not in src,name
+              assert 'import com.mojang.blaze3d' not in src,name
+              assert 'import net.minecraft.client' not in src,name
+          print('V173_DEDICATED_CREATE_SINGLE_CARRIER_PASS')
+          PY_V173_CREATE_SAFE
           # Build146: mature 9-slot planter UI, creative/JEI, Create-safe world
           # visuals, stripped wood variants, tree drops, Jade and recall 32m.
           python3 features/v172/apply-network-planter-146.py
