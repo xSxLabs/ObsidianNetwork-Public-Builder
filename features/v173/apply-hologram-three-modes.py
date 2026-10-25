@@ -56,7 +56,7 @@ new=r''' private String labelTag(){return "xsx-holo-"+worldPosition.asLong();}
    // Bounded real voxel columns: no chunk tickets, no unlimited world scans.
    int radius=holoRadius,step=Math.max(1,(radius*2+1)/23);
    int low=Math.max(world.getMinY(),worldPosition.getY()-holoDepth);
-   int high=Math.min(world.getMaxY(),worldPosition.getY()+holoHeight);
+   int high=Math.min(world.getMaxY()-1,worldPosition.getY()+holoHeight);
    int count=0;
    for(int x=-radius;x<=radius && count<180;x+=step)
     for(int z=-radius;z<=radius && count<180;z+=step){
@@ -271,3 +271,7 @@ s=s[:-1]+r'''
 '''
 p.write_text(s,encoding="utf-8")
 print("V173_HOLOGRAM_3_MODES_NETWORK_MAP_CUSTOM_GUI_BUILD207_PASS")
+
+# V173_HOLOGRAM_WORLD_HEIGHT: max build Y is exclusive; never scan it.
+assert 'int high=Math.min(world.getMaxY()-1,worldPosition.getY()+holoHeight);' in (J/'blockentity/NetworkDeviceBlockEntity.java').read_text(encoding='utf-8')
+print('V173_HOLOGRAM_WORLD_HEIGHT_PASS')
