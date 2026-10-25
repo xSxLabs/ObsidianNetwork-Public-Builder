@@ -2432,14 +2432,27 @@ jobs:
           # method signatures (may resolve client-only PoseStack class).
           python3 - <<'PY_V172_DEDICATED_SAFE'
           from pathlib import Path
-          for name in ('PowerArmorCreatePlatformSupport','PowerArmorCreateCarrier'):
-              f=Path('work/src/main/java/dev/obsidiannetwork/powerarmor')/(name+'.java')
-              src=f.read_text(encoding='utf-8')
-              assert 'MethodHandles.publicLookup().findVirtual' in src,name
+          root=Path('work/src/main/java/dev/obsidiannetwork/powerarmor')
+          passive=(root/'PowerArmorCreatePlatformSupport.java').read_text(encoding='utf-8')
+          carrier=(root/'PowerArmorCreateCarrier.java').read_text(encoding='utf-8')
+          # Build136 must no longer register its duplicate entity-tick listener.
+          assert 'class PowerArmorCreatePlatformSupport' in passive
+          assert '@EventBusSubscriber' not in passive
+          assert 'EntityTickEvent' not in passive
+          assert 'MethodHandles.' not in passive
+          # Build138 remains the ONLY movement implementation.
+          assert '@EventBusSubscriber' in carrier
+          assert 'stand.setPos(dest.x,dest.y,dest.z)' in carrier
+          assert 'PowerArmorRecallIndex.get(level.getServer()).index' in carrier
+          assert 'lookup.findVirtual(base,"toLocalVector"' in carrier
+          assert 'lookup.findVirtual(base,"toGlobalVector"' in carrier
+          assert 'lookup.findVirtual(base,"getContraption"' in carrier
+          assert 'lookup.findVirtual(contraptionType,"getBlocks"' in carrier
+          for name,src in (('platform',passive),('carrier',carrier)):
               assert '.getMethod(' not in src and '.getDeclaredMethods(' not in src,name
               assert 'import com.mojang.blaze3d' not in src,name
               assert 'import net.minecraft.client' not in src,name
-          print('V172_CREATE_DEDICATED_SAFE_HOTFIX_PASS')
+          print('V172_CREATE_DEDICATED_SAFE_HOTFIX_PASS: one handler, no client-only lookup')
           PY_V172_DEDICATED_SAFE
           # Build146: mature 9-slot planter UI, creative/JEI, Create-safe world
           # visuals, stripped wood variants, tree drops, Jade and recall 32m.
