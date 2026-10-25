@@ -2450,11 +2450,13 @@ jobs:
           python3 features/v173/apply-printer-status-gui.py
           # Build174: full Blueprint placement/control UX, dedicated FE bars,
           # bespoke models/icons and invulnerable terrain-phasing recall flight.
-          python3 -m py_compile features/v173/apply-printer-blueprint-controls.py features/v173/apply-3d-block-models.py features/v173/apply-blueprint-keycard-icons.py features/v173/apply-recall-ghost-flight.py
+          python3 -m py_compile features/v173/apply-printer-blueprint-controls.py features/v173/apply-3d-block-models.py features/v173/apply-blueprint-keycard-icons.py features/v173/apply-recall-ghost-flight.py features/v173/apply-blueprint-hologram-preview.py
           python3 features/v173/apply-printer-blueprint-controls.py
           python3 features/v173/apply-3d-block-models.py
           python3 features/v173/apply-blueprint-keycard-icons.py
           python3 features/v173/apply-recall-ghost-flight.py
+          python3 features/v173/apply-blueprint-hologram-preview.py
+          grep -Fq 'V173_BLUEPRINT_GHOST_PREVIEW' work/src/main/java/dev/obsidiannetwork/client/NetworkBlueprintPreviewClient.java
           grep -Fq 'V173_BLUEPRINT_POSITIONED' work/src/main/java/dev/obsidiannetwork/item/NetworkBlueprintItem.java
           grep -Fq 'xsxlabs_states' work/src/main/java/dev/obsidiannetwork/item/NetworkSchematicQuillItem.java
           grep -Fq 'clickMenuButton(Player player,int action)' work/src/main/java/dev/obsidiannetwork/menu/NetworkPrinterMenu.java
