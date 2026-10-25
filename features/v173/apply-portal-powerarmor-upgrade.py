@@ -140,9 +140,9 @@ once("portal/PortalGateBlockEntity.java",
    if(dev.obsidiannetwork.core.EnergyTool.energy(armor)<10000L)continue;
    try{''')
 once("portal/PortalGateBlockEntity.java",
- '''          Set.of(),player.getYRot(),player.getXRot(),true)){
+ '''         Set.of(),player.getYRot(),player.getXRot(),true)){
      level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());''',
- '''          Set.of(),player.getYRot(),player.getXRot(),true)){
+ '''         Set.of(),player.getYRot(),player.getXRot(),true)){
      // Server-authoritative payment happens once, after a successful transfer.
      dev.obsidiannetwork.core.EnergyTool.consume(armor,10000L);
      level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());''')
