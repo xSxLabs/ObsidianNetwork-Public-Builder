@@ -34,7 +34,8 @@ change("blockentity/NetworkDeviceBlockEntity.java",
  public int holoRadius(){return holoRadius;}
  public void configure(ServerPlayer player,String mode,String text,int color,int width,int height,int depth,int radius){
   if(mode()!=NetworkDeviceBlock.Mode.HOLOGRAM||level==null||
-    player.level()!=level||player.blockPosition().distSqr(worldPosition)>64)return;
+    player.level()!=level||player.isSpectator()||
+    player.blockPosition().distSqr(worldPosition)>64)return;
   if(!mode.equals("network")&&!mode.equals("map")&&!mode.equals("custom"))return;
   holoMode=mode;
   holoText=(text==null?"":text).substring(0,Math.min(text==null?0:text.length(),480))
@@ -275,3 +276,7 @@ print("V173_HOLOGRAM_3_MODES_NETWORK_MAP_CUSTOM_GUI_BUILD207_PASS")
 # V173_HOLOGRAM_WORLD_HEIGHT: max build Y is exclusive; never scan it.
 assert 'int high=Math.min(world.getMaxY()-1,worldPosition.getY()+holoHeight);' in (J/'blockentity/NetworkDeviceBlockEntity.java').read_text(encoding='utf-8')
 print('V173_HOLOGRAM_WORLD_HEIGHT_PASS')
+
+# Build236: Hologram configuration cannot be modified by spectators.
+assert 'player.level()!=level||player.isSpectator()||' in (J/'blockentity/NetworkDeviceBlockEntity.java').read_text(encoding='utf-8')
+print('V173_HOLOGRAM_SPECTATOR_WRITE_GUARD_PASS')
