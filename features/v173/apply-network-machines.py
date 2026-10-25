@@ -18,6 +18,8 @@ def change(path,old,new):
  p.write_text(s.replace(old,new,1),encoding="utf-8")
 def obj(path,data):
  path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+def asset(path,data):
+ obj(R/path,data)
 newblocks={"NETWORK_HOLOGRAM_TERMINAL":("network_hologram_terminal","HOLOGRAM"),
  "NETWORK_PRINTER":("network_printer","PRINTER")}
 declarations="\n".join('''    public static final DeferredBlock<dev.obsidiannetwork.block.NetworkDeviceBlock> %s =
@@ -95,7 +97,7 @@ public final class NetworkBlueprintItem extends Item {
    user.displayClientMessage(Component.literal("Blueprint: First corner "+at.toShortString()+" saved. Right-click opposite corner."),true);
    return InteractionResult.SUCCESS;
   }
-  String[] p=start.substring(dimension.length()+1).split(",");
+  String[] p=start.substring(dimension.length()+1).split("[|]");
   if(p.length!=3){write(stack,"xsxlabs_first",key);return InteractionResult.SUCCESS;}
   int x1=Integer.parseInt(p[0]),y1=Integer.parseInt(p[1]),z1=Integer.parseInt(p[2]);
   int loX=Math.min(x1,at.getX()),loY=Math.min(y1,at.getY()),loZ=Math.min(z1,at.getZ());
