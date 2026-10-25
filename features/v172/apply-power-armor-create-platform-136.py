@@ -8,7 +8,9 @@ root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/powerarmor"
 p=root/"PowerArmorCreatePlatformSupport.java"
 assert not p.exists()
 p.write_text(r'''package dev.obsidiannetwork.powerarmor;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -45,12 +47,21 @@ public final class PowerArmorCreatePlatformSupport {
   // Only actual platform blocks, never entire moving contraption AABB.
   // Unpowered / unloaded Create is never a hard dependency.
   try{
-   Method get=vehicle.getClass().getMethod("getContraption");
+   // DEDICATED_SERVER_CREATE_SAFE_HOTFIX: getMethod() enumerates unrelated
+   // Create method signatures and can resolve client-only PoseStack on servers.
+   // Resolve ONLY the exact server-side descriptors through MethodHandles.
+   Class<?> type=Class.forName("com.simibubi.create.content.contraptions.Contraption",
+       false,vehicle.getClass().getClassLoader());
+   MethodHandle get=MethodHandles.publicLookup().findVirtual(vehicle.getClass(),
+       "getContraption",MethodType.methodType(type));
    Object contraption=get.invoke(vehicle);
    if(contraption==null)return false;
-   Object map=contraption.getClass().getMethod("getBlocks").invoke(contraption);
+   MethodHandle getBlocks=MethodHandles.publicLookup().findVirtual(contraption.getClass(),
+       "getBlocks",MethodType.methodType(Map.class));
+   Object map=getBlocks.invoke(contraption);
    if(!(map instanceof Map<?,?> blocks))return false;
-   Method toWorld=vehicle.getClass().getMethod("toGlobalVector",Vec3.class,float.class);
+   MethodHandle toWorld=MethodHandles.publicLookup().findVirtual(vehicle.getClass(),
+       "toGlobalVector",MethodType.methodType(Vec3.class,Vec3.class,float.class));
    int scanned=0;
    for(Object local:blocks.keySet()){
     if(!(local instanceof BlockPos block))continue;
@@ -63,7 +74,12 @@ public final class PowerArmorCreatePlatformSupport {
     // multiple floors above or a passing moving platform.
     if(Math.abs(surface.y-suit.getY())<.44D)return true;
    }
-  }catch(ReflectiveOperationException|ClassCastException ignored){}
+  }catch(Throwable failure){
+   // Optional Create absent, incompatible or using a client-only method:
+   // fail closed for this attachment, never crash the dedicated server.
+   if(failure instanceof VirtualMachineError fatal)throw fatal;
+   if(failure instanceof ThreadDeath fatal)throw fatal;
+  }
   return false;
  }
  private static Entity find(ServerLevel world,ArmorStand suit){
