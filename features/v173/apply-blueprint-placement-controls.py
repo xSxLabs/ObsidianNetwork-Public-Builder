@@ -535,6 +535,10 @@ rep("blockentity/NetworkDeviceBlockEntity.java",
     setStatus("INVALID BLUEPRINT COORDINATES");return false;
    }
    if(rot<0||rot>7){setStatus("INVALID BLUEPRINT ROTATION");return false;}
+   // Reject oversized blueprints before any coordinate arithmetic.
+   if((long)dims[0]*dims[1]*dims[2]>1000000L){
+    setStatus("BLUEPRINT TOO LARGE");return false;
+   }
    int width=(rot%2==0)?dims[0]:dims[2];
    int depth=(rot%2==0)?dims[2]:dims[0];
    if(y<world.getMinY()||(long)y+dims[1]>world.getMaxY()||
@@ -606,6 +610,8 @@ portal=(J/"portal/PortalGateBlockEntity.java").read_text(encoding="utf-8")
 action=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
 carrier=(J/"powerarmor/PowerArmorCreateCarrier.java").read_text(encoding="utf-8")
 assert "blueprintReadyToPrint()" in device
+assert "BLUEPRINT TOO LARGE" in device
+assert "dims[0]<=0" in device
 assert "running=false;missing=ItemStack.EMPTY" in device
 assert device.count("entity.noPhysics=true;")>=2
 assert "setMarker(true)" not in device
