@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1.7.3 functional devices: Laser Miner, Blueprint/Network Printer, Hologram.
+"""v1.7.3 functional devices: Blueprint/Network Printer and Hologram.
 
 Blueprint records an area using two right-clicked corners and stores selected
 block IDs in ItemStack CUSTOM_DATA, not in unsafe client-only memory.
@@ -19,7 +19,6 @@ def change(path,old,new):
 def obj(path,data):
  path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 newblocks={"NETWORK_HOLOGRAM_TERMINAL":("network_hologram_terminal","HOLOGRAM"),
- "NETWORK_LASER_MINER":("network_laser_miner","MINER"),
  "NETWORK_PRINTER":("network_printer","PRINTER")}
 declarations="\n".join('''    public static final DeferredBlock<dev.obsidiannetwork.block.NetworkDeviceBlock> %s =
         BLOCKS.registerBlock("%s",p -> new dev.obsidiannetwork.block.NetworkDeviceBlock(p,dev.obsidiannetwork.block.NetworkDeviceBlock.Mode.%s),
@@ -42,7 +41,6 @@ change("registry/ModBlockEntities.java",
        TYPES.register("network_device",()->new BlockEntityType(
          dev.obsidiannetwork.blockentity.NetworkDeviceBlockEntity::new,
          new Block[]{(Block)ObsidianNetwork.NETWORK_HOLOGRAM_TERMINAL.get(),
-            (Block)ObsidianNetwork.NETWORK_LASER_MINER.get(),
             (Block)ObsidianNetwork.NETWORK_PRINTER.get()}));
    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.obsidiannetwork.blockentity.NetworkPlanterBlockEntity>> NETWORK_PLANTER =''')
 add("item/NetworkBlueprintItem.java",r'''package dev.obsidiannetwork.item;
@@ -156,18 +154,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public final class NetworkDeviceBlock extends BaseEntityBlock {
- public enum Mode { HOLOGRAM, MINER, PRINTER }
+ public enum Mode { HOLOGRAM, PRINTER }
  private final Mode mode;
  private static final MapCodec<NetworkDeviceBlock> H=
     simpleCodec(p->new NetworkDeviceBlock(p,Mode.HOLOGRAM));
- private static final MapCodec<NetworkDeviceBlock> M=
-    simpleCodec(p->new NetworkDeviceBlock(p,Mode.MINER));
  private static final MapCodec<NetworkDeviceBlock> P=
     simpleCodec(p->new NetworkDeviceBlock(p,Mode.PRINTER));
  public NetworkDeviceBlock(Properties p,Mode m){super(p);mode=m;}
  public Mode mode(){return mode;}
  @Override protected MapCodec<? extends BaseEntityBlock> codec(){
-  return switch(mode){case HOLOGRAM->H;case MINER->M;case PRINTER->P;};
+  return switch(mode){case HOLOGRAM->H;case PRINTER->P;};
  }
  @Override public RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
  @Nullable @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){
@@ -270,15 +266,13 @@ import net.minecraft.world.phys.AABB;
  * None runs clientside or extracts FE across wireless network links.
  */
 public final class NetworkDeviceBlockEntity extends BlockEntity implements Container {
- private ItemStack blueprint=ItemStack.EMPTY,energy=ItemStack.EMPTY,tool=ItemStack.EMPTY;
- private final ItemStack[] output=new ItemStack[9];
- private int index=0,completed=0,range=2;
+ private ItemStack blueprint=ItemStack.EMPTY,energy=ItemStack.EMPTY;
+ private int index=0,completed=0;
  private boolean running=false;
  private String status="IDLE";
  private static final int WORK_TICKS=5;
  public NetworkDeviceBlockEntity(BlockPos pos,BlockState state){
   super(ModBlockEntities.NETWORK_DEVICE.get(),pos,state);
-  Arrays.fill(output,ItemStack.EMPTY);
  }
  public NetworkDeviceBlock.Mode mode(){
   return getBlockState().getBlock() instanceof NetworkDeviceBlock b?b.mode():NetworkDeviceBlock.Mode.HOLOGRAM;
@@ -299,20 +293,11 @@ public final class NetworkDeviceBlockEntity extends BlockEntity implements Conta
  }
  public void handle(ServerPlayer player,ItemStack held){
   if(!(level instanceof ServerLevel world))return;
-  if(mode()==NetworkDeviceBlock.Mode.MINER && held.is(Items.NETHERITE_PICKAXE)
-    || mode()==NetworkDeviceBlock.Mode.MINER && held.is(Items.DIAMOND_PICKAXE)){
-   if(tool.isEmpty()){tool=held.copyWithCount(1);if(!player.isCreative())held.shrink(1);sync();}
-   return;
-  }
   if(EnergyTool.capacity(held)>0L && energy.isEmpty()){
    energy=held.copyWithCount(1);if(!player.isCreative())held.shrink(1);sync();return;
   }
   if(player.isShiftKeyDown()){
-   if(mode()==NetworkDeviceBlock.Mode.MINER){
-    range=range>=4?1:range+1;index=0;sync();
-    player.sendSystemMessage(Component.literal("Laser Miner radius "+range+
-        " (ores only, depth 12). Use Diamond/Netherite pickaxe and charged FE cell."));
-   }else if(mode()==NetworkDeviceBlock.Mode.PRINTER){
+   if(mode()==NetworkDeviceBlock.Mode.PRINTER){
     running=!running;sync();
     player.sendSystemMessage(Component.literal("Network Printer "+(running?"RUNNING":"PAUSED")+" | "+status));
    }else player.sendSystemMessage(Component.literal(summary(world)));
@@ -398,75 +383,35 @@ public final class NetworkDeviceBlockEntity extends BlockEntity implements Conta
   setStatus("PRINTING "+completed+"/"+plan.size());
   sync();
  }
- private void miner(ServerLevel world,NetworkRuntime net){
-  if(!running)return;
-  if(net==null){setStatus("NETWORK OFFLINE");return;}
-  if(tool.isEmpty()){setStatus("INSERT DIAMOND/NETHERITE PICKAXE");return;}
-  if(EnergyTool.energy(energy)<750L){setStatus("FE LOW: need 750 FE/ore");return;}
-  int width=2*range+1,slots=width*width*12;
-  for(int attempts=0;attempts<8;attempts++){
-   int current=(index++)%slots;
-   int dy=current/(width*width),ix=current%width;
-   BlockPos pos=worldPosition.offset((ix%width)-range,-1-dy,(ix/width)-range);
-   if(!world.hasChunkAt(pos))continue;
-   BlockState s=world.getBlockState(pos);
-   if(world.getBlockEntity(pos)!=null||s.getDestroySpeed(world,pos)<0)continue;
-   String id=BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath();
-   // Naturally occurring ores only, never machine inventories or claims.
-   if(!(id.endsWith("_ore")||id.equals("ancient_debris")))continue;
-   var drops=Block.getDrops(s,world,pos,null,null,tool);
-   if(drops.isEmpty())continue;
-   // Conservatively insert exactly before removing ore. Prevents item loss
-   // if network fills, at the cost of one transaction per ore.
-   if(drops.size()!=1||drops.get(0).getCount()!=1){setStatus("UNSUPPORTED MULTI-DROP ORE "+id);return;}
-   ItemStack drop=drops.get(0);
-   ItemKey key=ItemKey.simple(BuiltInRegistries.ITEM.getKey(drop.getItem()).toString());
-   if(net.storage().insert(key,1L)!=1L){setStatus("STORAGE FULL: "+drop.getHoverName().getString());return;}
-   if(!world.setBlock(pos,Blocks.AIR.defaultBlockState(),3)){
-    net.storage().extract(key,1L);
-    setStatus("BLOCK BREAK REFUSED");return;
-   }
-   EnergyTool.consume(energy,750L);
-   setStatus("MINED "+id+" | radius "+range);
-   sync();
-   world.sendParticles(new DustParticleOptions(0x58d7ff,.8f),
-    pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5,8,.22,.22,.22,.02);
-   return;
-  }
- }
  public static void tick(Level level,BlockPos pos,BlockState state,NetworkDeviceBlockEntity be){
   if(!(level instanceof ServerLevel world)||world.getGameTime()%WORK_TICKS!=0)return;
   if(be.mode()==NetworkDeviceBlock.Mode.HOLOGRAM){
    if(world.getGameTime()%40==0)be.hologram(world);
   }else if(be.mode()==NetworkDeviceBlock.Mode.PRINTER)be.printer(world,be.network(world));
-  else be.miner(world,be.network(world));
  }
  @Override protected void saveAdditional(ValueOutput out){
   super.saveAdditional(out);
   if(!blueprint.isEmpty())out.store("blueprint",ItemStack.CODEC,blueprint);
   if(!energy.isEmpty())out.store("energy",ItemStack.CODEC,energy);
-  if(!tool.isEmpty())out.store("tool",ItemStack.CODEC,tool);
-  out.putInt("index",index);out.putInt("completed",completed);out.putInt("range",range);
+  out.putInt("index",index);out.putInt("completed",completed);
   out.putBoolean("running",running);out.putString("status",status);
  }
  @Override protected void loadAdditional(ValueInput in){
   super.loadAdditional(in);
   blueprint=in.read("blueprint",ItemStack.CODEC).orElse(ItemStack.EMPTY);
   energy=in.read("energy",ItemStack.CODEC).orElse(ItemStack.EMPTY);
-  tool=in.read("tool",ItemStack.CODEC).orElse(ItemStack.EMPTY);
   index=Math.max(0,in.getIntOr("index",0));completed=Math.max(0,in.getIntOr("completed",0));
-  range=Math.max(1,Math.min(4,in.getIntOr("range",2)));
   running=in.getBooleanOr("running",false);status=in.getStringOr("status","IDLE");
  }
  @Override public void preRemoveSideEffects(BlockPos pos,BlockState state){
   if(level instanceof ServerLevel world){
-   for(ItemStack s:new ItemStack[]{blueprint,energy,tool})
+   for(ItemStack s:new ItemStack[]{blueprint,energy})
     if(!s.isEmpty())Containers.dropItemStack(world,pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5,s.copy());
   }
   super.preRemoveSideEffects(pos,state);
  }
  @Override public int getContainerSize(){return 27;}
- @Override public boolean isEmpty(){return blueprint.isEmpty()&&energy.isEmpty()&&tool.isEmpty();}
+ @Override public boolean isEmpty(){return blueprint.isEmpty()&&energy.isEmpty();}
  @Override public ItemStack getItem(int slot){return slot==0?blueprint:slot==1?energy:ItemStack.EMPTY;}
  @Override public ItemStack removeItem(int slot,int count){
   ItemStack s=getItem(slot);if(s.isEmpty())return ItemStack.EMPTY;
@@ -512,4 +457,4 @@ for language in ("de_de","en_us"):
   d["item.obsidiannetwork."+name]=name.replace("_"," ").title()
   d["block.obsidiannetwork."+name]=name.replace("_"," ").title()
  obj(p,d)
-print("V173_PRINTER_MINER_HOLOGRAM_PATCHED: blueprint corners + network-consuming printer, status GUI, FE-dependent miner, holographic telemetry")
+print("V173_PRINTER_HOLOGRAM_PATCHED: blueprint corners + network-consuming printer, status GUI, holographic telemetry")
