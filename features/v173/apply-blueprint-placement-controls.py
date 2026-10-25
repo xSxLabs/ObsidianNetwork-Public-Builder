@@ -514,7 +514,8 @@ rep("blockentity/NetworkDeviceBlockEntity.java",
     setStatus("PRINTER SERVER NOT READY");return false;
    }
    int[] dims=size();
-   if(dims.length!=3 || planLength()!=dims[0]*dims[1]*dims[2]){
+   if(dims.length!=3 || dims[0]<=0 || dims[1]<=0 || dims[2]<=0 ||
+      (long)dims[0]*dims[1]*dims[2]!=planLength()){
     setStatus("INVALID SAVED BLUEPRINT");return false;
    }
    String target=NetworkBlueprintItem.read(blueprint,"xsxlabs_anchor");
