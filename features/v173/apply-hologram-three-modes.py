@@ -92,8 +92,9 @@ new=r''' private String labelTag(){return "xsx-holo-"+worldPosition.asLong();}
    double y=worldPosition.getY()+1.55+(shown-1-i)*.24*holoHeight/3;
    if(entity==null){
     entity=new ArmorStand(world,worldPosition.getX()+.5,y,worldPosition.getZ()+.5);
-    entity.setInvisible(true);entity.setNoGravity(true);entity.setNoBasePlate(true);
-    entity.setInvulnerable(true);entity.addTag(labelTag());entity.addTag(tag);
+    entity.setInvisible(true);entity.setNoGravity(true);
+    entity.setNoBasePlate(true);entity.setInvulnerable(true);
+    entity.addTag(labelTag());entity.addTag(tag);
     world.addFreshEntity(entity);
    }
    entity.setPos(worldPosition.getX()+.5,y,worldPosition.getZ()+.5);
