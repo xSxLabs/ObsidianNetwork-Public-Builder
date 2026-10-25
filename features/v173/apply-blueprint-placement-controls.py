@@ -323,4 +323,28 @@ assert "V173_BLUEPRINT_WHOLE_VOLUME_BOUNDS222" in packet
 assert "entire build volume must fit inside world bounds" in item
 assert "BLUEPRINT OUTSIDE WORLD BOUNDS" in printer
 print("V173_BLUEPRINT_SAFE_WORLD_VOLUME_BUILD222_PASS: nudge, click, printer")
+# Build224: server-authoritative BLUEPRINT transforms must be atomic.
+# An invalid R/M turn previously changed the card even when bounds rejected it.
+rep("item/BlueprintPlacementPayload.java",
+ '''  if(command==6||command==7){''',
+ '''  int pendingRotation=-1;
+  if(command==6||command==7){''')
+rep("item/BlueprintPlacementPayload.java",
+ '''   NetworkBlueprintItem.write(stack,"xsxlabs_rotation",""+r);''',
+ '''   pendingRotation=r;''')
+rep("item/BlueprintPlacementPayload.java",
+ '''    if(!orientation.isBlank())rot=Integer.parseInt(orientation);''',
+ '''    if(!orientation.isBlank())rot=Integer.parseInt(orientation);
+    if(pendingRotation>=0)rot=pendingRotation;''')
+rep("item/BlueprintPlacementPayload.java",
+ '''  NetworkBlueprintItem.write(stack,"xsxlabs_anchor",dim+x+"|"+y+"|"+z);''',
+ '''  if(pendingRotation>=0)
+   NetworkBlueprintItem.write(stack,"xsxlabs_rotation",""+pendingRotation);
+  NetworkBlueprintItem.write(stack,"xsxlabs_anchor",dim+x+"|"+y+"|"+z);''')
+# Guard the whole atomic source order, not just fragments.
+packet=(J/"item/BlueprintPlacementPayload.java").read_text(encoding="utf-8")
+assert packet.count("pendingRotation")>=4
+assert packet.index("if(pendingRotation>=0)")>packet.index("isWithinBounds")
+assert packet.index("NetworkBlueprintItem.write(stack,\"xsxlabs_rotation\"")>packet.index("isWithinBounds")
+print("V173_BLUEPRINT_ATOMIC_TRANSFORM_BUILD224_PASS: invalid turns do not mutate cards")
 print("V173_BLUEPRINT_CREATE_STYLE_MOVE_ROTATE_BUILD210_PASS")
