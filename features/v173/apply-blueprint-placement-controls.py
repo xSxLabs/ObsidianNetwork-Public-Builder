@@ -348,14 +348,12 @@ assert packet.rindex("if(pendingRotation>=0)")>packet.index("isWithinBounds")
 assert packet.index("NetworkBlueprintItem.write(stack,\"xsxlabs_rotation\"")>packet.index("isWithinBounds")
 print("V173_BLUEPRINT_ATOMIC_TRANSFORM_BUILD224_PASS: invalid turns do not mutate cards")
 
-# Build226 BATCH: five independently guarded fixes, one single CI run.
-# 1. Reject stale or replaced Portal A identities before executing B travel.
+# Build227 REPAIR of the five combined Build226 fixes.
+# Use single semantically unique Java anchors to survive indentation changes.
 rep("portal/PortalGateBlockEntity.java",
- '''     PortalIndex.Anchor anchor=be.target;
-     ServerLevel dest=level.getServer().getLevel(''',
- '''     PortalIndex.Anchor anchor=be.target;
-     // The target UUID must still exist. Replacing A at the same coordinates
-     // must not silently redirect an already-open Portal B.
+ '''PortalIndex.Anchor anchor=be.target;''',
+ '''PortalIndex.Anchor anchor=be.target;
+     // Prevent a one-shot B from teleporting to a removed/replaced Portal A.
      boolean current=false;
      if(be.owner.equals(anchor.owner())){
       for(PortalIndex.Anchor saved:PortalIndex.get(level.getServer()).owned(player.getUUID()))
@@ -366,9 +364,8 @@ rep("portal/PortalGateBlockEntity.java",
      if(!current){
       player.sendSystemMessage(Component.literal("Portal A removed or replaced. Reopen Portal B."));
       level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());return;
-     }
-     ServerLevel dest=level.getServer().getLevel(''')
-# 2. Portal B cannot spam players at 20 messages/second if the exit is blocked.
+     }''')
+# Throttle repeated warning messages while the player remains inside B.
 rep("portal/PortalGateBlockEntity.java",
  '''if(dest==null){player.sendSystemMessage(Component.literal("Portal A dimension unavailable."));return;}''',
  '''if(dest==null){
@@ -379,30 +376,26 @@ rep("portal/PortalGateBlockEntity.java",
  '''player.sendSystemMessage(Component.literal("Portal A exit obstructed."));return;''',
  '''if(be.lifetime%20==1)player.sendSystemMessage(Component.literal("Portal A exit obstructed."));
       return;''')
-# 3. Tall multi-line holograms can reach 30+ blocks above their terminal;
-# the old +/-10 and +/-2.5 cleanup ranges leaked invulnerable armor stands.
+# Hologram lines can extend above the original 10-block tracking/cleanup box.
 rep("blockentity/NetworkDeviceBlockEntity.java",
- '''world.getEntitiesOfClass(ArmorStand.class,new AABB(worldPosition).inflate(4,10,4),''',
- '''world.getEntitiesOfClass(ArmorStand.class,new AABB(worldPosition).inflate(4,40,4),''')
+ '''new AABB(worldPosition).inflate(4,10,4)''',
+ '''new AABB(worldPosition).inflate(4,40,4)''')
 rep("blockentity/NetworkDeviceBlockEntity.java",
- '''world.getEntitiesOfClass(ArmorStand.class,new AABB(worldPosition).inflate(1.5,2.5,1.5),''',
- '''world.getEntitiesOfClass(ArmorStand.class,new AABB(worldPosition).inflate(1.5,40,1.5),''')
-# 4. Keep Create armor attachment when next destination chunk is unloaded.
-# The physical stand remains at its last valid position and retries later.
+ '''new AABB(worldPosition).inflate(1.5,2.5,1.5)''',
+ '''new AABB(worldPosition).inflate(1.5,40,1.5)''')
+# An unloaded Create destination chunk is not a failed contraption attachment.
+# Retry on the next tick rather than discarding the stored local coordinates.
 rep("powerarmor/PowerArmorCreateCarrier.java",
- '''if(world.hasChunkAt(BlockPos.containing(dest))
-         &&world.noCollision(stand,stand.getBoundingBox().move(delta))){''',
+ '''if(world.hasChunkAt(BlockPos.containing(dest))''',
  '''if(!world.hasChunkAt(BlockPos.containing(dest)))return;
-      if(world.noCollision(stand,stand.getBoundingBox().move(delta))){''')
-# 5. FE overflow safety for very high-capacity energy cells: never display
-# negative available power, which would erroneously halt valid printing.
+      if(world.hasChunkAt(BlockPos.containing(dest))''')
+# Saturating arithmetic for simultaneous cable buffer + large cells.
 rep("blockentity/NetworkDeviceBlockEntity.java",
  '''public long availableFE(){return energyBuffer+EnergyTool.energy(energy);}''',
  '''public long availableFE(){
    long cell=Math.max(0L,EnergyTool.energy(energy));
    return energyBuffer>Long.MAX_VALUE-cell?Long.MAX_VALUE:energyBuffer+cell;
   }''')
-# Assert ALL five sets landed in the actual reconstructed Java.
 portal=(J/"portal/PortalGateBlockEntity.java").read_text(encoding="utf-8")
 holo=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
 carrier=(J/"powerarmor/PowerArmorCreateCarrier.java").read_text(encoding="utf-8")
@@ -411,5 +404,5 @@ assert portal.count("be.lifetime%20==1")==2
 assert "inflate(4,40,4)" in holo and "inflate(1.5,40,1.5)" in holo
 assert "if(!world.hasChunkAt(BlockPos.containing(dest)))return;" in carrier
 assert "energyBuffer>Long.MAX_VALUE-cell" in holo
-print("V173_BUILD226_BATCH_PASS: portal UID, portal spam, holo cleanup, Create chunk retry, FE overflow")
+print("V173_BUILD227_BATCH_PASS: UID, warning throttle, holo cleanup, Create retry, FE saturation")
 print("V173_BLUEPRINT_CREATE_STYLE_MOVE_ROTATE_BUILD210_PASS")
