@@ -2504,6 +2504,10 @@ jobs:
           python3 features/v173/apply-portal-picker.py
           # Build209: wireless NETWORK device connected-state light follows the paired link.
           python3 features/v173/apply-wireless-connected-visuals.py
+          # Build210: Blueprint X/Z/Y controls, rotation, mirror and brighter ghost preview.
+          python3 features/v173/apply-blueprint-placement-controls.py
+          grep -Fq 'V173_BLUEPRINT_NUDGE_PACKET' work/src/main/java/dev/obsidiannetwork/item/BlueprintPlacementPayload.java
+          echo 'V173_BLUEPRINT_CONTROLS_BUILD210_SOURCES_PASS'
           grep -Fq 'V173_WIRELESS_CONNECTED_VISUAL' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkSignalRelayBlockEntity.java
           echo 'V173_WIRELESS_DEVICE_LIGHT_BUILD209_SOURCES_PASS'
           grep -Fq 'V173_PORTAL_UID_SELECT' work/src/main/java/dev/obsidiannetwork/portal/PortalIndex.java
