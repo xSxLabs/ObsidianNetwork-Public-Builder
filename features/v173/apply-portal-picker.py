@@ -27,7 +27,7 @@ edit("portal/PortalIndex.java",
     Codec.STRING.optionalFieldOf("id","").forGetter(Anchor::id)
   ).apply(i,Anchor::new));''')
 edit("portal/PortalIndex.java",
- '''   public Anchor withSelected(boolean chosen){return new Anchor(owner,dimension,x,y,z,chosen);}''',
+ '''  public Anchor withSelected(boolean chosen){return new Anchor(owner,dimension,x,y,z,chosen);}''',
  '''   // Empty IDs belong to already-saved Build203 worlds; derive a stable alias.
    public String uid(){
     if(id!=null&&!id.isEmpty())return id;
