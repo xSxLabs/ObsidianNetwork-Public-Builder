@@ -126,11 +126,6 @@ once("portal/PortalActionPayload.java",
 # One-time return trip FE debit, only AFTER the server reports a successful
 # teleport. Removing the armor between opening B and stepping into it disables B.
 once("portal/PortalGateBlockEntity.java",
- '''    // Only stepping into B counts; merely spawning B must not teleport instantly.
-   if(Math.abs(player.getX()-(pos.getX()+0.5))>0.52 ||''',
- '''    // Only stepping into B counts; merely spawning B must not teleport instantly.
-   if(Math.abs(player.getX()-(pos.getX()+0.5))>0.52 ||''') if False else None
-once("portal/PortalGateBlockEntity.java",
  '''      player.getY()<pos.getY()-0.35 ||player.getY()>pos.getY()+1.85)continue;
    try{''',
  '''      player.getY()<pos.getY()-0.35 ||player.getY()>pos.getY()+1.85)continue;
@@ -149,8 +144,8 @@ once("portal/PortalGateBlockEntity.java",
 # Defense-in-depth for places/commands that bypass PortalAItem.useOn:
 # invalid / fake A blocks will never be indexed as owned destinations.
 once("portal/PortalGateBlock.java",
- '''   if(!temporary && l instanceof ServerLevel sl && e instanceof Player player &&
-      l.getBlockEntity(p) instanceof PortalGateBlockEntity be){''',
+ '''  if(!temporary && l instanceof ServerLevel sl && e instanceof Player player &&
+     l.getBlockEntity(p) instanceof PortalGateBlockEntity be){''',
  '''   if(!temporary && l instanceof ServerLevel sl && e instanceof net.minecraft.server.level.ServerPlayer player
       && PortalActionPayload.hasUpgrade(player)
       && l.getBlockEntity(p) instanceof PortalGateBlockEntity be){''')
