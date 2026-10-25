@@ -154,6 +154,12 @@ import java.util.UUID;
  */
 public final class WirelessNetworkBlockEntity extends BlockEntity {
  private String channel="",owner="";
+ private static final java.util.Map<net.minecraft.server.MinecraftServer,java.util.Set<WirelessNetworkBlockEntity>> LIVE=
+   java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+ public static java.util.List<WirelessNetworkBlockEntity> transmitters(net.minecraft.server.MinecraftServer server){
+  var set=LIVE.get(server);
+  return set==null?java.util.List.of():java.util.List.copyOf(set);
+ }
  public WirelessNetworkBlockEntity(BlockPos pos,BlockState state){
   super(ModBlockEntities.NETWORK_WIRELESS.get(),pos,state);
  }
@@ -207,7 +213,15 @@ public final class WirelessNetworkBlockEntity extends BlockEntity {
   super.preRemoveSideEffects(p,state);
  }
  public static void tick(Level l,BlockPos p,BlockState s,WirelessNetworkBlockEntity be){
-  // No FE ticking, no entity movement and no forced cross-dim transfer loop.
+  if(l instanceof ServerLevel sl && be.transmitter() && be.paired())
+   LIVE.computeIfAbsent(sl.getServer(),ignored->java.util.Collections.newSetFromMap(
+      new java.util.IdentityHashMap<>())).add(be);
+ }
+ @Override public void setRemoved(){
+  if(level instanceof ServerLevel sl){
+   var set=LIVE.get(sl.getServer());if(set!=null)set.remove(this);
+  }
+  super.setRemoved();
  }
 }
 ''')
@@ -261,21 +275,20 @@ public final class WirelessNetworkBridge {
   }finally{RESOLVING.set(false);}
  }
  private static NetworkRuntime transmitterRuntime(ServerLevel receiverLevel,WirelessNetworkBlockEntity rx){
-  for(ServerLevel other:receiverLevel.getServer().getAllLevels()){
-   // Visit ONLY currently loaded block entities in chunks, never load distant
-   // unpaired chunks or perform scans on every server tick.
-   for(var be:other.blockEntityList){
-    if(!(be instanceof WirelessNetworkBlockEntity tx)||!tx.transmitter()
-       ||!tx.paired()||!tx.owner().equals(rx.owner())
-       ||!tx.channel().equals(rx.channel()))continue;
-    BlockPos origin=tx.getBlockPos();
-    for(Direction d:Direction.values()){
-     BlockPos cable=origin.relative(d);
-     if(!other.hasChunkAt(cable)||
-        !other.getBlockState(cable).is(ObsidianNetwork.NETWORK_CABLE.get()))continue;
-     NetworkRuntime rt=WorldTopologyBridge.runtimeForAccessory(other,cable);
-     if(rt!=null&&rt.powered())return rt;
-    }
+  // Live TX registry avoids scanning every block entity on every lookup.
+  for(WirelessNetworkBlockEntity tx:
+      WirelessNetworkBlockEntity.transmitters(receiverLevel.getServer())){
+   if(tx.isRemoved()||!tx.transmitter()||!tx.paired()
+      ||!tx.owner().equals(rx.owner())||!tx.channel().equals(rx.channel()))continue;
+   if(!(tx.getLevel() instanceof ServerLevel other))continue;
+   BlockPos origin=tx.getBlockPos();
+   if(!other.hasChunkAt(origin))continue;
+   for(Direction d:Direction.values()){
+    BlockPos cable=origin.relative(d);
+    if(!other.hasChunkAt(cable)||
+       !other.getBlockState(cable).is(ObsidianNetwork.NETWORK_CABLE.get()))continue;
+    NetworkRuntime rt=WorldTopologyBridge.runtimeForAccessory(other,cable);
+    if(rt!=null&&rt.powered())return rt;
    }
   }
   return null;
