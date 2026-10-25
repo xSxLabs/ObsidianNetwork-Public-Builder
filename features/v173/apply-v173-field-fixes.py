@@ -23,7 +23,7 @@ def dump(p,obj):
 import re
 p=J/"powerarmor/ArmorStationBlock.java"
 src=p.read_text(encoding="utf-8")
-match=re.search(r'entries\\.length\\s*>=\\s*(\\d+)',src)
+match=re.search(r'entries\.length\s*>=\s*(\d+)',src)
 if match:
  current=int(match.group(1))
  if current<18:
