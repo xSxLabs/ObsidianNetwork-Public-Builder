@@ -47,7 +47,41 @@ public final class PowerArmorCreateCarrier {
    "com.simibubi.create.content.contraptions.AbstractContraptionEntity";
  private static final Map<UUID,Attachment> ATTACHED=new HashMap<>();
  private record Attachment(UUID contraption,Vec3 local){}
+ // The base Create class has a CLIENT-ONLY abstract PoseStack method.
+ // Never call Class#getMethod()/getMethods() on any Create entity.
+ // Resolve exact SERVER API descriptors on the BASE class (not a subclass),
+ // and cache the resulting handles for use during armor ticks.
+ private record CreateApi(MethodHandle local,MethodHandle global,
+                          MethodHandle contraption,MethodHandle blocks){}
+ private static CreateApi API;
+ private static boolean API_RESOLVED;
  private PowerArmorCreateCarrier(){}
+
+ private static CreateApi api(Entity entity){
+  if(API_RESOLVED)return API;
+  API_RESOLVED=true;
+  try{
+   ClassLoader loader=entity.getClass().getClassLoader();
+   Class<?> base=Class.forName(CREATE_CLASS_NAME,false,loader);
+   Class<?> contraptionType=Class.forName(
+       "com.simibubi.create.content.contraptions.Contraption",false,loader);
+   if(!base.isInstance(entity))return null;
+   MethodHandles.Lookup lookup=MethodHandles.publicLookup();
+   MethodType transform=MethodType.methodType(Vec3.class,Vec3.class,float.class);
+   API=new CreateApi(
+       lookup.findVirtual(base,"toLocalVector",transform),
+       lookup.findVirtual(base,"toGlobalVector",transform),
+       lookup.findVirtual(base,"getContraption",MethodType.methodType(contraptionType)),
+       lookup.findVirtual(contraptionType,"getBlocks",MethodType.methodType(Map.class)));
+   return API;
+  }catch(Throwable failure){
+   if(failure instanceof VirtualMachineError fatal)throw fatal;
+   if(failure instanceof ThreadDeath fatal)throw fatal;
+   System.err.println("[ObsidianNetwork] Create armor platform API unavailable: "+
+       failure.getClass().getSimpleName()+" "+failure.getMessage());
+   return null;
+  }
+ }
 
  private static boolean isCreateContraption(Entity e){
   for(Class<?> t=e.getClass();t!=null;t=t.getSuperclass())
@@ -56,12 +90,9 @@ public final class PowerArmorCreateCarrier {
  }
  private static Vec3 local(Entity contraption,Vec3 pos){
   try{
-   // DEDICATED_SERVER_CREATE_SAFE_HOTFIX: exact MethodHandle lookup prevents
-   // Class#getMethod from resolving unrelated Create client/PoseStack methods.
-   MethodHandle transform=MethodHandles.publicLookup().findVirtual(
-      contraption.getClass(),"toLocalVector",
-      MethodType.methodType(Vec3.class,Vec3.class,float.class));
-   return (Vec3)transform.invoke(contraption,pos,1.0F);
+   CreateApi methods=api(contraption);
+   if(methods==null)return null;
+   return (Vec3)methods.local().invoke(contraption,pos,1.0F);
   }catch(Throwable failure){
    if(failure instanceof VirtualMachineError fatal)throw fatal;
    if(failure instanceof ThreadDeath fatal)throw fatal;
@@ -70,10 +101,9 @@ public final class PowerArmorCreateCarrier {
  }
  private static Vec3 global(Entity contraption,Vec3 pos){
   try{
-   MethodHandle transform=MethodHandles.publicLookup().findVirtual(
-      contraption.getClass(),"toGlobalVector",
-      MethodType.methodType(Vec3.class,Vec3.class,float.class));
-   return (Vec3)transform.invoke(contraption,pos,1.0F);
+   CreateApi methods=api(contraption);
+   if(methods==null)return null;
+   return (Vec3)methods.global().invoke(contraption,pos,1.0F);
   }catch(Throwable failure){
    if(failure instanceof VirtualMachineError fatal)throw fatal;
    if(failure instanceof ThreadDeath fatal)throw fatal;
@@ -87,15 +117,11 @@ public final class PowerArmorCreateCarrier {
   BlockPos underneath=BlockPos.containing(localFeet.add(0D,-.125D,0D));
   if(Math.abs(localFeet.y-(underneath.getY()+1D))>.5D)return false;
   try{
-   Class<?> type=Class.forName("com.simibubi.create.content.contraptions.Contraption",
-       false,contraption.getClass().getClassLoader());
-   MethodHandle get=MethodHandles.publicLookup().findVirtual(contraption.getClass(),
-       "getContraption",MethodType.methodType(type));
-   Object moving=get.invoke(contraption);
+   CreateApi methods=api(contraption);
+   if(methods==null)return false;
+   Object moving=methods.contraption().invoke(contraption);
    if(moving==null)return false;
-   MethodHandle blocksHandle=MethodHandles.publicLookup().findVirtual(moving.getClass(),
-       "getBlocks",MethodType.methodType(Map.class));
-   Object map=blocksHandle.invoke(moving);
+   Object map=methods.blocks().invoke(moving);
    return map instanceof Map<?,?> blocks&&blocks.containsKey(underneath);
   }catch(Throwable failure){
    if(failure instanceof VirtualMachineError fatal)throw fatal;
