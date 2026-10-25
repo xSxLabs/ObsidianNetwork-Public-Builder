@@ -503,4 +503,113 @@ assert "}else return;" in armor
 assert "if(mc.isPaused())return;" in vision
 assert "NetworkSignalRelayBlock" in vision
 print("V173_BUILD228_EIGHT_FIX_BUNDLE_PASS: map dimensions, scan limits, legacy stands, safe printer, Create retry, Vision")
+
+# Build230: grouped final-preflight and Create/Portal/Hologram reliability fixes.
+# Printer START must not arm invalid or wrong-dimension placements. This
+# protects saved NBT as well as client-origin button packets.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''public boolean control(int button){''',
+ '''private boolean blueprintReadyToPrint(){
+   if(!(level instanceof ServerLevel world)){
+    setStatus("PRINTER SERVER NOT READY");return false;
+   }
+   int[] dims=size();
+   if(dims.length!=3 || planLength()!=dims[0]*dims[1]*dims[2]){
+    setStatus("INVALID SAVED BLUEPRINT");return false;
+   }
+   String target=NetworkBlueprintItem.read(blueprint,"xsxlabs_anchor");
+   String prefix=world.dimension().identifier()+"|";
+   if(!target.startsWith(prefix)){
+    setStatus("BLUEPRINT TARGET IN WRONG DIMENSION");return false;
+   }
+   String[] coords=target.substring(prefix.length()).split("[|]");
+   if(coords.length!=3){setStatus("INVALID BLUEPRINT POSITION");return false;}
+   int x,y,z,rot=0;
+   try{
+    x=Integer.parseInt(coords[0]);y=Integer.parseInt(coords[1]);
+    z=Integer.parseInt(coords[2]);
+    String turn=NetworkBlueprintItem.read(blueprint,"xsxlabs_rotation");
+    if(!turn.isBlank())rot=Integer.parseInt(turn);
+   }catch(NumberFormatException ex){
+    setStatus("INVALID BLUEPRINT COORDINATES");return false;
+   }
+   if(rot<0||rot>7){setStatus("INVALID BLUEPRINT ROTATION");return false;}
+   int width=(rot%2==0)?dims[0]:dims[2];
+   int depth=(rot%2==0)?dims[2]:dims[0];
+   if(y<world.getMinY()||(long)y+dims[1]>world.getMaxY()||
+      x < -29999970||z < -29999970||
+      (long)x+width-1>29999970||(long)z+depth-1>29999970){
+    setStatus("BLUEPRINT OUTSIDE BUILD LIMITS");return false;
+   }
+   BlockPos corner=new BlockPos(x,y,z);
+   BlockPos end=corner.offset(width-1,dims[1]-1,depth-1);
+   if(!world.getWorldBorder().isWithinBounds(corner)||
+      !world.getWorldBorder().isWithinBounds(end)){
+    setStatus("BLUEPRINT OUTSIDE WORLD BORDER");return false;
+   }
+   return true;
+  }
+  public boolean control(int button){''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''running=true;setStatus("READY");''',
+ '''if(!blueprintReadyToPrint()){running=false;sync();return false;}
+    missing=ItemStack.EMPTY;
+    running=true;setStatus("READY");''')
+# Removing or replacing a blueprint must stop the currently scheduled print.
+# Otherwise re-inserting another design could unintentionally resume.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''if(!ItemStack.isSameItemSameComponents(blueprint,s)){index=0;completed=0;missing=ItemStack.EMPTY;}''',
+ '''if(!ItemStack.isSameItemSameComponents(blueprint,s)){
+     index=0;completed=0;running=false;missing=ItemStack.EMPTY;
+    }''')
+# Create carrier search is now tolerant of occasional late contraption ticks.
+# Still UUID-checked, bounded, no chunks forced or equipment copied.
+rep("powerarmor/PowerArmorCreateCarrier.java",
+ '''stand.getBoundingBox().inflate(8.0D,8.0D,8.0D)''',
+ '''stand.getBoundingBox().inflate(16.0D,16.0D,16.0D)''')
+rep("powerarmor/PowerArmorCreateCarrier.java",
+ '''dest.distanceToSqr(stand.position())>64D''',
+ '''dest.distanceToSqr(stand.position())>256D''')
+# Portal B is summoned only into an already-loaded chunk within world height.
+rep("portal/PortalActionPayload.java",
+ '''BlockPos pos=player.blockPosition().relative(player.getDirection(),2);''',
+ '''BlockPos pos=player.blockPosition().relative(player.getDirection(),2);
+   if(pos.getY()<level.getMinY()||pos.getY()+1>=level.getMaxY()||
+      !level.hasChunkAt(pos)||!level.getWorldBorder().isWithinBounds(pos.above())){
+    tell(player,"Portal B requires a loaded, valid two-block-high space.");return;
+   }''')
+# Stale or malicious SavedData targets must not force-load chunks outside
+# dimension height or border when a player steps through temporary Portal B.
+rep("portal/PortalGateBlockEntity.java",
+ '''BlockPos exit=anchor.pos();''',
+ '''BlockPos exit=anchor.pos();
+     if(exit.getY()<dest.getMinY()||exit.getY()+1>=dest.getMaxY()||
+        !dest.getWorldBorder().isWithinBounds(exit)||
+        !dest.getWorldBorder().isWithinBounds(exit.above())){
+      player.sendSystemMessage(Component.literal("Portal A outside current world limits."));
+      level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());return;
+     }''')
+# Pure holographic text stands should have zero hitbox/interaction; they
+# remain invulnerable and have no gravity.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''entity.setInvisible(true);entity.setNoGravity(true);''',
+ '''entity.setInvisible(true);entity.setNoGravity(true);
+     entity.setMarker(true);entity.noPhysics=true;''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''entity.setPos(worldPosition.getX()+.5,y,worldPosition.getZ()+.5);''',
+ '''entity.setMarker(true);entity.noPhysics=true;
+    entity.setPos(worldPosition.getX()+.5,y,worldPosition.getZ()+.5);''')
+# A fail-closed source contract for all bundled fixes.
+device=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
+portal=(J/"portal/PortalGateBlockEntity.java").read_text(encoding="utf-8")
+action=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
+carrier=(J/"powerarmor/PowerArmorCreateCarrier.java").read_text(encoding="utf-8")
+assert "blueprintReadyToPrint()" in device
+assert "running=false;missing=ItemStack.EMPTY" in device
+assert "entity.setMarker(true);entity.noPhysics=true;" in device
+assert "inflate(16.0D,16.0D,16.0D)" in carrier
+assert "distanceToSqr(stand.position())>256D" in carrier
+assert "requires a loaded, valid two-block-high space" in action
+assert "Portal A outside current world limits" in portal
+print("V173_BUILD230_BATCH_PASS: printer validation, blueprint safe switch, Create search, two portal checks, zero-hitbox holo")
 print("V173_BLUEPRINT_CREATE_STYLE_MOVE_ROTATE_BUILD210_PASS")
