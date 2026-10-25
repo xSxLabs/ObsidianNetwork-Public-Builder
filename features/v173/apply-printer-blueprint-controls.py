@@ -249,16 +249,12 @@ edit("blockentity/NetworkDeviceBlockEntity.java",
   if(!s.equals(status)){status=s;sync();}
  }''')
 edit("blockentity/NetworkDeviceBlockEntity.java",
+ ' @Override public ItemStack removeItem(int slot,int count){',
  ''' @Override public ItemStack removeItem(int slot,int count){
-   ItemStack s=getItem(slot);''',
- ''' @Override public ItemStack removeItem(int slot,int count){
-   if(slot<0||slot>=2||count<=0)return ItemStack.EMPTY;
-   ItemStack s=getItem(slot);''')
+  if(slot<0||slot>=2||count<=0)return ItemStack.EMPTY;''')
 edit("blockentity/NetworkDeviceBlockEntity.java",
+ ' @Override public ItemStack removeItemNoUpdate(int slot){',
  ''' @Override public ItemStack removeItemNoUpdate(int slot){
-   ItemStack s=getItem(slot);''',
- ''' @Override public ItemStack removeItemNoUpdate(int slot){
-   if(slot<0||slot>=2)return ItemStack.EMPTY;
-   ItemStack s=getItem(slot);''')
+  if(slot<0||slot>=2)return ItemStack.EMPTY;''')
 print("V173_PRINTER_MISSING_GHOST_LOCK217_PASS: no fake-item extraction, live status sync")
 print("V173_PRINTER_PLACEMENT_GUI174_PASS: Blueprint position/rotation/mirror, blockstates, START PAUSE STOP, FE/progress console")
