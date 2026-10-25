@@ -185,4 +185,73 @@ rep("client/NetworkBlueprintPreviewClient.java",
  '''   if(blocks.get(n).equals("minecraft:air"))continue;''',
  '''   if(blocks.get(n).equals("minecraft:air")||n%stride!=phase)continue;''')
 print("V173_BLUEPRINT_EDGE_WIREFRAME_BUILD215_PASS: twelve edges and rotating complete-structure samples")
+# Build216: texture-aware, client-only material cues. The exact block IDs and
+# saved blockstate properties already in the Schematic are the only inputs.
+# Red indicates an obstructed destination. Never touch or load world blocks.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''import net.minecraft.core.particles.DustParticleOptions;''',
+ '''import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;''')
+rep("client/NetworkBlueprintPreviewClient.java",
+ ''' private static final DustParticleOptions BLUE=new DustParticleOptions(0x28d9ff,.65f);''',
+ ''' private static final DustParticleOptions BLUE=new DustParticleOptions(0x28d9ff,.65f);
+ private static final DustParticleOptions BLOCKED=new DustParticleOptions(0xff414c,.85f);
+ /** V173_BLUEPRINT_MATERIAL_GHOST216: restore saved properties, not just IDs. */
+ @SuppressWarnings({"rawtypes","unchecked"})
+ private static BlockState stateProperty(BlockState state,
+    net.minecraft.world.level.block.state.properties.Property property,String value){
+  return (BlockState)property.getValue(value)
+      .map(v->state.setValue(property,(Comparable)v)).orElse(state);
+ }''')
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''  var blocks=NetworkBlueprintItem.blocks(held);
+  int count=0,budget=90;''',
+ '''  var blocks=NetworkBlueprintItem.blocks(held);
+  String[] serializedStates=NetworkBlueprintItem.read(held,"xsxlabs_states").split(";",-1);
+  int count=0,budget=90;''')
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''   double px0=at.getX(),py0=at.getY(),pz0=at.getZ();
+   for(int i=0;i<4;i++){''',
+ '''   double px0=at.getX(),py0=at.getY(),pz0=at.getZ();
+   // A red marker warns that the Printer will pause at this destination.
+   if(!mc.level.getBlockState(at).isAir()){
+    mc.level.addParticle(BLOCKED,px0+.5,py0+.5,pz0+.5,0,0,0);
+    continue;
+   }
+   Identifier id=Identifier.tryParse(blocks.get(n));
+   if(id!=null){
+    var block=BuiltInRegistries.BLOCK.getValue(id);
+    if(block!=null && block!=Blocks.AIR){
+     BlockState material=block.defaultBlockState();
+     if(n<serializedStates.length){
+      for(String pair:serializedStates[n].split("&")){
+       int sep=pair.indexOf('=');
+       if(sep<=0)continue;
+       var property=block.getStateDefinition().getProperty(pair.substring(0,sep));
+       if(property!=null)material=stateProperty(material,property,pair.substring(sep+1));
+      }
+     }
+     if(rot>=4)material=material.mirror(Mirror.FRONT_BACK);
+     for(int turn=0;turn<rot%4;turn++)material=material.rotate(Rotation.CLOCKWISE_90);
+     // Stationary block-textured sprite, bounded to the rotating sample.
+     mc.level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER,material),
+                          px0+.5,py0+.5,pz0+.5,0,0,0);
+    }
+   }
+   for(int i=0;i<4;i++){''')
+# Check the generated file's exact API anchors; abort rather than ship
+# a misleading source patch when upstream preview structure changes.
+preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-8")
+for token in ("V173_BLUEPRINT_MATERIAL_GHOST216","ParticleTypes.BLOCK_MARKER",
+              "mc.level.getBlockState(at).isAir()","stateProperty(material,property",
+              "material.rotate(Rotation.CLOCKWISE_90)"):
+ assert token in preview,token
+print("V173_BLUEPRINT_BLOCK_TEXTURES_BUILD216_PASS: saved states, bounded sprite markers, blocked targets")
 print("V173_BLUEPRINT_CREATE_STYLE_MOVE_ROTATE_BUILD210_PASS")
