@@ -223,4 +223,42 @@ s=s.replace(anchor,anchor+r'''
   }else g.text(font,"Syncing...",x2+5,y+119,0xffc1fbff);
 ''',1)
 p.write_text(s)
+# Build217: fake MISSING slot must never yield free items. A normal ChestMenu
+# quick-move can bypass Slot#mayPickup, so protect BOTH menu paths and backing
+# Container mutators. Sync changed status immediately for the GUI.
+edit("menu/NetworkPrinterMenu.java",
+ 'import net.minecraft.world.inventory.ChestMenu;',
+ 'import net.minecraft.world.inventory.ChestMenu;\nimport net.minecraft.world.inventory.ContainerInput;')
+edit("menu/NetworkPrinterMenu.java",
+ ' @Override public boolean stillValid(Player p){return printer.stillValid(p);}',
+ ''' /** V173_PRINTER_GHOST_LOCK217: display slots 2..26 cannot be moved.
+  * Guard server clicks as well as QUICK_MOVE; normal inventory is unchanged.
+  */
+ @Override public void clicked(int slotId,int button,ContainerInput input,Player player){
+  if(slotId>=2&&slotId<27)return;
+  super.clicked(slotId,button,input,player);
+ }
+ @Override public ItemStack quickMoveStack(Player player,int slotId){
+  if(slotId>=2&&slotId<27)return ItemStack.EMPTY;
+  return super.quickMoveStack(player,slotId);
+ }
+ @Override public boolean stillValid(Player p){return printer.stillValid(p);}''')
+edit("blockentity/NetworkDeviceBlockEntity.java",
+ 'private void setStatus(String s){if(!s.equals(status)){status=s;setChanged();}}',
+ '''private void setStatus(String s){
+  if(!s.equals(status)){status=s;sync();}
+ }''')
+edit("blockentity/NetworkDeviceBlockEntity.java",
+ ''' @Override public ItemStack removeItem(int slot,int count){
+   ItemStack s=getItem(slot);''',
+ ''' @Override public ItemStack removeItem(int slot,int count){
+   if(slot<0||slot>=2||count<=0)return ItemStack.EMPTY;
+   ItemStack s=getItem(slot);''')
+edit("blockentity/NetworkDeviceBlockEntity.java",
+ ''' @Override public ItemStack removeItemNoUpdate(int slot){
+   ItemStack s=getItem(slot);''',
+ ''' @Override public ItemStack removeItemNoUpdate(int slot){
+   if(slot<0||slot>=2)return ItemStack.EMPTY;
+   ItemStack s=getItem(slot);''')
+print("V173_PRINTER_MISSING_GHOST_LOCK217_PASS: no fake-item extraction, live status sync")
 print("V173_PRINTER_PLACEMENT_GUI174_PASS: Blueprint position/rotation/mirror, blockstates, START PAUSE STOP, FE/progress console")
