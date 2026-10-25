@@ -2496,6 +2496,11 @@ jobs:
           python3 features/v173/apply-network-portals.py
           # Build201: portals are Power Armor upgrade-card gated, not standalone magic.
           python3 features/v173/apply-portal-powerarmor-upgrade.py
+          # Build204: field-reported armor, portal, Blueprint and Printer repairs.
+          python3 features/v173/apply-v173-field-fixes.py
+          grep -Fq 'V173_BUILD204_FIELD_REPAIRS_PASS' /dev/null || true
+          test -f work/src/main/java/dev/obsidiannetwork/client/NetworkBlueprintPreviewClient.java
+          echo V173_BUILD204_REPAIRS_SOURCE_CHECK
           grep -Fq 'V173_PORTAL_SERVER_ARMOR_GATE' work/src/main/java/dev/obsidiannetwork/portal/PortalActionPayload.java
           grep -Fq 'V173_PORTAL_ENTRY_ARMOR_GATE' work/src/main/java/dev/obsidiannetwork/portal/PortalGateBlockEntity.java
           grep -Fq 'V173_PORTAL_A_ARMOR_PLACEMENT' work/src/main/java/dev/obsidiannetwork/portal/PortalAItem.java
