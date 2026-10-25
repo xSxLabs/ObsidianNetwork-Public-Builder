@@ -69,6 +69,14 @@ edit("menu/NetworkPrinterMenu.java",
   return printer.control(action);
  }
  @Override public boolean stillValid(Player p){return printer.stillValid(p);}''')
+# Server and client must agree on the 9x3 vanilla ChestMenu hit boxes.
+edit("menu/NetworkPrinterMenu.java",
+ 'new Slot(be,0,26,35){','new Slot(be,0,8,18){')
+edit("menu/NetworkPrinterMenu.java",
+ 'new Slot(be,1,62,35){','new Slot(be,1,26,18){')
+edit("menu/NetworkPrinterMenu.java",
+ 'new Slot(be,index,index==2?98:-100,index==2?35:-100){',
+ 'new Slot(be,index,index==2?44:-100,index==2?18:-100){')
 e=J/"blockentity/NetworkDeviceBlockEntity.java"
 s=e.read_text()
 def rep(old,new):
@@ -147,6 +155,15 @@ e.write_text(s)
 # use standard ChestMenu; no new fragile network payload is necessary.
 p=J/"client/NetworkPrinterScreen.java"
 s=p.read_text()
+# Existing GUI visuals must exactly match vanilla client ChestMenu slot coords.
+for old,new in (
+ ('g.text(font,"BLUEPRINT",8,19,0xffe2dce6);',
+  'g.text(font,"BLUEPRINT / FE CELL / MISSING",8,58,0xffe2dce6);'),
+ ('g.text(font,"FE CELL",59,19,0xffe2dce6);',''),
+ ('int sx=x+(i==0?26:i==1?62:98),sy=y+35;',
+  'int sx=x+8+i*18,sy=y+18;')):
+ assert s.count(old)==1,(old,s.count(old))
+ s=s.replace(old,new,1)
 anchor=" @Override protected void extractLabels(GuiGraphicsExtractor g,int mouseX,int mouseY){"
 assert s.count(anchor)==1
 s=s.replace(anchor,r'''
@@ -190,6 +207,8 @@ s=s.replace(anchor,anchor+r'''
   if(be!=null){
    long fe=be.availableFE(),capacity=be.ENERGY_CAPACITY;
    int fill=(int)Math.max(0L,Math.min(95L,fe*95L/Math.max(1L,capacity)));
+   String status=be.status();
+   g.text(font,status.length()>16?status.substring(0,16):status,x2+5,y+101,0xffd0f4ff);
    g.text(font,"ENERGY",x2+5,y+108,0xffaff4ff);
    g.fill(x2+5,y+120,x2+100,y+130,0xff244657);
    g.fill(x2+5,y+120,x2+5+fill,y+130,0xff27def4);
