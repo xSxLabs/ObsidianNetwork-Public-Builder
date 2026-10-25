@@ -2449,7 +2449,10 @@ jobs:
           python3 features/v173/apply-printer-quill-energy.py
           python3 features/v173/apply-printer-status-gui.py
           grep -Fq 'V173_PRINTER_STATUS_GUI' work/src/main/java/dev/obsidiannetwork/client/NetworkPrinterScreen.java
-          grep -Fq 'Identifier.fromNamespaceAndPath("obsidiannetwork","xsxlabs")' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorExitKeyClient.java
+          grep -Fq 'GLFW.GLFW_KEY_K,' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorExitKeyClient.java
+          grep -Fq 'KeyMapping.Category CATEGORY=new KeyMapping.Category(' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorExitKeyClient.java
+          grep -Fq 'KeyMapping.Category' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorExitKeyClient.java
+          ! grep -Fq 'KeyMapping.Category.create(' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorExitKeyClient.java
           grep -Fq 'user.sendOverlayMessage(' work/src/main/java/dev/obsidiannetwork/item/NetworkSchematicQuillItem.java
           ! grep -Fq 'displayClientMessage(' work/src/main/java/dev/obsidiannetwork/item/NetworkSchematicQuillItem.java
           grep -Fq 'e->e.entityTags().contains(labelTag())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
