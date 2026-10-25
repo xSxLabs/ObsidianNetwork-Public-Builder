@@ -264,13 +264,13 @@ edit("blockentity/NetworkDeviceBlockEntity.java",
  '''if(before!=energyBuffer)sync();''')
 edit("client/NetworkPrinterScreen.java",
  '''   long fe=be.availableFE(),capacity=be.ENERGY_CAPACITY;
-    int fill=(int)Math.max(0L,Math.min(95L,fe*95L/Math.max(1L,capacity)));''',
+   int fill=(int)Math.max(0L,Math.min(95L,fe*95L/Math.max(1L,capacity)));''',
  '''   long fe=be.availableFE();
-    long cellCapacity=Math.max(0L,dev.obsidiannetwork.core.EnergyTool.capacity(be.getItem(1)));
-    long capacity=cellCapacity>Long.MAX_VALUE-be.ENERGY_CAPACITY
-       ?Long.MAX_VALUE:be.ENERGY_CAPACITY+cellCapacity;
-    int fill=(int)Math.round(95D*Math.min(1D,
-       Math.max(0D,(double)fe/Math.max(1D,(double)capacity))));''')
+   long cellCapacity=Math.max(0L,dev.obsidiannetwork.core.EnergyTool.capacity(be.getItem(1)));
+   long capacity=cellCapacity>Long.MAX_VALUE-be.ENERGY_CAPACITY
+      ?Long.MAX_VALUE:be.ENERGY_CAPACITY+cellCapacity;
+   int fill=(int)Math.round(95D*Math.min(1D,
+      Math.max(0D,(double)fe/Math.max(1D,(double)capacity))));''')
 # Guard against source drift before attempting a lengthy CI build.
 src=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
 gui=(J/"client/NetworkPrinterScreen.java").read_text(encoding="utf-8")
