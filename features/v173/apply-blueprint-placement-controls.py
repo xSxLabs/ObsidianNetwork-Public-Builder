@@ -429,7 +429,7 @@ rep("blockentity/NetworkDeviceBlockEntity.java",
        scanned++;''')
 rep("blockentity/NetworkDeviceBlockEntity.java",
  '''(double)(y-worldPosition.getY())/
-           Math.max(1,holoHeight+holoDepth)*holoHeight,''',
+          Math.max(1,holoHeight+holoDepth)*holoHeight,''',
  '''(double)(y-low)/Math.max(1,high-low)*holoHeight,''')
 rep("blockentity/NetworkDeviceBlockEntity.java",
  '''worldPosition.getZ()+.5+(double)z/radius*holoWidth/2,''',
@@ -437,7 +437,7 @@ rep("blockentity/NetworkDeviceBlockEntity.java",
 # 2. Never inspect the NORTH chunk without checking that it's loaded.
 rep("blockentity/NetworkDeviceBlockEntity.java",
  '''if(!world.getBlockState(scan.above()).isAir() &&
-          !world.getBlockState(scan.north()).isAir())continue;''',
+         !world.getBlockState(scan.north()).isAir())continue;''',
  '''BlockPos above=scan.above(),north=scan.north();
        if(world.hasChunkAt(above)&&world.hasChunkAt(north)&&
           !world.getBlockState(above).isAir()&&
@@ -446,7 +446,7 @@ rep("blockentity/NetworkDeviceBlockEntity.java",
 # invisible entities. New display lines already carry a #<line> tag.
 rep("blockentity/NetworkDeviceBlockEntity.java",
  '''for(ArmorStand entity:old)for(String tag:entity.entityTags())
-    if(tag.startsWith(labelTag()+"#"))existing.put(tag,entity);''',
+   if(tag.startsWith(labelTag()+"#"))existing.put(tag,entity);''',
  '''for(ArmorStand entity:old){
     boolean current=false;
     for(String tag:entity.entityTags())if(tag.startsWith(labelTag()+"#")){
