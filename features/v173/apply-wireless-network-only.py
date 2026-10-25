@@ -24,33 +24,33 @@ replace("ObsidianNetwork.java",
  'ITEMS.registerSimpleBlockItem("network_planter",NETWORK_PLANTER);',
  '''ITEMS.registerSimpleBlockItem("network_planter",NETWORK_PLANTER);
     // V173_WIRELESS_NETWORK_ONLY: no FE link, owner-bound channels.
-    public static final DeferredBlock<dev.obsidiannetwork.block.NetworkSignalRelayBlock> NETWORK_TRANSMITTER =
-      BLOCKS.registerBlock("network_transmitter",
+    public static final DeferredBlock<dev.obsidiannetwork.block.NetworkSignalRelayBlock> NETWORK_SIGNAL_TRANSMITTER =
+      BLOCKS.registerBlock("network_signal_transmitter",
           p -> new dev.obsidiannetwork.block.NetworkSignalRelayBlock(p,true),
           p -> p.mapColor(MapColor.METAL).strength(3.0F,8.0F));
-    public static final DeferredItem<BlockItem> NETWORK_TRANSMITTER_ITEM =
-      ITEMS.registerSimpleBlockItem("network_transmitter",NETWORK_TRANSMITTER);
-    public static final DeferredBlock<dev.obsidiannetwork.block.NetworkSignalRelayBlock> NETWORK_RECEIVER =
-      BLOCKS.registerBlock("network_receiver",
+    public static final DeferredItem<BlockItem> NETWORK_SIGNAL_TRANSMITTER_ITEM =
+      ITEMS.registerSimpleBlockItem("network_signal_transmitter",NETWORK_SIGNAL_TRANSMITTER);
+    public static final DeferredBlock<dev.obsidiannetwork.block.NetworkSignalRelayBlock> NETWORK_SIGNAL_RECEIVER =
+      BLOCKS.registerBlock("network_signal_receiver",
           p -> new dev.obsidiannetwork.block.NetworkSignalRelayBlock(p,false),
           p -> p.mapColor(MapColor.METAL).strength(3.0F,8.0F));
-    public static final DeferredItem<BlockItem> NETWORK_RECEIVER_ITEM =
-      ITEMS.registerSimpleBlockItem("network_receiver",NETWORK_RECEIVER);
+    public static final DeferredItem<BlockItem> NETWORK_SIGNAL_RECEIVER_ITEM =
+      ITEMS.registerSimpleBlockItem("network_signal_receiver",NETWORK_SIGNAL_RECEIVER);
     public static final DeferredItem<dev.obsidiannetwork.item.NetworkLinkCardItem> NETWORK_LINK_CARD =
       ITEMS.registerItem("network_link_card",dev.obsidiannetwork.item.NetworkLinkCardItem::new);''')
 replace("ObsidianNetwork.java",
  '            output.accept((ItemLike)NETWORK_PLANTER_ITEM.get());',
  '''            output.accept((ItemLike)NETWORK_PLANTER_ITEM.get());
-            output.accept((ItemLike)NETWORK_TRANSMITTER_ITEM.get());
-            output.accept((ItemLike)NETWORK_RECEIVER_ITEM.get());
+            output.accept((ItemLike)NETWORK_SIGNAL_TRANSMITTER_ITEM.get());
+            output.accept((ItemLike)NETWORK_SIGNAL_RECEIVER_ITEM.get());
             output.accept((ItemLike)NETWORK_LINK_CARD.get());''')
 replace("registry/ModBlockEntities.java",
  '   public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.obsidiannetwork.blockentity.NetworkPlanterBlockEntity>> NETWORK_PLANTER =',
  '''   public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.obsidiannetwork.blockentity.NetworkSignalRelayBlockEntity>> NETWORK_SIGNAL_RELAY =
        TYPES.register("network_wireless",()->new BlockEntityType(
          dev.obsidiannetwork.blockentity.NetworkSignalRelayBlockEntity::new,
-         new Block[]{(Block)ObsidianNetwork.NETWORK_TRANSMITTER.get(),
-             (Block)ObsidianNetwork.NETWORK_RECEIVER.get()}));
+         new Block[]{(Block)ObsidianNetwork.NETWORK_SIGNAL_TRANSMITTER.get(),
+             (Block)ObsidianNetwork.NETWORK_SIGNAL_RECEIVER.get()}));
    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.obsidiannetwork.blockentity.NetworkPlanterBlockEntity>> NETWORK_PLANTER =''')
 add("item/NetworkLinkCardItem.java",r'''package dev.obsidiannetwork.item;
 import net.minecraft.world.item.Item;
@@ -261,7 +261,7 @@ public final class NetworkSignalRelayBridge {
      BlockPos neighbor=at.relative(face);
      if(!level.hasChunkAt(neighbor))continue;
      var state=level.getBlockState(neighbor);
-     if(state.is(ObsidianNetwork.NETWORK_RECEIVER.get())&&
+     if(state.is(ObsidianNetwork.NETWORK_SIGNAL_RECEIVER.get())&&
          level.getBlockEntity(neighbor) instanceof NetworkSignalRelayBlockEntity receiver &&
          receiver.paired()){
       NetworkRuntime rt=transmitterRuntime(level,receiver);
@@ -311,7 +311,7 @@ for method in ("runtimeForTerminal","runtimeForDrive","runtimeForAutocrafter","r
        if(remote!=null)return remote;'''
  src=src[:match[0].start()]+insert+src[match[0].end():]
 bridge.write_text(src,encoding="utf-8")
-for name in ("network_transmitter","network_receiver"):
+for name in ("network_signal_transmitter","network_signal_receiver"):
  asset("models/block/"+name+".json",{
   "parent":"minecraft:block/cube_all",
   "textures":{"all":"minecraft:block/obsidian","particle":"minecraft:block/obsidian"}})
@@ -330,7 +330,7 @@ data("recipe/network_link_card.json",{"type":"minecraft:crafting_shaped","patter
   "result":{"id":"obsidiannetwork:network_link_card","count":1}})
 for lang in ("de_de","en_us"):
  p=R/"lang"/(lang+".json");d=json.loads(p.read_text(encoding="utf-8"))
- for name in ("network_transmitter","network_receiver","network_link_card"):
+ for name in ("network_signal_transmitter","network_signal_receiver","network_link_card"):
   d["item.obsidiannetwork."+name]=name.replace("_"," ").title()
   d["block.obsidiannetwork."+name]=name.replace("_"," ").title()
  asset("lang/"+lang+".json",d)
