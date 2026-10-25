@@ -83,6 +83,11 @@ def rep(old,new):
  global s
  assert s.count(old)==1,(old[:90],s.count(old))
  s=s.replace(old,new,1)
+# Preserve Java package resolution even though printer(...) has a local
+# NetworkRuntime variable named "net". Imports avoid interpreting
+# net.minecraft as a dereference of that local variable.
+rep('import net.minecraft.world.level.block.state.BlockState;',
+    'import net.minecraft.world.level.block.Mirror;\\nimport net.minecraft.world.level.block.Rotation;\\nimport net.minecraft.world.level.block.state.BlockState;')
 rep(' public String status(){return status;}',
 ''' public String status(){return status;}
  public int progress(){return completed;}
@@ -137,8 +142,8 @@ rep('  boolean placed=world.setBlock(dest,block.defaultBlockState(),3);',
     if(property!=null)targetState=restoreProperty(targetState,property,pair.substring(mid+1));
    }
   }
-  if(turn>=4)targetState=targetState.mirror(net.minecraft.world.level.block.Mirror.FRONT_BACK);
-  for(int n=0;n<turn%4;n++)targetState=targetState.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90);
+  if(turn>=4)targetState=targetState.mirror(Mirror.FRONT_BACK);
+  for(int n=0;n<turn%4;n++)targetState=targetState.rotate(Rotation.CLOCKWISE_90);
   boolean placed=world.setBlock(dest,targetState,3);''')
 rep(' private void printer(ServerLevel world,NetworkRuntime net){',
 ''' @SuppressWarnings({"rawtypes","unchecked"})
