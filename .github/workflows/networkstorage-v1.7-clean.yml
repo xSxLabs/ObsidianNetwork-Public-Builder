@@ -2502,6 +2502,10 @@ jobs:
           python3 features/v173/apply-hologram-three-modes.py
           # Build208: server-side selectable Portal A IDs (legacy world migration).
           python3 features/v173/apply-portal-picker.py
+          # Build209: wireless NETWORK device connected-state light follows the paired link.
+          python3 features/v173/apply-wireless-connected-visuals.py
+          grep -Fq 'V173_WIRELESS_CONNECTED_VISUAL' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkSignalRelayBlockEntity.java
+          echo 'V173_WIRELESS_DEVICE_LIGHT_BUILD209_SOURCES_PASS'
           grep -Fq 'V173_PORTAL_UID_SELECT' work/src/main/java/dev/obsidiannetwork/portal/PortalIndex.java
           grep -Fq 'V173_PORTAL_MENU' work/src/main/java/dev/obsidiannetwork/portal/PortalSelectMenu.java
           echo 'V173_PORTAL_PICKER_BUILD208_SOURCES_PASS'
