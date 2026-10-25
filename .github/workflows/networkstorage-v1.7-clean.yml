@@ -100,7 +100,7 @@ name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.7, v1.7.2]
+    branches: [v1.7, v1.7.2, v1.7.3]
     paths:
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - 'patches/**'
@@ -2437,6 +2437,20 @@ jobs:
           # Build153: full Botany-Pots-style native plant model renderer,
           # 26.1 submit/render-state API; remove ALL homebrew crop geometries.
           python3 features/v172/apply-network-planter-native-render-153.py
+          # v1.7.3: Network Printer/Blueprint, ore laser, hologram and
+          # user-scoped interdimensional NETWORK-only transmitters/receivers.
+          # New development ONLY: stable v1.7.2 remains byte-identical.
+          python3 -m py_compile features/v173/apply-network-machines.py features/v173/apply-wireless-network-only.py features/v173/apply-network-vision.py
+          python3 features/v173/apply-network-machines.py
+          python3 features/v173/apply-wireless-network-only.py
+          python3 features/v173/apply-network-vision.py
+          grep -Fq 'V173_NETWORK_MACHINE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'V173_NETWORK_ONLY_RELAY' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
+          grep -Fq 'V173_NETWORK_VISION' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
+          grep -Fq 'xsxlabs_blocks' work/src/main/java/dev/obsidiannetwork/item/NetworkBlueprintItem.java
+          grep -Fq 'MISSING: 1 x ' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'NetworkDeviceBlockEntity::tick' work/src/main/java/dev/obsidiannetwork/block/NetworkDeviceBlock.java
+          echo 'V173_FOUR_FEATURES_PLUS_WIRELESS_COMPILED_SOURCES_PASS'
           grep -Fq 'BUILD153_NATIVE_PLANTER_RENDER' work/src/main/java/dev/obsidiannetwork/client/NetworkPlanterRenderer.java
           grep -Fq 'BUILD153_NATIVE_PLANTER_REGISTER' work/src/main/java/dev/obsidiannetwork/client/NetworkPlanterClientRenderRegistration.java
           test -f work/src/main/resources/assets/obsidiannetwork/models/block/network_planter_wood_cherry.json
