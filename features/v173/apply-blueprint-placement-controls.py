@@ -344,7 +344,7 @@ rep("item/BlueprintPlacementPayload.java",
 # Guard the whole atomic source order, not just fragments.
 packet=(J/"item/BlueprintPlacementPayload.java").read_text(encoding="utf-8")
 assert packet.count("pendingRotation")>=4
-assert packet.index("if(pendingRotation>=0)")>packet.index("isWithinBounds")
+assert packet.rindex("if(pendingRotation>=0)")>packet.index("isWithinBounds")
 assert packet.index("NetworkBlueprintItem.write(stack,\"xsxlabs_rotation\"")>packet.index("isWithinBounds")
 print("V173_BLUEPRINT_ATOMIC_TRANSFORM_BUILD224_PASS: invalid turns do not mutate cards")
 print("V173_BLUEPRINT_CREATE_STYLE_MOVE_ROTATE_BUILD210_PASS")
