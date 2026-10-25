@@ -258,8 +258,8 @@ print("V173_BLUEPRINT_BLOCK_TEXTURES_BUILD216_PASS: saved states, bounded sprite
 # the anchor. No out-of-height or border positions must reach the printer.
 # These guards apply to packet nudges, right-click anchoring and printer ticks.
 rep("item/BlueprintPlacementPayload.java",
- '''   if(y<player.level().getMinY()||y>player.level().getMaxY())return;
-   if(Math.abs(x)>29999970||Math.abs(z)>29999970)return;''',
+ '''  if(y<player.level().getMinY()||y>player.level().getMaxY())return;
+  if(Math.abs(x)>29999970||Math.abs(z)>29999970)return;''',
  '''   // V173_BLUEPRINT_WHOLE_VOLUME_BOUNDS222: rotations swap X/Z span.
    String[] size=NetworkBlueprintItem.read(stack,"xsxlabs_size").split(",");
    if(size.length!=3)return;
@@ -279,7 +279,7 @@ rep("item/BlueprintPlacementPayload.java",
    if(!border.isWithinBounds(new BlockPos(x,y,z))||
       !border.isWithinBounds(new BlockPos(x+width-1,y+sy-1,z+depth-1)))return;''')
 rep("item/NetworkBlueprintItem.java",
- '''   write(plan,"xsxlabs_anchor",server.dimension().identifier()+"|"+''',
+ '''  write(plan,"xsxlabs_anchor",server.dimension().identifier()+"|"+''',
  '''   // Guard the complete rotated footprint when confirming by right-click.
    String[] s=read(plan,"xsxlabs_size").split(",");
    if(s.length!=3)return InteractionResult.FAIL;
