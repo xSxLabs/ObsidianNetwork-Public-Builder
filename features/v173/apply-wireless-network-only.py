@@ -137,6 +137,7 @@ import dev.obsidiannetwork.block.NetworkSignalRelayBlock;
 import dev.obsidiannetwork.item.NetworkLinkCardItem;
 import dev.obsidiannetwork.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -177,17 +178,20 @@ public final class NetworkSignalRelayBlockEntity extends BlockEntity {
    return;
   }
   if(!(held.getItem() instanceof NetworkLinkCardItem)){
-   player.sendSystemMessage(Component.literal((transmitter()?"Transmitter":"Receiver")+
-     (paired()?" | Paired: "+channel.substring(0,8):" | Unpaired")+
-     " | Use Network Link Card to configure."));
+   String link=paired()?" | Channel "+channel.substring(0,Math.min(8,channel.length())):" | Unpaired";
+   player.sendSystemMessage(Component.literal((transmitter()?"Network Signal Transmitter":"Network Signal Receiver")+
+     link+" | "+connectionStatus(world)));
    return;
   }
   if(transmitter()){
    if(!paired()){owner=user;channel=UUID.randomUUID().toString();setChanged();}
    NetworkLinkCardItem.write(held,channel,owner);
    world.setChunkForced(worldPosition.getX()>>4,worldPosition.getZ()>>4,true);
+   LIVE.computeIfAbsent(world.getServer(),ignored->java.util.Collections.newSetFromMap(
+      new java.util.IdentityHashMap<>())).add(this);
    setChanged();
-   player.sendSystemMessage(Component.literal("Network Transmitter paired. Transfer this LINK CARD to any receiver, even in another dimension."));
+   player.sendSystemMessage(Component.literal("Transmitter paired | "+connectionStatus(world)+
+      " | Use this LINK CARD on a Signal Receiver, even in another dimension."));
    return;
   }
   String key=NetworkLinkCardItem.read(held,"xsxlabs_network_channel");
@@ -197,7 +201,22 @@ public final class NetworkSignalRelayBlockEntity extends BlockEntity {
   }
   try{UUID.fromString(key);}catch(IllegalArgumentException ex){return;}
   channel=key;owner=user;setChanged();
-  player.sendSystemMessage(Component.literal("Network Receiver paired with channel "+key.substring(0,8)+". Attach NETWORK cable; energy is NOT transferred."));
+  player.sendSystemMessage(Component.literal("Signal Receiver paired | "+connectionStatus(world)+
+     " | NETWORK cables carry items, NOT FE."));
+ }
+ /** V173_SIGNAL_LINK_DIAGNOSTIC: report real connectivity after pairing. */
+ private String connectionStatus(ServerLevel world){
+  if(!paired())return "UNPAIRED";
+  boolean cable=false;
+  for(Direction face:Direction.values()){
+   BlockPos next=worldPosition.relative(face);
+   if(!dev.obsidiannetwork.network.NetworkSignalRelayBridge.networkWire(world,next))continue;
+   cable=true;
+   var rt=dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForAccessory(world,next);
+   if(rt!=null&&rt.powered())return transmitter()?"SOURCE ONLINE":"CONNECTED";
+  }
+  if(!cable)return "NO NETWORK CABLE";
+  return transmitter()?"SOURCE CONTROLLER OFFLINE":"NO LIVE TRANSMITTER / SOURCE OFFLINE";
  }
  @Override protected void saveAdditional(ValueOutput out){
   super.saveAdditional(out);
@@ -244,6 +263,16 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class NetworkSignalRelayBridge {
  private NetworkSignalRelayBridge(){}
  private static final ThreadLocal<Boolean> RESOLVING=ThreadLocal.withInitial(()->false);
+ /** Only true NETWORK cables/layers participate. Never ENERGY cables. */
+ public static boolean networkWire(ServerLevel level,BlockPos at){
+  if(!level.hasChunkAt(at))return false;
+  var state=level.getBlockState(at);
+  if(state.is(ObsidianNetwork.NETWORK_CABLE.get()))return true;
+  if(state.is(ObsidianNetwork.CONDUIT_BUNDLE.get())
+      &&level.getBlockEntity(at) instanceof dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity bundle)
+   return bundle.has(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK);
+  return false;
+ }
  public static NetworkRuntime resolve(ServerLevel level,BlockPos queried){
   if(RESOLVING.get()||queried==null)return null;
   RESOLVING.set(true);
@@ -255,8 +284,7 @@ public final class NetworkSignalRelayBridge {
    while(!queue.isEmpty()&&hops++<512){
     BlockPos at=queue.removeFirst();
     if(!seen.add(at)||!level.hasChunkAt(at))continue;
-    var b=level.getBlockState(at);
-    if(!b.is(ObsidianNetwork.NETWORK_CABLE.get())&&!at.equals(queried))continue;
+    if(!networkWire(level,at)&&!at.equals(queried))continue;
     for(Direction face:Direction.values()){
      BlockPos neighbor=at.relative(face);
      if(!level.hasChunkAt(neighbor))continue;
@@ -267,7 +295,7 @@ public final class NetworkSignalRelayBridge {
       NetworkRuntime rt=transmitterRuntime(level,receiver);
       if(rt!=null&&rt.powered())return rt;
      }
-     if(state.is(ObsidianNetwork.NETWORK_CABLE.get())&&!seen.contains(neighbor))
+     if(networkWire(level,neighbor)&&!seen.contains(neighbor))
       queue.addLast(neighbor);
     }
    }
@@ -285,8 +313,7 @@ public final class NetworkSignalRelayBridge {
    if(!other.hasChunkAt(origin))continue;
    for(Direction d:Direction.values()){
     BlockPos cable=origin.relative(d);
-    if(!other.hasChunkAt(cable)||
-       !other.getBlockState(cable).is(ObsidianNetwork.NETWORK_CABLE.get()))continue;
+    if(!networkWire(other,cable))continue;
     NetworkRuntime rt=WorldTopologyBridge.runtimeForAccessory(other,cable);
     if(rt!=null&&rt.powered())return rt;
    }
@@ -310,7 +337,21 @@ for method in ("runtimeForTerminal","runtimeForDrive","runtimeForAutocrafter","r
        NetworkRuntime remote=dev.obsidiannetwork.network.NetworkSignalRelayBridge.resolve(level,pos);
        if(remote!=null)return remote;'''
  src=src[:match[0].start()]+insert+src[match[0].end():]
+# StorageTerminalBlock.openTerminal() calls this openTerminal(), whose old
+# local-only private lookup bypasses the wireless hook in public runtimeForTerminal.
+# Use existing wirelessSessions so local-only reconcile does not close remote menus.
+pattern=(r'(public static OpenTerminalFlow openTerminal\(ServerLevel\s+(\w+),\s*'
+         r'BlockPos\s+(\w+),\s*ServerPlayer\s+(\w+)\)\s*\{)')
+match=list(re.finditer(pattern,src))
+assert len(match)==1,("openTerminal signature drift",len(match))
+_,levelArg,posArg,playerArg=match[0].groups()
+injection=match[0].group(1)+"""
+       // V173_SIGNAL_TERMINAL_OPEN: paired receiver terminal uses source runtime.
+       if(dev.obsidiannetwork.network.NetworkSignalRelayBridge.resolve("""+levelArg+","+posArg+""")!=null)
+        return openWirelessTerminal("""+levelArg+","+posArg+","+playerArg+""");"""
+src=src[:match[0].start()]+injection+src[match[0].end():]
 bridge.write_text(src,encoding="utf-8")
+assert src.count("V173_SIGNAL_TERMINAL_OPEN")==1
 for name in ("network_signal_transmitter","network_signal_receiver"):
  asset("models/block/"+name+".json",{
   "parent":"minecraft:block/cube_all",
