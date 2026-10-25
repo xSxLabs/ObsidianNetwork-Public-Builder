@@ -30,7 +30,7 @@ once("powerarmor/PowerArmorExitKeyClient.java",
  ''' public static final KeyMapping VISION=new KeyMapping(
    "key.obsidiannetwork.network_vision",
    InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_K,
-   KeyMapping.Category.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("obsidiannetwork","xsxlabs")));
+   KeyMapping.Category.create(net.minecraft.resources.Identifier.fromNamespaceAndPath("obsidiannetwork","xsxlabs")));
  public static final KeyMapping NIGHT=new KeyMapping(''')
 once("client/ClientModEvents.java",
  "  event.register(dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient.NIGHT);",

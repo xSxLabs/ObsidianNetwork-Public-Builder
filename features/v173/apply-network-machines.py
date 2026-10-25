@@ -323,11 +323,11 @@ public final class NetworkDeviceBlockEntity extends BlockEntity implements Conta
  private String labelTag(){return "xsx-holo-"+worldPosition.asLong();}
  private void hologram(ServerLevel world){
   var list=world.getEntitiesOfClass(ArmorStand.class,new AABB(worldPosition).inflate(1.5,2.5,1.5),
-    e->e.getTags().contains(labelTag()));
+    e->e.entityTags().contains(labelTag()));
   ArmorStand entity;
   if(list.isEmpty()){
    entity=new ArmorStand(world,worldPosition.getX()+.5,worldPosition.getY()+1.55,worldPosition.getZ()+.5);
-   entity.setInvisible(true);entity.setNoGravity(true);entity.setMarker(true);
+   entity.setInvisible(true);entity.setNoGravity(true);entity.setNoBasePlate(true);entity.setInvulnerable(true);
    entity.setCustomNameVisible(true);entity.addTag(labelTag());
    world.addFreshEntity(entity);
   }else entity=list.get(0);
@@ -407,6 +407,11 @@ public final class NetworkDeviceBlockEntity extends BlockEntity implements Conta
  }
  @Override public void preRemoveSideEffects(BlockPos pos,BlockState state){
   if(level instanceof ServerLevel world){
+   // Reclaim tagged hologram entities on block removal.
+   if(mode()==NetworkDeviceBlock.Mode.HOLOGRAM){
+    world.getEntitiesOfClass(ArmorStand.class,new AABB(worldPosition).inflate(1.5,2.5,1.5),
+      e->e.entityTags().contains(labelTag())).forEach(ArmorStand::discard);
+   }
    for(ItemStack s:new ItemStack[]{blueprint,energy})
     if(!s.isEmpty())Containers.dropItemStack(world,pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5,s.copy());
   }

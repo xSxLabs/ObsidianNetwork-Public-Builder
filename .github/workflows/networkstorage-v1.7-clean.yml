@@ -2449,6 +2449,12 @@ jobs:
           python3 features/v173/apply-printer-quill-energy.py
           python3 features/v173/apply-printer-status-gui.py
           grep -Fq 'V173_PRINTER_STATUS_GUI' work/src/main/java/dev/obsidiannetwork/client/NetworkPrinterScreen.java
+          grep -Fq 'Identifier.fromNamespaceAndPath("obsidiannetwork","xsxlabs")' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorExitKeyClient.java
+          grep -Fq 'user.sendOverlayMessage(' work/src/main/java/dev/obsidiannetwork/item/NetworkSchematicQuillItem.java
+          ! grep -Fq 'displayClientMessage(' work/src/main/java/dev/obsidiannetwork/item/NetworkSchematicQuillItem.java
+          grep -Fq 'e->e.entityTags().contains(labelTag())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'entity.setNoBasePlate(true);entity.setInvulnerable(true);' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          echo 'V173_MC261_API_COMPAT_HOLO_QUILL_VISION_PASS'
           grep -Fq 'blueprint=energy=missing=ItemStack.EMPTY;index=completed=0;sync();' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'long fromBuffer=Math.min(energyBuffer,amount);' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'int off=0;' work/src/main/java/dev/obsidiannetwork/client/NetworkPrinterScreen.java

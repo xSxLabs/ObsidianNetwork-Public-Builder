@@ -55,6 +55,11 @@ method=method.replace(line,'''   BlockPos where=new BlockPos(loX+x,loY+y,loZ+z);
     return InteractionResult.FAIL;
    }
    var state=level.getBlockState(where);''',1)
+# Minecraft 26.1.2 uses Player.sendOverlayMessage(Component) rather than displayClientMessage.
+assert method.count("user.displayClientMessage(")==4
+assert method.count(",true);")==4
+method=method.replace("user.displayClientMessage(","user.sendOverlayMessage(")
+method=method.replace(",true);",");")
 bp.write_text(before+"}\n",encoding="utf-8")
 emit("item/NetworkSchematicQuillItem.java",'''package dev.obsidiannetwork.item;
 
