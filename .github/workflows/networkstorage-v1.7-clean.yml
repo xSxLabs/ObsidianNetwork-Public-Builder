@@ -162,6 +162,9 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_wireless_*.py' -v
           python3 -m unittest discover -s tests -p 'test_network_elytra_*.py' -v
           python3 -m unittest discover -s tests -p 'test_clean_v17_*.py' -v
+          # Emergency Create dedicated-server regression: simulate absent PoseStack
+          # and verify single handler plus live JVM MethodHandle piston UP/DOWN.
+          python3 -m unittest discover -s tests -p 'test_v172_create_dedicated_hotfix.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           mkdir -p work/src/main/java work/src/main/resources
           curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
