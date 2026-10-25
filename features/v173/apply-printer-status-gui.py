@@ -36,8 +36,8 @@ change("blockentity/NetworkDeviceBlockEntity.java",
  'blueprint=energy=missing=ItemStack.EMPTY;index=completed=0;sync();')
 # The missing item is a non-extractable ghost, the player cannot grab it.
 change("menu/NetworkPrinterMenu.java",
- 'for(int i=2;i<27;i++){',
- '''for(int i=2;i<27;i++){''')
+ 'new Slot(be,index,8+(i%9)*18,18+(i/9)*18){',
+ 'new Slot(be,index,index==2?98:-100,index==2?35:-100){')
 p=J/"client/NetworkPrinterScreen.java"
 assert not p.exists(),str(p)
 p.write_text(r'''package dev.obsidiannetwork.client;
@@ -70,10 +70,10 @@ public final class NetworkPrinterScreen extends ContainerScreen {
   g.fill(x-3,y-3,x+179,y+getImageHeight()+3,0xff18d6e7);
   g.fill(x,y,x+176,y+getImageHeight(),0xff162837);
   g.fill(x+5,y+12,x+171,y+81,0xff081e2b);
-  for(int i=0;i<27;i++){
-   int sx=x+8+(i%9)*18,sy=y+18+(i/9)*18;
-   boolean active=i<3;
-   g.fill(sx-1,sy-1,sx+18,sy+18,active?0xff368fa3:0xff153444);
+  // Blueprint, FE cell and read-only MISSING material preview.
+  for(int i=0;i<3;i++){
+   int sx=x+(i==0?26:i==1?62:98),sy=y+35;
+   g.fill(sx-1,sy-1,sx+18,sy+18,0xff368fa3);
    g.fill(sx,sy,sx+17,sy+17,0xff183342);
   }
   // Vanilla player inventory uses ChestMenu's original slot positions.
