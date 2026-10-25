@@ -405,4 +405,102 @@ assert "inflate(4,40,4)" in holo and "inflate(1.5,40,1.5)" in holo
 assert "if(!world.hasChunkAt(BlockPos.containing(dest)))return;" in carrier
 assert "energyBuffer>Long.MAX_VALUE-cell" in holo
 print("V173_BUILD227_BATCH_PASS: UID, warning throttle, holo cleanup, Create retry, FE saturation")
+
+# Build228: Ingame-readiness bundle: 8 source-guarded corrections in one CI.
+# 1. 3D Map settings represent projection width, height AND depth. Vertical
+# sampling remains centered on the terminal, instead of misusing Z depth.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''worldPosition.getY()-holoDepth''','''worldPosition.getY()-holoHeight''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''worldPosition.getY()+holoHeight);
+   int count=0;''',
+ '''worldPosition.getY()+holoHeight);
+   int count=0,scanned=0;''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''for(int x=-radius;x<=radius && count<180;x+=step)''',
+ '''for(int x=-radius;x<=radius && count<180 && scanned<1100;x+=step)''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''for(int z=-radius;z<=radius && count<180;z+=step)''',
+ '''for(int z=-radius;z<=radius && count<180 && scanned<1100;z+=step)''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''for(int y=low;y<=high && count<180;y+=Math.max(1,(high-low)/10)){''',
+ '''for(int y=low;y<=high && count<180 && scanned<1100;
+          y+=Math.max(1,(high-low)/10)){
+       scanned++;''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''(double)(y-worldPosition.getY())/
+           Math.max(1,holoHeight+holoDepth)*holoHeight,''',
+ '''(double)(y-low)/Math.max(1,high-low)*holoHeight,''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''worldPosition.getZ()+.5+(double)z/radius*holoWidth/2,''',
+ '''worldPosition.getZ()+.5+(double)z/radius*holoDepth/2,''')
+# 2. Never inspect the NORTH chunk without checking that it's loaded.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''if(!world.getBlockState(scan.above()).isAir() &&
+          !world.getBlockState(scan.north()).isAir())continue;''',
+ '''BlockPos above=scan.above(),north=scan.north();
+       if(world.hasChunkAt(above)&&world.hasChunkAt(north)&&
+          !world.getBlockState(above).isAir()&&
+          !world.getBlockState(north).isAir())continue;''')
+# 3. Migrate old single-line hologram stands without leaving invulnerable
+# invisible entities. New display lines already carry a #<line> tag.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''for(ArmorStand entity:old)for(String tag:entity.entityTags())
+    if(tag.startsWith(labelTag()+"#"))existing.put(tag,entity);''',
+ '''for(ArmorStand entity:old){
+    boolean current=false;
+    for(String tag:entity.entityTags())if(tag.startsWith(labelTag()+"#")){
+     existing.put(tag,entity);current=true;break;
+    }
+    if(!current)entity.discard();
+   }''')
+# 4. The Quill refuses to capture machines' BlockEntities: the Printer
+# must enforce the same rule on forged or old blueprints.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''import net.minecraft.world.level.block.Blocks;''',
+ '''import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''if(block==Blocks.AIR||material.isEmpty()||!block.defaultBlockState().getFluidState().isEmpty())''',
+ '''if(block==Blocks.AIR||block instanceof EntityBlock||
+      material.isEmpty()||!block.defaultBlockState().getFluidState().isEmpty())''')
+# 5. A restored waterlogged/fluids state is also unsupported.
+# Refund the already reserved material instead of placing free fluid.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''boolean placed=world.setBlock(dest,targetState,3);''',
+ '''if(!targetState.getFluidState().isEmpty()){
+    net.storage().insert(key,1L);
+    setStatus("UNSUPPORTED FLUID BLOCKSTATE "+name);return;
+   }
+   boolean placed=world.setBlock(dest,targetState,3);''')
+# 6. A transient world collision should not permanently detach a power suit
+# from a moving Create platform; keep the safe stationary state and retry.
+rep("powerarmor/PowerArmorCreateCarrier.java",
+ '''}else ATTACHED.remove(id);''',
+ '''}else return;''')
+# 7. Network Vision must not turn itself off when singleplayer GUI pauses.
+rep("client/NetworkVisionClient.java",
+ '''if(mc.player==null||mc.level==null||mc.isPaused()){enabled=false;return;}''',
+ '''if(mc.player==null||mc.level==null){enabled=false;return;}
+  if(mc.isPaused())return;''')
+# 8. Vision recognizes the actual wireless relay and portal devices too.
+rep("client/NetworkVisionClient.java",
+ '''|| s.getBlock() instanceof dev.obsidiannetwork.block.NetworkDeviceBlock)color=DEVICE;''',
+ '''|| s.getBlock() instanceof dev.obsidiannetwork.block.NetworkDeviceBlock
+      || s.getBlock() instanceof dev.obsidiannetwork.block.NetworkSignalRelayBlock
+      || s.is(ObsidianNetwork.NETWORK_PORTAL_A.get())
+      || s.is(ObsidianNetwork.NETWORK_PORTAL_B.get()))color=DEVICE;''')
+# The reconstruction fails CLOSED if any of the 8 groups did not apply.
+holo=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
+armor=(J/"powerarmor/PowerArmorCreateCarrier.java").read_text(encoding="utf-8")
+vision=(J/"client/NetworkVisionClient.java").read_text(encoding="utf-8")
+for token in ("int count=0,scanned=0","scanned<1100",
+              "z/radius*holoDepth/2","world.hasChunkAt(north)",
+              "if(!current)entity.discard()","block instanceof EntityBlock",
+              "UNSUPPORTED FLUID BLOCKSTATE"):
+ assert token in holo,("BUILD228_MISSING",token)
+assert "}else return;" in armor
+assert "if(mc.isPaused())return;" in vision
+assert "NetworkSignalRelayBlock" in vision
+print("V173_BUILD228_EIGHT_FIX_BUNDLE_PASS: map dimensions, scan limits, legacy stands, safe printer, Create retry, Vision")
 print("V173_BLUEPRINT_CREATE_STYLE_MOVE_ROTATE_BUILD210_PASS")
