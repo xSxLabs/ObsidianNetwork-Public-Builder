@@ -59,7 +59,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -106,7 +106,7 @@ public final class PortalSelectMenu extends ChestMenu {
   }
   broadcastChanges();
  }
- @Override public void clicked(int slotId,int button,ClickType clickType,Player p){
+ @Override public void clicked(int slotId,int button,ContainerInput clickType,Player p){
   if(p!=owner||!PortalActionPayload.hasUpgrade(owner)){owner.closeContainer();return;}
   if(slotId>=0&&slotId<27){
    if(slotId==26 && anchors.size()>26){
@@ -122,7 +122,7 @@ public final class PortalSelectMenu extends ChestMenu {
    return;
   }
   // No moving items into the fake destination slots.
-  if(clickType==ClickType.QUICK_MOVE)return;
+  if(clickType==ContainerInput.QUICK_MOVE)return;
   super.clicked(slotId,button,clickType,p);
  }
  @Override public ItemStack quickMoveStack(Player player,int index){return ItemStack.EMPTY;}
