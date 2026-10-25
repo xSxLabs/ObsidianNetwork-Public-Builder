@@ -2440,10 +2440,18 @@ jobs:
           # v1.7.3: Network Printer/Blueprint, ore laser, hologram and
           # user-scoped interdimensional NETWORK-only transmitters/receivers.
           # New development ONLY: stable v1.7.2 remains byte-identical.
-          python3 -m py_compile features/v173/apply-network-machines.py features/v173/apply-wireless-network-only.py features/v173/apply-network-vision.py
+          python3 -m py_compile features/v173/apply-network-machines.py features/v173/apply-wireless-network-only.py features/v173/apply-network-vision.py features/v173/apply-printer-quill-energy.py
           python3 features/v173/apply-network-machines.py
           python3 features/v173/apply-wireless-network-only.py
           python3 features/v173/apply-network-vision.py
+          # v1.7.3: two-stage Schematic & Quill -> saved Blueprint + true
+          # ENERGY cable FE input (NETWORK cable never carries electricity).
+          python3 features/v173/apply-printer-quill-energy.py
+          grep -Fq 'V173_SCHEMATIC_QUILL' work/src/main/java/dev/obsidiannetwork/item/NetworkSchematicQuillItem.java
+          grep -Fq 'V173_PRINTER_WIRED_FE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPrinterEnergyCapabilities.java
+          test -f work/src/main/resources/assets/obsidiannetwork/items/network_schematic_quill.json
+          ! test -f work/src/main/resources/assets/obsidiannetwork/items/network_laser_miner.json
+          echo 'V173_NO_MINER_SCHEMATIC_QUILL_ENERGY_CABLE_PASS'
           grep -Fq 'V173_NETWORK_MACHINE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'V173_NETWORK_ONLY_RELAY' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
           grep -Fq 'V173_NETWORK_VISION' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
