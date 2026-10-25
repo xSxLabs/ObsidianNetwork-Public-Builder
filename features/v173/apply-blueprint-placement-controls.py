@@ -153,4 +153,36 @@ rep("client/NetworkBlueprintPreviewClient.java",
     mc.level.addParticle(BLUE,px0+.12+((i&1)*.76),py0+.12,pz0+.12+(((i>>1)&1)*.76),0,.001,0);
     mc.level.addParticle(BLUE,px0+.12+((i&1)*.76),py0+.88,pz0+.12+(((i>>1)&1)*.76),0,.001,0);
    }''')
+# Build215: a continuously visible 12-edge 3D placement box supplements
+# the sparse voxel particles. Chunk-safe and shows all transformed extents.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''  var blocks=NetworkBlueprintItem.blocks(held);''',
+ '''  // V173_BLUEPRINT_EDGE_WIREFRAME: visible complete 3D volume guide.
+  // Rotations 90/270 swap X and Z extents; mirror keeps the same bounds.
+  int width=(rot%2==0)?sx:sz,depth=(rot%2==0)?sz:sx;
+  for(int axis=0;axis<3;axis++)for(int corner=0;corner<4;corner++){
+   int length=axis==0?width:axis==1?sy:depth;
+   int samples=Math.min(10,Math.max(1,length*2));
+   for(int step=0;step<=samples;step++){
+    double t=(double)step/samples;
+    double wx=x+.06+(axis==0?(width-.12)*t:(corner&1)*(width-.12));
+    double wy=y+.06+(axis==1?(sy-.12)*t:
+         axis==0?(corner&1)*(sy-.12):((corner>>1)&1)*(sy-.12));
+    double wz=z+.06+(axis==2?(depth-.12)*t:((corner>>1)&1)*(depth-.12));
+    if(mc.level.hasChunkAt(BlockPos.containing(wx,wy,wz)))
+     mc.level.addParticle(BLUE,wx,wy,wz,0,.001,0);
+   }
+  }
+  var blocks=NetworkBlueprintItem.blocks(held);''')
+# Old limit permanently hid every voxel beyond the first 90.
+# Rotate a bounded, evenly distributed sample over the entire plan.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''  int count=0,phase=mc.player.tickCount/3%4;''',
+ '''  int count=0,budget=90;
+  int stride=Math.max(1,(Math.min(blocks.size(),sx*sy*sz)+budget-1)/budget);
+  int phase=(mc.player.tickCount/3)%stride;''')
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''   if(blocks.get(n).equals("minecraft:air"))continue;''',
+ '''   if(blocks.get(n).equals("minecraft:air")||n%stride!=phase)continue;''')
+print("V173_BLUEPRINT_EDGE_WIREFRAME_BUILD215_PASS: twelve edges and rotating complete-structure samples")
 print("V173_BLUEPRINT_CREATE_STYLE_MOVE_ROTATE_BUILD210_PASS")
