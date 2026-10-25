@@ -2500,6 +2500,11 @@ jobs:
           python3 features/v173/apply-v173-field-fixes.py
           # Build207: configurable Network/3D Map/Custom Hologram Terminal.
           python3 features/v173/apply-hologram-three-modes.py
+          # Build208: server-side selectable Portal A IDs (legacy world migration).
+          python3 features/v173/apply-portal-picker.py
+          grep -Fq 'V173_PORTAL_UID_SELECT' work/src/main/java/dev/obsidiannetwork/portal/PortalIndex.java
+          grep -Fq 'V173_PORTAL_MENU' work/src/main/java/dev/obsidiannetwork/portal/PortalSelectMenu.java
+          echo 'V173_PORTAL_PICKER_BUILD208_SOURCES_PASS'
           grep -Fq 'V173_HOLOGRAM_THREE_MODES' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'V173_HOLOGRAM_GUI' work/src/main/java/dev/obsidiannetwork/client/HologramConfigScreen.java
           echo 'V173_HOLOGRAM_3_MODES_BUILD207_SOURCES_PASS'
