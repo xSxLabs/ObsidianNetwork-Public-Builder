@@ -594,10 +594,10 @@ rep("portal/PortalGateBlockEntity.java",
 rep("blockentity/NetworkDeviceBlockEntity.java",
  '''entity.setInvisible(true);entity.setNoGravity(true);''',
  '''entity.setInvisible(true);entity.setNoGravity(true);
-     entity.setMarker(true);entity.noPhysics=true;''')
+     entity.noPhysics=true;''')
 rep("blockentity/NetworkDeviceBlockEntity.java",
  '''entity.setPos(worldPosition.getX()+.5,y,worldPosition.getZ()+.5);''',
- '''entity.setMarker(true);entity.noPhysics=true;
+ '''entity.noPhysics=true;
     entity.setPos(worldPosition.getX()+.5,y,worldPosition.getZ()+.5);''')
 # A fail-closed source contract for all bundled fixes.
 device=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
@@ -606,7 +606,8 @@ action=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
 carrier=(J/"powerarmor/PowerArmorCreateCarrier.java").read_text(encoding="utf-8")
 assert "blueprintReadyToPrint()" in device
 assert "running=false;missing=ItemStack.EMPTY" in device
-assert "entity.setMarker(true);entity.noPhysics=true;" in device
+assert device.count("entity.noPhysics=true;")>=2
+assert "setMarker(true)" not in device
 assert "inflate(16.0D,16.0D,16.0D)" in carrier
 assert "distanceToSqr(stand.position())>256D" in carrier
 assert "requires a loaded, valid two-block-high space" in action
