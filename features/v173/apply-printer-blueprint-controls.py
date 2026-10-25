@@ -87,7 +87,7 @@ def rep(old,new):
 # NetworkRuntime variable named "net". Imports avoid interpreting
 # net.minecraft as a dereference of that local variable.
 rep('import net.minecraft.world.level.block.state.BlockState;',
-    'import net.minecraft.world.level.block.Mirror;\\nimport net.minecraft.world.level.block.Rotation;\\nimport net.minecraft.world.level.block.state.BlockState;')
+    'import net.minecraft.world.level.block.Mirror;\nimport net.minecraft.world.level.block.Rotation;\nimport net.minecraft.world.level.block.state.BlockState;')
 rep(' public String status(){return status;}',
 ''' public String status(){return status;}
  public int progress(){return completed;}
