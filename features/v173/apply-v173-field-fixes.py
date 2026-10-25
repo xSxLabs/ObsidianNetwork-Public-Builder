@@ -177,4 +177,33 @@ patch("powerarmor/PowerArmorCreateCarrier.java",
        localFeet.y<=under.getY()+1.65D)return true;
    return false;''')
 print("V173_BUILD205_CREATE_MK1_TO_MK24_CARRIER_PATCH_PASS")
+
+# Build211: final freestanding suit GUI has its OWN fifteen-slot constraints:
+# old ArmorStationBlock.entries.length check was rewritten during Build49.
+# 27-slot preview is slots 0..26, i.e. 9..26 allows exactly 18 upgrade cards.
+for rel, replacements in [
+ ("powerarmor/ArmorStationBlock.java",[
+   (".size()>=15&&count==0",".size()>=18&&count==0")]),
+ ("powerarmor/ArmorStationMenu.java",[
+   ("Math.min(15,visible.size())","Math.min(18,visible.size())"),
+   ("slotId>=24","slotId>=27"),
+   ("indices.size()>=15","indices.size()>=18"),
+   ("visibleIndices(values).size()>=15","visibleIndices(values).size()>=18")]),
+ ("powerarmor/ArmorStationScreen.java",[
+   ("index>=9&&index<24","index>=9&&index<27"),
+   ("15 upgrade sockets","18 upgrade sockets")])]:
+ p=J/rel;source=p.read_text(encoding="utf-8")
+ changes=0
+ for old,new in replacements:
+  if old in source:
+   source=source.replace(old,new)
+   changes+=1
+ p.write_text(source,encoding="utf-8")
+ print("BUILD211_18_ARMOR_SOCKETS",rel,changes)
+ if rel.endswith("ArmorStationMenu.java"):
+  assert "Math.min(18,visible.size())" in source
+  assert ">=18" in source
+ if rel.endswith("ArmorStationScreen.java"):
+  assert "index>=9&&index<27" in source
+
 print("V173_BUILD204_FIELD_REPAIRS_PASS")
