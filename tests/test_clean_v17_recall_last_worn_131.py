@@ -32,7 +32,11 @@ class LastWorn131(unittest.TestCase):
   self.assertIn(".strength(0.0F,3600000.0F)",PATCH)
   self.assertNotIn("protectLoadedStand",PATCH)
  def test_pipeline_order(self):
-  self.assertIn("branches: [v1.7, v1.7.2]",WF)
+  branch_lines=[line.strip() for line in WF.splitlines() if line.strip().startswith("branches: [")]
+  self.assertEqual(len(branch_lines),1,"expected one CI push branch selector")
+  enabled=[x.strip() for x in branch_lines[0].split("[",1)[1].split("]",1)[0].split(",")]
+  for branch in ("v1.7","v1.7.2","v1.7.2-hotfix"):
+   self.assertIn(branch,enabled)
   self.assertLess(WF.index("python3 features/v172/apply-power-armor-recall.py"),
                   WF.index("python3 features/v172/apply-power-armor-recall-last-worn-131.py"))
   self.assertIn("BUILD131_LAST_WORN_RECALL PASS",WF)
