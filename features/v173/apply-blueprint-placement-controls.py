@@ -254,4 +254,73 @@ for token in ("V173_BLUEPRINT_MATERIAL_GHOST216","ParticleTypes.BLOCK_MARKER",
               "material.rotate(Rotation.CLOCKWISE_90)"):
  assert token in preview,token
 print("V173_BLUEPRINT_BLOCK_TEXTURES_BUILD216_PASS: saved states, bounded sprite markers, blocked targets")
+# Build222: validate the WHOLE transformed Blueprint footprint, not only
+# the anchor. No out-of-height or border positions must reach the printer.
+# These guards apply to packet nudges, right-click anchoring and printer ticks.
+rep("item/BlueprintPlacementPayload.java",
+ '''   if(y<player.level().getMinY()||y>player.level().getMaxY())return;
+   if(Math.abs(x)>29999970||Math.abs(z)>29999970)return;''',
+ '''   // V173_BLUEPRINT_WHOLE_VOLUME_BOUNDS222: rotations swap X/Z span.
+   String[] size=NetworkBlueprintItem.read(stack,"xsxlabs_size").split(",");
+   if(size.length!=3)return;
+   int sx,sy,sz,rot=0;
+   try{
+    sx=Integer.parseInt(size[0]);sy=Integer.parseInt(size[1]);
+    sz=Integer.parseInt(size[2]);
+    String orientation=NetworkBlueprintItem.read(stack,"xsxlabs_rotation");
+    if(!orientation.isBlank())rot=Integer.parseInt(orientation);
+   }catch(NumberFormatException ex){return;}
+   if(sx<1||sy<1||sz<1||sx>16||sy>16||sz>16||rot<0||rot>7)return;
+   int width=(rot%2==0)?sx:sz,depth=(rot%2==0)?sz:sx;
+   if(y<player.level().getMinY()||(long)y+sy>player.level().getMaxY()||
+      x < -29999970 || z < -29999970 ||
+      (long)x+width-1>29999970 || (long)z+depth-1>29999970)return;
+   var border=player.level().getWorldBorder();
+   if(!border.isWithinBounds(new BlockPos(x,y,z))||
+      !border.isWithinBounds(new BlockPos(x+width-1,y+sy-1,z+depth-1)))return;''')
+rep("item/NetworkBlueprintItem.java",
+ '''   write(plan,"xsxlabs_anchor",server.dimension().identifier()+"|"+''',
+ '''   // Guard the complete rotated footprint when confirming by right-click.
+   String[] s=read(plan,"xsxlabs_size").split(",");
+   if(s.length!=3)return InteractionResult.FAIL;
+   int sx,sy,sz,rotation=0;
+   try{
+    sx=Integer.parseInt(s[0]);sy=Integer.parseInt(s[1]);sz=Integer.parseInt(s[2]);
+    String turn=read(plan,"xsxlabs_rotation");
+    if(!turn.isBlank())rotation=Integer.parseInt(turn);
+   }catch(NumberFormatException ex){return InteractionResult.FAIL;}
+   if(sx<1||sy<1||sz<1||sx>16||sy>16||sz>16||rotation<0||rotation>7)
+    return InteractionResult.FAIL;
+   int width=(rotation%2==0)?sx:sz,depth=(rotation%2==0)?sz:sx;
+   if(at.getY()<server.getMinY()||(long)at.getY()+sy>server.getMaxY()||
+      at.getX() < -29999970 || at.getZ() < -29999970 ||
+      (long)at.getX()+width-1>29999970 ||
+      (long)at.getZ()+depth-1>29999970 ||
+      !server.getWorldBorder().isWithinBounds(at)||
+      !server.getWorldBorder().isWithinBounds(at.offset(width-1,sy-1,depth-1))){
+    player.sendSystemMessage(Component.literal("Blueprint: entire build volume must fit inside world bounds."));
+    return InteractionResult.FAIL;
+   }
+   write(plan,"xsxlabs_anchor",server.dimension().identifier()+"|"+''')
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''  BlockPos dest=new BlockPos(tx+px,ty+dy,tz+pz);''',
+ '''  // Never wrap overflowed coordinates or place outside the loaded world.
+   long targetX=(long)tx+px,targetY=(long)ty+dy,targetZ=(long)tz+pz;
+   if(targetX < -29999970 || targetX > 29999970 ||
+      targetZ < -29999970 || targetZ > 29999970 ||
+      targetY < world.getMinY() || targetY >= world.getMaxY()){
+    setStatus("BLUEPRINT OUTSIDE WORLD BOUNDS");return;
+   }
+   BlockPos dest=new BlockPos((int)targetX,(int)targetY,(int)targetZ);
+   if(!world.getWorldBorder().isWithinBounds(dest)){
+    setStatus("BLUEPRINT OUTSIDE WORLD BORDER");return;
+   }''')
+# No GUI/server feature may quietly succeed if the patch is missing.
+packet=(J/"item/BlueprintPlacementPayload.java").read_text(encoding="utf-8")
+item=(J/"item/NetworkBlueprintItem.java").read_text(encoding="utf-8")
+printer=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
+assert "V173_BLUEPRINT_WHOLE_VOLUME_BOUNDS222" in packet
+assert "entire build volume must fit inside world bounds" in item
+assert "BLUEPRINT OUTSIDE WORLD BOUNDS" in printer
+print("V173_BLUEPRINT_SAFE_WORLD_VOLUME_BUILD222_PASS: nudge, click, printer")
 print("V173_BLUEPRINT_CREATE_STYLE_MOVE_ROTATE_BUILD210_PASS")
