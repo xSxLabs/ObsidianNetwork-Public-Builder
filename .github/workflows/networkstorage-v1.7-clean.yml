@@ -2463,6 +2463,24 @@ jobs:
           test -f work/src/main/java/dev/obsidiannetwork/block/NetworkSignalRelayBlock.java
           test -f work/src/main/java/dev/obsidiannetwork/blockentity/NetworkSignalRelayBlockEntity.java
           test -f work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
+          # Cross-check two independent transmitter/receiver families: original
+          # Wireless FE blocks must retain directional model JSON and all textures.
+          # Network relays are separate blocks, NOT replacements for FE nodes.
+          grep -Fq 'BLOCKS.registerBlock("network_signal_transmitter"' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          grep -Fq 'BLOCKS.registerBlock("network_signal_receiver"' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          python3 - <<'PY_V173_RELAY_ASSETS'
+          from pathlib import Path
+          import json
+          root=Path('work/src/main/resources/assets/obsidiannetwork')
+          for slug in ('network_transmitter','network_receiver'):
+              old=json.loads((root/'models/block'/f'{slug}.json').read_text())
+              assert len(old['elements'])>=9 and 'core' in old['textures'], slug
+          for slug in ('network_signal_transmitter','network_signal_receiver'):
+              model=json.loads((root/'models/block'/f'{slug}.json').read_text())
+              assert model['parent']=='minecraft:block/cube_all', slug
+              assert (root/'blockstates'/f'{slug}.json').exists(), slug
+          print('V173_NETWORK_AND_WIRELESS_FE_IDS_AND_MODELS_ISOLATED_PASS')
+          PY_V173_RELAY_ASSETS
           grep -Fq 'V173_NETWORK_VISION' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
           grep -Fq 'xsxlabs_blocks' work/src/main/java/dev/obsidiannetwork/item/NetworkBlueprintItem.java
           grep -Fq 'MISSING: 1 x ' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
