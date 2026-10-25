@@ -165,6 +165,7 @@ jobs:
           # Network machine contract: bundled NETWORK conductor is a storage
           # connection but bundled ENERGY is never storage connectivity.
           python3 -m unittest discover -s tests -p 'test_v173_machine_network_bundle.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_wireless_link_status.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
           # powered piston UP and DOWN preserve original suit position.
@@ -2488,6 +2489,8 @@ jobs:
           python3 features/v173/apply-recall-ghost-flight.py
           python3 features/v173/apply-blueprint-hologram-preview.py
           python3 features/v173/apply-machine-network-bundle-compat.py
+          python3 features/v173/apply-wireless-link-status.py
+          grep -Fq 'V173_REAL_WIRELESS_LINK_STATUS' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
           grep -Fq 'V173_MACHINE_NETWORK_BUNDLE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           echo 'V173_MACHINE_NETWORK_BUNDLE_PASS'
           grep -Fq 'V173_BLUEPRINT_GHOST_PREVIEW' work/src/main/java/dev/obsidiannetwork/client/NetworkBlueprintPreviewClient.java
