@@ -152,6 +152,40 @@ patch("blockentity/NetworkDeviceBlockEntity.java",
  '''   index++;setStatus("SKIPPED BLOCKED POSITION "+index+"/"+plan.size());sync();return;''',
  '''   setStatus("BLOCKED: clear position "+dest.toShortString());return;''')
 
+# Build221: printer completion and trailing AIR cells must not depend on
+# having leftover FE or an online network. A fully printed structure must
+# always return the Schematic & Quill, including after spending its final FE.
+# Empty source cells need no destination chunk, material, or FE.
+p=J/"blockentity/NetworkDeviceBlockEntity.java"
+source=p.read_text(encoding="utf-8")
+finished='''  if(index>=plan.size()){
+   running=false;
+   blueprint=new ItemStack(ObsidianNetwork.NETWORK_SCHEMATIC_QUILL.get());
+   missing=ItemStack.EMPTY;
+   setStatus("COMPLETE: Schematic & Quill returned");
+   sync();return;
+  }'''
+network_guard='''  if(net==null){setStatus("NETWORK OFFLINE");return;}'''
+energy_guard='''  if(availableFE()<250L){setStatus("NO POWER: connect ENERGY cable (250 FE/block)");return;}'''
+skip_air='''  String name=plan.get(index);
+  if("minecraft:air".equals(name)){index++;setStatus("SKIPPED AIR "+index+"/"+plan.size());sync();return;}'''
+for token in (finished,network_guard,energy_guard,skip_air):
+ assert source.count(token)==1,("BUILD221_MISSING_PRINTER_ANCHOR",token[:80],source.count(token))
+# Move guards away from ahead of the successful completion. Reinsert them
+# after skipping air, but before any network/storage/world mutation.
+before=network_guard+"\n"+energy_guard+"\n"+finished
+assert source.count(before)==1,("BUILD221_ORDER_DRIFT",source.count(before))
+source=source.replace(before,finished,1)
+source=source.replace(skip_air+"\n","",1)
+source=source.replace(finished,finished+"\n"+skip_air+"\n"+network_guard+"\n"+energy_guard,1)
+printer=source.split("private void printer(ServerLevel world,NetworkRuntime net){",1)[1].split("public static void tick(",1)[0]
+assert printer.index('if(index>=plan.size())')<printer.index('String name=plan.get(index)')
+assert printer.index('SKIPPED AIR')<printer.index('if(net==null)')
+assert printer.index('if(net==null)')<printer.index('if(availableFE()<250L)')
+assert printer.index('if(availableFE()<250L)')<printer.index('net.storage().extract')
+p.write_text(source,encoding="utf-8")
+print("V173_PRINTER_FINISH_WITH_ZERO_FE_BUILD221_PASS: complete + air do not require power/network")
+
 # V173_CREATE_MK1_12_PLATFORM_FIX: match Create's real internal blocks for
 # legacy ArmorStand feet that sit fractionally higher/lower than later tiers.
 # No Create client classes or Entity#getMethods() reflection are introduced.
