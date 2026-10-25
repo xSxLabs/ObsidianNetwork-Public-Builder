@@ -125,6 +125,14 @@ public final class NetworkBlueprintItem extends Item {
  }
 }
 ''')
+add("v173/BlueprintIds.java",r'''package dev.obsidiannetwork.v173;
+import net.minecraft.resources.Identifier;
+/** No package identifiers looked up through runtime variable shadowing. */
+public final class BlueprintIds {
+ private BlueprintIds(){}
+ public static Identifier parse(String text){return Identifier.tryParse(text);}
+}
+''')
 add("block/NetworkDeviceBlock.java",r'''package dev.obsidiannetwork.block;
 
 import com.mojang.serialization.MapCodec;
@@ -369,7 +377,7 @@ public final class NetworkDeviceBlockEntity extends BlockEntity implements Conta
   }
   String name=plan.get(index);
   if("minecraft:air".equals(name)){index++;setStatus("SKIPPED AIR "+index+"/"+plan.size());sync();return;}
-  var id=net.minecraft.resources.Identifier.tryParse(name);
+  var id=dev.obsidiannetwork.v173.BlueprintIds.parse(name);
   if(id==null){setStatus("INVALID BLUEPRINT BLOCK "+name);return;}
   Block block=BuiltInRegistries.BLOCK.getValue(id);
   ItemStack material=new ItemStack(block.asItem());
