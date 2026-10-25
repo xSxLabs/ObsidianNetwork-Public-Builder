@@ -2460,6 +2460,9 @@ jobs:
           echo 'V173_NO_MINER_SCHEMATIC_QUILL_ENERGY_CABLE_PASS'
           grep -Fq 'V173_NETWORK_MACHINE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'V173_NETWORK_ONLY_RELAY' work/src/main/java/dev/obsidiannetwork/network/WorldTopologyBridge.java
+          test -f work/src/main/java/dev/obsidiannetwork/block/NetworkSignalRelayBlock.java
+          test -f work/src/main/java/dev/obsidiannetwork/blockentity/NetworkSignalRelayBlockEntity.java
+          test -f work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
           grep -Fq 'V173_NETWORK_VISION' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
           grep -Fq 'xsxlabs_blocks' work/src/main/java/dev/obsidiannetwork/item/NetworkBlueprintItem.java
           grep -Fq 'MISSING: 1 x ' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java

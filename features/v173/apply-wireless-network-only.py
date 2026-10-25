@@ -24,15 +24,15 @@ replace("ObsidianNetwork.java",
  'ITEMS.registerSimpleBlockItem("network_planter",NETWORK_PLANTER);',
  '''ITEMS.registerSimpleBlockItem("network_planter",NETWORK_PLANTER);
     // V173_WIRELESS_NETWORK_ONLY: no FE link, owner-bound channels.
-    public static final DeferredBlock<dev.obsidiannetwork.block.WirelessNetworkBlock> NETWORK_TRANSMITTER =
+    public static final DeferredBlock<dev.obsidiannetwork.block.NetworkSignalRelayBlock> NETWORK_TRANSMITTER =
       BLOCKS.registerBlock("network_transmitter",
-          p -> new dev.obsidiannetwork.block.WirelessNetworkBlock(p,true),
+          p -> new dev.obsidiannetwork.block.NetworkSignalRelayBlock(p,true),
           p -> p.mapColor(MapColor.METAL).strength(3.0F,8.0F));
     public static final DeferredItem<BlockItem> NETWORK_TRANSMITTER_ITEM =
       ITEMS.registerSimpleBlockItem("network_transmitter",NETWORK_TRANSMITTER);
-    public static final DeferredBlock<dev.obsidiannetwork.block.WirelessNetworkBlock> NETWORK_RECEIVER =
+    public static final DeferredBlock<dev.obsidiannetwork.block.NetworkSignalRelayBlock> NETWORK_RECEIVER =
       BLOCKS.registerBlock("network_receiver",
-          p -> new dev.obsidiannetwork.block.WirelessNetworkBlock(p,false),
+          p -> new dev.obsidiannetwork.block.NetworkSignalRelayBlock(p,false),
           p -> p.mapColor(MapColor.METAL).strength(3.0F,8.0F));
     public static final DeferredItem<BlockItem> NETWORK_RECEIVER_ITEM =
       ITEMS.registerSimpleBlockItem("network_receiver",NETWORK_RECEIVER);
@@ -46,9 +46,9 @@ replace("ObsidianNetwork.java",
             output.accept((ItemLike)NETWORK_LINK_CARD.get());''')
 replace("registry/ModBlockEntities.java",
  '   public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.obsidiannetwork.blockentity.NetworkPlanterBlockEntity>> NETWORK_PLANTER =',
- '''   public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity>> NETWORK_WIRELESS =
+ '''   public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.obsidiannetwork.blockentity.NetworkSignalRelayBlockEntity>> NETWORK_SIGNAL_RELAY =
        TYPES.register("network_wireless",()->new BlockEntityType(
-         dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity::new,
+         dev.obsidiannetwork.blockentity.NetworkSignalRelayBlockEntity::new,
          new Block[]{(Block)ObsidianNetwork.NETWORK_TRANSMITTER.get(),
              (Block)ObsidianNetwork.NETWORK_RECEIVER.get()}));
    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.obsidiannetwork.blockentity.NetworkPlanterBlockEntity>> NETWORK_PLANTER =''')
@@ -74,10 +74,10 @@ public final class NetworkLinkCardItem extends Item {
  }
 }
 ''')
-add("block/WirelessNetworkBlock.java",r'''package dev.obsidiannetwork.block;
+add("block/NetworkSignalRelayBlock.java",r'''package dev.obsidiannetwork.block;
 
 import com.mojang.serialization.MapCodec;
-import dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity;
+import dev.obsidiannetwork.blockentity.NetworkSignalRelayBlockEntity;
 import dev.obsidiannetwork.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
@@ -94,30 +94,30 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 /** Network transmitter and network receiver: metadata only, absolutely no FE. */
-public final class WirelessNetworkBlock extends BaseEntityBlock {
+public final class NetworkSignalRelayBlock extends BaseEntityBlock {
  private final boolean transmitter;
- private static final MapCodec<WirelessNetworkBlock> TRANSMITTER=
-    simpleCodec(p->new WirelessNetworkBlock(p,true));
- private static final MapCodec<WirelessNetworkBlock> RECEIVER=
-    simpleCodec(p->new WirelessNetworkBlock(p,false));
- public WirelessNetworkBlock(Properties p,boolean transmitter){super(p);this.transmitter=transmitter;}
+ private static final MapCodec<NetworkSignalRelayBlock> TRANSMITTER=
+    simpleCodec(p->new NetworkSignalRelayBlock(p,true));
+ private static final MapCodec<NetworkSignalRelayBlock> RECEIVER=
+    simpleCodec(p->new NetworkSignalRelayBlock(p,false));
+ public NetworkSignalRelayBlock(Properties p,boolean transmitter){super(p);this.transmitter=transmitter;}
  public boolean transmitter(){return transmitter;}
  @Override protected MapCodec<? extends BaseEntityBlock> codec(){
   return transmitter?TRANSMITTER:RECEIVER;
  }
  @Override public RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
  @Nullable @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){
-  return new WirelessNetworkBlockEntity(p,s);
+  return new NetworkSignalRelayBlockEntity(p,s);
  }
  @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
      Level level,BlockState state,BlockEntityType<T> type){
-  return level.isClientSide()?null:createTickerHelper(type,ModBlockEntities.NETWORK_WIRELESS.get(),
-      WirelessNetworkBlockEntity::tick);
+  return level.isClientSide()?null:createTickerHelper(type,ModBlockEntities.NETWORK_SIGNAL_RELAY.get(),
+      NetworkSignalRelayBlockEntity::tick);
  }
  private InteractionResult interact(Level level,BlockPos pos,Player p,ItemStack stack){
   if(level.isClientSide())return InteractionResult.SUCCESS;
   if(p instanceof net.minecraft.server.level.ServerPlayer player
-    &&level.getBlockEntity(pos) instanceof WirelessNetworkBlockEntity be){
+    &&level.getBlockEntity(pos) instanceof NetworkSignalRelayBlockEntity be){
     be.interact(player,stack);
   }
   return InteractionResult.SUCCESS;
@@ -131,9 +131,9 @@ public final class WirelessNetworkBlock extends BaseEntityBlock {
  }
 }
 ''')
-add("blockentity/WirelessNetworkBlockEntity.java",r'''package dev.obsidiannetwork.blockentity;
+add("blockentity/NetworkSignalRelayBlockEntity.java",r'''package dev.obsidiannetwork.blockentity;
 
-import dev.obsidiannetwork.block.WirelessNetworkBlock;
+import dev.obsidiannetwork.block.NetworkSignalRelayBlock;
 import dev.obsidiannetwork.item.NetworkLinkCardItem;
 import dev.obsidiannetwork.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -152,19 +152,19 @@ import java.util.UUID;
 /** Owner-scoped pairing. Transmitter stays loaded to provide cross-dim access.
  * No energy capability, inventory capability, or item-copying functions.
  */
-public final class WirelessNetworkBlockEntity extends BlockEntity {
+public final class NetworkSignalRelayBlockEntity extends BlockEntity {
  private String channel="",owner="";
- private static final java.util.Map<net.minecraft.server.MinecraftServer,java.util.Set<WirelessNetworkBlockEntity>> LIVE=
+ private static final java.util.Map<net.minecraft.server.MinecraftServer,java.util.Set<NetworkSignalRelayBlockEntity>> LIVE=
    java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
- public static java.util.List<WirelessNetworkBlockEntity> transmitters(net.minecraft.server.MinecraftServer server){
+ public static java.util.List<NetworkSignalRelayBlockEntity> transmitters(net.minecraft.server.MinecraftServer server){
   var set=LIVE.get(server);
   return set==null?java.util.List.of():java.util.List.copyOf(set);
  }
- public WirelessNetworkBlockEntity(BlockPos pos,BlockState state){
-  super(ModBlockEntities.NETWORK_WIRELESS.get(),pos,state);
+ public NetworkSignalRelayBlockEntity(BlockPos pos,BlockState state){
+  super(ModBlockEntities.NETWORK_SIGNAL_RELAY.get(),pos,state);
  }
  public boolean transmitter(){
-  return getBlockState().getBlock() instanceof WirelessNetworkBlock b && b.transmitter();
+  return getBlockState().getBlock() instanceof NetworkSignalRelayBlock b && b.transmitter();
  }
  public String channel(){return channel;}
  public String owner(){return owner;}
@@ -212,7 +212,7 @@ public final class WirelessNetworkBlockEntity extends BlockEntity {
    world.setChunkForced(worldPosition.getX()>>4,worldPosition.getZ()>>4,false);
   super.preRemoveSideEffects(p,state);
  }
- public static void tick(Level l,BlockPos p,BlockState s,WirelessNetworkBlockEntity be){
+ public static void tick(Level l,BlockPos p,BlockState s,NetworkSignalRelayBlockEntity be){
   if(l instanceof ServerLevel sl && be.transmitter() && be.paired())
    LIVE.computeIfAbsent(sl.getServer(),ignored->java.util.Collections.newSetFromMap(
       new java.util.IdentityHashMap<>())).add(be);
@@ -225,10 +225,10 @@ public final class WirelessNetworkBlockEntity extends BlockEntity {
  }
 }
 ''')
-add("network/WirelessNetworkBridge.java",r'''package dev.obsidiannetwork.network;
+add("network/NetworkSignalRelayBridge.java",r'''package dev.obsidiannetwork.network;
 
 import dev.obsidiannetwork.ObsidianNetwork;
-import dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity;
+import dev.obsidiannetwork.blockentity.NetworkSignalRelayBlockEntity;
 import dev.obsidiannetwork.core.NetworkRuntime;
 import java.util.*;
 import net.minecraft.core.BlockPos;
@@ -241,8 +241,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * Cross dimension/distance: paired TX searched on all server levels.
  * Local cable BFS bounded to 512 nodes; no chunk loads during lookup.
  */
-public final class WirelessNetworkBridge {
- private WirelessNetworkBridge(){}
+public final class NetworkSignalRelayBridge {
+ private NetworkSignalRelayBridge(){}
  private static final ThreadLocal<Boolean> RESOLVING=ThreadLocal.withInitial(()->false);
  public static NetworkRuntime resolve(ServerLevel level,BlockPos queried){
   if(RESOLVING.get()||queried==null)return null;
@@ -262,7 +262,7 @@ public final class WirelessNetworkBridge {
      if(!level.hasChunkAt(neighbor))continue;
      var state=level.getBlockState(neighbor);
      if(state.is(ObsidianNetwork.NETWORK_RECEIVER.get())&&
-         level.getBlockEntity(neighbor) instanceof WirelessNetworkBlockEntity receiver &&
+         level.getBlockEntity(neighbor) instanceof NetworkSignalRelayBlockEntity receiver &&
          receiver.paired()){
       NetworkRuntime rt=transmitterRuntime(level,receiver);
       if(rt!=null&&rt.powered())return rt;
@@ -274,10 +274,10 @@ public final class WirelessNetworkBridge {
    return null;
   }finally{RESOLVING.set(false);}
  }
- private static NetworkRuntime transmitterRuntime(ServerLevel receiverLevel,WirelessNetworkBlockEntity rx){
+ private static NetworkRuntime transmitterRuntime(ServerLevel receiverLevel,NetworkSignalRelayBlockEntity rx){
   // Live TX registry avoids scanning every block entity on every lookup.
-  for(WirelessNetworkBlockEntity tx:
-      WirelessNetworkBlockEntity.transmitters(receiverLevel.getServer())){
+  for(NetworkSignalRelayBlockEntity tx:
+      NetworkSignalRelayBlockEntity.transmitters(receiverLevel.getServer())){
    if(tx.isRemoved()||!tx.transmitter()||!tx.paired()
       ||!tx.owner().equals(rx.owner())||!tx.channel().equals(rx.channel()))continue;
    if(!(tx.getLevel() instanceof ServerLevel other))continue;
@@ -307,7 +307,7 @@ for method in ("runtimeForTerminal","runtimeForDrive","runtimeForAutocrafter","r
  insert=match[0].group(1)+'''
        // V173_NETWORK_ONLY_RELAY: remote receiver uses source's storage network.
        // Does not create an energy conduit, cannot mint item stacks.
-       NetworkRuntime remote=dev.obsidiannetwork.network.WirelessNetworkBridge.resolve(level,pos);
+       NetworkRuntime remote=dev.obsidiannetwork.network.NetworkSignalRelayBridge.resolve(level,pos);
        if(remote!=null)return remote;'''
  src=src[:match[0].start()]+insert+src[match[0].end():]
 bridge.write_text(src,encoding="utf-8")
