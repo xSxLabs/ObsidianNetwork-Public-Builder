@@ -2492,6 +2492,13 @@ jobs:
           python3 features/v173/apply-machine-network-bundle-compat.py
           python3 features/v173/apply-wireless-link-status.py
           python3 features/v173/apply-wireless-cable-entry-guard.py
+          # Build200: persistent Portal A and one-shot short-lived Portal B.
+          python3 features/v173/apply-network-portals.py
+          grep -Fq 'V173_PORTAL_INDEX' work/src/main/java/dev/obsidiannetwork/portal/PortalIndex.java
+          grep -Fq 'V173_PORTAL_ONE_SHOT' work/src/main/java/dev/obsidiannetwork/portal/PortalGateBlockEntity.java
+          grep -Fq 'V173_PORTAL_ACTIONS' work/src/main/java/dev/obsidiannetwork/portal/PortalActionPayload.java
+          grep -Fq 'V173_PORTAL_KEYS' work/src/main/java/dev/obsidiannetwork/portal/PortalKeysClient.java
+          echo 'V173_PORTAL_BUILD200_SOURCES_PASS'
           grep -Fq 'V173_WIRELESS_CABLE_ENTRY_GUARD' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
           echo 'V173_WIRELESS_CABLE_ENTRY_GUARD_PASS'
           grep -Fq 'V173_REAL_WIRELESS_LINK_STATUS' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
