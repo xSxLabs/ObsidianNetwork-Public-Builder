@@ -2498,6 +2498,11 @@ jobs:
           python3 features/v173/apply-portal-powerarmor-upgrade.py
           # Build204: field-reported armor, portal, Blueprint and Printer repairs.
           python3 features/v173/apply-v173-field-fixes.py
+          # Build207: configurable Network/3D Map/Custom Hologram Terminal.
+          python3 features/v173/apply-hologram-three-modes.py
+          grep -Fq 'V173_HOLOGRAM_THREE_MODES' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'V173_HOLOGRAM_GUI' work/src/main/java/dev/obsidiannetwork/client/HologramConfigScreen.java
+          echo 'V173_HOLOGRAM_3_MODES_BUILD207_SOURCES_PASS'
           grep -Fq 'V173_BUILD204_FIELD_REPAIRS_PASS' /dev/null || true
           test -f work/src/main/java/dev/obsidiannetwork/client/NetworkBlueprintPreviewClient.java
           echo V173_BUILD204_REPAIRS_SOURCE_CHECK
