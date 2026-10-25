@@ -626,3 +626,16 @@ assert "requires a loaded, valid two-block-high space" in action
 assert "Portal A outside current world limits" in portal
 print("V173_BUILD230_BATCH_PASS: printer validation, blueprint safe switch, Create search, two portal checks, zero-hitbox holo")
 print("V173_BLUEPRINT_CREATE_STYLE_MOVE_ROTATE_BUILD210_PASS")
+
+# Build237: protect printer volume multiplication from overflow in corrupt or
+# forged Blueprint dimensions. Each dimension is bounded before multiplication.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''if(dims==null || dims.length!=3 || dims[0]<=0 || dims[1]<=0 || dims[2]<=0 ||
+      (long)dims[0]*dims[1]*dims[2]!=planLength()){''',
+ '''if(dims==null || dims.length!=3 ||
+      dims[0]<=0 || dims[1]<=0 || dims[2]<=0 ||
+      dims[0]>1000000 || dims[1]>1000000 || dims[2]>1000000 ||
+      (long)dims[0]*dims[1]*dims[2]!=planLength()){''')
+device=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
+assert "dims[0]>1000000 || dims[1]>1000000 || dims[2]>1000000" in device
+print("V173_PRINTER_OVERFLOW_GUARD_BUILD237_PASS")
