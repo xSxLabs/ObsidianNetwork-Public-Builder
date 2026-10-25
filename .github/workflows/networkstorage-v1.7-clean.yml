@@ -2448,6 +2448,22 @@ jobs:
           # ENERGY cable FE input (NETWORK cable never carries electricity).
           python3 features/v173/apply-printer-quill-energy.py
           python3 features/v173/apply-printer-status-gui.py
+          # Build174: full Blueprint placement/control UX, dedicated FE bars,
+          # bespoke models/icons and invulnerable terrain-phasing recall flight.
+          python3 -m py_compile features/v173/apply-printer-blueprint-controls.py features/v173/apply-3d-block-models.py features/v173/apply-blueprint-keycard-icons.py features/v173/apply-recall-ghost-flight.py
+          python3 features/v173/apply-printer-blueprint-controls.py
+          python3 features/v173/apply-3d-block-models.py
+          python3 features/v173/apply-blueprint-keycard-icons.py
+          python3 features/v173/apply-recall-ghost-flight.py
+          grep -Fq 'V173_BLUEPRINT_POSITIONED' work/src/main/java/dev/obsidiannetwork/item/NetworkBlueprintItem.java
+          grep -Fq 'xsxlabs_states' work/src/main/java/dev/obsidiannetwork/item/NetworkSchematicQuillItem.java
+          grep -Fq 'clickMenuButton(Player player,int action)' work/src/main/java/dev/obsidiannetwork/menu/NetworkPrinterMenu.java
+          grep -Fq 'handleInventoryButtonClick(getMenu().containerId,button)' work/src/main/java/dev/obsidiannetwork/client/NetworkPrinterScreen.java
+          grep -Fq 'V173_RECALL_GHOST_FLIGHT174' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorRecall.java
+          test -s work/src/main/resources/assets/obsidiannetwork/textures/item/network_blueprint.png
+          test -s work/src/main/resources/assets/obsidiannetwork/textures/item/network_schematic_quill.png
+          test -s work/src/main/resources/assets/obsidiannetwork/textures/item/network_link_card.png
+          echo 'V173_ALL_PENDING_174_GATES_PASS'
           grep -Fq 'V173_PRINTER_STATUS_GUI' work/src/main/java/dev/obsidiannetwork/client/NetworkPrinterScreen.java
           grep -Fq 'GLFW.GLFW_KEY_K,' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorExitKeyClient.java
           grep -Fq 'KeyMapping.Category CATEGORY=new KeyMapping.Category(' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorExitKeyClient.java
@@ -2486,7 +2502,7 @@ jobs:
               assert len(old['elements'])>=9 and 'core' in old['textures'], slug
           for slug in ('network_signal_transmitter','network_signal_receiver'):
               model=json.loads((root/'models/block'/f'{slug}.json').read_text())
-              assert model['parent']=='minecraft:block/cube_all', slug
+              assert len(model['elements'])>=9 and 'textures' in model, slug
               assert (root/'blockstates'/f'{slug}.json').exists(), slug
           print('V173_NETWORK_AND_WIRELESS_FE_IDS_AND_MODELS_ISOLATED_PASS')
           PY_V173_RELAY_ASSETS
