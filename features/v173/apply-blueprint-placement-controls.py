@@ -971,3 +971,40 @@ wheel=(J/"client/NetworkActionWheelClient.java").read_text(encoding="utf-8")
 assert 'mc.mouseHandler.releaseMouse()' in wheel
 assert 'mc.mouseHandler.grabMouse()' in wheel
 print("V173_WHEEL_FREE_CURSOR_HOLD_RELEASE_BUILD251_PASS")
+
+# Build252: Portal aperture 2 blocks wide, 3 blocks tall.
+# A and B share the same non-colliding centered geometry and entry detection.
+rep("portal/PortalGateBlock.java",
+ '''  return box(0,0,6,16,48,10);''',
+ '''  return box(-8,0,6,24,48,10);''')
+rep("portal/PortalGateBlockEntity.java",
+ '''if(Math.abs(player.getX()-(pos.getX()+0.5))>0.52 ||''',
+ '''if(Math.abs(player.getX()-(pos.getX()+0.5))>1.02 ||''')
+rep("portal/PortalActionPayload.java",
+ '''if(!level.getBlockState(pos).isAir()||!level.getBlockState(pos.above()).isAir() ||''',
+ '''if(!level.getBlockState(pos).isAir()||!level.getBlockState(pos.above()).isAir() ||
+      !level.getBlockState(pos.above(2)).isAir() ||''')
+# Replace the old 1x2 glass and frame model with a 2x3 geometry,
+# centered on the original portal anchor so old saved worlds still work.
+import json
+for slug,glass in (("network_portal_a","minecraft:block/purple_stained_glass"),
+                   ("network_portal_b","minecraft:block/light_blue_stained_glass")):
+ def cuboid(frm,to,tex):
+  return {"from":frm,"to":to,"faces":{side:{"texture":"#"+tex} for side in
+   ("north","south","east","west","up","down")}}
+ model={"render_type":"minecraft:translucent",
+  "textures":{"particle":"minecraft:block/obsidian",
+              "frame":"minecraft:block/obsidian","window":glass},
+  "elements":[
+   cuboid([-8,0,6],[-5,48,10],"frame"),
+   cuboid([21,0,6],[24,48,10],"frame"),
+   cuboid([-5,44,6],[21,48,10],"frame"),
+   cuboid([-5,0,6],[21,3,10],"frame"),
+   cuboid([-5,3,7.5],[21,44,8.5],"window")]}
+ path=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork/models/block"/(slug+".json")
+ path.write_text(json.dumps(model,indent=2)+"\n",encoding="utf-8")
+gate=(J/"portal/PortalGateBlock.java").read_text(encoding="utf-8")
+portal=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
+assert "box(-8,0,6,24,48,10)" in gate
+assert "pos.above(2)" in portal
+print("V173_PORTAL_WIDE_TALL_GEOMETRY_BUILD252_PASS")
