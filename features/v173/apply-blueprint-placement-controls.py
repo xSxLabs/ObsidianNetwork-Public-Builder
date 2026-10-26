@@ -1008,3 +1008,46 @@ portal=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
 assert "box(-8,0,6,24,48,10)" in gate
 assert "pos.above(2)" in portal
 print("V173_PORTAL_WIDE_TALL_GEOMETRY_BUILD252_PASS")
+
+# Build253: harden 2x3 portals and preserve the owner-bound A target.
+# The wider entrance must be checked at both lateral edges before spawning B.
+rep("portal/PortalActionPayload.java",
+ '''  if(!level.getBlockState(pos).isAir()||!level.getBlockState(pos.above()).isAir() ||
+      !level.getBlockState(pos.above(2)).isAir() ||
+      !level.getWorldBorder().isWithinBounds(pos)){''',
+ '''  BlockPos side=pos.relative(player.getDirection().getClockWise());
+  if(!level.getWorldBorder().isWithinBounds(pos)||
+      !level.getWorldBorder().isWithinBounds(side)||
+      !level.getBlockState(pos).isAir()||
+      !level.getBlockState(pos.above()).isAir()||
+      !level.getBlockState(pos.above(2)).isAir()||
+      !level.getBlockState(side).isAir()||
+      !level.getBlockState(side.above()).isAir()||
+      !level.getBlockState(side.above(2)).isAir()){''')
+rep("portal/PortalActionPayload.java",
+ '''Portal B needs two free blocks in front of you.''',
+ '''Portal B needs a clear 2x3 opening in front of you.''')
+# Ensure the 3-high arrival volume is safe before cross-dimension teleport.
+rep("portal/PortalGateBlockEntity.java",
+ '''    if(!dest.getBlockState(exit.above()).isAir()){
+     player.sendSystemMessage(Component.literal("Portal A exit obstructed."));return;
+    }''',
+ '''    if(!dest.getWorldBorder().isWithinBounds(exit)||
+       !dest.getBlockState(exit.above()).isAir()||
+       !dest.getBlockState(exit.above(2)).isAir()){
+     player.sendSystemMessage(Component.literal("Portal A exit obstructed."));return;
+    }''')
+# Prevent the selection message from concealing a user-defined portal label.
+rep("portal/PortalActionPayload.java",
+ '''tell(player,"Portal A selected: "+chosen.dimension()+" ["+chosen.x()+", "+chosen.y()+", "+chosen.z()+"] ("+''',
+ '''tell(player,"Portal A selected: "+chosen.displayName()+" / "+chosen.dimension()+" ["+chosen.x()+", "+chosen.y()+", "+chosen.z()+"] ("+''')
+# Display the name at B spawn as well, so users can confirm the target.
+rep("portal/PortalActionPayload.java",
+ '''tell(player,"Portal B opened -> "+a.dimension()+" ["+a.x()+", "+a.y()+", "+a.z()+"]. Enter to travel.");''',
+ '''tell(player,"Portal B opened -> "+a.displayName()+" / "+a.dimension()+" ["+a.x()+", "+a.y()+", "+a.z()+"]. Enter to travel.");''')
+portal=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
+entity=(J/"portal/PortalGateBlockEntity.java").read_text(encoding="utf-8")
+assert 'BlockPos side=pos.relative(player.getDirection().getClockWise())' in portal
+assert 'a.displayName()' in portal
+assert 'exit.above(2)' in entity
+print("V173_PORTAL_2X3_SAFETY_AND_LABELS_BUILD253_PASS")
