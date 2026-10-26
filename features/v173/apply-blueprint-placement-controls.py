@@ -742,3 +742,83 @@ entity=(J/"portal/PortalGateBlockEntity.java").read_text(encoding="utf-8")
 assert "box(0,0,6,16,48,10)" in gate
 assert "pos.getY()+2.85" in entity
 print("V173_PORTAL_TALL_APERTURE_BUILD245_PASS")
+
+# Build246: Four-action hold-to-open radial menu, click-to-activate.
+# The UI is a HUD overlay, not a blocking Screen: key release is reliable.
+add("client/NetworkActionWheelClient.java",r'''package dev.obsidiannetwork.client;
+import com.mojang.blaze3d.platform.InputConstants;
+import dev.obsidiannetwork.portal.PortalActionPayload;
+import dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient;
+import dev.obsidiannetwork.powerarmor.PowerArmorExitPayload;
+import dev.obsidiannetwork.powerarmor.PowerArmorRecallPayload;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import org.lwjgl.glfw.GLFW;
+
+/** Hold wheel key, hover with mouse, left-click to execute; release closes. */
+@EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
+public final class NetworkActionWheelClient {
+ private NetworkActionWheelClient(){}
+ private static final KeyMapping WHEEL=new KeyMapping(
+  "key.obsidiannetwork.action_wheel",InputConstants.Type.KEYSYM,
+  GLFW.GLFW_KEY_G,PowerArmorExitKeyClient.CATEGORY);
+ private static final String[] ACTIONS={
+  "POWER ARMOR EXIT","SPAWN PORTAL B","SELECT PORTAL A","POWER ARMOR RECALL"};
+ private static boolean open=false,wasMouseDown=false;
+ private static int selected=-1;
+ @SubscribeEvent public static void register(RegisterKeyMappingsEvent e){e.register(WHEEL);}
+ @SubscribeEvent public static void tick(ClientTickEvent.Post e){
+  Minecraft mc=Minecraft.getInstance();
+  if(mc.player==null||mc.screen!=null||!WHEEL.isDown()){
+   open=false;selected=-1;wasMouseDown=false;return;
+  }
+  open=true;
+  double scale=mc.getWindow().getGuiScale();
+  double mx=mc.mouseHandler.xpos()/scale;
+  double my=mc.mouseHandler.ypos()/scale;
+  double dx=mx-mc.getWindow().getGuiScaledWidth()/2.0;
+  double dy=my-mc.getWindow().getGuiScaledHeight()/2.0;
+  double distance=Math.sqrt(dx*dx+dy*dy);
+  selected=distance<24||distance>120?-1:
+    (Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?2:0));
+  boolean down=GLFW.glfwGetMouseButton(mc.getWindow().handle(),GLFW.GLFW_MOUSE_BUTTON_LEFT)==GLFW.GLFW_PRESS;
+  if(down&&!wasMouseDown&&selected>=0){
+   switch(selected){
+    case 0->ClientPacketDistributor.sendToServer(new PowerArmorExitPayload());
+    case 1->ClientPacketDistributor.sendToServer(new PortalActionPayload.Spawn());
+    case 2->ClientPacketDistributor.sendToServer(new PortalActionPayload.Cycle());
+    case 3->ClientPacketDistributor.sendToServer(new PowerArmorRecallPayload());
+    default->{}
+   }
+  }
+  wasMouseDown=down;
+ }
+ @SubscribeEvent public static void render(RenderGuiEvent.Post e){
+  if(!open)return;
+  Minecraft mc=Minecraft.getInstance();
+  if(mc.player==null||mc.screen!=null)return;
+  var g=e.getGuiGraphics();
+  int x=mc.getWindow().getGuiScaledWidth()/2;
+  int y=mc.getWindow().getGuiScaledHeight()/2;
+  g.fill(x-135,y-135,x+135,y+135,0xB9091726);
+  g.fill(x-23,y-23,x+23,y+23,0xFF152E40);
+  g.text(mc.font,"xSxLabs",x-22,y-4,0xFF6FEAFF);
+  for(int i=0;i<4;i++){
+   int cx=x+(i==1?76:i==3?-76:0);
+   int cy=y+(i==0?-76:i==2?76:0);
+   int color=i==selected?0xEE167D9B:0xDD1B3347;
+   g.fill(cx-70,cy-14,cx+70,cy+14,color);
+   int w=mc.font.width(ACTIONS[i]);
+   g.text(mc.font,ACTIONS[i],cx-w/2,cy-4,0xFFE7F8FF);
+  }
+ }
+}
+''')
+print("V173_HOLD_CLICK_ACTION_WHEEL_BUILD246_PASS")
