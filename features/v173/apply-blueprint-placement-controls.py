@@ -945,3 +945,29 @@ assert 'optionalFieldOf("name","")' in idx
 assert 'boolean rename(UUID owner,String uid,String label)' in idx
 assert 'a.displayName()' in picker
 print("V173_PORTAL_A_PERSISTENT_NAMES_PICKER_BUILD250_PASS")
+
+# Build251: Wheel cursor must actually move in first-person gameplay.
+# Vanilla mouse capture otherwise fixes cursor at screen center, making
+# all four hover targets unreachable. Release only while wheel is held.
+rep("client/NetworkActionWheelClient.java",
+ ''' private static boolean open=false,wasMouseDown=false;''',
+ ''' private static boolean open=false,wasMouseDown=false,cursorReleased=false;''')
+rep("client/NetworkActionWheelClient.java",
+ '''   open=false;selected=-1;wasMouseDown=false;return;''',
+ '''   if(cursorReleased){
+    mc.mouseHandler.grabMouse();
+    cursorReleased=false;
+   }
+   open=false;selected=-1;wasMouseDown=false;return;''')
+rep("client/NetworkActionWheelClient.java",
+ '''  if(!open)wasMouseDown=GLFW.glfwGetMouseButton(''',
+ '''  if(!cursorReleased){
+   mc.mouseHandler.releaseMouse();
+   cursorReleased=true;
+  }
+  if(!open)wasMouseDown=GLFW.glfwGetMouseButton(''')
+# Ensure no persistent capture state survives a player disconnect.
+wheel=(J/"client/NetworkActionWheelClient.java").read_text(encoding="utf-8")
+assert 'mc.mouseHandler.releaseMouse()' in wheel
+assert 'mc.mouseHandler.grabMouse()' in wheel
+print("V173_WHEEL_FREE_CURSOR_HOLD_RELEASE_BUILD251_PASS")
