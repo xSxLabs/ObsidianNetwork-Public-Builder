@@ -713,3 +713,16 @@ assert screen.count('save(false);')==3
 assert "if(closeAfter)onClose();" in screen
 assert "right panel: projection settings" not in screen
 print("V173_HOLOGRAM_IMMEDIATE_MODES_GUI_BUILD243_PASS")
+
+# Build244: Portal B may appear suspended in midair. Preserve solid-block,
+# fluid, headroom and world-border checks; do not demand supporting ground.
+rep("portal/PortalActionPayload.java",
+ '''      level.getBlockState(pos.below()).isAir() ||!level.getWorldBorder().isWithinBounds(pos)){''',
+ '''      !level.getWorldBorder().isWithinBounds(pos)){''')
+rep("portal/PortalActionPayload.java",
+ '''Portal B needs two free blocks and solid ground two blocks in front of you.''',
+ '''Portal B needs two free blocks in front of you.''')
+portal=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
+assert "level.getBlockState(pos.below()).isAir()" not in portal
+assert "level.getBlockState(pos.above()).isAir()" in portal
+print("V173_PORTAL_B_AIRBORNE_BUILD244_PASS")
