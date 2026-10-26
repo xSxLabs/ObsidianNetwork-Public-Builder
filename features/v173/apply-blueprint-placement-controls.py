@@ -881,3 +881,25 @@ assert "this.imageWidth=253" in screen
 assert "void renderSlot(" in screen
 assert "if(!open||!WHEEL.isDown())return;" in wheel
 print("V173_BATCH_GUI_WHEEL_BUILD248_PASS")
+
+# Build249: NeoForge 1.21 GUI API compile repair from Build248 diagnostics.
+# imageWidth/imageHeight are final in this mapping, and renderSlot is not
+# a valid GuiGraphicsExtractor override. Preserve custom GUI layout without
+# illegal mutation or method overrides.
+rep("client/HologramConfigScreen.java",
+ '''  super(menu,inventory,title);
+  this.imageWidth=253;
+  this.imageHeight=166;
+ }''',
+ '''  super(menu,inventory,title);
+ }''')
+rep("client/HologramConfigScreen.java",
+ ''' @Override protected void renderSlot(GuiGraphicsExtractor g,net.minecraft.world.inventory.Slot slot){
+  // This machine is configured with text fields, not vanilla inventory slots.
+ }
+ @Override protected void extractLabels(GuiGraphicsExtractor g,int mx,int my){''',
+ ''' @Override protected void extractLabels(GuiGraphicsExtractor g,int mx,int my){''')
+screen=(J/"client/HologramConfigScreen.java").read_text(encoding="utf-8")
+assert "this.imageWidth=253" not in screen
+assert "void renderSlot(" not in screen
+print("V173_GUI_NEOFORGE_COMPILE_REPAIR_BUILD249_PASS")
