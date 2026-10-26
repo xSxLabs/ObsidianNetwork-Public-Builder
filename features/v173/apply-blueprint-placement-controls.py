@@ -639,3 +639,28 @@ rep("blockentity/NetworkDeviceBlockEntity.java",
 device=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
 assert "dims[0]>1000000 || dims[1]>1000000 || dims[2]>1000000" in device
 print("V173_PRINTER_OVERFLOW_GUARD_BUILD237_PASS")
+
+# Build238: protect Blueprint nudge packet against signed int wraparound.
+# Only the final validated coordinate is committed to the item.
+rep("item/BlueprintPlacementPayload.java",
+ '''  switch(command){
+   case 0->x--;case 1->x++;
+   case 2->z--;case 3->z++;
+   case 4->y++;case 5->y--;
+  }''',
+ '''  // V173_BLUEPRINT_NUDGE_OVERFLOW238: reject before Java int wraps.
+  if((command==0&&x==Integer.MIN_VALUE)||
+     (command==1&&x==Integer.MAX_VALUE)||
+     (command==2&&z==Integer.MIN_VALUE)||
+     (command==3&&z==Integer.MAX_VALUE)||
+     (command==4&&y==Integer.MAX_VALUE)||
+     (command==5&&y==Integer.MIN_VALUE))return;
+  switch(command){
+   case 0->x--;case 1->x++;
+   case 2->z--;case 3->z++;
+   case 4->y++;case 5->y--;
+  }''')
+packet=(J/"item/BlueprintPlacementPayload.java").read_text(encoding="utf-8")
+assert "V173_BLUEPRINT_NUDGE_OVERFLOW238" in packet
+assert packet.index("V173_BLUEPRINT_NUDGE_OVERFLOW238")<packet.index("switch(command)")
+print("V173_BLUEPRINT_NUDGE_OVERFLOW_BUILD238_PASS")
