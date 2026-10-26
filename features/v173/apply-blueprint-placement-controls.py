@@ -1030,7 +1030,8 @@ rep("portal/PortalActionPayload.java",
 # Ensure the 3-high arrival volume is safe before cross-dimension teleport.
 rep("portal/PortalGateBlockEntity.java",
  '''    if(!dest.getBlockState(exit.above()).isAir()){
-     player.sendSystemMessage(Component.literal("Portal A exit obstructed."));return;
+     if(be.lifetime%20==1)player.sendSystemMessage(Component.literal("Portal A exit obstructed."));
+      return;
     }''',
  '''    if(!dest.getWorldBorder().isWithinBounds(exit)||
        !dest.getBlockState(exit.above()).isAir()||
