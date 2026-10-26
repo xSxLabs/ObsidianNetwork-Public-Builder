@@ -726,3 +726,19 @@ portal=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
 assert "level.getBlockState(pos.below()).isAir()" not in portal
 assert "level.getBlockState(pos.above()).isAir()" in portal
 print("V173_PORTAL_B_AIRBORNE_BUILD244_PASS")
+
+# Build245: Larger Portal A/B interaction aperture. Extend the existing
+# two-block visual selection shape to three blocks, and match server entry
+# height so upper-body entry is recognized. This is a visual/entry fix;
+# actual 2-wide multiblock portals remain a separate implementation.
+rep("portal/PortalGateBlock.java",
+ '''  return box(1,0,6,15,32,10);''',
+ '''  return box(0,0,6,16,48,10);''')
+rep("portal/PortalGateBlockEntity.java",
+ '''      player.getY()<pos.getY()-0.35 ||player.getY()>pos.getY()+1.85)continue;''',
+ '''      player.getY()<pos.getY()-0.35 ||player.getY()>pos.getY()+2.85)continue;''')
+gate=(J/"portal/PortalGateBlock.java").read_text(encoding="utf-8")
+entity=(J/"portal/PortalGateBlockEntity.java").read_text(encoding="utf-8")
+assert "box(0,0,6,16,48,10)" in gate
+assert "pos.getY()+2.85" in entity
+print("V173_PORTAL_TALL_APERTURE_BUILD245_PASS")
