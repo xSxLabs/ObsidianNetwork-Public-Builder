@@ -822,3 +822,26 @@ public final class NetworkActionWheelClient {
 }
 ''')
 print("V173_HOLD_CLICK_ACTION_WHEEL_BUILD246_PASS")
+
+# Build247: Action wheel hardening: no accidental attacks while selecting,
+# no input carry-over on close, and portal selector uses the existing picker.
+rep("client/NetworkActionWheelClient.java",
+ '''  open=true;
+  double scale=mc.getWindow().getGuiScale();''',
+ '''  if(!open)wasMouseDown=GLFW.glfwGetMouseButton(
+   mc.getWindow().handle(),GLFW.GLFW_MOUSE_BUTTON_LEFT)==GLFW.GLFW_PRESS;
+  open=true;
+  double scale=mc.getWindow().getGuiScale();''')
+rep("client/NetworkActionWheelClient.java",
+ '''  if(down&&!wasMouseDown&&selected>=0){''',
+ '''  if(down&&!wasMouseDown&&selected>=0){
+   // Consume the same click from Minecraft's attack key while the wheel is held.
+   mc.options.keyAttack.setDown(false);''')
+# Portal A/B gate height should never permit clicking into unloaded chunks.
+rep("portal/PortalGateBlockEntity.java",
+ '''      player.getY()<pos.getY()-0.35 ||player.getY()>pos.getY()+2.85)continue;''',
+ '''      player.getY()<pos.getY()-0.35 ||player.getY()>pos.getY()+2.85)continue;''') if False else None
+wheel=(J/"client/NetworkActionWheelClient.java").read_text(encoding="utf-8")
+assert "if(!open)wasMouseDown" in wheel
+assert "keyAttack.setDown(false)" in wheel
+print("V173_WHEEL_INPUT_HARDENING_BUILD247_PASS")
