@@ -845,3 +845,39 @@ wheel=(J/"client/NetworkActionWheelClient.java").read_text(encoding="utf-8")
 assert "if(!open)wasMouseDown" in wheel
 assert "keyAttack.setDown(false)" in wheel
 print("V173_WHEEL_INPUT_HARDENING_BUILD247_PASS")
+
+# Build248: consolidate GUI fixes and input cleanup in one patch.
+# Hologram uses a menu-backed screen; suppress vanilla slot decorations
+# and keep the custom controls unobstructed.
+rep("client/HologramConfigScreen.java",
+ '''  super(menu,inventory,title);
+ }''',
+ '''  super(menu,inventory,title);
+  this.imageWidth=253;
+  this.imageHeight=166;
+ }''')
+rep("client/HologramConfigScreen.java",
+ ''' @Override protected void extractLabels(GuiGraphicsExtractor g,int mx,int my){''',
+ ''' @Override protected void renderSlot(GuiGraphicsExtractor g,net.minecraft.world.inventory.Slot slot){
+  // This machine is configured with text fields, not vanilla inventory slots.
+ }
+ @Override protected void extractLabels(GuiGraphicsExtractor g,int mx,int my){''')
+# Avoid ghost click passing through to the game on every frame.
+rep("client/NetworkActionWheelClient.java",
+ '''  if(down&&!wasMouseDown&&selected>=0){
+   // Consume the same click from Minecraft's attack key while the wheel is held.
+   mc.options.keyAttack.setDown(false);''',
+ '''  if(down)mc.options.keyAttack.setDown(false);
+  if(down&&!wasMouseDown&&selected>=0){''')
+# Ensure wheel does not stay visible when its hotkey is released.
+rep("client/NetworkActionWheelClient.java",
+ '''  if(!open)return;
+  Minecraft mc=Minecraft.getInstance();''',
+ '''  if(!open||!WHEEL.isDown())return;
+  Minecraft mc=Minecraft.getInstance();''')
+screen=(J/"client/HologramConfigScreen.java").read_text(encoding="utf-8")
+wheel=(J/"client/NetworkActionWheelClient.java").read_text(encoding="utf-8")
+assert "this.imageWidth=253" in screen
+assert "void renderSlot(" in screen
+assert "if(!open||!WHEEL.isDown())return;" in wheel
+print("V173_BATCH_GUI_WHEEL_BUILD248_PASS")
