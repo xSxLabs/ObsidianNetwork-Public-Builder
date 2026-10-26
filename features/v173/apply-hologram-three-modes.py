@@ -50,7 +50,7 @@ s=p.read_text(encoding="utf-8")
 a=s.index(" private String labelTag(){");b=s.index(" private int[] size(){",a)
 new=r''' private String labelTag(){return "xsx-holo-"+worldPosition.asLong();}
  private void hologram(ServerLevel world){
-  var old=world.getEntitiesOfClass(ArmorStand.class,new AABB(worldPosition).inflate(4,10,4),
+  var old=world.getEntitiesOfClass(ArmorStand.class,new AABB(worldPosition).inflate(4,40,4),
      e->e.entityTags().contains(labelTag()));
   if("map".equals(holoMode)){
    for(ArmorStand stand:old)stand.discard();
@@ -280,3 +280,7 @@ print('V173_HOLOGRAM_WORLD_HEIGHT_PASS')
 # Build236: Hologram configuration cannot be modified by spectators.
 assert 'player.level()!=level||player.isSpectator()||' in (J/'blockentity/NetworkDeviceBlockEntity.java').read_text(encoding='utf-8')
 print('V173_HOLOGRAM_SPECTATOR_WRITE_GUARD_PASS')
+
+# Build239: old projected text up to 32 height must be found for cleanup.
+assert 'new AABB(worldPosition).inflate(4,40,4)' in (J/'blockentity/NetworkDeviceBlockEntity.java').read_text(encoding='utf-8')
+print('V173_HOLOGRAM_TALL_TEXT_CLEANUP_BUILD239_PASS')
