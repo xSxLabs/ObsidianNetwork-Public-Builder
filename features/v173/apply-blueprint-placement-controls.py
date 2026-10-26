@@ -680,3 +680,36 @@ rep("blockentity/NetworkDeviceBlockEntity.java",
 device=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
 assert "BLUEPRINT TARGET CHUNKS NOT LOADED" in device
 print("V173_PRINTER_TARGET_CHUNK_GUARD_BUILD241_PASS")
+
+# Build243: Hologram mode buttons must apply immediately, not silently
+# wait for a separate APPLY click. Keep screen open for further edits.
+rep("client/HologramConfigScreen.java",
+ '''Button.builder(Component.literal("NETWORK"),b->mode="network")''',
+ '''Button.builder(Component.literal("NETWORK"),b->{mode="network";save(false);})''')
+rep("client/HologramConfigScreen.java",
+ '''Button.builder(Component.literal("MAP 3D"),b->mode="map")''',
+ '''Button.builder(Component.literal("MAP 3D"),b->{mode="map";save(false);})''')
+rep("client/HologramConfigScreen.java",
+ '''Button.builder(Component.literal("CUSTOM"),b->mode="custom")''',
+ '''Button.builder(Component.literal("CUSTOM"),b->{mode="custom";save(false);})''')
+rep("client/HologramConfigScreen.java",
+ ''' private void save(){
+  if(terminal==null)return;''',
+ ''' private void save(){save(true);}
+ private void save(boolean closeAfter){
+  if(terminal==null)return;''')
+rep("client/HologramConfigScreen.java",
+ '''    val(width,5,1,32),val(height,3,1,32),val(depth,5,1,32),val(radius,16,2,256)));
+  onClose();''',
+ '''    val(width,5,1,32),val(height,3,1,32),val(depth,5,1,32),val(radius,16,2,256)));
+  if(closeAfter)onClose();''')
+# Remove the stray instruction over the inventory panel; mode selection
+# is already clearly labelled by the three buttons.
+rep("client/HologramConfigScreen.java",
+ '''  g.text(font,"NETWORK / MAP / CUSTOM | right panel: projection settings",8,58,0xffceeef5);''',
+ '''  // Buttons above the panel are the mode selector; no overlay label.''')
+screen=(J/"client/HologramConfigScreen.java").read_text(encoding="utf-8")
+assert screen.count('save(false);')==3
+assert "if(closeAfter)onClose();" in screen
+assert "right panel: projection settings" not in screen
+print("V173_HOLOGRAM_IMMEDIATE_MODES_GUI_BUILD243_PASS")
