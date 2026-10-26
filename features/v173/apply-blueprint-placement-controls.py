@@ -664,3 +664,19 @@ packet=(J/"item/BlueprintPlacementPayload.java").read_text(encoding="utf-8")
 assert "V173_BLUEPRINT_NUDGE_OVERFLOW238" in packet
 assert packet.index("V173_BLUEPRINT_NUDGE_OVERFLOW238")<packet.index("switch(command)")
 print("V173_BLUEPRINT_NUDGE_OVERFLOW_BUILD238_PASS")
+
+# Build241: a saved Blueprint cannot start a print in unloaded target chunks.
+# This prevents printer state from advancing against an unavailable region.
+rep("blockentity/NetworkDeviceBlockEntity.java",
+ '''   BlockPos corner=new BlockPos(x,y,z);
+   BlockPos end=corner.offset(width-1,dims[1]-1,depth-1);
+   if(!world.getWorldBorder().isWithinBounds(corner)||''',
+ '''   BlockPos corner=new BlockPos(x,y,z);
+   BlockPos end=corner.offset(width-1,dims[1]-1,depth-1);
+   if(!world.hasChunkAt(corner)||!world.hasChunkAt(end)){
+    setStatus("BLUEPRINT TARGET CHUNKS NOT LOADED");return false;
+   }
+   if(!world.getWorldBorder().isWithinBounds(corner)||''')
+device=(J/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8")
+assert "BLUEPRINT TARGET CHUNKS NOT LOADED" in device
+print("V173_PRINTER_TARGET_CHUNK_GUARD_BUILD241_PASS")
