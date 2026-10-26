@@ -1038,10 +1038,8 @@ rep("portal/PortalGateBlockEntity.java",
        !dest.getBlockState(exit.above(2)).isAir()){
      player.sendSystemMessage(Component.literal("Portal A exit obstructed."));return;
     }''')
-# Prevent the selection message from concealing a user-defined portal label.
-rep("portal/PortalActionPayload.java",
- '''tell(player,"Portal A selected: "+chosen.dimension()+" ["+chosen.x()+", "+chosen.y()+", "+chosen.z()+"] ("+''',
- '''tell(player,"Portal A selected: "+chosen.displayName()+" / "+chosen.dimension()+" ["+chosen.x()+", "+chosen.y()+", "+chosen.z()+"] ("+''')
+# Portal A selection is handled by PortalSelectMenu since Build208;
+# no cycle status message exists to patch here.
 # Display the name at B spawn as well, so users can confirm the target.
 rep("portal/PortalActionPayload.java",
  '''tell(player,"Portal B opened -> "+a.dimension()+" ["+a.x()+", "+a.y()+", "+a.z()+"]. Enter to travel.");''',
