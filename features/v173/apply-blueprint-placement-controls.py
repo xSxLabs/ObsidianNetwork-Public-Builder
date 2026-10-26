@@ -903,3 +903,45 @@ screen=(J/"client/HologramConfigScreen.java").read_text(encoding="utf-8")
 assert "this.imageWidth=253" not in screen
 assert "void renderSlot(" not in screen
 print("V173_GUI_NEOFORGE_COMPILE_REPAIR_BUILD249_PASS")
+
+# Build250 batch: persist custom Portal A labels in the world index, retain
+# backwards compatibility with existing anchors, and expose names in picker.
+rep("portal/PortalIndex.java",
+ '''int x,int y,int z,boolean selected,String id){''',
+ '''int x,int y,int z,boolean selected,String id,String name){''')
+rep("portal/PortalIndex.java",
+ '''    Codec.STRING.optionalFieldOf("id","").forGetter(Anchor::id)
+  ).apply(i,Anchor::new));''',
+ '''    Codec.STRING.optionalFieldOf("id","").forGetter(Anchor::id),
+    Codec.STRING.optionalFieldOf("name","").forGetter(Anchor::name)
+  ).apply(i,Anchor::new));''')
+rep("portal/PortalIndex.java",
+ '''public Anchor withSelected(boolean chosen){return new Anchor(owner,dimension,x,y,z,chosen,id);}''',
+ '''public Anchor withSelected(boolean chosen){return new Anchor(owner,dimension,x,y,z,chosen,id,name);}
+   public Anchor withName(String label){return new Anchor(owner,dimension,x,y,z,selected,id,label);}
+   public String displayName(){return name==null||name.isBlank()?"Portal A #"+uid().substring(0,8):name;}''')
+rep("portal/PortalIndex.java",
+ '''Anchor a=new Anchor(player.toString(),dim,pos.getX(),pos.getY(),pos.getZ(),true,UUID.randomUUID().toString());''',
+ '''Anchor a=new Anchor(player.toString(),dim,pos.getX(),pos.getY(),pos.getZ(),true,UUID.randomUUID().toString(),"");''')
+rep("portal/PortalIndex.java",
+ ''' public Anchor cycle(UUID owner){''',
+ ''' /** Rename an owned A only; reject stale or foreign identifiers. */
+ public boolean rename(UUID owner,String uid,String label){
+  if(label==null)return false;
+  String clean=label.strip();
+  if(clean.isEmpty()||clean.length()>48)return false;
+  for(Anchor a:owned(owner))if(a.uid().equals(uid)){
+   saved.put(a.key(),a.withName(clean));setDirty();return true;
+  }
+  return false;
+ }
+ public Anchor cycle(UUID owner){''')
+rep("portal/PortalSelectMenu.java",
+ '''" / "+a.dimension()+" ["+a.x()+", "+a.y()+", "+a.z()+"]";''',
+ '''" / "+a.displayName()+" / "+a.dimension()+" ["+a.x()+", "+a.y()+", "+a.z()+"]";''')
+idx=(J/"portal/PortalIndex.java").read_text(encoding="utf-8")
+picker=(J/"portal/PortalSelectMenu.java").read_text(encoding="utf-8")
+assert 'optionalFieldOf("name","")' in idx
+assert 'boolean rename(UUID owner,String uid,String label)' in idx
+assert 'a.displayName()' in picker
+print("V173_PORTAL_A_PERSISTENT_NAMES_PICKER_BUILD250_PASS")
