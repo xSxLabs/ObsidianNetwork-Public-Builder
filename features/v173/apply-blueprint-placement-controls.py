@@ -1051,24 +1051,15 @@ assert 'a.displayName()' in portal
 assert 'exit.above(2)' in entity
 print("V173_PORTAL_2X3_SAFETY_AND_LABELS_BUILD253_PASS")
 
-# Build256: clear the blueprint ghost as soon as the held item is removed
-# or its transform changes. Particle-only previews leave old positions behind;
-# reduce their lifetime by using the client renderer's shortest supported
-# marker and never spawn when the item is not actively held.
+# Build257: the earlier preview patch already runs at 3-tick intervals.
 rep("client/NetworkBlueprintPreviewClient.java",
  '''  if(!held.is(ObsidianNetwork.NETWORK_BLUEPRINT.get()))return;''',
  '''  if(!held.is(ObsidianNetwork.NETWORK_BLUEPRINT.get()) ||
       mc.screen!=null)return;''')
-# Avoid stale ghost samples when the item is in offhand or player is switching.
-# Markers are now drawn more often with a lower per-tick cap for smoother
-# movement and faster disappearance after rotations.
-rep("client/NetworkBlueprintPreviewClient.java",
- '''mc.player.tickCount%8!=0''',
- '''mc.player.tickCount%3!=0''')
 rep("client/NetworkBlueprintPreviewClient.java",
  '''int count=0,budget=90;''',
  '''int count=0,budget=45;''')
 preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-8")
 assert 'mc.player.tickCount%3!=0' in preview
 assert 'mc.screen!=null' in preview
-print("V173_BLUEPRINT_GHOST_RESPONSIVENESS_BUILD256_PASS")
+print("V173_BLUEPRINT_GHOST_RESPONSIVENESS_BUILD257_PASS")
