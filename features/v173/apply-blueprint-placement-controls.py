@@ -1221,3 +1221,19 @@ rep("client/NetworkBlueprintPreviewClient.java","volume<=0L||volume>1000000L","v
 # Fix 10
 rep("client/NetworkBlueprintPreviewClient.java","mc.screen!=null)return;","mc.screen!=null||mc.player.isSpectator())return;")
 print("V173_BUILD263_TEN_FIXES_APPLIED")
+
+# Build265: remove the previous action-wheel input trap.
+# Disabling attack for the entire open state could leave attack held in
+# Minecraft's key mapping after closing the wheel. Suppress only the click
+# that actually selects a wheel action (as in Build247).
+rep("client/NetworkActionWheelClient.java",
+ '''if(open)mc.options.keyAttack.setDown(false);''',
+ '''if(down&&selected>=0)mc.options.keyAttack.setDown(false);''')
+# Reject stale click state if the cursor has not yet been released.
+rep("client/NetworkActionWheelClient.java",
+ '''if(open&&down&&!wasMouseDown&&selected>=0)''',
+ '''if(open&&cursorReleased&&down&&!wasMouseDown&&selected>=0)''')
+wheel=(J/"client/NetworkActionWheelClient.java").read_text(encoding="utf-8")
+assert "if(down&&selected>=0)mc.options.keyAttack.setDown(false);" in wheel
+assert "if(open&&cursorReleased&&down&&!wasMouseDown&&selected>=0)" in wheel
+print("V173_WHEEL_CLICK_INPUT_BUILD265_PASS")
