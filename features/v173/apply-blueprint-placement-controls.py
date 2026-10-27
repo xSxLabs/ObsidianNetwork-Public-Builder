@@ -1198,3 +1198,26 @@ preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-
 assert "long volume=(long)sx*sy*sz;" in preview
 assert "if(blocks.size()!=(int)volume)return;" in preview
 print("V173_BLUEPRINT_PREVIEW_VALID_VOLUME_BUILD262_PASS")
+
+# Build263: ten blueprint, wheel and preview behavior fixes.
+# Fix 1
+rep("item/BlueprintPlacementPayload.java","NetworkBlueprintItem.blocks(stack).isEmpty())return;","NetworkBlueprintItem.blocks(stack).isEmpty()||NetworkBlueprintItem.blocks(stack).size()>4096)return;")
+# Fix 2
+rep("client/BlueprintPlacementKeys.java","if(mc.player==null||mc.screen!=null||","if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||")
+# Fix 3
+rep("client/BlueprintPlacementKeys.java","if(mc.player==null||mc.screen!=null||","if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||")
+# Fix 4
+rep("client/NetworkActionWheelClient.java","double scale=mc.getWindow().getGuiScale();","double scale=Math.max(1.0D,mc.getWindow().getGuiScale());")
+# Fix 5
+rep("client/NetworkActionWheelClient.java","if(mc.player==null||mc.screen!=null||!WHEEL.isDown())","if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||!WHEEL.isDown())")
+# Fix 6
+rep("client/NetworkActionWheelClient.java","if(mc.player==null||mc.screen!=null)return;","if(mc.player==null||mc.player.isSpectator()||mc.screen!=null)return;")
+# Fix 7
+rep("client/NetworkActionWheelClient.java","if(down)mc.options.keyAttack.setDown(false);","if(open)mc.options.keyAttack.setDown(false);")
+# Fix 8
+rep("client/NetworkActionWheelClient.java","if(down&&!wasMouseDown&&selected>=0)","if(open&&down&&!wasMouseDown&&selected>=0)")
+# Fix 9
+rep("client/NetworkBlueprintPreviewClient.java","volume<=0L||volume>1000000L","volume<=0L||volume>4096L||sx>16||sy>16||sz>16")
+# Fix 10
+rep("client/NetworkBlueprintPreviewClient.java","mc.screen!=null)return;","mc.screen!=null||mc.player.isSpectator())return;")
+print("V173_BUILD263_TEN_FIXES_APPLIED")
