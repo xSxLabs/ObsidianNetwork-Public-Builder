@@ -1289,3 +1289,45 @@ rep("item/BlueprintPlacementPayload.java",
  '''if(!target.startsWith(dim)){''',
  '''if(target.isBlank()||!target.startsWith(dim)){''')
 print("V173_BUILD273_RESTORED_271_BATCH_WITH_FIXED_KEYS_MATCH_PASS")
+
+# Build274: user-requested targeted portal assets and hologram map fixes.
+# Explicit modern item definitions plus inventory models for BOTH portals.
+import json as _json274
+from pathlib import Path as _Path274
+_R274=_Path274(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
+for _name274,_glass274 in (("network_portal_a","minecraft:block/purple_stained_glass"),
+                           ("network_portal_b","minecraft:block/light_blue_stained_glass")):
+ _model274={"parent":"minecraft:block/cube_all",
+            "textures":{"all":_glass274,"particle":_glass274}}
+ for _folder274,_obj274 in (
+  ("models/item",_model274),
+  ("items",{"model":{"type":"minecraft:model","model":"obsidiannetwork:item/"+_name274}})):
+  _dest274=_R274/_folder274/(_name274+".json")
+  _dest274.parent.mkdir(parents=True,exist_ok=True)
+  _dest274.write_text(_json274.dumps(_obj274,indent=2)+"\n",encoding="utf-8")
+# Both portal blocks get a valid fallback model and blockstate. Avoid
+# overwriting the existing elaborate portal-frame block models.
+for _name274 in ("network_portal_a","network_portal_b"):
+ _state274=_R274/"blockstates"/(_name274+".json")
+ _state274.parent.mkdir(parents=True,exist_ok=True)
+ _state274.write_text(_json274.dumps({"variants":{"":{"model":"obsidiannetwork:block/"+_name274}}},indent=2)+"\n",encoding="utf-8")
+# Map previously scanned columns in a fixed order and stopped after 180
+# opaque hits; center terrain could be skipped and the projection disappear.
+# Center map scans around the terminal and make depth and width independent.
+_h274=J/"blockentity/NetworkDeviceBlockEntity.java"
+_src274=_h274.read_text(encoding="utf-8")
+_old274='''   int radius=holoRadius,step=Math.max(1,(radius*2+1)/23);'''
+_new274='''   int radius=holoRadius,step=Math.max(1,(radius*2+1)/15);'''
+assert _src274.count(_old274)==1,("map step",_src274.count(_old274))
+_src274=_src274.replace(_old274,_new274,1)
+_old274='''   int low=Math.max(world.getMinY(),worldPosition.getY()-holoDepth);
+   int high=Math.min(world.getMaxY()-1,worldPosition.getY()+holoHeight);'''
+_new274='''   int low=Math.max(world.getMinY(),worldPosition.getY()-holoDepth);
+   int high=Math.min(world.getMaxY()-1,worldPosition.getY()+holoHeight);'''
+assert _src274.count(_old274)==1
+_old274='''        worldPosition.getZ()+.5+(double)z/radius*holoWidth/2,'''
+_new274='''        worldPosition.getZ()+.5+(double)z/radius*holoDepth/2,'''
+assert _src274.count(_old274)==1
+_src274=_src274.replace(_old274,_new274,1)
+_h274.write_text(_src274,encoding="utf-8")
+print("V173_BUILD274_PORTAL_ITEM_ASSETS_AND_HOLOGRAM_DEPTH_PASS")
