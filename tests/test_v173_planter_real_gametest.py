@@ -34,7 +34,11 @@ class RealPlanterMigrationGate(unittest.TestCase):
                   "Planter test fixture cleanup lost items",
                   "Planter test contaminated subsequent crafting tests",
                   "rt.storage().extract(xsxOakExact.key(),1579L)",
-                  "rt.storage().cells().stream().anyMatch(c->"):
+                  "rt.storage().cells().stream().anyMatch(c->",
+                  "V173_PLANTER_ACTUAL_BLOCK_BUNDLE_GAME_TEST PASS",
+                  "NETWORK_PLANTER.get().defaultBlockState()",
+                  "xsxPlanter.duration()","xsxPlanter.stored()!=0",
+                  "NetworkPlanterBlockEntity.tick("):
     self.assertIn(needle,content)
    second=subprocess.run([sys.executable,str(PATCH)],env=env,capture_output=True,text=True)
    self.assertNotEqual(second.returncode,0)

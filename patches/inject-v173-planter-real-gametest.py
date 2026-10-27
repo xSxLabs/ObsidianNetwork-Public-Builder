@@ -108,6 +108,53 @@ extra=r'''
                     throw new IllegalStateException("Planter test contaminated subsequent crafting tests");
                   System.out.println("V173_PLANTER_REAL_STORAGE_MIGRATION_GAME_TEST PASS"+
                     " cells=800 oak=1579 carrot=531 wheat=535 no_loss_or_duplication=true");
+                  // V173_PLANTER_ACTUAL_BLOCK_BUNDLE_GAME_TEST:
+                  // Feed an actual Planter through the physical NETWORK layer of
+                  // an attached Conduit Bundle, not StorageNetwork.insert().
+                  BlockPos xsxPlanterPos=h.absolutePos(new BlockPos(1,2,3));
+                  BlockPos xsxPlanterBundle=xsxPlanterPos.below();
+                  if(!level.getBlockState(xsxPlanterBundle).is(ObsidianNetwork.CONDUIT_BUNDLE.get())||
+                     !(level.getBlockEntity(xsxPlanterBundle)
+                       instanceof dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity xsxPlanterCable)||
+                     !xsxPlanterCable.has(dev.obsidiannetwork.blockentity.ConduitBundleBlockEntity.Layer.NETWORK))
+                    throw new IllegalStateException("Planter fixture requires real NETWORK bundle");
+                  if(!level.getBlockState(xsxPlanterPos).isAir())
+                    throw new IllegalStateException("Planter fixture target was occupied");
+                  level.setBlock(xsxPlanterPos,ObsidianNetwork.NETWORK_PLANTER.get().defaultBlockState(),3);
+                  if(!(level.getBlockEntity(xsxPlanterPos)
+                       instanceof dev.obsidiannetwork.blockentity.NetworkPlanterBlockEntity xsxPlanter))
+                    throw new IllegalStateException("Actual Planter block entity missing");
+                  xsxPlanter.setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIRT));
+                  xsxPlanter.setItem(1,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CARROT));
+                  if(xsxPlanter.soilStack().isEmpty()||xsxPlanter.seedStack().isEmpty())
+                    throw new IllegalStateException("Planter soil/seed slots did not accept crop");
+                  rt.energy().load(rt.energy().capacity());rt.tick();
+                  if(!rt.powered())throw new IllegalStateException("Planter GameTest network unpowered");
+                  if(dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForAccessory(
+                        level,xsxPlanterBundle)!=rt)
+                    throw new IllegalStateException("Planter NETWORK bundle not attached to 800 real cells");
+                  if(rt.storage().index().amount(xsxCarrotExact.key())!=0L||
+                     rt.storage().index().amount(xsxCarrotLegacy)!=0L)
+                    throw new IllegalStateException("Migration fixture not empty before live Planter");
+                  // 600 growth updates and one harvest, without creating fake drops.
+                  // The existing block ticker performs the real harvest and flush.
+                  for(int xsxGrowth=0;xsxGrowth<=xsxPlanter.duration();xsxGrowth++)
+                    dev.obsidiannetwork.blockentity.NetworkPlanterBlockEntity.tick(
+                      level,xsxPlanterPos,level.getBlockState(xsxPlanterPos),xsxPlanter);
+                  if(xsxPlanter.stored()!=0||
+                     rt.storage().index().amount(xsxCarrotExact.key())!=1L||
+                     rt.storage().index().amount(xsxCarrotLegacy)!=0L||
+                     rt.storage().cells().stream().mapToLong(c->c.amount(xsxCarrotExact.key())).sum()!=1L)
+                    throw new IllegalStateException("Actual Planter did not emit one exact carrot via NETWORK bundle");
+                  if(rt.storage().extract(xsxCarrotExact.key(),1L)!=1L||
+                     rt.storage().index().amount(xsxCarrotExact.key())!=0L)
+                    throw new IllegalStateException("Actual Planter test fixture cleanup lost carrot");
+                  xsxPlanter.setItem(0,net.minecraft.world.item.ItemStack.EMPTY);
+                  xsxPlanter.setItem(1,net.minecraft.world.item.ItemStack.EMPTY);
+                  level.removeBlock(xsxPlanterPos,false);
+                  System.out.println("V173_PLANTER_ACTUAL_BLOCK_BUNDLE_GAME_TEST PASS"+
+                    " physical_planter=true real_network_bundle=true cells=800"+
+                    " harvested_carrots=1 legacy_duplicates=0 clean_fixture=true");
 '''
 target.write_text(src.replace(anchor,anchor+"\n"+extra,1),encoding="utf-8")
 print("V173_PLANTER_REAL_GAMETEST_INJECTED: 800 real cells, mixed keys, auto tick, conservation")
