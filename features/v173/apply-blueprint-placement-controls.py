@@ -1370,8 +1370,9 @@ _g276=_gui276.read_text(encoding="utf-8")
 _old276='''  super(menu,inventory,title);
  }'''
 _new276='''  super(menu,inventory,title);
-  this.imageWidth=256;
-  this.imageHeight=220;
+  // NeoForge 26.1: ContainerScreen's imageWidth/imageHeight are final.
+  // Our custom background and controls use absolute coordinates, so never
+  // assign inherited layout dimensions after super() in this constructor.
  }'''
 assert _g276.count(_old276)==1,("hologram screen sizing",_g276.count(_old276))
 _g276=_g276.replace(_old276,_new276,1)
@@ -1384,6 +1385,8 @@ _new276='''  if(terminal==null)device();
   int c=0x29d7eb;'''
 assert _g276.count(_old276)==1
 _g276=_g276.replace(_old276,_new276,1)
+assert "this.imageWidth=" not in _g276 and "this.imageHeight=" not in _g276, "NeoForge 26.1 GUI layout fields are final"
+assert 'this.imageWidth=256;' not in _g276 and 'this.imageHeight=220;' not in _g276
 _gui276.write_text(_g276,encoding="utf-8")
 print("V173_BUILD276_HOLOGRAM_SIZE_GUI_PASS")
 
