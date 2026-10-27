@@ -1149,3 +1149,33 @@ entity=(J/"portal/PortalGateBlockEntity.java").read_text(encoding="utf-8")
 assert "pos.getY()>level.getMaxY()-3" in portal
 assert "exit.getY()>dest.getMaxY()-3" in entity
 print("V173_PORTAL_3_HIGH_WORLD_LIMITS_BUILD260_PASS")
+
+# Build261: Blueprint controls and preview must agree on initial anchor.
+# The client ghost starts at the targeted block face, but the server used a
+# point three blocks in front of the player. First nudge therefore caused
+# the entire hologram to jump to a different location.
+rep("item/BlueprintPlacementPayload.java",
+ '''   BlockPos p=player.blockPosition().relative(player.getDirection(),3);
+   x=p.getX();y=p.getY();z=p.getZ();''',
+ '''   net.minecraft.world.phys.HitResult trace=player.pick(6.0D,0.0F,false);
+   BlockPos p;
+   if(trace instanceof net.minecraft.world.phys.BlockHitResult blockHit)
+    p=blockHit.getBlockPos().relative(blockHit.getDirection());
+   else p=player.blockPosition().relative(player.getDirection(),3);
+   x=p.getX();y=p.getY();z=p.getZ();''')
+# Keep the client-side preview consistent with the server's fallback
+# even when looking at sky rather than a block.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''   if(!(mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit))return;
+   var p=hit.getBlockPos().relative(hit.getDirection());
+   origin=prefix+p.getX()+"|"+p.getY()+"|"+p.getZ();''',
+ '''   net.minecraft.core.BlockPos p;
+   if(mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit)
+    p=hit.getBlockPos().relative(hit.getDirection());
+   else p=mc.player.blockPosition().relative(mc.player.getDirection(),3);
+   origin=prefix+p.getX()+"|"+p.getY()+"|"+p.getZ();''')
+packet=(J/"item/BlueprintPlacementPayload.java").read_text(encoding="utf-8")
+preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-8")
+assert "player.pick(6.0D,0.0F,false)" in packet
+assert "mc.player.blockPosition().relative(mc.player.getDirection(),3)" in preview
+print("V173_BLUEPRINT_INITIAL_GHOST_NUDGE_ALIGNMENT_BUILD261_PASS")
