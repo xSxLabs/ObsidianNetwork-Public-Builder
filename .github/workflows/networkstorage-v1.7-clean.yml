@@ -170,6 +170,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_planter_legacy_merge.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_planter_real_gametest.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_printer_canonical_materials.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_printer_real_gametest.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
@@ -3113,6 +3114,8 @@ jobs:
           python3 patches/inject-terminal-nine-ingredient-gametest.py
           # Verify old Planter keys actually converge on a live 800-cell server network.
           python3 patches/inject-v173-planter-real-gametest.py
+          # Actual Printer block and storage transaction on 800 real cells.
+          python3 patches/inject-v173-printer-real-gametest.py
           grep -Fq 'XSXLABS_REAL_NINE_INGREDIENT_SHIFT_CRAFT_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
@@ -3207,6 +3210,7 @@ jobs:
           grep -Fq 'REAL_STORAGE_BULK_DEPOSIT_NS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'V173_PLANTER_REAL_STORAGE_MIGRATION_GAME_TEST PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'V173_PLANTER_ACTUAL_BLOCK_BUNDLE_GAME_TEST PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'V173_PRINTER_REAL_CANONICAL_MATERIALS_GAME_TEST PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' /tmp/build103-postpatch-gametest.log
