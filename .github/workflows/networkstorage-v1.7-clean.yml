@@ -3211,6 +3211,7 @@ jobs:
           grep -Fq 'V173_PLANTER_REAL_STORAGE_MIGRATION_GAME_TEST PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'V173_PLANTER_ACTUAL_BLOCK_BUNDLE_GAME_TEST PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'V173_PRINTER_REAL_CANONICAL_MATERIALS_GAME_TEST PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'V173_PRINTER_FAIL_CLOSED_GATES_GAME_TEST PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'DRIVE_GUI_ALL_16_REAL_CELLS_GAMETEST_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'DRIVE_GUI_LOWER_EIGHT_CELL_ROUNDTRIP_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' /tmp/build103-postpatch-gametest.log

@@ -30,6 +30,10 @@ class PrinterGameTestGate(unittest.TestCase):
                   "Items.PURPUR_BLOCK", "xsxPrinterExact.key()",
                   "xsxPrinterLegacy", "xsxPrint.invoke(xsxPrinter,level,rt)",
                   "xsxEnergyField.getLong(xsxPrinter)!=500L",
+                  "V173_PRINTER_FAIL_CLOSED_GATES_GAME_TEST PASS",
+                  "Printer FE-starvation consumed power or altered world",
+                  "Printer missing materials changed FE, world or progress",
+                  "Printer blocked target skipped or consumed FE/material",
                   "NETWORK_SCHEMATIC_QUILL.get()", "cells=800", "clean_fixture=true"):
     self.assertIn(marker,actual)
    second=apply()
