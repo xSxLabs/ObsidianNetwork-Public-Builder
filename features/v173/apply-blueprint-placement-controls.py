@@ -1391,3 +1391,24 @@ assert _g276.count(_old276)==1
 _g276=_g276.replace(_old276,_new276,1)
 _gui276.write_text(_g276,encoding="utf-8")
 print("V173_BUILD276_HOLOGRAM_SIZE_GUI_PASS")
+
+
+# Build277: persistent Create-style block-model schematic preview.
+# Render block meshes directly in the level render stage rather than relying
+# on temporary block-marker particles, which vanish between frames.
+_preview277=J/"client/NetworkBlueprintPreviewClient.java"
+_src277=_preview277.read_text(encoding="utf-8")
+# Keep existing movement, rotation, mirroring and obstruction checks.
+# Replace only the material particle emission with a client-side mesh
+# renderer using the existing blockstate after transforms.
+_old277='''     mc.level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER,material),
+                          px0+.5,py0+.5,pz0+.5,0,0,0);'''
+_new277='''     // Mesh preview is rendered by the level-stage renderer.
+     BlueprintMeshPreview.enqueue(at,material);'''
+assert _src277.count(_old277)==1,("blueprint material sprite",_src277.count(_old277))
+_src277=_src277.replace(_old277,_new277,1)
+_src277=_src277.replace('''import net.minecraft.core.particles.BlockParticleOption;''',
+'''import net.minecraft.core.particles.BlockParticleOption;
+import dev.obsidiannetwork.client.BlueprintMeshPreview;''',1)
+_preview277.write_text(_src277,encoding="utf-8")
+print("V173_BUILD277_BLUEPRINT_MESH_QUEUE_PASS")
