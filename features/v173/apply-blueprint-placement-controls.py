@@ -1392,3 +1392,18 @@ _g276=_g276.replace(_old276,_new276,1)
 _gui276.write_text(_g276,encoding="utf-8")
 print("V173_BUILD276_HOLOGRAM_SIZE_GUI_PASS")
 
+
+
+# Build278: make the hologram map scale controls genuinely independent.
+# Previous map projection used holoHeight for the Y range but mapped Z to
+# holoWidth; the depth slider did not change horizontal map size.
+_h278=J/"blockentity/NetworkDeviceBlockEntity.java"
+_t278=_h278.read_text(encoding="utf-8")
+_old278='''        worldPosition.getY()+1.3+(double)(y-worldPosition.getY())/
+          Math.max(1,holoHeight+holoDepth)*holoHeight,'''
+_new278='''        worldPosition.getY()+1.3+(double)(y-low)/
+          Math.max(1,high-low)*holoHeight,'''
+assert _t278.count(_old278)==1,("map vertical scale",_t278.count(_old278))
+_t278=_t278.replace(_old278,_new278,1)
+_h278.write_text(_t278,encoding="utf-8")
+print("V173_BUILD278_HOLOGRAM_INDEPENDENT_VERTICAL_SCALE_PASS")
