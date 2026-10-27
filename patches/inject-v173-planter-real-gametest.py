@@ -84,6 +84,28 @@ extra=r'''
                      rt.storage().index().amount(xsxUnrelated)!=7L||
                      rt.storage().extract(xsxUnrelated,7L)!=7L)
                     throw new IllegalStateException("Migration touched an unrelated item type");
+                  // The shared FiftyDriveTest also exercises actual terminal shift
+                  // crafting afterwards. Remove ONLY our exact-key test deposits;
+                  // otherwise its auto-refill legitimately replenishes oak logs.
+                  // Assert full conservation when cleaning up the test fixture.
+                  if(rt.storage().extract(xsxOakExact.key(),1579L)!=1579L||
+                     rt.storage().extract(xsxCarrotExact.key(),531L)!=531L||
+                     rt.storage().extract(xsxWheatExact.key(),535L)!=535L)
+                    throw new IllegalStateException("Planter test fixture cleanup lost items");
+                  if(rt.storage().index().amount(xsxOakExact.key())!=0L||
+                     rt.storage().index().amount(xsxCarrotExact.key())!=0L||
+                     rt.storage().index().amount(xsxWheatExact.key())!=0L||
+                     rt.storage().index().amount(xsxOakLegacy)!=0L||
+                     rt.storage().index().amount(xsxCarrotLegacy)!=0L||
+                     rt.storage().index().amount(xsxWheatLegacy)!=0L||
+                     rt.storage().cells().stream().anyMatch(c->
+                       c.amount(xsxOakExact.key())!=0L||
+                       c.amount(xsxCarrotExact.key())!=0L||
+                       c.amount(xsxWheatExact.key())!=0L||
+                       c.amount(xsxOakLegacy)!=0L||
+                       c.amount(xsxCarrotLegacy)!=0L||
+                       c.amount(xsxWheatLegacy)!=0L))
+                    throw new IllegalStateException("Planter test contaminated subsequent crafting tests");
                   System.out.println("V173_PLANTER_REAL_STORAGE_MIGRATION_GAME_TEST PASS"+
                     " cells=800 oak=1579 carrot=531 wheat=535 no_loss_or_duplication=true");
 '''

@@ -30,7 +30,11 @@ class RealPlanterMigrationGate(unittest.TestCase):
                   "LegacyPlanterKeyMigration.tick(level,rt)",
                   "xsxAfterTick!=8L&&xsxAfterTick!=520L",
                   "xsxWheatPass<2","cells().stream().mapToLong",
-                  "Items.DIAMOND_SWORD","no_loss_or_duplication=true"):
+                  "Items.DIAMOND_SWORD","no_loss_or_duplication=true",
+                  "Planter test fixture cleanup lost items",
+                  "Planter test contaminated subsequent crafting tests",
+                  "rt.storage().extract(xsxOakExact.key(),1579L)",
+                  "rt.storage().cells().stream().anyMatch(c->"):
     self.assertIn(needle,content)
    second=subprocess.run([sys.executable,str(PATCH)],env=env,capture_output=True,text=True)
    self.assertNotEqual(second.returncode,0)
