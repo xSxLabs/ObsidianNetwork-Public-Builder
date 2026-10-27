@@ -36,8 +36,10 @@ old_menu="ServerLevel openingLevel = this.terminalServerLevel();"
 new_menu="""ServerLevel openingLevel = this.terminalServerLevel();
           // Repair pre-existing planter stacks even if no planter remains.
           // Migration is server-only and paced per logical storage runtime.
-          if (openingLevel != null && inventory.player instanceof ServerPlayer && !this.wireless) {
-             NetworkRuntime migrationRt = WorldTopologyBridge.runtimeForTerminal(openingLevel,this.terminalPos);
+          if (openingLevel != null && inventory.player instanceof ServerPlayer) {
+             NetworkRuntime migrationRt = this.wireless
+                ? WorldTopologyBridge.runtimeForAccessory(openingLevel,this.terminalPos)
+                : WorldTopologyBridge.runtimeForTerminal(openingLevel,this.terminalPos);
              if (migrationRt != null)
                 dev.obsidiannetwork.network.LegacyPlanterKeyMigration.tick(openingLevel,migrationRt);
           }"""
@@ -47,6 +49,28 @@ for label,old,new in (("planter idle tick",old_tick,new_tick),
     src=src.replace(old,new,1)
 if menu.count(old_menu)!=1: raise RuntimeError("terminal open migration anchor missing")
 menu=menu.replace(old_menu,new_menu,1)
+# Keep migration running while the terminal remains open, even after all
+# planters have been removed. Avoid expensive topology lookups on other ticks.
+menu_anchor="public BlockPos terminalPos()"
+if menu.count(menu_anchor)!=1 or "void broadcastChanges()" in menu:
+    raise RuntimeError("Terminal continuous-migration injection has conflicting source")
+continuation="""// V173_PLANTER_TERMINAL_CONTINUOUS_MIGRATION: no remaining Planter required.
+   private long xsxLastPlanterMigrationTick=Long.MIN_VALUE;
+   @Override public void broadcastChanges(){
+      super.broadcastChanges();
+      if(!(this.player instanceof ServerPlayer))return;
+      ServerLevel level=this.terminalServerLevel();
+      if(level==null)return;
+      long now=level.getGameTime();
+      if(now%20L!=0L||now==xsxLastPlanterMigrationTick)return;
+      xsxLastPlanterMigrationTick=now;
+      NetworkRuntime rt=this.wireless
+          ? WorldTopologyBridge.runtimeForAccessory(level,this.terminalPos)
+          : WorldTopologyBridge.runtimeForTerminal(level,this.terminalPos);
+      if(rt!=null)dev.obsidiannetwork.network.LegacyPlanterKeyMigration.tick(level,rt);
+   }
+   """
+menu=menu.replace(menu_anchor,continuation+menu_anchor,1)
 helper=root/"network/LegacyPlanterKeyMigration.java"
 if helper.exists(): raise RuntimeError("Migration helper already exists")
 java=r'''package dev.obsidiannetwork.network;
