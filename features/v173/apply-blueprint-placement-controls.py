@@ -1179,3 +1179,22 @@ preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-
 assert "player.pick(6.0D,0.0F,false)" in packet
 assert "mc.player.blockPosition().relative(mc.player.getDirection(),3)" in preview
 print("V173_BLUEPRINT_INITIAL_GHOST_NUDGE_ALIGNMENT_BUILD261_PASS")
+
+# Build262: guard Blueprint ghost sampling against dimension arithmetic
+# overflow. A malformed card previously could overflow sx*sy*sz, causing
+# an invalid stride and potentially suppressing the entire projection.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''  int stride=Math.max(1,(Math.min(blocks.size(),sx*sy*sz)+budget-1)/budget);''',
+ '''  long volume=(long)sx*sy*sz;
+  if(sx<=0||sy<=0||sz<=0||volume<=0L||volume>1000000L)return;
+  int stride=Math.max(1,(Math.min(blocks.size(),(int)volume)+budget-1)/budget);''')
+# A network schematic must have enough block entries to cover its dimensions;
+# reject truncated plans instead of rendering a misleading partial preview.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''  int stride=Math.max(1,(Math.min(blocks.size(),(int)volume)+budget-1)/budget);''',
+ '''  if(blocks.size()!=(int)volume)return;
+  int stride=Math.max(1,(Math.min(blocks.size(),(int)volume)+budget-1)/budget);''')
+preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-8")
+assert "long volume=(long)sx*sy*sz;" in preview
+assert "if(blocks.size()!=(int)volume)return;" in preview
+print("V173_BLUEPRINT_PREVIEW_VALID_VOLUME_BUILD262_PASS")
