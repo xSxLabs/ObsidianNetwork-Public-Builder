@@ -1331,3 +1331,38 @@ assert _src274.count(_old274)==1
 _src274=_src274.replace(_old274,_new274,1)
 _h274.write_text(_src274,encoding="utf-8")
 print("V173_BUILD274_PORTAL_ITEM_ASSETS_AND_HOLOGRAM_DEPTH_PASS")
+
+
+# Build275: consolidate reported in-game fixes, keeping frozen v1.7.2 untouched.
+# Correct portal block model resource lookup (model JSON generated earlier).
+for _portal275 in ("network_portal_a","network_portal_b"):
+ _block275=_R274/"models"/"block"/(_portal275+".json")
+ assert _block275.exists(),("portal block model absent",_portal275)
+ _item275=_R274/"models"/"item"/(_portal275+".json")
+ _item275.write_text(_json274.dumps({"parent":"obsidiannetwork:block/"+_portal275},indent=2)+"\n",encoding="utf-8")
+# Ensure hologram map is generated near its center rather than stopping
+# after sampling one far edge. A deterministic radial ordering gives
+# visible nearby terrain first, even when the budget is exhausted.
+_h275=J/"blockentity/NetworkDeviceBlockEntity.java"
+_t275=_h275.read_text(encoding="utf-8")
+_a275='''   for(int x=-radius;x<=radius && count<180;x+=step)
+    for(int z=-radius;z<=radius && count<180;z+=step){'''
+_b275='''   for(int ring=0;ring<=radius && count<180;ring+=step)
+    for(int x=-ring;x<=ring && count<180;x+=step)
+     for(int z=-ring;z<=ring && count<180;z+=step){
+      if(Math.max(Math.abs(x),Math.abs(z))<ring-step+1)continue;'''
+assert _t275.count(_a275)==1,("hologram radial loop",_t275.count(_a275))
+_t275=_t275.replace(_a275,_b275,1)
+# Map projection: height is its own axis, width and depth are separate.
+# Particle count must be high enough for an actual visible map, not
+# one barely visible dust particle per selected voxel.
+_a275='''      world.sendParticles(new DustParticleOptions(holoColor,.65f),'''
+_b275='''      world.sendParticles(new DustParticleOptions(holoColor,1.0f),'''
+assert _t275.count(_a275)==1
+_t275=_t275.replace(_a275,_b275,1)
+_a275='''        1,0,0,0,0);'''
+_b275='''        5,.09,.09,.09,0);'''
+assert _t275.count(_a275)>=1
+_t275=_t275.replace(_a275,_b275,1)
+_h275.write_text(_t275,encoding="utf-8")
+print("V173_BUILD275_MAP_CENTER_AND_PORTAL_WORLD_MODELS_PASS")
