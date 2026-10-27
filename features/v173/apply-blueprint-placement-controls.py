@@ -1249,48 +1249,4 @@ preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-
 assert "if(blocks.size()!=(int)volume)return;" not in preview
 print("V173_BUILD270_PARTIAL_BLUEPRINT_GHOST_PASS")
 
-# Build271: bundled Blueprint preview, controls and wheel reliability fixes.
-# Preview should not render against stale dimension state.
-rep("client/NetworkBlueprintPreviewClient.java",
- '''  if(mc.player==null||mc.level==null||mc.player.tickCount%3!=0)return;''',
- '''  if(mc.player==null||mc.level==null||mc.player.level()!=mc.level||
-     mc.player.tickCount%3!=0)return;''')
-# Prevent a chunk-edge preview from querying unloaded blocks.
-rep("client/NetworkBlueprintPreviewClient.java",
- '''   if(!mc.level.hasChunkAt(at)||++count>90)continue;''',
- '''   if(!mc.level.hasChunkAt(at)||++count>45)continue;''')
-# Keep ghost particles out of invalid world heights.
-rep("client/NetworkBlueprintPreviewClient.java",
- '''   if(!mc.level.hasChunkAt(at)||++count>45)continue;''',
- '''   if(at.getY()<mc.level.getMinY()||at.getY()>=mc.level.getMaxY()||
-      !mc.level.hasChunkAt(at)||++count>45)continue;''')
-# Avoid generating blocked-state particles outside the world border.
-rep("client/NetworkBlueprintPreviewClient.java",
- '''      !mc.level.hasChunkAt(at)||++count>45)continue;''',
- '''      !mc.level.getWorldBorder().isWithinBounds(at)||
-      !mc.level.hasChunkAt(at)||++count>45)continue;''')
-# Controls must not dispatch placement packets after the player dies.
-rep("client/BlueprintPlacementKeys.java",
- '''if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||''',
- '''if(mc.player==null||mc.player.isSpectator()||!mc.player.isAlive()||mc.screen!=null||''')
-# Server rejects actions from dead players as well.
-rep("item/BlueprintPlacementPayload.java",
- '''if(command<0||command>7||player.isSpectator())return;''',
- '''if(command<0||command>7||player.isSpectator()||!player.isAlive())return;''')
-# Wheel must not grab or release mouse during death transitions.
-rep("client/NetworkActionWheelClient.java",
- '''if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||!WHEEL.isDown())''',
- '''if(mc.player==null||mc.player.isSpectator()||!mc.player.isAlive()||mc.screen!=null||!WHEEL.isDown())''')
-# Wheel selection must not send actions from dead players.
-rep("client/NetworkActionWheelClient.java",
- '''if(mc.player==null||mc.player.isSpectator()||mc.screen!=null)return;''',
- '''if(mc.player==null||mc.player.isSpectator()||!mc.player.isAlive()||mc.screen!=null)return;''')
-# Ensure blueprint ghost stops when the player is dead.
-rep("client/NetworkBlueprintPreviewClient.java",
- '''mc.screen!=null||mc.player.isSpectator())return;''',
- '''mc.screen!=null||mc.player.isSpectator()||!mc.player.isAlive())return;''')
-# Invalid anchor metadata must fall back to a nearby preview position.
-rep("item/BlueprintPlacementPayload.java",
- '''if(!target.startsWith(dim)){''',
- '''if(target.isBlank()||!target.startsWith(dim)){''')
-print("V173_BUILD271_TEN_BUNDLED_FIXES_PASS")
+# Build272: restore user-confirmed green Build270 patch baseline.
