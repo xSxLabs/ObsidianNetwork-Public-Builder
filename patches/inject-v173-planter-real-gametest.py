@@ -59,16 +59,24 @@ extra=r'''
                     throw new IllegalStateException("Cannot seed automatic wheat migration");
                   dev.obsidiannetwork.network.LegacyPlanterKeyMigration.tick(level,rt);
                   long xsxAfterTick=rt.storage().index().amount(xsxWheatLegacy);
-                  if(xsxAfterTick!=8L)throw new IllegalStateException(
-                     "Automatic tick did not migrate bounded first 512 wheat: remaining="+xsxAfterTick);
+                  // The cursor is network-scoped: another candidate can be first.
+                  // One tick either migrates at most 512 wheat or scans other drops.
+                  if(xsxAfterTick!=8L&&xsxAfterTick!=520L)
+                    throw new IllegalStateException("Bounded cursor moved an invalid amount of wheat: "+xsxAfterTick);
                   dev.obsidiannetwork.network.LegacyPlanterKeyMigration.tick(level,rt);
                   if(rt.storage().index().amount(xsxWheatLegacy)!=xsxAfterTick)
                     throw new IllegalStateException("Migration repeated within one server tick");
-                  if(!dev.obsidiannetwork.network.LegacyPlanterKeyMigration.migratePlainItem(
-                        level,rt,net.minecraft.world.item.Items.WHEAT)||
-                     rt.storage().index().amount(xsxWheatLegacy)!=0L||
-                     rt.storage().index().amount(xsxWheatExact.key())!=535L)
-                    throw new IllegalStateException("Automatic wheat migration reconciliation failed");
+                  // Direct operation verifies full final reconciliation regardless of
+                  // which known crop currently owns the paced network cursor.
+                  for(int xsxWheatPass=0;xsxWheatPass<2&&
+                      rt.storage().index().amount(xsxWheatLegacy)>0L;xsxWheatPass++)
+                    if(!dev.obsidiannetwork.network.LegacyPlanterKeyMigration.migratePlainItem(
+                         level,rt,net.minecraft.world.item.Items.WHEAT))
+                      throw new IllegalStateException("Wheat migration stalled at "+xsxWheatPass);
+                  if(rt.storage().index().amount(xsxWheatLegacy)!=0L||
+                     rt.storage().index().amount(xsxWheatExact.key())!=535L||
+                     rt.storage().cells().stream().mapToLong(c->c.amount(xsxWheatExact.key())).sum()!=535L)
+                    throw new IllegalStateException("Wheat migration reconciliation failed");
                   var xsxUnrelated=dev.obsidiannetwork.core.ItemKey.simple("minecraft:diamond_sword");
                   if(rt.storage().insert(xsxUnrelated,7L)!=7L||
                      dev.obsidiannetwork.network.LegacyPlanterKeyMigration.migratePlainItem(

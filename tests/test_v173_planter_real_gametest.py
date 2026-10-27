@@ -28,7 +28,8 @@ class RealPlanterMigrationGate(unittest.TestCase):
    for needle in ("V173_PLANTER_REAL_STORAGE_MIGRATION_GAME_TEST PASS",
                   "Items.OAK_LOG","Items.CARROT","Items.WHEAT",
                   "LegacyPlanterKeyMigration.tick(level,rt)",
-                  "xsxAfterTick!=8L","cells().stream().mapToLong",
+                  "xsxAfterTick!=8L&&xsxAfterTick!=520L",
+                  "xsxWheatPass<2","cells().stream().mapToLong",
                   "Items.DIAMOND_SWORD","no_loss_or_duplication=true"):
     self.assertIn(needle,content)
    second=subprocess.run([sys.executable,str(PATCH)],env=env,capture_output=True,text=True)
