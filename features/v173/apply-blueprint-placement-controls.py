@@ -1321,10 +1321,9 @@ _new274='''   int radius=holoRadius,step=Math.max(1,(radius*2+1)/15);'''
 assert _src274.count(_old274)==1,("map step",_src274.count(_old274))
 _src274=_src274.replace(_old274,_new274,1)
 # The low/high bounds are already set by the hologram base patch.
-_old274='''        worldPosition.getZ()+.5+(double)z/radius*holoWidth/2,'''
-_new274='''        worldPosition.getZ()+.5+(double)z/radius*holoDepth/2,'''
-assert _src274.count(_old274)==1
-_src274=_src274.replace(_old274,_new274,1)
+# Build228 already changed this projection from width to depth.
+# Check the existing result instead of patching the same code twice.
+assert _src274.count("worldPosition.getZ()+.5+(double)z/radius*holoDepth/2,")==1, "map depth projection missing"
 _h274.write_text(_src274,encoding="utf-8")
 print("V173_BUILD274_PORTAL_ITEM_ASSETS_AND_HOLOGRAM_DEPTH_PASS")
 
@@ -1341,11 +1340,11 @@ for _portal275 in ("network_portal_a","network_portal_b"):
 # visible nearby terrain first, even when the budget is exhausted.
 _h275=J/"blockentity/NetworkDeviceBlockEntity.java"
 _t275=_h275.read_text(encoding="utf-8")
-_a275='''   for(int x=-radius;x<=radius && count<180;x+=step)
-    for(int z=-radius;z<=radius && count<180;z+=step){'''
-_b275='''   for(int ring=0;ring<=radius && count<180;ring+=step)
-    for(int x=-ring;x<=ring && count<180;x+=step)
-     for(int z=-ring;z<=ring && count<180;z+=step){
+_a275='''   for(int x=-radius;x<=radius && count<180 && scanned<1100;x+=step)
+    for(int z=-radius;z<=radius && count<180 && scanned<1100;z+=step){'''
+_b275='''   for(int ring=0;ring<=radius && count<180 && scanned<1100;ring+=step)
+    for(int x=-ring;x<=ring && count<180 && scanned<1100;x+=step)
+     for(int z=-ring;z<=ring && count<180 && scanned<1100;z+=step){
       if(Math.max(Math.abs(x),Math.abs(z))<ring-step+1)continue;'''
 assert _t275.count(_a275)==1,("hologram radial loop",_t275.count(_a275))
 _t275=_t275.replace(_a275,_b275,1)
@@ -1395,11 +1394,8 @@ print("V173_BUILD276_HOLOGRAM_SIZE_GUI_PASS")
 # holoWidth; the depth slider did not change horizontal map size.
 _h278=J/"blockentity/NetworkDeviceBlockEntity.java"
 _t278=_h278.read_text(encoding="utf-8")
-_old278='''        worldPosition.getY()+1.3+(double)(y-worldPosition.getY())/
-          Math.max(1,holoHeight+holoDepth)*holoHeight,'''
-_new278='''        worldPosition.getY()+1.3+(double)(y-low)/
-          Math.max(1,high-low)*holoHeight,'''
-assert _t278.count(_old278)==1,("map vertical scale",_t278.count(_old278))
-_t278=_t278.replace(_old278,_new278,1)
+# Build228 already normalized vertical projection to the selected scan height.
+# Keep it and validate the postpatch result, avoiding duplicate mutation.
+assert _t278.count("worldPosition.getY()+1.3+(double)(y-low)/Math.max(1,high-low)*holoHeight,")==1, "map vertical projection missing"
 _h278.write_text(_t278,encoding="utf-8")
 print("V173_BUILD278_HOLOGRAM_INDEPENDENT_VERTICAL_SCALE_PASS")
