@@ -13,7 +13,8 @@ planter=root/"blockentity/NetworkPlanterBlockEntity.java"
 terminal=root/"menu/StorageTerminalMenu.java"
 src=planter.read_text(encoding="utf-8")
 menu=terminal.read_text(encoding="utf-8")
-old_tick="""   if(world.getGameTime()%5L==0L)be.flush(world);"""
+# Match the stable Java statement irrespective of generated indentation.
+old_tick="if(world.getGameTime()%5L==0L)be.flush(world);"
 new_tick="""   if(world.getGameTime()%5L==0L)be.flush(world);
    // V173_PLANTER_LEGACY_MIGRATION: works even with empty harvest buffer.
    if(world.getGameTime()%20L==0L){
