@@ -20,8 +20,8 @@ BASE='''class NetworkDeviceBlockEntity {
   }
   missing=ItemStack.EMPTY;
   if(!targetState.getFluidState().isEmpty()){
-     net.storage().insert(key,1L);
-     setStatus("UNSUPPORTED FLUID BLOCKSTATE "+name);return;
+    net.storage().insert(key,1L);
+    setStatus("UNSUPPORTED FLUID BLOCKSTATE "+name);return;
     }
   boolean placed=world.setBlock(dest,targetState,3);
   if(!placed){

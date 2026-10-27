@@ -41,7 +41,7 @@ new_refund='''  if(!placed){
    setStatus("PROTECTED/BLOCKED AT "+dest.toShortString());return;
   }'''
 old_fluid='''net.storage().insert(key,1L);
-     setStatus("UNSUPPORTED FLUID BLOCKSTATE "+name);return;'''
+    setStatus("UNSUPPORTED FLUID BLOCKSTATE "+name);return;'''
 new_fluid='''// V173_PRINTER_FLUID_CONSERVATION: malformed/old fluid states must not eat materials.
      if(extractedKey.equals(canonicalKey))
       net.descriptors().registerKnown(canonicalKey,descriptor.canonicalPayload());
