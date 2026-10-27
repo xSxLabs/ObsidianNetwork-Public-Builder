@@ -19,6 +19,10 @@ BASE='''class NetworkDeviceBlockEntity {
    setStatus("MISSING: 1 x "+material.getHoverName().getString());return;
   }
   missing=ItemStack.EMPTY;
+  if(!targetState.getFluidState().isEmpty()){
+     net.storage().insert(key,1L);
+     setStatus("UNSUPPORTED FLUID BLOCKSTATE "+name);return;
+    }
   boolean placed=world.setBlock(dest,targetState,3);
   if(!placed){
    net.storage().insert(key,1L);
@@ -61,6 +65,9 @@ class PrinterCanonicalRegression(unittest.TestCase):
    "net.descriptors().registerKnown(canonicalKey,descriptor.canonicalPayload())",
    "net.storage().insertExact(canonicalKey,descriptor.canonicalPayload(),1L)",
    "net.storage().insert(legacyKey,1L)",
+   "V173_PRINTER_FLUID_CONSERVATION",
+   "if(fluidRefund!=1L)",
+   "Network Printer fluid-state refund failed",
    "if(restored!=1L)",
    'throw new IllegalStateException("Network Printer material refund failed:',
    "boolean placed=world.setBlock(dest,targetState,3)",
@@ -74,6 +81,7 @@ class PrinterCanonicalRegression(unittest.TestCase):
   for changed in (
    BASE.replace("net.storage().extract(key,1L)","net.storage().extract(key,2L)"),
    BASE.replace("net.storage().insert(key,1L)","net.storage().insert(key,2L)"),
+   BASE.replace("UNSUPPORTED FLUID BLOCKSTATE","FLUID STATE NOT SUPPORTED"),
    BASE.replace("missing=material.copyWithCount(1)","missing=ItemStack.EMPTY")
   ):
    run,actual,_=apply(changed)

@@ -40,15 +40,28 @@ new_refund='''  if(!placed){
     throw new IllegalStateException("Network Printer material refund failed: "+extractedKey);
    setStatus("PROTECTED/BLOCKED AT "+dest.toShortString());return;
   }'''
-for label,old in (("extract",old_extract),("refund",old_refund)):
+old_fluid='''net.storage().insert(key,1L);
+     setStatus("UNSUPPORTED FLUID BLOCKSTATE "+name);return;'''
+new_fluid='''// V173_PRINTER_FLUID_CONSERVATION: malformed/old fluid states must not eat materials.
+     if(extractedKey.equals(canonicalKey))
+      net.descriptors().registerKnown(canonicalKey,descriptor.canonicalPayload());
+     long fluidRefund=extractedKey.equals(canonicalKey)
+       ?net.storage().insertExact(canonicalKey,descriptor.canonicalPayload(),1L)
+       :net.storage().insert(legacyKey,1L);
+     if(fluidRefund!=1L)
+      throw new IllegalStateException("Network Printer fluid-state refund failed: "+extractedKey);
+     setStatus("UNSUPPORTED FLUID BLOCKSTATE "+name);return;'''
+for label,old in (("extract",old_extract),("refund",old_refund),("fluid rollback",old_fluid)):
  if text.count(old)!=1:
   raise RuntimeError("Printer "+label+" source drift: "+str(text.count(old))+" anchors")
 assert "V173_PRINTER_CANONICAL_MATERIALS" not in text
-result=text.replace(old_extract,new_extract,1).replace(old_refund,new_refund,1)
+result=text.replace(old_extract,new_extract,1).replace(old_refund,new_refund,1).replace(old_fluid,new_fluid,1)
 for marker in ("if(extracted!=1L)","missing=material.copyWithCount(1)",
                "missing=ItemStack.EMPTY;","boolean placed=world.setBlock(dest,targetState,3)",
                "spendFE(250L)"):
  if marker not in result:
   raise RuntimeError("Printer conservation guard missing: "+marker)
+if "net.storage().insert(key,1L)" in result:
+ raise RuntimeError("Printer legacy refund remains")
 target.write_text(result,encoding="utf-8")
 print("V173_PRINTER_CANONICAL_MATERIALS_PASS: exact terminal key, legacy fallback, checked same-key refund")
