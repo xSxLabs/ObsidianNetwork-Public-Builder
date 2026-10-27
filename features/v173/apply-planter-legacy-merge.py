@@ -34,7 +34,8 @@ new_insert="""    var descriptor=codec.describe(stack.copyWithCount(1));
     // Exact StorageTerminalMenu behavior: register the canonical descriptor.
     runtime.descriptors().registerKnown(descriptor.key(),descriptor.canonicalPayload());
     long accepted=runtime.storage().insertExact("""
-old_flush="""    if(!world.hasChunkAt(p)||!world.getBlockState(p).is(ObsidianNetwork.NETWORK_CABLE.get()))continue;"""
+# Match the actual statement, not volatile Java generator indentation.
+old_flush="if(!world.hasChunkAt(p)||!world.getBlockState(p).is(ObsidianNetwork.NETWORK_CABLE.get()))continue;"
 new_flush="""    // V173_PLANTER_NETWORK_BUNDLE: same NETWORK-only predicate as Printer/Hologram.
     if(!dev.obsidiannetwork.network.NetworkSignalRelayBridge.networkWire(world,p))continue;"""
 old_menu="ServerLevel openingLevel = this.terminalServerLevel();"

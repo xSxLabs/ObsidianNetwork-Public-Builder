@@ -22,6 +22,7 @@ extra=r'''
                   var xsxCodec=new dev.obsidiannetwork.platform.MinecraftItemStackCodec(level.registryAccess());
                   var xsxOakLegacy=dev.obsidiannetwork.core.ItemKey.simple("minecraft:oak_log");
                   var xsxOakExact=xsxCodec.describe(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.OAK_LOG));
+                  rt.descriptors().registerKnown(xsxOakExact.key(),xsxOakExact.canonicalPayload());
                   if(xsxOakLegacy.equals(xsxOakExact.key()))
                     throw new IllegalStateException("Test requires distinct legacy/canonical oak keys");
                   if(rt.storage().insert(xsxOakLegacy,1560L)!=1560L||
@@ -38,6 +39,7 @@ extra=r'''
                     throw new IllegalStateException("Old+new oak logs did not unify/conserve in physical cells");
                   var xsxCarrotLegacy=dev.obsidiannetwork.core.ItemKey.simple("minecraft:carrot");
                   var xsxCarrotExact=xsxCodec.describe(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CARROT));
+                  rt.descriptors().registerKnown(xsxCarrotExact.key(),xsxCarrotExact.canonicalPayload());
                   if(rt.storage().insert(xsxCarrotLegacy,520L)!=520L||
                      rt.storage().insertExact(xsxCarrotExact.key(),xsxCarrotExact.canonicalPayload(),11L)!=11L)
                     throw new IllegalStateException("Cannot seed carrot migration");
@@ -51,6 +53,7 @@ extra=r'''
                     throw new IllegalStateException("Carrot migration duplicated or lost items");
                   var xsxWheatLegacy=dev.obsidiannetwork.core.ItemKey.simple("minecraft:wheat");
                   var xsxWheatExact=xsxCodec.describe(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.WHEAT));
+                  rt.descriptors().registerKnown(xsxWheatExact.key(),xsxWheatExact.canonicalPayload());
                   if(rt.storage().insert(xsxWheatLegacy,520L)!=520L||
                      rt.storage().insertExact(xsxWheatExact.key(),xsxWheatExact.canonicalPayload(),15L)!=15L)
                     throw new IllegalStateException("Cannot seed automatic wheat migration");
