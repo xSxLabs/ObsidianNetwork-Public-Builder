@@ -20,7 +20,8 @@ new_tick="""   if(world.getGameTime()%5L==0L)be.flush(world);
    if(world.getGameTime()%20L==0L){
     for(Direction side:Direction.values()){
      BlockPos cable=pos.relative(side);
-     if(!world.hasChunkAt(cable)||!world.getBlockState(cable).is(ObsidianNetwork.NETWORK_CABLE.get()))continue;
+     // V173_PLANTER_NETWORK_BUNDLE: accept only a genuine NETWORK conductor.
+     if(!dev.obsidiannetwork.network.NetworkSignalRelayBridge.networkWire(world,cable))continue;
      var runtime=WorldTopologyBridge.runtimeForAccessory(world,cable);
      if(runtime!=null)
       dev.obsidiannetwork.network.LegacyPlanterKeyMigration.tick(world,runtime);
@@ -33,6 +34,9 @@ new_insert="""    var descriptor=codec.describe(stack.copyWithCount(1));
     // Exact StorageTerminalMenu behavior: register the canonical descriptor.
     runtime.descriptors().registerKnown(descriptor.key(),descriptor.canonicalPayload());
     long accepted=runtime.storage().insertExact("""
+old_flush="""    if(!world.hasChunkAt(p)||!world.getBlockState(p).is(ObsidianNetwork.NETWORK_CABLE.get()))continue;"""
+new_flush="""    // V173_PLANTER_NETWORK_BUNDLE: same NETWORK-only predicate as Printer/Hologram.
+    if(!dev.obsidiannetwork.network.NetworkSignalRelayBridge.networkWire(world,p))continue;"""
 old_menu="ServerLevel openingLevel = this.terminalServerLevel();"
 new_menu="""ServerLevel openingLevel = this.terminalServerLevel();
           // Repair pre-existing planter stacks even if no planter remains.
@@ -45,6 +49,7 @@ new_menu="""ServerLevel openingLevel = this.terminalServerLevel();
                 dev.obsidiannetwork.network.LegacyPlanterKeyMigration.tick(openingLevel,migrationRt);
           }"""
 for label,old,new in (("planter idle tick",old_tick,new_tick),
+                       ("planter network bundle flush",old_flush,new_flush),
                        ("exact descriptor catalog",old_insert,new_insert)):
     if src.count(old)!=1: raise RuntimeError(f"{label}: expected one source anchor, got {src.count(old)}")
     src=src.replace(old,new,1)

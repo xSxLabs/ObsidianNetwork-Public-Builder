@@ -62,6 +62,12 @@ class LegacyMigration(unittest.TestCase):
         self.assertIn("super.broadcastChanges()",files["menu"])
         self.assertIn("LegacyPlanterKeyMigration.tick",files["planter"])
         self.assertIn("LegacyPlanterKeyMigration.tick",files["menu"])
+        # Direct flush and idle migration must accept real NETWORK bundles,
+        # never an ENERGY-only or ITEM-only cable.
+        self.assertEqual(files["planter"].count("V173_PLANTER_NETWORK_BUNDLE"),2)
+        self.assertIn("NetworkSignalRelayBridge.networkWire(world,p)",files["planter"])
+        self.assertIn("NetworkSignalRelayBridge.networkWire(world,cable)",files["planter"])
+        self.assertNotIn("world.getBlockState(p).is(ObsidianNetwork.NETWORK_CABLE.get())",files["planter"])
         self.assertIn("runtime.descriptors().registerKnown(descriptor.key(),descriptor.canonicalPayload())",files["planter"])
         self.assertIn("this.wireless",files["menu"])
 
