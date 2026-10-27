@@ -1320,11 +1320,7 @@ _old274='''   int radius=holoRadius,step=Math.max(1,(radius*2+1)/23);'''
 _new274='''   int radius=holoRadius,step=Math.max(1,(radius*2+1)/15);'''
 assert _src274.count(_old274)==1,("map step",_src274.count(_old274))
 _src274=_src274.replace(_old274,_new274,1)
-_old274='''   int low=Math.max(world.getMinY(),worldPosition.getY()-holoDepth);
-   int high=Math.min(world.getMaxY()-1,worldPosition.getY()+holoHeight);'''
-_new274='''   int low=Math.max(world.getMinY(),worldPosition.getY()-holoDepth);
-   int high=Math.min(world.getMaxY()-1,worldPosition.getY()+holoHeight);'''
-assert _src274.count(_old274)==1
+# The low/high bounds are already set by the hologram base patch.
 _old274='''        worldPosition.getZ()+.5+(double)z/radius*holoWidth/2,'''
 _new274='''        worldPosition.getZ()+.5+(double)z/radius*holoDepth/2,'''
 assert _src274.count(_old274)==1
