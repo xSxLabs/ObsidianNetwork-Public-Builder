@@ -169,6 +169,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_planter_exact_storage.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_planter_legacy_merge.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_planter_real_gametest.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_printer_canonical_materials.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
@@ -2516,6 +2517,8 @@ jobs:
           python3 features/v173/apply-wireless-connected-visuals.py
           # Build210: Blueprint X/Z/Y controls, rotation, mirror and brighter ghost preview.
           python3 features/v173/apply-blueprint-placement-controls.py
+          # v1.7.3: Printer consumes canonical Planter/Terminal materials and can refund legacy key exactly.
+          python3 features/v173/apply-printer-canonical-materials.py
           grep -Fq 'V173_BLUEPRINT_NUDGE_PACKET' work/src/main/java/dev/obsidiannetwork/item/BlueprintPlacementPayload.java
           echo 'V173_BLUEPRINT_CONTROLS_BUILD210_SOURCES_PASS'
           grep -Fq 'V173_WIRELESS_CONNECTED_VISUAL' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkSignalRelayBlockEntity.java
