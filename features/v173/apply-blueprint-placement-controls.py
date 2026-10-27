@@ -1239,3 +1239,12 @@ assert "if(open&&cursorReleased&&down&&!wasMouseDown&&selected>=0)" in wheel
 print("V173_WHEEL_CLICK_INPUT_BUILD265_PASS")
 
 # Build269: revert Build266 gameplay-state patches to last user-confirmed green baseline (265).
+
+# Build270: partial plans must still show bounding box and available ghosts.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''  if(blocks.size()!=(int)volume)return;
+  int stride=Math.max(1,(Math.min(blocks.size(),(int)volume)+budget-1)/budget);''',
+ '''  int stride=Math.max(1,(Math.min(blocks.size(),(int)volume)+budget-1)/budget);''')
+preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-8")
+assert "if(blocks.size()!=(int)volume)return;" not in preview
+print("V173_BUILD270_PARTIAL_BLUEPRINT_GHOST_PASS")
