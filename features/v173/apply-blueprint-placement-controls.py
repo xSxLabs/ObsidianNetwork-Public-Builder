@@ -1099,3 +1099,26 @@ wheel=(J/"client/NetworkActionWheelClient.java").read_text(encoding="utf-8")
 assert "Math.abs(dx-cx)<=70&&Math.abs(dy-cy)<=14" in wheel
 assert "if(mc.player!=null&&mc.screen==null)mc.mouseHandler.grabMouse();" in wheel
 print("V173_WHEEL_PANEL_HITBOX_AND_GUI_MOUSE_SAFETY_BUILD258_PASS")
+
+# Build259: fix Portal B 2x3 clearance matching the actual model.
+# The model extends from x=-8 to x=24 relative to its anchor, independent
+# of the player's facing. Previous clearance followed the player's right
+# direction, which checked the wrong side for north/south/east-facing users.
+rep("portal/PortalActionPayload.java",
+ '''  BlockPos side=pos.relative(player.getDirection().getClockWise());''',
+ '''  BlockPos side=pos.east();
+  BlockPos other=pos.west();''')
+rep("portal/PortalActionPayload.java",
+ '''      !level.getWorldBorder().isWithinBounds(side)||
+      !level.getBlockState(pos).isAir()||''',
+ '''      !level.getWorldBorder().isWithinBounds(side)||
+      !level.getWorldBorder().isWithinBounds(other)||
+      !level.getBlockState(other).isAir()||
+      !level.getBlockState(other.above()).isAir()||
+      !level.getBlockState(other.above(2)).isAir()||
+      !level.getBlockState(pos).isAir()||''')
+portal=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
+assert "BlockPos side=pos.east();" in portal
+assert "BlockPos other=pos.west();" in portal
+assert "!level.getBlockState(other.above(2)).isAir()" in portal
+print("V173_PORTAL_2X3_FACING_INDEPENDENT_CLEARANCE_BUILD259_PASS")
