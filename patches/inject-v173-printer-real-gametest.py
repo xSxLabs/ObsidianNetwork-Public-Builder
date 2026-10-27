@@ -15,12 +15,15 @@ java=r'''
                   try{
                    BlockPos xsxPrinterPos=h.absolutePos(new BlockPos(1,2,3));
                    BlockPos xsxPrinterCable=xsxPrinterPos.below();
-                   BlockPos xsxPrinterDest=h.absolutePos(new BlockPos(1,4,3));
-                   if(!level.getBlockState(xsxPrinterPos).isAir()||
-                      !level.getBlockState(xsxPrinterDest).isAir()||
-                      !level.getBlockState(xsxPrinterCable).is(ObsidianNetwork.CONDUIT_BUNDLE.get())||
-                      dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForAccessory(level,xsxPrinterCable)!=rt)
-                     throw new IllegalStateException("Printer GameTest requires a free destination and real NETWORK bundle");
+                   BlockPos xsxPrinterDest=h.absolutePos(new BlockPos(1,3,3));
+                   if(!level.getBlockState(xsxPrinterPos).isAir())
+                     throw new IllegalStateException("Printer fixture position occupied: "+level.getBlockState(xsxPrinterPos));
+                   if(!level.getBlockState(xsxPrinterDest).isAir())
+                     throw new IllegalStateException("Printer fixture output occupied: "+level.getBlockState(xsxPrinterDest));
+                   if(!level.getBlockState(xsxPrinterCable).is(ObsidianNetwork.CONDUIT_BUNDLE.get()))
+                     throw new IllegalStateException("Printer fixture NETWORK bundle block missing");
+                   if(dev.obsidiannetwork.network.WorldTopologyBridge.runtimeForAccessory(level,xsxPrinterCable)!=rt)
+                     throw new IllegalStateException("Printer fixture runtime mismatch on NETWORK bundle");
                    if(!level.setBlock(xsxPrinterPos,ObsidianNetwork.NETWORK_PRINTER.get().defaultBlockState(),3))
                      throw new IllegalStateException("Cannot place actual Network Printer");
                    if(!(level.getBlockEntity(xsxPrinterPos) instanceof

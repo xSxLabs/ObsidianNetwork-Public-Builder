@@ -24,6 +24,8 @@ class PrinterGameTestGate(unittest.TestCase):
    actual=f.read_text()
    for marker in ("V173_PRINTER_REAL_CANONICAL_MATERIALS_GAME_TEST PASS",
                   "NETWORK_PRINTER.get().defaultBlockState()",
+                  "BlockPos(1,3,3)", "Printer fixture output occupied:",
+                  "Printer fixture runtime mismatch on NETWORK bundle",
                   "WorldTopologyBridge.runtimeForAccessory",
                   "Items.PURPUR_BLOCK", "xsxPrinterExact.key()",
                   "xsxPrinterLegacy", "xsxPrint.invoke(xsxPrinter,level,rt)",
