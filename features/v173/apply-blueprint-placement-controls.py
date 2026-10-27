@@ -1366,3 +1366,28 @@ assert _t275.count(_a275)>=1
 _t275=_t275.replace(_a275,_b275,1)
 _h275.write_text(_t275,encoding="utf-8")
 print("V173_BUILD275_MAP_CENTER_AND_PORTAL_WORLD_MODELS_PASS")
+
+
+# Build276: fix Hologram controls being hidden by the vanilla container
+# and allow direct changes to size/height/depth/radius without losing focus.
+_gui276=J/"client/HologramConfigScreen.java"
+_g276=_gui276.read_text(encoding="utf-8")
+_old276='''  super(menu,inventory,title);
+ }'''
+_new276='''  super(menu,inventory,title);
+  this.imageWidth=256;
+  this.imageHeight=220;
+ }'''
+assert _g276.count(_old276)==1,("hologram screen sizing",_g276.count(_old276))
+_g276=_g276.replace(_old276,_new276,1)
+# GUI fields were at y+79 while the inherited chest screen only
+# reserved 166 px; the custom height reserves enough space.
+_old276='''  if(terminal==null)return;
+  int c=0x29d7eb;'''
+_new276='''  if(terminal==null)device();
+  if(terminal==null)return;
+  int c=0x29d7eb;'''
+assert _g276.count(_old276)==1
+_g276=_g276.replace(_old276,_new276,1)
+_gui276.write_text(_g276,encoding="utf-8")
+print("V173_BUILD276_HOLOGRAM_SIZE_GUI_PASS")
