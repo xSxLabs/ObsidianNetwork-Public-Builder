@@ -49,16 +49,33 @@ java=r'''
                    var xsxEnergyField=dev.obsidiannetwork.blockentity.NetworkDeviceBlockEntity.class
                      .getDeclaredField("energyBuffer");
                    xsxEnergyField.setAccessible(true);
-                   xsxEnergyField.setLong(xsxPrinter,1000L);
+                   xsxEnergyField.setLong(xsxPrinter,249L);
                    var xsxPrint=dev.obsidiannetwork.blockentity.NetworkDeviceBlockEntity.class
                      .getDeclaredMethod("printer",net.minecraft.server.level.ServerLevel.class,
                                           dev.obsidiannetwork.core.NetworkRuntime.class);
                    xsxPrint.setAccessible(true);
+                   // Negative gates on the actual BE: zero FE or missing network
+                   // materials must never place blocks or consume even one FE.
+                   xsxPrinter.setItem(0,xsxPrinterBlueprint.copy());
+                   if(!xsxPrinter.control(0))
+                     throw new IllegalStateException("Printer START rejected negative-gate Blueprint");
+                   xsxPrint.invoke(xsxPrinter,level,rt);
+                   if(xsxEnergyField.getLong(xsxPrinter)!=249L||xsxPrinter.progress()!=0||
+                      !xsxPrinter.status().contains("NO POWER")||
+                      !level.getBlockState(xsxPrinterDest).isAir())
+                     throw new IllegalStateException("Printer FE-starvation consumed power or altered world");
+                   xsxEnergyField.setLong(xsxPrinter,1000L);
+                   xsxPrint.invoke(xsxPrinter,level,rt);
+                   if(xsxEnergyField.getLong(xsxPrinter)!=1000L||xsxPrinter.progress()!=0||
+                      !xsxPrinter.status().contains("MISSING")||
+                      !level.getBlockState(xsxPrinterDest).isAir())
+                     throw new IllegalStateException("Printer missing materials changed FE, world or progress");
                    rt.descriptors().registerKnown(xsxPrinterExact.key(),xsxPrinterExact.canonicalPayload());
                    if(rt.storage().insertExact(xsxPrinterExact.key(),xsxPrinterExact.canonicalPayload(),1L)!=1L)
                      throw new IllegalStateException("Failed to seed exact Printer material in real cells");
-                   xsxPrinter.setItem(0,xsxPrinterBlueprint.copy());
-                   if(!xsxPrinter.control(0))throw new IllegalStateException("Printer START rejected exact Blueprint");
+                   // Resume the previously started job when material arrives.
+                   if(!xsxPrinter.status().contains("MISSING"))
+                     throw new IllegalStateException("Printer missing-material pause did not persist");
                    xsxPrint.invoke(xsxPrinter,level,rt);
                    if(!level.getBlockState(xsxPrinterDest).is(net.minecraft.world.level.block.Blocks.PURPUR_BLOCK)||
                       rt.storage().index().amount(xsxPrinterExact.key())!=0L||
@@ -71,8 +88,23 @@ java=r'''
                    level.removeBlock(xsxPrinterDest,false);
                    if(rt.storage().insert(xsxPrinterLegacy,1L)!=1L)
                      throw new IllegalStateException("Failed to seed pre-fix legacy Printer material");
+                   // A protected/occupied target is NOT a skip. It must remain
+                   // pending and must not consume the old-key material or FE.
+                   if(!level.setBlock(xsxPrinterDest,
+                         net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3))
+                     throw new IllegalStateException("Cannot stage blocked Printer target");
                    xsxPrinter.setItem(0,xsxPrinterBlueprint.copy());
-                   if(!xsxPrinter.control(0))throw new IllegalStateException("Printer START rejected legacy Blueprint");
+                   if(!xsxPrinter.control(0))throw new IllegalStateException("Printer START rejected blocked Blueprint");
+                   xsxPrint.invoke(xsxPrinter,level,rt);
+                   if(!level.getBlockState(xsxPrinterDest).is(net.minecraft.world.level.block.Blocks.STONE)||
+                      !xsxPrinter.status().contains("BLOCKED")||xsxPrinter.progress()!=0||
+                      rt.storage().index().amount(xsxPrinterLegacy)!=1L||
+                      xsxEnergyField.getLong(xsxPrinter)!=750L)
+                     throw new IllegalStateException("Printer blocked target skipped or consumed FE/material");
+                   level.removeBlock(xsxPrinterDest,false);
+                   System.out.println("V173_PRINTER_FAIL_CLOSED_GATES_GAME_TEST PASS"+
+                       " no_power=true missing=true blocked=true FE_conserved=true items_conserved=true");
+                   // Resume exactly the blocked operation on a now-empty target.
                    xsxPrint.invoke(xsxPrinter,level,rt);
                    if(!level.getBlockState(xsxPrinterDest).is(net.minecraft.world.level.block.Blocks.PURPUR_BLOCK)||
                       rt.storage().index().amount(xsxPrinterExact.key())!=0L||
