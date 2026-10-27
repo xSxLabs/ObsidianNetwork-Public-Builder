@@ -1203,9 +1203,9 @@ print("V173_BLUEPRINT_PREVIEW_VALID_VOLUME_BUILD262_PASS")
 # Fix 1
 rep("item/BlueprintPlacementPayload.java","NetworkBlueprintItem.blocks(stack).isEmpty())return;","NetworkBlueprintItem.blocks(stack).isEmpty()||NetworkBlueprintItem.blocks(stack).size()>4096)return;")
 # Fix 2
-rep("client/BlueprintPlacementKeys.java","if(mc.player==null||mc.screen!=null||","if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||")
+rep("client/BlueprintPlacementKeys.java","    if(mc.player==null||mc.screen!=null||","    if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||")
 # Fix 3
-rep("client/BlueprintPlacementKeys.java","if(mc.player==null||mc.screen!=null||","if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||")
+rep("client/BlueprintPlacementKeys.java","  if(mc.player==null||mc.screen!=null||","  if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||")
 # Fix 4
 rep("client/NetworkActionWheelClient.java","double scale=mc.getWindow().getGuiScale();","double scale=Math.max(1.0D,mc.getWindow().getGuiScale());")
 # Fix 5
