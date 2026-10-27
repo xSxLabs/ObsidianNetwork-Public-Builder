@@ -1237,3 +1237,18 @@ wheel=(J/"client/NetworkActionWheelClient.java").read_text(encoding="utf-8")
 assert "if(down&&selected>=0)mc.options.keyAttack.setDown(false);" in wheel
 assert "if(open&&cursorReleased&&down&&!wasMouseDown&&selected>=0)" in wheel
 print("V173_WHEEL_CLICK_INPUT_BUILD265_PASS")
+
+# Build266: batch gameplay-state validation for preview, controls and packets.
+# 1: item/BlueprintPlacementPayload.java
+rep("item/BlueprintPlacementPayload.java","if(command<0||command>7||player.isSpectator())return;","if(command<0||command>7||player.isSpectator()||!player.isAlive())return;")
+# 2: client/BlueprintPlacementKeys.java
+rep("client/BlueprintPlacementKeys.java","if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||","if(mc.player==null||mc.player.isSpectator()||!mc.player.isAlive()||mc.screen!=null||")
+# 3: client/NetworkActionWheelClient.java
+rep("client/NetworkActionWheelClient.java","if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||!WHEEL.isDown())","if(mc.player==null||mc.player.isSpectator()||!mc.player.isAlive()||mc.screen!=null||!WHEEL.isDown())")
+# 4: client/NetworkActionWheelClient.java
+rep("client/NetworkActionWheelClient.java","if(mc.player==null||mc.player.isSpectator()||mc.screen!=null)return;","if(mc.player==null||mc.player.isSpectator()||!mc.player.isAlive()||mc.screen!=null)return;")
+# 5: client/NetworkBlueprintPreviewClient.java
+rep("client/NetworkBlueprintPreviewClient.java","mc.screen!=null||mc.player.isSpectator())return;","mc.screen!=null||mc.player.isSpectator()||!mc.player.isAlive())return;")
+# 6: item/BlueprintPlacementPayload.java
+rep("item/BlueprintPlacementPayload.java","if(!target.startsWith(dim)){","if(target.isBlank()||!target.startsWith(dim)){")
+print("V173_BUILD266_GAMEPLAY_STATE_FIXES_PASS")
