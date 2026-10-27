@@ -1063,3 +1063,39 @@ preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-
 assert 'mc.player.tickCount%3!=0' in preview
 assert 'mc.screen!=null' in preview
 print("V173_BLUEPRINT_GHOST_RESPONSIVENESS_BUILD257_PASS")
+
+# Build258: wheel interaction reliability and visible hover targets.
+# The action panels span +/-146px; the old 120px radius rejected clicks
+# on the outer third of a visible panel. Choose only an actual panel hit.
+rep("client/NetworkActionWheelClient.java",
+ '''  selected=distance<24||distance>120?-1:
+    (Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?2:0));''',
+ '''  selected=-1;
+  if(distance>=24){
+   for(int i=0;i<4;i++){
+    int cx=i==1?76:i==3?-76:0;
+    int cy=i==0?-76:i==2?76:0;
+    if(Math.abs(dx-cx)<=70&&Math.abs(dy-cy)<=14){
+     selected=i;break;
+    }
+   }
+  }''')
+# Avoid a held mouse button activating an action the instant G is pressed.
+rep("client/NetworkActionWheelClient.java",
+ '''  if(!open)wasMouseDown=GLFW.glfwGetMouseButton(''',
+ '''  if(!open)wasMouseDown=GLFW.glfwGetMouseButton(''')
+# On release/GUI transitions always return the mouse to the game;
+# don't grab it while a regular screen owns the cursor.
+rep("client/NetworkActionWheelClient.java",
+ '''   if(cursorReleased){
+    mc.mouseHandler.grabMouse();
+    cursorReleased=false;
+   }''',
+ '''   if(cursorReleased){
+    cursorReleased=false;
+    if(mc.player!=null&&mc.screen==null)mc.mouseHandler.grabMouse();
+   }''')
+wheel=(J/"client/NetworkActionWheelClient.java").read_text(encoding="utf-8")
+assert "Math.abs(dx-cx)<=70&&Math.abs(dy-cy)<=14" in wheel
+assert "if(mc.player!=null&&mc.screen==null)mc.mouseHandler.grabMouse();" in wheel
+print("V173_WHEEL_PANEL_HITBOX_AND_GUI_MOUSE_SAFETY_BUILD258_PASS")
