@@ -1250,3 +1250,42 @@ assert "if(blocks.size()!=(int)volume)return;" not in preview
 print("V173_BUILD270_PARTIAL_BLUEPRINT_GHOST_PASS")
 
 # Build272: restore user-confirmed green Build270 patch baseline.
+
+# Build273: restore Build271 batch, with precise multi-occurrence-safe
+# patching for BlueprintPlacementKeys; failure diagnosed from CI run 40539771713.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''  if(mc.player==null||mc.level==null||mc.player.tickCount%3!=0)return;''',
+ '''  if(mc.player==null||mc.level==null||mc.player.level()!=mc.level||
+     mc.player.tickCount%3!=0)return;''')
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''   if(!mc.level.hasChunkAt(at)||++count>90)continue;''',
+ '''   if(!mc.level.hasChunkAt(at)||++count>45)continue;''')
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''   if(!mc.level.hasChunkAt(at)||++count>45)continue;''',
+ '''   if(at.getY()<mc.level.getMinY()||at.getY()>=mc.level.getMaxY()||
+      !mc.level.hasChunkAt(at)||++count>45)continue;''')
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''      !mc.level.hasChunkAt(at)||++count>45)continue;''',
+ '''      !mc.level.getWorldBorder().isWithinBounds(at)||
+      !mc.level.hasChunkAt(at)||++count>45)continue;''')
+keys=J/"client/BlueprintPlacementKeys.java"
+src=keys.read_text(encoding="utf-8")
+old="if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||"
+assert src.count(old)==2,("BlueprintPlacementKeys",src.count(old))
+keys.write_text(src.replace(old,"if(mc.player==null||mc.player.isSpectator()||!mc.player.isAlive()||mc.screen!=null||"),encoding="utf-8")
+rep("item/BlueprintPlacementPayload.java",
+ '''if(command<0||command>7||player.isSpectator())return;''',
+ '''if(command<0||command>7||player.isSpectator()||!player.isAlive())return;''')
+rep("client/NetworkActionWheelClient.java",
+ '''if(mc.player==null||mc.player.isSpectator()||mc.screen!=null||!WHEEL.isDown())''',
+ '''if(mc.player==null||mc.player.isSpectator()||!mc.player.isAlive()||mc.screen!=null||!WHEEL.isDown())''')
+rep("client/NetworkActionWheelClient.java",
+ '''if(mc.player==null||mc.player.isSpectator()||mc.screen!=null)return;''',
+ '''if(mc.player==null||mc.player.isSpectator()||!mc.player.isAlive()||mc.screen!=null)return;''')
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''mc.screen!=null||mc.player.isSpectator())return;''',
+ '''mc.screen!=null||mc.player.isSpectator()||!mc.player.isAlive())return;''')
+rep("item/BlueprintPlacementPayload.java",
+ '''if(!target.startsWith(dim)){''',
+ '''if(target.isBlank()||!target.startsWith(dim)){''')
+print("V173_BUILD273_RESTORED_271_BATCH_WITH_FIXED_KEYS_MATCH_PASS")
