@@ -1122,3 +1122,30 @@ assert "BlockPos side=pos.east();" in portal
 assert "BlockPos other=pos.west();" in portal
 assert "!level.getBlockState(other.above(2)).isAir()" in portal
 print("V173_PORTAL_2X3_FACING_INDEPENDENT_CLEARANCE_BUILD259_PASS")
+
+# Build260: 2x3 portal spawn must remain inside build height and border.
+# BlockState air checks alone can accept positions above max build height.
+rep("portal/PortalActionPayload.java",
+ '''  BlockPos side=pos.east();
+  BlockPos other=pos.west();
+  if(!level.getWorldBorder().isWithinBounds(pos)||''',
+ '''  BlockPos side=pos.east();
+  BlockPos other=pos.west();
+  if(pos.getY()<level.getMinY()||pos.getY()>level.getMaxY()-3||
+      !level.getWorldBorder().isWithinBounds(pos.above(2))||
+      !level.getWorldBorder().isWithinBounds(side.above(2))||
+      !level.getWorldBorder().isWithinBounds(other.above(2))||
+      !level.getWorldBorder().isWithinBounds(pos)||''')
+# Keep the same 3-block vertical envelope for arrivals, not just exit feet.
+rep("portal/PortalGateBlockEntity.java",
+ '''    if(!dest.getWorldBorder().isWithinBounds(exit)||
+       !dest.getBlockState(exit.above()).isAir()||''',
+ '''    if(exit.getY()<dest.getMinY()||exit.getY()>dest.getMaxY()-3||
+       !dest.getWorldBorder().isWithinBounds(exit)||
+       !dest.getWorldBorder().isWithinBounds(exit.above(2))||
+       !dest.getBlockState(exit.above()).isAir()||''')
+portal=(J/"portal/PortalActionPayload.java").read_text(encoding="utf-8")
+entity=(J/"portal/PortalGateBlockEntity.java").read_text(encoding="utf-8")
+assert "pos.getY()>level.getMaxY()-3" in portal
+assert "exit.getY()>dest.getMaxY()-3" in entity
+print("V173_PORTAL_3_HIGH_WORLD_LIMITS_BUILD260_PASS")
