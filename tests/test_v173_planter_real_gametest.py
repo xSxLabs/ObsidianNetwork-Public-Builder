@@ -11,8 +11,7 @@ import unittest
 ROOT=Path(__file__).resolve().parents[1]
 PATCH=ROOT/"patches/inject-v173-planter-real-gametest.py"
 WORKFLOW=(ROOT/".github/workflows/networkstorage-v1.7-clean.yml").read_text()
-ANCHOR='''                  if(rt.storage().cells().size()!=800)
-                    throw new IllegalStateException("Expected 800 attached real cells, got "+rt.storage().cells().size());'''
+ANCHOR='var stone=dev.obsidiannetwork.core.ItemKey.simple("minecraft:stone");'
 JAVA="dev/obsidiannetwork/build103/Build103GameTests.java"
 
 class RealPlanterMigrationGate(unittest.TestCase):

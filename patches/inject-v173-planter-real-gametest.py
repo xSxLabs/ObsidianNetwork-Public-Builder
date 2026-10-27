@@ -10,8 +10,9 @@ from pathlib import Path
 root=Path(os.environ["V1_SOURCE_ROOT"])
 target=root/"dev/obsidiannetwork/build103/Build103GameTests.java"
 src=target.read_text(encoding="utf-8")
-anchor='''                  if(rt.storage().cells().size()!=800)
-                    throw new IllegalStateException("Expected 800 attached real cells, got "+rt.storage().cells().size());'''
+# Use a short semantically unique statement, not indentation or a two-line
+# assertion rewritten by the earlier performance GameTest patch stages.
+anchor='var stone=dev.obsidiannetwork.core.ItemKey.simple("minecraft:stone");'
 marker="V173_PLANTER_REAL_STORAGE_MIGRATION_GAME_TEST"
 if src.count(anchor)!=1 or marker in src:
     raise RuntimeError(f"Real storage fixture drift or repeated injection: anchors={src.count(anchor)}")
