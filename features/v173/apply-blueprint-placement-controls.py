@@ -1252,3 +1252,27 @@ rep("client/NetworkBlueprintPreviewClient.java","mc.screen!=null||mc.player.isSp
 # 6: item/BlueprintPlacementPayload.java
 rep("item/BlueprintPlacementPayload.java","if(!target.startsWith(dim)){","if(target.isBlank()||!target.startsWith(dim)){")
 print("V173_BUILD266_GAMEPLAY_STATE_FIXES_PASS")
+
+# Build267: restore ghost visibility for schematics with incomplete block
+# arrays. Never hide the entire placement wireframe for one missing entry.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''  if(blocks.size()!=(int)volume)return;
+  int stride=Math.max(1,(Math.min(blocks.size(),(int)volume)+budget-1)/budget);''',
+ '''  int stride=Math.max(1,(Math.min(blocks.size(),(int)volume)+budget-1)/budget);''')
+# The ghost is a preview, not a world mutator. Only loaded positions may
+# be sampled, and all invalid world coordinates are skipped.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''   if(!mc.level.hasChunkAt(at)||++count>90)continue;''',
+ '''   if(at.getY()<mc.level.getMinY()||at.getY()>=mc.level.getMaxY()||
+      !mc.level.getWorldBorder().isWithinBounds(at)||
+      !mc.level.hasChunkAt(at)||++count>45)continue;''')
+# Reduce overdraw: avoid rendering a preview while the client is switching
+# between dimensions or still waiting for the local player.
+rep("client/NetworkBlueprintPreviewClient.java",
+ '''  if(mc.player==null||mc.level==null||mc.player.tickCount%3!=0)return;''',
+ '''  if(mc.player==null||mc.level==null||mc.player.level()!=mc.level||
+     mc.player.tickCount%3!=0)return;''')
+preview=(J/"client/NetworkBlueprintPreviewClient.java").read_text(encoding="utf-8")
+assert "if(blocks.size()!=(int)volume)return;" not in preview
+assert "mc.level.getWorldBorder().isWithinBounds(at)" in preview
+print("V173_BLUEPRINT_PARTIAL_GHOST_AND_WORLD_GUARDS_BUILD267_PASS")
