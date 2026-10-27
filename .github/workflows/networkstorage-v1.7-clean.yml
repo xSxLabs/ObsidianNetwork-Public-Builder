@@ -166,6 +166,7 @@ jobs:
           # connection but bundled ENERGY is never storage connectivity.
           python3 -m unittest discover -s tests -p 'test_v173_machine_network_bundle.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_link_status.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_planter_exact_storage.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
@@ -2470,6 +2471,9 @@ jobs:
           # Build153: full Botany-Pots-style native plant model renderer,
           # 26.1 submit/render-state API; remove ALL homebrew crop geometries.
           python3 features/v172/apply-network-planter-native-render-153.py
+          # v1.7.3: planter writes the exact same item identity as terminal quick-move.
+          python3 features/v173/apply-planter-exact-item-identity.py
+          grep -Fq 'V173_PLANTER_EXACT_ITEM_KEY' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkPlanterBlockEntity.java
           # v1.7.3: Network Printer/Blueprint, Network Vision, hologram and
           # user-scoped interdimensional NETWORK-only transmitters/receivers.
           # New development ONLY: stable v1.7.2 remains byte-identical.
