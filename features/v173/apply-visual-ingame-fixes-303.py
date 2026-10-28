@@ -46,7 +46,11 @@ for name,light in (("network_signal_transmitter","minecraft:block/cyan_concrete"
         "textures":{"particle":"minecraft:block/obsidian","base":"minecraft:block/obsidian",
                     "metal":"minecraft:block/iron_block","signal":light},
         "elements":[cube([1,0,1],[15,3,15],"base"),cube([4,3,4],[12,5,12],"metal"),
-                    cube([7,5,7],[9,15,9],"metal"),cube([5,13,5],[11,16,11],"signal")]}
+                    cube([7,5,7],[9,15,9],"metal"),cube([5,13,5],[11,16,11],"signal"),
+                    cube([1,3,1],[4,5,4],"metal"),cube([12,3,1],[15,5,4],"metal"),
+                    cube([1,3,12],[4,5,15],"metal"),cube([12,3,12],[15,5,15],"metal"),
+                    cube([5,7,7],[7,9,9],"signal"),cube([9,7,7],[11,9,9],"signal"),
+                    cube([7,7,5],[9,9,7],"signal"),cube([7,7,9],[9,9,11],"signal")]}
  put(R/"models/block"/(name+".json"),model)
  put(R/"blockstates"/(name+".json"),{"variants":{"":{"model":"obsidiannetwork:block/"+name}}})
  put(R/"models/item"/(name+".json"),{"parent":"obsidiannetwork:block/"+name})
