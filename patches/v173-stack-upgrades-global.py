@@ -184,46 +184,66 @@ patch("blockentity/ConduitBundleBlockEntity.java",
   'copyRaw(in.getIntArray("mc_item_stack").orElse(new int[0]),logisticsStack[0],8);',
   'copyRaw(in.getIntArray("mc_item_stack").orElse(new int[0]),logisticsStack[0],16);')
 
-# Importer and Exporter: previous cap 4 and 256 items did not mean 4 stacks,
-# and the runtime's slot attempt limit was tighter still.
+# Importer and Exporter: the v1.6 upgrade-capacity patch already changes
+# the original 4-upgrade limit before this script is applied. Match the field
+# and method roles rather than the old, now-obsolete literal cap.
+# A drifted method still fails closed instead of editing unrelated code.
+import re
+def scoped_sub(rel, pattern, replacement, label, required=()):
+    path=ROOT/rel
+    source=path.read_text(encoding="utf8")
+    matches=list(re.finditer(pattern,source))
+    assert len(matches)==1,("STACK_THROUGHPUT_SOURCE_DRIFT",rel,label,len(matches),
+                            [m.group(0)[:120] for m in matches[:4]])
+    before=matches[0].group(0)
+    assert all(token in before for token in required),("STACK_THROUGHPUT_UNEXPECTED",rel,label,before)
+    result=source[:matches[0].start()]+replacement+source[matches[0].end():]
+    path.write_text(result,encoding="utf8")
+
 for rel in ("blockentity/ImporterBlockEntity.java",
             "blockentity/ExporterBlockEntity.java"):
-    patch(rel,
-      "this.stackUpgrades = Math.max(0, Math.min(4, c));",
-      "this.stackUpgrades = Math.max(0, Math.min(16, c));")
-    patch(rel,
-      "this.stackUpgrades < 4",
-      "this.stackUpgrades < 16")
-    patch(rel,
-      "int itemBudget = (int)Math.min(256L, 64L << Math.min(2, be.stackUpgrades));",
-      "int itemBudget = 64*Math.max(1,Math.min(16,be.stackUpgrades));")
-    def broaden_ops(s):
-        import re
-        old=re.findall(r'be.runtime.runCycle\(new MinecraftExternalItemPort\(handler, new MinecraftItemStackCodec\(server.registryAccess\(\)\)\), (?:8|4), itemBudget\);',s)
-        assert len(old)==1,("TRANSFER_NODE_RUNTIME_ANCHOR_DRIFT",rel,len(old))
-        return s.replace(old[0],old[0].replace(", 8, itemBudget)",", 16, itemBudget)").replace(", 4, itemBudget)",", 16, itemBudget)"),1)
-    edit_file(rel,broaden_ops)
+    # v1.6 changed the numeric limit (normally to 64), but not this setter.
+    scoped_sub(rel,
+      r'this\.stackUpgrades\s*=\s*Math\.max\(\s*0\s*,\s*Math\.min\(\s*\d+\s*,\s*c\s*\)\s*\)\s*;',
+      "this.stackUpgrades = Math.max(0, Math.min(16, c));",
+      "stack upgrade setter")
+    scoped_sub(rel,
+      r'this\.stackUpgrades\s*<\s*\d+',
+      "this.stackUpgrades < 16",
+      "upgrade insert cap")
+    scoped_sub(rel,
+      r'int\s+itemBudget\s*=\s*[^;\n]+;',
+      "int itemBudget = 64*Math.max(1,Math.min(16,be.stackUpgrades));",
+      "item budget",required=("be.stackUpgrades",))
+    scoped_sub(rel,
+      r'be\.runtime\.runCycle\(new MinecraftExternalItemPort\(handler,\s*new MinecraftItemStackCodec\(server\.registryAccess\(\)\)\),\s*\d+\s*,\s*itemBudget\);',
+      "be.runtime.runCycle(new MinecraftExternalItemPort(handler, new MinecraftItemStackCodec(server.registryAccess())), 16, itemBudget);",
+      "runtime slot operations")
 
-# Transfer Node GUI and backed upgrade container must agree with runtime.
+# The transfer node menu was likewise patched by v1.6 to allow bigger
+# upgrade stacks; normalize ONLY the dedicated stack-upgrade slot to 16.
 gui="menu/TransferNodeMenu.java"
 patch(gui,
    "return s == 1 && this.stack() > 0 ? new ItemStack((ItemLike)ObsidianNetwork.STACK_UPGRADE.get(), this.stack()) : ItemStack.EMPTY;",
    "return s == 1 && this.stack() > 0 ? new ItemStack((ItemLike)ObsidianNetwork.STACK_UPGRADE.get(), this.stack()) : ItemStack.EMPTY; // XSXLABS_STACK_16_IMPORT_EXPORT")
 def upgrade_gui(s):
     marker="return s.is((Item)ObsidianNetwork.STACK_UPGRADE.get());"
-    # The upgrade slot contains a dedicated max-stack method, not a player slot.
+    assert s.count(marker)==1,("STACK_SLOT_MARKER_DRIFT",s.count(marker))
     i=s.index(marker)
-    j=s.index("public int getMaxStackSize()",i)
-    section=s[j:j+100]
-    assert "return 4;" in section,("STACK_SLOT_MAX_DRIFT",section)
-    s=s[:j]+s[j:].replace("return 4;","return 16;",1)
-    setslot="this.setStack(v.is((Item)ObsidianNetwork.STACK_UPGRADE.get()) ? Math.min(4, v.getCount()) : 0);"
-    assert s.count(setslot)==1
-    s=s.replace(setslot,
-      "this.setStack(v.is((Item)ObsidianNetwork.STACK_UPGRADE.get()) ? Math.min(16, v.getCount()) : 0);",1)
-    rm="return this.removeItem(s, 4);"
-    assert s.count(rm)==1
-    s=s.replace(rm,"return this.removeItem(s, s == 1 ? 16 : 4);",1)
+    method=re.search(r'public\s+int\s+getMaxStackSize\s*\(\s*\)\s*\{\s*return\s+\d+\s*;',s[i:])
+    assert method,("STACK_SLOT_MAX_DRIFT",s[i:i+240])
+    a=i+method.start(); b=i+method.end()
+    s=s[:a]+'public int getMaxStackSize(){return 16;'+s[b:]
+    p=r'this\.setStack\(v\.is\(\(Item\)ObsidianNetwork\.STACK_UPGRADE\.get\(\)\)\s*\?\s*Math\.min\(\s*\d+\s*,\s*v\.getCount\(\)\s*\)\s*:\s*0\);'
+    matches=list(re.finditer(p,s))
+    assert len(matches)==1,("STACK_GUI_SETTER_DRIFT",len(matches))
+    x=matches[0]
+    s=s[:x.start()]+"this.setStack(v.is((Item)ObsidianNetwork.STACK_UPGRADE.get()) ? Math.min(16, v.getCount()) : 0);"+s[x.end():]
+    p=r'return\s+this\.removeItem\(s,\s*\d+\);'
+    matches=list(re.finditer(p,s))
+    assert len(matches)==1,("STACK_GUI_REMOVE_DRIFT",len(matches))
+    x=matches[0]
+    s=s[:x.start()]+"return this.removeItem(s, s == 1 ? 16 : 4);"+s[x.end():]
     return s
 edit_file(gui,upgrade_gui)
 
