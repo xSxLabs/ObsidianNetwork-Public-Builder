@@ -173,6 +173,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_printer_real_gametest.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_visual_ingame_303.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_visual_306.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_ingame_roundup_314.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
@@ -2525,6 +2526,11 @@ jobs:
           # Build303: user-reported antenna, portal, hologram and real 3D preview
           python3 features/v173/apply-visual-ingame-fixes-303.py
           python3 features/v173/apply-3dmaps-custom-portal-306.py
+          python3 features/v173/apply-ingame-roundup-314.py
+          grep -Fq 'V173_HOLO_SLOT_FREE_314' work/src/main/java/dev/obsidiannetwork/client/HologramConfigScreen.java
+          grep -Fq 'V173_PORTAL_RENAME_314' work/src/main/java/dev/obsidiannetwork/portal/PortalRenamePayload.java
+          grep -Fq 'Radius = chunks' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
+          echo 'V173_INGAME_ROUNDUP_314_COMPILED_SOURCES_PASS'
           grep -Fq 'V173_BLUEPRINT_NUDGE_PACKET' work/src/main/java/dev/obsidiannetwork/item/BlueprintPlacementPayload.java
           echo 'V173_BLUEPRINT_CONTROLS_BUILD210_SOURCES_PASS'
           grep -Fq 'V173_WIRELESS_CONNECTED_VISUAL' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkSignalRelayBlockEntity.java
