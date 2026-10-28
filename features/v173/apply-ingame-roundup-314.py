@@ -134,7 +134,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 public final class HologramConfigScreen extends Screen {
  private String mode="network";
  private BlockPos terminal;
- private EditBox content,color,size,height,radius;
+ private EditBox content,color,size,heightInput,radius;
  private int bx,by;
  public HologramConfigScreen(ChestMenu ignored,Inventory inventory,Component title){
   super(title);
@@ -173,7 +173,7 @@ public final class HologramConfigScreen extends Screen {
      .bounds(bx+204,by+27,88,21).build());
   size=make(bx+12,by+85,85,"Size",be==null?"5":""+be.holoWidth(),3);
   radius=make(bx+12,by+85,85,"Radius chunks",be==null?"1":""+Math.min(12,be.holoRadius()),2);
-  height=make(bx+160,by+85,85,"Height below table",be==null?"1":""+be.holoHeight(),3);
+  heightInput=make(bx+160,by+85,85,"Height below table",be==null?"1":""+be.holoHeight(),3);
   content=make(bx+12,by+143,270,"Text (| for newline)",
     be==null?"xSxLabs":be.holoText().replace('\n','|'),480);
   color=make(bx+12,by+181,92,"Color",be==null?"29D7EB":String.format("%06X",be.holoColor()),8);
@@ -196,7 +196,7 @@ public final class HologramConfigScreen extends Screen {
   int s=val(size,5,1,32),r=val(radius,1,1,12);
   ClientPacketDistributor.sendToServer(new HologramConfigPayload(
     terminal,mode,content.getValue().replace('|','\n'),c,
-    s,val(height,1,1,32),s,r));
+    s,val(heightInput,1,1,32),s,r));
   onClose();
  }
  @Override public void onClose(){
