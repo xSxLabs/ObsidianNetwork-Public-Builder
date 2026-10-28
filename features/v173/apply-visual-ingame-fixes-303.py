@@ -194,11 +194,23 @@ public final class V173WorldGhostRenderer {
   var ids=NetworkBlueprintItem.blocks(held);
   String[] states=NetworkBlueprintItem.read(held,"xsxlabs_states").split(";",-1);
   int shown=0,volume=sx*sy*sz;
-  // Geometry is capped to avoid graphics/TPS spikes on 4096-block schematics.
-  int stride=Math.max(1,(volume+255)/256);
-  for(int n=0;n<Math.min(ids.size(),volume)&&shown<256;n+=stride){
-   if("minecraft:air".equals(ids.get(n)))continue;
+  // Flat stride=16 previously sampled only x=0 in a 16^3 Blueprint.
+  // Keep the complete exposed shell when it fits; distribute larger
+  // outlines across all three axes rather than one coordinate plane.
+  final int MAX_GHOST_BLOCKS=1536;
+  int extent=Math.min(ids.size(),volume),exposed=0;
+  for(int n=0;n<extent;n++){
+   if(ghostAir(ids,n))continue;
    int dx=n%sx,dz=(n/sx)%sz,dy=n/(sx*sz);
+   if(!ghostBuried(ids,n,dx,dy,dz,sx,sy,sz))exposed++;
+  }
+  for(int n=0;n<extent&&shown<MAX_GHOST_BLOCKS;n++){
+   if(ghostAir(ids,n))continue;
+   int dx=n%sx,dz=(n/sx)%sz,dy=n/(sx*sz);
+   if(ghostBuried(ids,n,dx,dy,dz,sx,sy,sz))continue;
+   if(exposed>MAX_GHOST_BLOCKS &&
+      Math.floorMod(dx*73856093 ^ dy*19349663 ^ dz*83492791,exposed)>=MAX_GHOST_BLOCKS)
+    continue;
    int px=rot>=4?sx-1-dx:dx,pz=dz;
    switch(rot%4){
     case 1->{int old=px;px=sz-1-pz;pz=old;}
@@ -225,6 +237,18 @@ public final class V173WorldGhostRenderer {
    draw(mc,ev,cam,state,at.getX(),at.getY(),at.getZ(),1D);
    shown++;
   }
+ }
+ private static boolean ghostAir(java.util.List<String> ids,int index){
+  return index<0||index>=ids.size()||"minecraft:air".equals(ids.get(index));
+ }
+ // Only skip fully enclosed cells; frame blocks, edges and openings remain.
+ private static boolean ghostBuried(java.util.List<String> ids,int n,
+                                    int x,int y,int z,int sx,int sy,int sz){
+  if(x==0||x==sx-1||y==0||y==sy-1||z==0||z==sz-1)return false;
+  int plane=sx*sz;
+  return !ghostAir(ids,n-1)&&!ghostAir(ids,n+1)
+    &&!ghostAir(ids,n-sx)&&!ghostAir(ids,n+sx)
+    &&!ghostAir(ids,n-plane)&&!ghostAir(ids,n+plane);
  }
  @SuppressWarnings({"rawtypes","unchecked"})
  private static BlockState withProperty(BlockState state,

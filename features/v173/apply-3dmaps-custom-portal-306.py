@@ -283,6 +283,36 @@ p.write_text(s,encoding="utf-8")
 assert 'TextDisplay::discard' in s
 assert 'setStatus("MAP 3D R="+' in s
 
+
+# Align the server-side B hit detection with the full 2x3 client-rendered
+# membrane. Previously only the anchor's 1x2 hitbox teleported players.
+edit("portal/PortalGateBlockEntity.java",
+     """    if(Math.abs(player.getX()-(pos.getX()+0.5))>0.52 ||
+       Math.abs(player.getZ()-(pos.getZ()+0.5))>0.52 ||
+       player.getY()<pos.getY()-0.35 ||player.getY()>pos.getY()+1.85)continue;""",
+     """    var body=player.getBoundingBox();
+    // Real B trigger matches the two-block-wide, three-block-tall membrane.
+    if(body.maxX<pos.getX()-.25 || body.minX>pos.getX()+1.25 ||
+       body.maxY<pos.getY()+.25 || body.minY>pos.getY()+2.75 ||
+       Math.abs(player.getZ()-(pos.getZ()+.5))>.52)continue;""")
+# Do not spawn a visually 2x3 portal into walls or above world ceiling.
+edit("portal/PortalActionPayload.java",
+     "  public static void spawn(ServerPlayer player){",
+     """  private static boolean clearPortalAperture(ServerLevel level,BlockPos center){
+   if(center.getY()+2>=level.getMaxY())return false;
+   for(int x=-1;x<=1;x++)for(int y=0;y<3;y++){
+    BlockPos at=center.offset(x,y,0);
+    if(!level.hasChunkAt(at) || !level.getWorldBorder().isWithinBounds(at)
+       || !level.getBlockState(at).isAir())return false;
+   }
+   return true;
+  }
+  public static void spawn(ServerPlayer player){""")
+edit("portal/PortalActionPayload.java",
+     """   if(!level.getBlockState(pos).isAir()||!level.getBlockState(pos.above()).isAir() ||""",
+     """   if(!clearPortalAperture(level,pos) ||
+       !level.getBlockState(pos).isAir()||!level.getBlockState(pos.above()).isAir() ||""")
+
 # Minecraft 26.1.2 deliberately keeps TextDisplay's mutation methods private.
 # Use the documented, build-time NeoForge AT mechanism, not runtime reflection,
 # unsafe NBT commands or a hidden coremod. Preserve other mods' AT entries.
