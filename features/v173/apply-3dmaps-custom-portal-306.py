@@ -116,8 +116,10 @@ new=r''' private record MapVoxel(BlockState state,double x,double y,double z,
   int low=Math.max(mc.level.getMinY(),t.getY()-halfHeight);
   int high=Math.min(mc.level.getMaxY()-1,t.getY()+halfHeight);
   int side=radius*2+1;
-  int step=Math.max(1,(side+27)/28);
   int vertical=Math.max(1,(high-low+1+23)/24);
+  int samplesY=Math.max(1,(high-low+1+vertical-1)/vertical);
+  int maxAxis=Math.max(4,(int)Math.floor(Math.sqrt(2100D/samplesY)));
+  int step=Math.max(1,(side+maxAxis-1)/maxAxis);
   double scaleX=(double)be.holoWidth()/side;
   double scaleZ=(double)be.holoDepth()/side;
   double scaleY=(double)be.holoHeight()/(high-low+1);
@@ -258,6 +260,16 @@ textCode=r'''  // All legacy ArmorStand text is retired once; no duplicate overl
   setStatus("network".equals(holoMode)?message:"CUSTOM "+shown+" lines HEIGHT "+holoHeight);
 '''
 s=s[:start]+textCode+s[end:]
+# Remove the redundant server-side dust map. Only the bounded client block
+# renderer now draws MAP geometry, with no particle leftovers or extra scans.
+a=s.index('  if("map".equals(holoMode)){')
+b=s.index('  // All legacy ArmorStand text is retired once;',a)
+s=s[:a]+'''  if("map".equals(holoMode)){
+   for(ArmorStand stand:old)stand.discard();
+   for(var text:textEntities)text.discard();
+   setStatus("MAP 3D R="+holoRadius+" H="+holoHeight);return;
+  }
+'''+s[b:]
 p.write_text(s,encoding="utf-8")
-assert "HEIGHT "+ '" +holoHeight' not in s
+assert 'setStatus("MAP 3D R="+' in s
 print("V173_3DMAPS_CUSTOM_PORTAL_BLUEPRINT_306_PASS")

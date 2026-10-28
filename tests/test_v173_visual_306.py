@@ -14,7 +14,7 @@ class Build306(unittest.TestCase):
   for q in ("private static void portals(","y+2.75","x+1.75","NETWORK_PORTAL_B.get()","PURPLE_STAINED_GLASS"):
    self.assertIn(q,SRC)
  def test_map_is_volumetric_and_bounded(self):
-  for q in ("out.size()<2200","getBlockState(at.below())","scaleX","scaleY","scaleZ","lastSample>=10L"):
+  for q in ("out.size()<2200","getBlockState(at.below())","scaleX","scaleY","scaleZ","lastSample>=10L","maxAxis"):
    self.assertIn(q,SRC)
  def test_custom_height_changes_single_line_scale(self):
   for q in ("Display.TextDisplay","holoHeight/3F","entity.setTransformation","entity.setText","for(var stale:current.values())"):
