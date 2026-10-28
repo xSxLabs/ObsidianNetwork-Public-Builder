@@ -374,7 +374,7 @@ public final class PortalRenameScreen extends Screen {
 ''')
 # Hook the portal rename screen into the existing chest ScreenEvent.Opening.
 edit("powerarmor/PowerArmorExitKeyClient.java",
-     '''   if(!chest.getTitle().getString().startsWith("xSxLabs Hologram @"))return;''',
+     '''  if(!chest.getTitle().getString().startsWith("xSxLabs Hologram @"))return;''',
      '''   if(chest.getTitle().getString().startsWith("xSxLabs Portal Rename @")){
     String body=chest.getTitle().getString().substring("xSxLabs Portal Rename @".length());
     String[] parts=body.split("[|]",2);
