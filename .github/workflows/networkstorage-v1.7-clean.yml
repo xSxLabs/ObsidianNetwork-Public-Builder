@@ -699,7 +699,7 @@ jobs:
               assert ok, name
           check('conduitCanInsert' in cb and 'conduitCanExtract' in cb and 'network.endpoints' in itemtick and 'network.endpoints' in fluidtick,'independent conduit insert/extract runtime semantics')
           check('component(ServerLevel' in runtime and 'd.getOpposite()' in runtime and 'scanEndpoints' in runtime,'conduit opposite-side topology traversal')
-          check('dropUpgrades(l,d)' in cb and '>16' in cb,'upgrade drop/max semantics')
+          check('dropUpgrades(l,d)' in cb and '>8' in cb,'upgrade drop/max semantics')
           check('speed_upgrade' in block and 'stack_upgrade' in block and 'logisticsMode(ul,side)!=1' in cblock,'upgrade installation import gate uses conduit arm side')
           check('playerWillDestroy(' not in block and 'getDrops(' in block,'single break-drop pipeline')
           check(all(x in ccaps for x in ['CONDUIT_BUNDLE','Energy.BLOCK','energyHandler']),'energy capability registration')
@@ -3044,6 +3044,15 @@ jobs:
           python3 patches/item-conduit-duplicate-scan-elision.py
           # v1.7.3 user fix: 16 upgrade-driven stack transfers for cables, importer and exporter.
           python3 patches/v173-stack-upgrades-global.py
+          python3 - <<'PY'
+          from pathlib import Path
+          R=Path('work/src/main/java/dev/obsidiannetwork')
+          b=(R/'blockentity/ConduitBundleBlockEntity.java').read_text()
+          assert 'if(q.getCount()>16)q.setCount(16);' in b
+          assert 'copyRaw(in.getIntArray("mc_item_stack").orElse(new int[0]),logisticsStack[0],16);' in b
+          assert 'copyRaw(in.getIntArray("mc_fluid_stack").orElse(new int[0]),logisticsStack[1],8);' in b
+          print('V173_GLOBAL_STACK_UPGRADE_BUNDLE_16_FINAL_GATE PASS')
+          PY
           python3 - <<'PY'
           from pathlib import Path
           item=Path('work/src/main/java/dev/obsidiannetwork/conduit/ItemConduitTicker.java').read_text()
