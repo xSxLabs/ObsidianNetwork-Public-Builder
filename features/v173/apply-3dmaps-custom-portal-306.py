@@ -272,4 +272,18 @@ s=s[:a]+'''  if("map".equals(holoMode)){
 '''+s[b:]
 p.write_text(s,encoding="utf-8")
 assert 'setStatus("MAP 3D R="+' in s
+
+# Minecraft 26.1.2 deliberately keeps TextDisplay's mutation methods private.
+# Use the documented, build-time NeoForge AT mechanism, not runtime reflection,
+# unsafe NBT commands or a hidden coremod. Preserve other mods' AT entries.
+at=Path(os.environ["V1_RESOURCE_ROOT"])/"META-INF/accesstransformer.cfg"
+at.parent.mkdir(parents=True,exist_ok=True)
+entries=[
+ "public net.minecraft.world.entity.Display setTransformation(Lcom/mojang/math/Transformation;)V",
+ "public net.minecraft.world.entity.Display setBillboardConstraints(Lnet/minecraft/world/entity/Display$BillboardConstraints;)V",
+ "public net.minecraft.world.entity.Display$TextDisplay setText(Lnet/minecraft/network/chat/Component;)V",
+]
+original=at.read_text(encoding="utf-8") if at.exists() else ""
+if original and not original.endswith("\\n"): original+="\\n"
+at.write_text(original+"\\n".join(e for e in entries if e not in original)+"\\n",encoding="utf-8")
 print("V173_3DMAPS_CUSTOM_PORTAL_BLUEPRINT_306_PASS")

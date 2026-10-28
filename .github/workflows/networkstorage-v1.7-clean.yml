@@ -2573,6 +2573,8 @@ jobs:
           ! grep -Fq 'displayClientMessage(' work/src/main/java/dev/obsidiannetwork/item/NetworkSchematicQuillItem.java
           grep -Fq 'e->e.entityTags().contains(labelTag())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'entity.setTransformation(new com.mojang.math.Transformation(' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'public net.minecraft.world.entity.Display$TextDisplay setText(' work/src/main/resources/META-INF/accesstransformer.cfg
+          grep -Fq 'public net.minecraft.world.entity.Display setTransformation(' work/src/main/resources/META-INF/accesstransformer.cfg
           echo 'V173_MC261_API_COMPAT_HOLO_QUILL_VISION_PASS'
           grep -Fq 'blueprint=energy=missing=ItemStack.EMPTY;index=completed=0;sync();' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'long fromBuffer=Math.min(energyBuffer,amount);' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
