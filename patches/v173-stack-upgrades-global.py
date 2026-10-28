@@ -154,9 +154,10 @@ network=r'''   for(var src:sources){
    }
 '''
 def modify_ticker(s):
-    anchor='   for(var src:sources){'
+    anchor='for(var src:sources){'
     assert s.count(anchor)==1,("ITEM_TICKER_ANCHOR_DRIFT",s.count(anchor))
-    a=s.index(anchor)
+    i=s.index(anchor)
+    a=s.rfind('\n',0,i)+1  # preserve generated indentation changes
     # End of method and class; the previous body is the last block in tick().
     end=s.rfind('\n  }\n }')
     assert end>a and s[end+len('\n  }\n }'):].strip()=='' ,"ITEM_TICKER_END_DRIFT"
