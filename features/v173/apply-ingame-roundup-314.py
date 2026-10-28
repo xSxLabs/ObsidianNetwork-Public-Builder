@@ -388,7 +388,7 @@ edit("powerarmor/PowerArmorExitKeyClient.java",
    if(!chest.getTitle().getString().startsWith("xSxLabs Hologram @"))return;''')
 # The server opens a name-only menu for the owner, never for portal B.
 edit("portal/PortalGateBlock.java",
-     '''  @Nullable @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){''',
+     ''' @Nullable @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){''',
      r'''  private net.minecraft.world.InteractionResult rename(Level l,BlockPos p,Player player){
    if(!l.getBlockState(p).is( dev.obsidiannetwork.ObsidianNetwork.NETWORK_PORTAL_A.get()))
     return net.minecraft.world.InteractionResult.PASS;
