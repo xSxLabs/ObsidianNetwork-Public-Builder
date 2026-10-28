@@ -14,7 +14,8 @@ class Build306(unittest.TestCase):
  def test_real_portal_2x3(self):
   for q in ("private static void portals(","y+2.75","x+1.75","NETWORK_PORTAL_B.get()","PURPLE_STAINED_GLASS",
             "body.maxX<pos.getX()-.25","body.maxY<pos.getY()+.25","clearPortalAperture(level,pos)",
-            "center.getY()+2>=level.getMaxY()"):
+            "center.getY()+2>=level.getMaxY()",
+            "pos.getX()+0.5))>1.02","pos.getY()+2.85)continue;"):
    self.assertIn(q,SRC)
  def test_full_3d_blueprint_coverage(self):
   for q in ("MAX_GHOST_BLOCKS=1536","int extent=Math.min(ids.size(),volume),exposed=0",

@@ -287,9 +287,9 @@ assert 'setStatus("MAP 3D R="+' in s
 # Align the server-side B hit detection with the full 2x3 client-rendered
 # membrane. Previously only the anchor's 1x2 hitbox teleported players.
 edit("portal/PortalGateBlockEntity.java",
-     """    if(Math.abs(player.getX()-(pos.getX()+0.5))>0.52 ||
+     """    if(Math.abs(player.getX()-(pos.getX()+0.5))>1.02 ||
        Math.abs(player.getZ()-(pos.getZ()+0.5))>0.52 ||
-       player.getY()<pos.getY()-0.35 ||player.getY()>pos.getY()+1.85)continue;""",
+       player.getY()<pos.getY()-0.35 ||player.getY()>pos.getY()+2.85)continue;""",
      """    var body=player.getBoundingBox();
     // Real B trigger matches the two-block-wide, three-block-tall membrane.
     if(body.maxX<pos.getX()-.25 || body.minX>pos.getX()+1.25 ||
