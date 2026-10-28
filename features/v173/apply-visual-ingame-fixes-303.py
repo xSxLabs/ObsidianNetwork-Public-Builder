@@ -228,39 +228,75 @@ public final class V173WorldGhostRenderer {
   return (BlockState)prop.getValue(value)
            .map(v->state.setValue(prop,(Comparable)v)).orElse(state);
  }
+ private static BlockPos mapTerminal;
+ private static net.minecraft.client.multiplayer.ClientLevel mapWorld;
+ private static long lastDiscovery=Long.MIN_VALUE;
+ private static java.util.List<MapVoxel> mapSamples=java.util.List.of();
+ private static long lastSample=Long.MIN_VALUE;
+ private record MapVoxel(BlockState state,double x,double y,double z){}
  private static void map(Minecraft mc,SubmitCustomGeometryEvent ev,Vec3 cam){
-  BlockPos player=mc.player.blockPosition();
-  int shown=0;
-  // Nearby holo terminal discovery is deliberately cached per client tick.
-  // Only loaded block entities are sampled; never request remote chunks.
-  for(int ox=-8;ox<=8;ox+=4)for(int oy=-4;oy<=4;oy+=4)
-   for(int oz=-8;oz<=8;oz+=4){
-    BlockPos t=player.offset(ox,oy,oz);
-    if(!mc.level.hasChunkAt(t))continue;
-    if(!(mc.level.getBlockEntity(t) instanceof NetworkDeviceBlockEntity be)||
-       !be.holoMode().equals("map"))continue;
-    int radius=be.holoRadius(),height=be.holoHeight();
-    int low=Math.max(mc.level.getMinY(),t.getY()-height);
-    int high=Math.min(mc.level.getMaxY()-1,t.getY()+height);
-    int step=Math.max(1,(2*radius+1)/13);
-    for(int dx=-radius;dx<=radius&&shown<160;dx+=step)
-     for(int dz=-radius;dz<=radius&&shown<160;dz+=step){
-      BlockPos sample=t.offset(dx,0,dz);
-      if(!mc.level.hasChunkAt(sample))continue;
-      for(int y=high;y>=low;y--){
-       BlockPos at=new BlockPos(sample.getX(),y,sample.getZ());
-       BlockState state=mc.level.getBlockState(at);
-       if(state.isAir())continue;
-       double px=t.getX()+.5+(double)dx/radius*be.holoWidth()/2D;
-       double py=t.getY()+1.1+(double)(y-low)/Math.max(1,high-low)*be.holoHeight()*.15D;
-       double pz=t.getZ()+.5+(double)dz/radius*be.holoDepth()/2D;
-       draw(mc,ev,cam,state,px,py,pz,.20D);
-       shown++;
-       break;
-      }
+  if(mapWorld!=mc.level){
+   mapWorld=mc.level;mapTerminal=null;lastDiscovery=Long.MIN_VALUE;
+   lastSample=Long.MIN_VALUE;mapSamples=java.util.List.of();
+  }
+  NetworkDeviceBlockEntity be=null;
+  if(mapTerminal!=null&&mc.level.hasChunkAt(mapTerminal)&&
+     mc.player.blockPosition().distSqr(mapTerminal)<=256){
+   var existing=mc.level.getBlockEntity(mapTerminal);
+   if(existing instanceof NetworkDeviceBlockEntity device &&
+      device.holoMode().equals("map"))be=device;
+  }
+  if(be==null){
+   mapTerminal=null;mapSamples=java.util.List.of();
+   long now=mc.level.getGameTime();
+   if(lastDiscovery!=Long.MIN_VALUE&&now-lastDiscovery<20L)return;
+   lastDiscovery=now;
+   BlockPos player=mc.player.blockPosition();
+   // Search ALL nearby block positions, not every fourth coordinate:
+   // the previous stride-4 grid found only 1/64 of real terminals.
+   find:for(int oy=-5;oy<=5;oy++)for(int ox=-9;ox<=9;ox++)
+    for(int oz=-9;oz<=9;oz++){
+     BlockPos candidate=player.offset(ox,oy,oz);
+     if(!mc.level.hasChunkAt(candidate))continue;
+     var value=mc.level.getBlockEntity(candidate);
+     if(value instanceof NetworkDeviceBlockEntity device &&
+        device.holoMode().equals("map")){
+      mapTerminal=candidate;be=device;break find;
      }
-    return;
+    }
+   if(be==null)return;
+  }
+  long now=mc.level.getGameTime();
+  if(now!=lastSample&&
+     (lastSample==Long.MIN_VALUE||now-lastSample>=10L)){
+   lastSample=now;mapSamples=sampleMap(mc,mapTerminal,be);
+  }
+  for(MapVoxel v:mapSamples)draw(mc,ev,cam,v.state,v.x,v.y,v.z,.20D);
+ }
+ private static java.util.List<MapVoxel> sampleMap(Minecraft mc,BlockPos t,
+                                                     NetworkDeviceBlockEntity be){
+  java.util.ArrayList<MapVoxel> out=new java.util.ArrayList<>();
+  if(t==null)return out;
+  int radius=be.holoRadius(),height=be.holoHeight();
+  int low=Math.max(mc.level.getMinY(),t.getY()-height);
+  int high=Math.min(mc.level.getMaxY()-1,t.getY()+height);
+  int step=Math.max(1,(2*radius+1)/13);
+  for(int dx=-radius;dx<=radius&&out.size()<160;dx+=step)
+   for(int dz=-radius;dz<=radius&&out.size()<160;dz+=step){
+    BlockPos sample=t.offset(dx,0,dz);
+    if(!mc.level.hasChunkAt(sample))continue;
+    for(int y=high;y>=low;y--){
+     BlockPos at=new BlockPos(sample.getX(),y,sample.getZ());
+     BlockState state=mc.level.getBlockState(at);
+     if(state.isAir())continue;
+     double px=t.getX()+.5+(double)dx/radius*be.holoWidth()/2D;
+     double py=t.getY()+1.1+(double)(y-low)/Math.max(1,high-low)*be.holoHeight()*.15D;
+     double pz=t.getZ()+.5+(double)dz/radius*be.holoDepth()/2D;
+     out.add(new MapVoxel(state,px,py,pz));
+     break;
+    }
    }
+  return out;
  }
 }
 ''',encoding="utf-8")
