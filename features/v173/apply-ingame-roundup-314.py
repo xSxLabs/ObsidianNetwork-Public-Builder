@@ -225,10 +225,10 @@ public final class HologramConfigScreen extends Screen {
 
 # Tool Belt-like wheel: hold G, point, RELEASE G to activate. No extra click.
 wheel="client/NetworkActionWheelClient.java"
-edit(wheel,"   if(cursorReleased){\n    mc.mouseHandler.grabMouse();",
-     "   if(cursorReleased){\n    if(mc.player!=null&&mc.screen==null&&selected>=0)activate(selected);\n    mc.mouseHandler.grabMouse();")
+edit(wheel,"   if(cursorReleased){\n    cursorReleased=false;\n    if(mc.player!=null&&mc.screen==null)mc.mouseHandler.grabMouse();",
+     "   if(cursorReleased){\n    if(mc.player!=null&&mc.screen==null&&selected>=0)activate(selected);\n    cursorReleased=false;\n    if(mc.player!=null&&mc.screen==null)mc.mouseHandler.grabMouse();")
 p=J/wheel;s=p.read_text(encoding="utf-8")
-start='  if(down&&!wasMouseDown&&selected>=0){'
+start='  if(open&&cursorReleased&&down&&!wasMouseDown&&selected>=0){'
 end='  wasMouseDown=down;'
 assert s.count(start)==1 and s.count(end)==1,("wheel input drift",s.count(start),s.count(end))
 a=s.index(start);b=s.index(end,a)
@@ -245,6 +245,15 @@ s=s.replace(start,''' private static void activate(int action){
   }
  }
 '''+start,1)
+# The earlier Build258 fix only selects the old rectangular panels.
+# Radial geometry must also have radial hit testing.
+start='  selected=-1;\n   if(distance>=24){'
+end='  boolean down=GLFW.glfwGetMouseButton'
+assert s.count(start)==1 and s.count(end)==1,("wheel radial drift",s.count(start),s.count(end))
+a=s.index(start);b=s.index(end,a)
+s=s[:a]+'''  selected=distance<27||distance>108?-1:
+    (Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?2:0));
+'''+s[b:]
 # Four radial slices with a gap and center hub, instead of overlapping boxes.
 start='  g.fill(x-135,y-135,x+135,y+135,0xB9091726);'
 end=' }\n}\n'
