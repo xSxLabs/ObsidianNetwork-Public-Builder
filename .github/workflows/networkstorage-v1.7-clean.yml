@@ -2540,7 +2540,7 @@ jobs:
           grep -Fq 'V173_PORTAL_MENU' work/src/main/java/dev/obsidiannetwork/portal/PortalSelectMenu.java
           echo 'V173_PORTAL_PICKER_BUILD208_SOURCES_PASS'
           grep -Fq 'V173_HOLOGRAM_THREE_MODES' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
-          grep -Fq 'V173_HOLOGRAM_GUI' work/src/main/java/dev/obsidiannetwork/client/HologramConfigScreen.java
+          grep -Fq 'V173_HOLO_SLOT_FREE_314' work/src/main/java/dev/obsidiannetwork/client/HologramConfigScreen.java
           echo 'V173_HOLOGRAM_3_MODES_BUILD207_SOURCES_PASS'
           grep -Fq 'V173_BUILD204_FIELD_REPAIRS_PASS' /dev/null || true
           test -f work/src/main/java/dev/obsidiannetwork/client/NetworkBlueprintPreviewClient.java
