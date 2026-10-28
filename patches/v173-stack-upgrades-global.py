@@ -158,10 +158,21 @@ def modify_ticker(s):
     assert s.count(anchor)==1,("ITEM_TICKER_ANCHOR_DRIFT",s.count(anchor))
     i=s.index(anchor)
     a=s.rfind('\n',0,i)+1  # preserve generated indentation changes
-    # End of method and class; the previous body is the last block in tick().
-    end=s.rfind('\n  }\n }')
-    assert end>a and s[end+len('\n  }\n }'):].strip()=='' ,"ITEM_TICKER_END_DRIFT"
-    return s[:a]+network+s[end:]
+    # Locate the matching for-loop brace; decompilation/CI may alter
+    # method indentation, so never rely on text at the end of the class.
+    opening=s.index('{',i)
+    depth=0
+    end=-1
+    for cursor in range(opening,len(s)):
+        if s[cursor]=='{':
+            depth+=1
+        elif s[cursor]=='}':
+            depth-=1
+            if depth==0:
+                end=cursor+1
+                break
+    assert end>a and depth==0 and 'sourceSlotCursor.put' in s[a:end], "ITEM_TICKER_FOR_LOOP_DRIFT"
+    return s[:a]+network.rstrip('\n')+s[end:]
 edit_file("conduit/ItemConduitTicker.java",modify_ticker)
 
 # Bundle ITEM upgrades also accept sixteen (formerly silently clipped to 8).
