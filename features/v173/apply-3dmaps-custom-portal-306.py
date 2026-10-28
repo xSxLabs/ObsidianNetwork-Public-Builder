@@ -270,7 +270,17 @@ s=s[:a]+'''  if("map".equals(holoMode)){
    setStatus("MAP 3D R="+holoRadius+" H="+holoHeight);return;
   }
 '''+s[b:]
+# A removed terminal MUST not strand an invisible/invulnerable TextDisplay.
+# Older versions only removed the former ArmorStand nameplates.
+cleanup='      e->e.entityTags().contains(labelTag())).forEach(ArmorStand::discard);'
+assert s.count(cleanup)==1,("text cleanup drift",s.count(cleanup))
+s=s.replace(cleanup,cleanup+'''
+    world.getEntitiesOfClass(net.minecraft.world.entity.Display.TextDisplay.class,
+       new AABB(worldPosition).inflate(4,40,4),
+       e->e.entityTags().contains(labelTag()))
+       .forEach(net.minecraft.world.entity.Display.TextDisplay::discard);''',1)
 p.write_text(s,encoding="utf-8")
+assert 'TextDisplay::discard' in s
 assert 'setStatus("MAP 3D R="+' in s
 
 # Minecraft 26.1.2 deliberately keeps TextDisplay's mutation methods private.

@@ -17,7 +17,7 @@ class Build306(unittest.TestCase):
   for q in ("out.size()<2200","getBlockState(at.below())","scaleX","scaleY","scaleZ","lastSample>=10L","maxAxis"):
    self.assertIn(q,SRC)
  def test_custom_height_changes_single_line_scale(self):
-  for q in ("Display.TextDisplay","holoHeight/3F","entity.setTransformation","entity.setText","for(var stale:current.values())","META-INF/accesstransformer.cfg"):
+  for q in ("Display.TextDisplay","holoHeight/3F","entity.setTransformation","entity.setText","for(var stale:current.values())","META-INF/accesstransformer.cfg","TextDisplay::discard"):
    self.assertIn(q,SRC)
  def test_workflow(self):
   a="python3 features/v173/apply-visual-ingame-fixes-303.py"
