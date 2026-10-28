@@ -284,6 +284,6 @@ entries=[
  "public net.minecraft.world.entity.Display$TextDisplay setText(Lnet/minecraft/network/chat/Component;)V",
 ]
 original=at.read_text(encoding="utf-8") if at.exists() else ""
-if original and not original.endswith("\\n"): original+="\\n"
-at.write_text(original+"\\n".join(e for e in entries if e not in original)+"\\n",encoding="utf-8")
+if original and not original.endswith("\n"): original+="\n"
+at.write_text(original+"\n".join(e for e in entries if e not in original)+"\n",encoding="utf-8")
 print("V173_3DMAPS_CUSTOM_PORTAL_BLUEPRINT_306_PASS")
