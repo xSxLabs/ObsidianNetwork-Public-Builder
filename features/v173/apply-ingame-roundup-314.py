@@ -247,7 +247,7 @@ s=s.replace(start,''' private static void activate(int action){
 '''+start,1)
 # The earlier Build258 fix only selects the old rectangular panels.
 # Radial geometry must also have radial hit testing.
-start='  selected=-1;\n   if(distance>=24){'
+start='  selected=-1;'
 end='  boolean down=GLFW.glfwGetMouseButton'
 assert s.count(start)==1 and s.count(end)==1,("wheel radial drift",s.count(start),s.count(end))
 a=s.index(start);b=s.index(end,a)
