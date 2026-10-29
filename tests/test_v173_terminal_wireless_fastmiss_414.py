@@ -43,7 +43,9 @@ class WirelessTerminalFastMiss414(unittest.TestCase):
             "if(!seen.add(at))continue;",
             "Layer.NETWORK","!seen.contains(neighbor)"):
    self.assertIn(t,PATCH)
-  self.assertNotIn("Layer.ENERGY",PATCH)
+  # The patch script itself contains a defensive assertion naming ENERGY;
+  # verify that assertion here, then inspect generated Java when available.
+  self.assertIn('assert "Layer.ENERGY" not in s',PATCH)
   self.assertNotIn("storage().insert",PATCH)
   self.assertNotIn("storage().extract",PATCH)
  def test_patch_does_not_touch_portals_or_jei(self):
