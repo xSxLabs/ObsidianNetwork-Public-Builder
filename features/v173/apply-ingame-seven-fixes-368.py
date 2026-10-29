@@ -164,7 +164,10 @@ a=s.index(" // V173_VOLUME_MAP_327: genuine exposed blocks")
 b=s.index(" private static net.minecraft.client.multiplayer.ClientLevel portalWorld;",a)
 # A fixed Y interval is used for EVERY column, not a variable
 # surfaceHeight[ix][iz]-depth that produces broken hanging fragments.
-volume=r''' // B368_MAP_FIXED_VOLUME: true blockstates from a uniform world Y slice.
+volume=r''' // V173_VOLUME_MAP_327: real volumetric map, updated by B368.
+ // V173_B357_MAP_BOTTOM_ALIGNED: entire mini-volume is anchored to tabletop.
+ // Radius = chunks, not blocks; no surface-only depth or random truncation.
+ // B368_MAP_FIXED_VOLUME: true blockstates from a uniform world Y slice.
  // Project the entire volume ABOVE the table at HEIGHT 1; do not use
  // independent depth limits per column, fake stone skirts, or surface-only LOD.
  private static java.util.List<MapVoxel> sampleMap(Minecraft mc,BlockPos t,
