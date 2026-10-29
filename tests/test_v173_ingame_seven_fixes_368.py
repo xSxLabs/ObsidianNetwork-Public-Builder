@@ -69,6 +69,18 @@ class IngameSevenFixes368(unittest.TestCase):
       target=table_y+height
       lowest=sampled[-1]*0.04
       self.assertAlmostEqual(lowest+(target-lowest),target)
+  # B376 regression: map replacement must start at the sampler METHOD,
+  # not at a preceding comment that now sits above networkProjection().
+  self.assertIn('a=s.index(" private static java.util.List<MapVoxel> sampleMap(',s)
+  self.assertIn('B376_NETWORK_PRESERVATION_DRIFT',s)
+  self.assertIn('B376_MAP_METHOD_BOUNDARY_DRIFT',s)
+  self.assertIn('B376_NETWORK_ERASED',s)
+  for marker in ("V173_B351_EXACT_NETWORK_SIZE",
+                 "V173_B354_BUNDLE_NETWORK_LANE",
+                 "V173_B357_NETWORK_BASELINE",
+                 "V173_B362_BUNDLE_CONNECTIONS"):
+   self.assertIn(marker,s)
+  self.assertNotIn('a=s.index(" // V173_VOLUME_MAP_327: genuine exposed blocks")',s)
   # Map is not an inconsistent surfaceHeight[ix][iz]-depth scan anymore.
   volume=s[s.index("volume=r'''"):s.index("s=s[:a]+volume")]
   self.assertNotIn("surfaceHeight[ix][iz]",volume)

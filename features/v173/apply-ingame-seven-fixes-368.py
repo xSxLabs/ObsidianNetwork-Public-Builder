@@ -160,8 +160,20 @@ change(renderer,
     return;
    }''')
 p=file(renderer);s=p.read_text(encoding="utf-8")
-a=s.index(" // V173_VOLUME_MAP_327: genuine exposed blocks")
+# B376: B348 inserted networkProjection BETWEEN the old MAP comment and
+# sampleMap(). Replacing from that old comment removed the whole 3D network
+# renderer (and its B351/B354/B357/B362 fixes) without failing the patch.
+# Replace the sampler METHOD ONLY; preserve all already working 3D renderers.
+a=s.index(" private static java.util.List<MapVoxel> sampleMap(Minecraft mc,BlockPos t,")
 b=s.index(" private static net.minecraft.client.multiplayer.ClientLevel portalWorld;",a)
+network_before=s[:a]
+for required in ("private static void networkProjection(",
+                 "V173_B351_EXACT_NETWORK_SIZE",
+                 "V173_B354_BUNDLE_NETWORK_LANE",
+                 "V173_B357_NETWORK_BASELINE",
+                 "V173_B362_BUNDLE_CONNECTIONS"):
+ assert required in network_before,("B376_NETWORK_PRESERVATION_DRIFT",required)
+assert a<b,("B376_MAP_METHOD_BOUNDARY_DRIFT",a,b)
 # A fixed Y interval is used for EVERY column, not a variable
 # surfaceHeight[ix][iz]-depth that produces broken hanging fragments.
 volume=r''' // V173_VOLUME_MAP_327: real volumetric map, updated by B368.
@@ -226,6 +238,18 @@ volume=r''' // V173_VOLUME_MAP_327: real volumetric map, updated by B368.
 
 '''
 s=s[:a]+volume+s[b:]
+# The old MAP header was moved above the B348 network renderer in B348.
+# Drop only that stale header; the replacement includes its own MAP marker.
+obsolete=" // V173_VOLUME_MAP_327: genuine exposed blocks in the miniature, not just a surface skin."
+assert s.count(obsolete)==1,("B376_OLD_MAP_HEADER_DRIFT",s.count(obsolete))
+s=s.replace(obsolete,"",1)
+for required in ("private static void networkProjection(",
+                 "V173_B351_EXACT_NETWORK_SIZE",
+                 "V173_B354_BUNDLE_NETWORK_LANE",
+                 "V173_B357_NETWORK_BASELINE",
+                 "V173_B362_BUNDLE_CONNECTIONS",
+                 "B368_MAP_FIXED_VOLUME"):
+ assert required in s,("B376_NETWORK_ERASED",required)
 p.write_text(s,encoding="utf-8")
 
 # ---- Wheel: labels at EXACT centers of the same 4/5 angular sectors ----
