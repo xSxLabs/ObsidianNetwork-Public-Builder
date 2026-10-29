@@ -82,7 +82,7 @@ register=" @SubscribeEvent public static void register(RegisterKeyMappingsEvent 
 assert s.count(register)==1
 s=s.replace(register,''' // Five equal radial slices, clockwise from the upper sector:
  // EXIT, PORTAL B, VISION, RECALL, PORTAL A.
- private static int wheelSector(int dx,int dy,boolean vision){
+ private static int wheelSector(double dx,double dy,boolean vision){
   if(!vision)return Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?2:0);
   double angle=Math.atan2(dy,dx)+Math.PI/2D;
   if(angle<0)angle+=Math.PI*2D;

@@ -13,6 +13,7 @@ class TestVisionHoloWheel337(unittest.TestCase):
   self.assertIn('entity.setText(Component.literal(line)',s)
   self.assertIn('if("map".equals(holoMode)){',s)
  def test_radial_wheel_no_box(self):
+  self.assertIn('wheelSector(double dx,double dy,boolean vision)',P.read_text(encoding='utf-8'))
   s=P.read_text(encoding="utf-8")
   for x in ('B337_CIRCULAR_FIVE_WEDGE','wheelSector','radius2<28*28||radius2>103*103'):
    self.assertIn(x,s)
