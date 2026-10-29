@@ -185,6 +185,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_hologram_network_lanes_354.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_hologram_height_up_357.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_hologram_text_bundle_362.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_armor_fe_bar_stability_365.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
@@ -2548,6 +2549,7 @@ jobs:
           python3 features/v173/apply-hologram-network-lanes-354.py
           python3 features/v173/apply-hologram-height-up-357.py
           python3 features/v173/apply-hologram-text-bundle-362.py
+          python3 features/v173/apply-armor-fe-bar-stability-365.py
           grep -Fq 'V173_B338_CABLE_MODEL_REVEAL' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           grep -Fq 'V173_B345_HOLO_VISIBLE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'V173_B348_NETWORK_3D' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
@@ -2557,6 +2559,8 @@ jobs:
           grep -Fq 'V173_B357_MAP_BOTTOM_ALIGNED' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_B362_TEXT_ORDER' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_B362_BUNDLE_CONNECTIONS' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
+          grep -Fq 'V173_B365_STABLE_ARMOR_FE_BAR' work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java
+          grep -Fq 'Math.round(13.0D*energy(s)/(double)capacity(s))' work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java
           grep -Fq 'V173_B357_SERVER_TEXT_UP' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'HEIGHT 1 = tabletop; each +1 moves up 1 block' work/src/main/java/dev/obsidiannetwork/client/HologramConfigScreen.java
           grep -Fq 'Display$TextDisplay setFlags(B)V' work/src/main/resources/META-INF/accesstransformer.cfg
