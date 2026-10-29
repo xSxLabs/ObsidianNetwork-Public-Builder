@@ -2661,7 +2661,8 @@ jobs:
           grep -Fq 'public net.minecraft.world.entity.Display setTransformation(' work/src/main/resources/META-INF/accesstransformer.cfg
           grep -Fq 'TextDisplay::discard' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           echo 'V173_MC261_API_COMPAT_HOLO_QUILL_VISION_PASS'
-          grep -Fq 'blueprint=energy=missing=ItemStack.EMPTY;index=completed=0;sync();' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          # B396: Reset must clear the installed printer speed upgrades as well.
+          grep -Fq 'blueprint=energy=missing=b392Speed=ItemStack.EMPTY;index=completed=0;sync();' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'long fromBuffer=Math.min(energyBuffer,amount);' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'int off=0;' work/src/main/java/dev/obsidiannetwork/client/NetworkPrinterScreen.java
           grep -Fq 'missing=material.copyWithCount(1)' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java

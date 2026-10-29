@@ -50,4 +50,7 @@ class TestIngame392(unittest.TestCase):
    self.assertIn(t,s)
   self.assertLess(s.index("apply-blueprint-printer-state-cache-391.py"),
                   s.index("apply-map-full-height-392.py"))
+  # B396: the old pre-speed-upgrade reset assertion must not break CI.
+  self.assertIn("blueprint=energy=missing=b392Speed=ItemStack.EMPTY;index=completed=0;sync();",s)
+  self.assertNotIn("blueprint=energy=missing=ItemStack.EMPTY;index=completed=0;sync();",s)
 if __name__=="__main__": unittest.main()
