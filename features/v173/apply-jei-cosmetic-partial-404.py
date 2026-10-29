@@ -131,7 +131,7 @@ new=r'''   private static final class SourceStock {
       @Override public void getTooltip(mezz.jei.api.gui.builder.ITooltipBuilder tooltip) {
          tooltip.add(Component.translatable("gui.obsidiannetwork.jei_missing_partial",missing.size()));
       }
-      @Override public void showError(net.minecraft.client.gui.GuiGraphics graphics,
+      @Override public void showError(net.minecraft.client.gui.GuiGraphicsExtractor graphics,
            int mouseX,int mouseY,IRecipeSlotsView slots,int recipeX,int recipeY) {
          graphics.pose().pushMatrix();
          graphics.pose().translate(recipeX,recipeY);
