@@ -2571,6 +2571,9 @@ jobs:
           # Build398: unfinished Holo Terminal, Printer, Schematic and Quill -> WIP.
           python3 features/v173/apply-wip-hide-398.py
           python3 tests/test_v173_wip_hide_398.py
+          # B404 v1.7.3 priority JEI: cosmetic red missing slots; PLUS stays clickable.
+          python3 features/v173/apply-jei-cosmetic-partial-404.py
+          python3 tests/test_v173_jei_cosmetic_partial_404.py
           grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXACT_MAP_FOOTPRINT' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXPOSED_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
