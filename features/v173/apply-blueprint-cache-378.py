@@ -41,5 +41,10 @@ s=s.replace(anchor,''' private static ItemStack b378PreviewSource=ItemStack.EMPT
  private static java.util.List<String> b378PreviewBlocks=java.util.List.of();
  private static String[] b378PreviewStates=new String[0];
 '''+anchor,1)
+# Build387: the original preview uses var held and lacks ItemStack import.
+assert "import net.minecraft.world.item.ItemStack;" not in s
+assert s.count("package dev.obsidiannetwork.client;")==1
+s=s.replace("package dev.obsidiannetwork.client;",
+            "package dev.obsidiannetwork.client;\nimport net.minecraft.world.item.ItemStack;",1)
 p.write_text(s,encoding="utf-8")
 print("B378_BLUEPRINT_PLAN_CACHES_PASS")
