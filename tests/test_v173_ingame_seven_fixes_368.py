@@ -29,6 +29,10 @@ class IngameSevenFixes368(unittest.TestCase):
   # Both ingredients are validated independently from their exact key.
   self.assertIn("assert len(tests)==2",s)
   self.assertIn("assert len(all_missing)==1",s)
+  self.assertIn('(?P<slot>[A-Za-z_]',s)
+  self.assertIn('slot=m.group("slot")',s)
+  self.assertIn("section=section[:m.start()]+f'''if({slot}<0)",s)
+  self.assertNotIn("section=section[:m.start()]+'''// B368_PARTIAL_INGREDIENTS",s)
   self.assertNotIn("runtime.storage().extract(key, 64L)",s)
 
  def test_jei_client_preview_allows_partial_transfer(self):

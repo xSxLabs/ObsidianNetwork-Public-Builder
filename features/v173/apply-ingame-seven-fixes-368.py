@@ -36,13 +36,18 @@ for m in reversed(tests):
 # Bytecode of green B367 verifies EXACTLY one best-inventory-slot <0 early
 # return inside the 9-ingredient planning loop. Continue means empty slot;
 # commit phase already skips ItemStack.EMPTY and preserves exact extraction.
-missing=re.compile(r'if\s*\(\s*[A-Za-z_]\w*\s*<\s*0\s*\)\s*(?:\{\s*)?return\s*;\s*(?:\})?')
+missing=re.compile(r'if\s*\(\s*(?P<slot>[A-Za-z_]\w*)\s*<\s*0\s*\)\s*(?:\{\s*)?return\s*;\s*(?:\})?')
 all_missing=list(missing.finditer(section))
 assert len(all_missing)==1,("B368_JEI_MISSING_SLOT_DRIFT",[m.group(0) for m in all_missing])
 m=all_missing[0]
-section=section[:m.start()]+'''// B368_PARTIAL_INGREDIENTS: do not abort for one unavailable ingredient.
-                     // The planned ItemStack.EMPTY remains untouched for this slot.
-                     continue;'''+section[m.end():]
+# B377: the old replacement removed the ENTIRE if condition, making
+# continue unconditional and the next sourceInv assignment unreachable.
+# Keep the original found-slot condition and skip ONLY missing ingredients.
+slot=m.group("slot")
+section=section[:m.start()]+f'''if({slot}<0){{
+                     // B368_PARTIAL_INGREDIENTS: missing slot alone stays EMPTY.
+                     continue;
+                    }}'''+section[m.end():]
 assert "reservedNet.merge(bestKey, 1L, Math::addExact);" in section
 assert "runtime.storage().extract(desc[ixx].key(), 1L)" in section
 assert "runtime.storage().insertExact(desc[ixxx].key(), desc[ixxx].canonicalPayload(), 1L)" in section
