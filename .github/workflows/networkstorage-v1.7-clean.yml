@@ -187,6 +187,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_hologram_text_bundle_362.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_armor_fe_bar_stability_365.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_ingame_seven_fixes_368.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_map_blueprint_378.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
@@ -2552,6 +2553,13 @@ jobs:
           python3 features/v173/apply-hologram-text-bundle-362.py
           python3 features/v173/apply-armor-fe-bar-stability-365.py
           python3 features/v173/apply-ingame-seven-fixes-368.py
+          python3 features/v173/apply-map-isotropic-378.py
+          python3 features/v173/apply-blueprint-limits-378.py
+          python3 features/v173/apply-blueprint-compression-378.py
+          python3 features/v173/apply-blueprint-cache-378.py
+          grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
+          grep -Fq 'B378_COMPRESSED_BLUEPRINT' work/src/main/java/dev/obsidiannetwork/item/NetworkBlueprintItem.java
+          grep -Fq 'B378_PRINTER_PLAN_CACHE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           set -x  # B375_DIAGNOSE_EXACT_CI_SOURCE_GUARD; turn off after source gates.
           grep -Fq 'V173_B338_CABLE_MODEL_REVEAL' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           grep -Fq 'V173_B345_HOLO_VISIBLE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
