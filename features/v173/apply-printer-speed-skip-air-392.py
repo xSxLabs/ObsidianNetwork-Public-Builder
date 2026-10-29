@@ -100,9 +100,12 @@ be.write_text(s,encoding="utf-8")
 
 menu=J/"menu/NetworkPrinterMenu.java"
 m=menu.read_text(encoding="utf-8")
-assert m.count("if(slotId>=2&&slotId<27)return;")==2
+assert m.count("if(slotId>=2&&slotId<27)return;")==1
+assert m.count("if(slotId>=2&&slotId<27)return ItemStack.EMPTY;")==1
 m=m.replace("if(slotId>=2&&slotId<27)return;",
-'''if(slotId>=2&&slotId<27&&slotId!=3)return;''')
+            "if(slotId>=2&&slotId<27&&slotId!=3)return;",1)
+m=m.replace("if(slotId>=2&&slotId<27)return ItemStack.EMPTY;",
+            "if(slotId>=2&&slotId<27&&slotId!=3)return ItemStack.EMPTY;",1)
 anchor='''  }
  }
  /** V173_PRINTER_GHOST_LOCK217:'''
