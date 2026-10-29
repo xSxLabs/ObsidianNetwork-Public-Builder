@@ -49,7 +49,7 @@ class TestB378(unittest.TestCase):
                  "BlueprintPlacementPayload.java"):
    self.assertIn(phrase,s)
   self.assertIn("Blueprint too large for available server memory",s)
-  self.assertNotIn("volume>4096L||sx>16",s)
+  self.assertIn("volume<=0L||volume>NetworkBlueprintItem.MAX_BLOCKS",s)
  def test_item_storage_and_preview_memory(self):
   s=CODEC.read_text(encoding="utf-8")
   self.assertIn("GZIPInputStream",s)
