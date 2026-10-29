@@ -106,17 +106,24 @@ m=m.replace("if(slotId>=2&&slotId<27)return;",
             "if(slotId>=2&&slotId<27&&slotId!=3)return;",1)
 m=m.replace("if(slotId>=2&&slotId<27)return ItemStack.EMPTY;",
             "if(slotId>=2&&slotId<27&&slotId!=3)return ItemStack.EMPTY;",1)
-anchor='''  }
- }
- /** V173_PRINTER_GHOST_LOCK217:'''
-assert m.count(anchor)==1,("B392_PRINTER_MENU_DRIFT",m.count(anchor))
-m=m.replace(anchor,'''  }
-  // B392 real speed-upgrade slot; ghost slot 2 remains protected.
+# B395 robust constructor insertion.
+start=m.index(" public NetworkPrinterMenu(")
+opening=m.index("{",start)
+depth=0
+closing=-1
+for index in range(opening,len(m)):
+ if m[index]=="{":depth+=1
+ elif m[index]=="}":
+  depth-=1
+  if depth==0:
+   closing=index
+   break
+assert closing>opening and m.count("slots.set(3,")==0
+m=m[:closing]+'''  // B392 Speed Upgrade slot, never expose Missing slot.
   slots.set(3,new Slot(be,3,62,18){
    @Override public boolean mayPlace(ItemStack stack){return be.canPlaceItem(3,stack);}
   });
- }
- /** V173_PRINTER_GHOST_LOCK217:''',1)
+ '''+m[closing:]
 menu.write_text(m,encoding="utf-8")
 
 gui=J/"client/NetworkPrinterScreen.java"
