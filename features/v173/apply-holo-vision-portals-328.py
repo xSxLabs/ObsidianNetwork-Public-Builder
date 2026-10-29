@@ -275,10 +275,10 @@ transform("client/ClientModEvents.java",
 
 wheel="client/NetworkActionWheelClient.java"
 transform(wheel,
- '''    default->{}
-   }
+ '''   default->{}
   }
-  @SubscribeEvent public static void register''',
+ }
+ @SubscribeEvent public static void register''',
  '''    case 4->NetworkVisionClient.toggleFromWheel();
     default->{}
    }
