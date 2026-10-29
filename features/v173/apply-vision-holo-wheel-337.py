@@ -154,7 +154,7 @@ ghost.write_text(gs.replace(previous,replacement,1),encoding="utf-8")
 
 assert "B340_EXACT_CIRCLE" in wheel.read_text()
 assert "B340_HOLO_SINGLE_OWNER" in ghost.read_text()
-assert "B337_CIRCULAR_FIVE_WEDGE" in wheel.read_text()
+assert "while(stop<=maxX)" in wheel.read_text()
 assert "B337_REAL_BLOCKS" in vision.read_text()
 assert 'if("map".equals(holoMode)){' in machine
 print("V173_B340_EXACT_CIRCLE_SINGLE_OWNER_HOLO_PASS")
