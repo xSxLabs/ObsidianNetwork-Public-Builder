@@ -91,7 +91,7 @@ change(be,
  ''' // B368_MAP_START_WORLD_Y: default above local terminal; persisted thereafter.
  private int holoMapStartY=Integer.MIN_VALUE;
  public int holoMapStartY(){return holoMapStartY==Integer.MIN_VALUE?
-                         worldPosition.getY()+16:holoMapStartY;}
+                         worldPosition.getY()+8:holoMapStartY;}
  public String holoMode(){return holoMode;}''')
 change(be,
  'int depth,int radius){',
@@ -134,7 +134,7 @@ change(screen,
  '''  heightInput=make(bx+160,by+85,85,"Height above table",be==null?"1":""+be.holoHeight(),3);
   // B368_MAP_GUI_Y_DEPTH: only MAP exposes a fixed world vertical slice.
   startY=make(bx+12,by+127,85,"Start world Y",be==null?"80":""+be.holoMapStartY(),4);
-  depthInput=make(bx+108,by+127,85,"Depth blocks",be==null?"32":""+be.holoDepth(),3);''')
+  depthInput=make(bx+108,by+127,85,"Depth blocks",be==null?"48":(!"map".equals(be.holoMode())&&be.holoDepth()<16?"48":""+be.holoDepth()),3);''')
 change(screen,
  '  radius.visible=map;radius.active=map;',
  '''  radius.visible=map;radius.active=map;
@@ -142,7 +142,7 @@ change(screen,
   depthInput.visible=map;depthInput.active=map;''')
 change(screen,
  's,val(heightInput,1,1,32),s,r));',
- 's,val(heightInput,1,1,32),val(depthInput,32,1,128),r,val(startY,80,-64,512)));')
+ 's,val(heightInput,1,1,32),val(depthInput,48,1,128),r,val(startY,80,-64,512)));')
 change(screen,
  '   g.text(font,"3D terrain map - automatic size and proportions",bx+12,by+126,0xffd3e4f1);',
  '   g.text(font,"START WORLD Y     DEPTH (BLOCKS)",bx+12,by+112,0xffd3e4f1);')
