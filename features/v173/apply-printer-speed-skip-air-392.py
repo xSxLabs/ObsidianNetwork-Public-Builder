@@ -49,11 +49,11 @@ change('''  if(net==null){setStatus("NETWORK OFFLINE");return;}''',
   if(net==null){setStatus("NETWORK OFFLINE");return;}''')
 change('''  if(!(level instanceof ServerLevel world)||world.getGameTime()%WORK_TICKS!=0)return;
   if(be.mode()==NetworkDeviceBlock.Mode.HOLOGRAM){
-   if(world.getGameTime()%40==0)be.hologram(world);
+   if(world.getGameTime()%("map".equals(be.holoMode)?10:40)==0)be.hologram(world);
   }else if(be.mode()==NetworkDeviceBlock.Mode.PRINTER)be.printer(world,be.network(world));''',
 '''  if(!(level instanceof ServerLevel world)||world.getGameTime()%WORK_TICKS!=0)return;
   if(be.mode()==NetworkDeviceBlock.Mode.HOLOGRAM){
-   if(world.getGameTime()%40==0)be.hologram(world);
+   if(world.getGameTime()%("map".equals(be.holoMode)?10:40)==0)be.hologram(world);
   }else if(be.mode()==NetworkDeviceBlock.Mode.PRINTER){
    // B392_SPEED_BATCH: base 1 action/5 ticks, +1 per installed upgrade,
    // maximum 17 positions/5 ticks. Stop at first missing/block/error.
