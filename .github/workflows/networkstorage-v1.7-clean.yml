@@ -179,6 +179,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_holo_vision_portal_328.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_vision_holo_wheel_337.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_vision_model_338.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_holo_text_visibility_345.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
@@ -2536,7 +2537,10 @@ jobs:
           python3 features/v173/apply-holo-vision-portals-328.py
           python3 features/v173/apply-vision-holo-wheel-337.py
           python3 features/v173/apply-vision-model-338.py
+          python3 features/v173/apply-holo-text-visibility-345.py
           grep -Fq 'V173_B338_CABLE_MODEL_REVEAL' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
+          grep -Fq 'V173_B345_HOLO_VISIBLE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'Display$TextDisplay setFlags(B)V' work/src/main/resources/META-INF/accesstransformer.cfg
           grep -Fq 'B340_EXACT_CIRCLE' work/src/main/java/dev/obsidiannetwork/client/NetworkActionWheelClient.java
           grep -Fq 'V173_B337_REAL_BLOCKS' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
           grep -Fq 'V173_B337_WORLD_VISION' /dev/null || true
