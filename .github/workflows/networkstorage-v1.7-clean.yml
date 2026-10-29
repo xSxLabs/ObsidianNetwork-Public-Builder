@@ -2532,6 +2532,10 @@ jobs:
           python3 features/v173/apply-ingame-roundup-314.py
           python3 features/v173/apply-map-volumetric-327.py
           python3 features/v173/apply-holo-vision-portals-328.py
+          python3 features/v173/apply-vision-holo-wheel-337.py
+          grep -Fq 'B337_CIRCULAR_FIVE_WEDGE' work/src/main/java/dev/obsidiannetwork/client/NetworkActionWheelClient.java
+          grep -Fq 'V173_B337_REAL_BLOCKS' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
+          grep -Fq 'V173_B337_WORLD_VISION' /dev/null || true
           grep -Fq 'V173_HOLO_RENDER_328' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_PORTALGUN_1X2_328' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_VISION_FACADE_ONLY_328' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
