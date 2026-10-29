@@ -16,6 +16,12 @@ class Test328(unittest.TestCase):
   self.assertNotIn("NETWORK_PLANTER",vision)
   self.assertNotIn("NETWORK_PRINTER",vision)
   self.assertNotIn("addParticle",vision)
+ def test_importer_exporter_visibility(self):
+  s=P.read_text(encoding="utf-8")
+  self.assertIn('boolean input=id.equals("importer")',s)
+  self.assertIn('boolean output=id.equals("exporter")',s)
+  self.assertIn('if(cable&&(!(mc.level.getBlockEntity(p) instanceof',s)
+  self.assertNotIn('if(!(mc.level.getBlockEntity(p) instanceof',s)
  def test_portal_1x2(self):
   s=P.read_text(encoding="utf-8")
   for v in ("V173_PORTALGUN_1X2_328","Blocks.LIGHT_BLUE_STAINED_GLASS","Blocks.ORANGE_STAINED_GLASS","return box(0,0,6,16,32,10);","+1.85"):

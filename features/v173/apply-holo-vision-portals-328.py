@@ -310,9 +310,12 @@ public final class NetworkVisionClient {
      boolean input=id.equals("importer")||id.endsWith("_importer");
      boolean output=id.equals("exporter")||id.endsWith("_exporter");
      if(!cable&&!input&&!output)continue;
-     if(!(mc.level.getBlockEntity(p) instanceof
+     // Importer and Exporter are attachment plates, not FacadeCable.
+     // Only cables need to be camouflaged; keep the two IO nodes visible
+     // in Network Vision even when their own block entities lack a facade.
+     if(cable&&(!(mc.level.getBlockEntity(p) instanceof
           dev.obsidiannetwork.blockentity.FacadeCable facade)
-         ||facade.facadeState().isAir())continue;
+         ||facade.facadeState().isAir()))continue;
      Vector3f local=new Vector3f(
         (float)(p.getX()+.5-from.x),
         (float)(p.getY()+.5-from.y),
