@@ -92,14 +92,28 @@ s=s.replace(register,''' // Five equal radial slices, clockwise from the upper s
 '''+register,1)
 start=s.index('  for(int dy=-105;dy<=105;dy+=7)')
 end=s.index('  g.fill(x-25,y-25,x+25,y+25',start)
-s=s[:start]+'''  // B337_CIRCULAR_FIVE_WEDGE: every submitted pixel stays inside r=104.
+s=s[:start]+'''  // B340_EXACT_CIRCLE: contiguous 1px scanlines, no 2px square protrusions.
+  // Merge equal wedges into horizontal runs: O(radius) draw calls per frame,
+  // with every painted pixel INSIDE the annulus r=28..103.
   boolean hasVision=NetworkVisionClient.installed();
-  for(int yy=-103;yy<=103;yy+=2)for(int xx=-103;xx<=103;xx+=2){
-   int radius2=xx*xx+yy*yy;
-   if(radius2<28*28||radius2>103*103)continue;
-   int wedge=wheelSector(xx,yy,hasVision);
-   int color=wedge==selected?0xf12ad5e9:0xe21f344b;
-   g.fill(x+xx,y+yy,x+xx+2,y+yy+2,color);
+  for(int yy=-103;yy<=103;yy++){
+   int maxX=(int)Math.floor(Math.sqrt(103D*103D-yy*yy));
+   int start=-maxX;
+   while(start<=maxX){
+    int radius2=start*start+yy*yy;
+    int wedge=radius2<28*28?-1:wheelSector(start,yy,hasVision);
+    int stop=start+1;
+    while(stop<=maxX){
+     int nextR2=stop*stop+yy*yy;
+     int next=nextR2<28*28?-1:wheelSector(stop,yy,hasVision);
+     if(next!=wedge)break;
+     stop++;
+    }
+    if(wedge>=0)
+     g.fill(x+start,y+yy,x+stop,y+yy+1,
+            wedge==selected?0xf12ad5e9:0xe21f344b);
+    start=stop;
+   }
   }
 '''+s[end:]
 start=s.index('  if(NetworkVisionClient.installed()){',s.index('  g.text(mc.font,"xSxLabs"'))
@@ -121,7 +135,26 @@ s=s[:start]+'''  if(hasVision){
   }'''+s[end:]
 wheel.write_text(s,encoding="utf-8")
 
+# B340_HOLO_SINGLE_OWNER: the server TextDisplay entity is authoritative for
+# NETWORK/CUSTOM. Client pipeline draws a fallback only before the entity has
+# streamed in; avoid double letters and z-fighting on normal operation.
+ghost=J/"client/V173WorldGhostRenderer.java"
+gs=ghost.read_text(encoding="utf-8")
+previous='''   textProjection(mc,ev,cam,mapTerminal,be);
+   return;'''
+replacement='''   // B340_HOLO_SINGLE_OWNER: keep text visible until the server entity syncs.
+   boolean authoritative=!mc.level.getEntitiesOfClass(
+     net.minecraft.world.entity.Display.TextDisplay.class,
+     new net.minecraft.world.phys.AABB(mapTerminal).inflate(4,40,4),
+     entity->entity.entityTags().contains("xsx-holo-"+mapTerminal.asLong())).isEmpty();
+   if(!authoritative)textProjection(mc,ev,cam,mapTerminal,be);
+   return;'''
+assert gs.count(previous)==1,("B340_HOLO_FALLBACK_DRIFT",gs.count(previous))
+ghost.write_text(gs.replace(previous,replacement,1),encoding="utf-8")
+
+assert "B340_EXACT_CIRCLE" in wheel.read_text()
+assert "B340_HOLO_SINGLE_OWNER" in ghost.read_text()
 assert "B337_CIRCULAR_FIVE_WEDGE" in wheel.read_text()
 assert "B337_REAL_BLOCKS" in vision.read_text()
 assert 'if("map".equals(holoMode)){' in machine
-print("V173_B337_WORLD_VISION_SERVER_HOLO_CIRCULAR_WHEEL_PASS")
+print("V173_B340_EXACT_CIRCLE_SINGLE_OWNER_HOLO_PASS")
