@@ -15,7 +15,7 @@ for item in ("V174_REACTOR_GEOMETRY","MIN=5,MAX=64","shellLimit=6*MAX*MAX",
              "at least one interior fuel assembly","REACTOR_POWER_PORT",
              "REACTOR_FLUID_PORT","REACTOR_ITEM_PORT","FE_CAPACITY=1_000_000_000L",
              "Capabilities.Energy.BLOCK","TransactionContext","SnapshotJournal",
-             "fuelTicks=12_000","waterMb-=20","ItemStack.CODEC","getBooleanOr"):
+             "fuelTicks=12_000","waterMb-=20","ItemStack.CODEC","formed=false;status"):
     assert item in p,item
 assert "world.getChunkAt(" not in p
 assert "new ChunkPos(" not in p
