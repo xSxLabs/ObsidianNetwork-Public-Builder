@@ -31,6 +31,13 @@ class IngameSevenFixes368(unittest.TestCase):
   self.assertIn("assert len(all_missing)==1",s)
   self.assertNotIn("runtime.storage().extract(key, 64L)",s)
 
+ def test_jei_client_preview_allows_partial_transfer(self):
+  s=PATCH.read_text(encoding="utf-8")
+  self.assertIn("B368_JEI_PARTIAL_PREVIEW",s)
+  self.assertIn('file("compat/jei/NetworkStorageRecipeTransferHandler.java")',s)
+  self.assertIn("return null;",s)
+  self.assertIn("ClientPacketDistributor.sendToServer(new JeiCraftTransferPayload(",s)
+
  def test_map_world_vertical_slice_and_y_baseline(self):
   s=PATCH.read_text(encoding="utf-8")
   for token in (

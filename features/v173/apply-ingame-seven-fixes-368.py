@@ -63,6 +63,27 @@ helper=''' // B368_AE_RECIPE_VARIANTS: never mutate the real item or its descrip
 s=s[:a]+helper+section+s[b:]
 menu.write_text(s,encoding="utf-8")
 
+# ---- JEI's CLIENT preview must not reject partially available recipes ----
+# The original preview compares exact ItemKey and sends a missing-slot error
+# BEFORE the user can click. The server's safe transactional planner must be
+# the sole authority: allow click even when some components/slots are absent.
+jei=file("compat/jei/NetworkStorageRecipeTransferHandler.java")
+client_code=jei.read_text(encoding="utf-8")
+a=client_code.index("public IRecipeTransferError transferRecipe(")
+b=client_code.index("private static List<IRecipeSlotView> findMissingSlots(",a)
+section=client_code[a:b]
+pattern=re.compile(r'if\s*\(!doTransfer\)\s*\{\s*List<IRecipeSlotView>\s+missing\s*=\s*findMissingSlots\(recipeSlots,\s*player\);\s*return\s+!missing\.isEmpty\(\)\s*\?\s*this\.helper\.createUserErrorForMissingSlots\(.*?\)\s*:\s*null\s*;',re.S)
+match=pattern.search(section)
+assert match is not None,("B368_JEI_CLIENT_PREVIEW_DRIFT",section[:1000])
+replacement='''if (!doTransfer) {
+          // B368_JEI_PARTIAL_PREVIEW: never block an intentionally partial
+          // craft transfer; the server checks recipes and available inventory.
+          return null;'''
+section=section[:match.start()]+replacement+section[match.end():]
+assert "ClientPacketDistributor.sendToServer(new JeiCraftTransferPayload(" in section
+client_code=client_code[:a]+section+client_code[b:]
+jei.write_text(client_code,encoding="utf-8")
+
 # ---- Persist and synchronize the MAP world Y start independently of height ----
 be="blockentity/NetworkDeviceBlockEntity.java"
 change(be,
