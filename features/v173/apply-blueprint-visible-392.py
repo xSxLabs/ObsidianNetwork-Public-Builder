@@ -98,6 +98,10 @@ change('''  if(sx<1||sy<1||sz<1||sx>16||sy>16||sz>16||rot<0||rot>7)return;
    int dx=n%sx,dz=(n/sx)%sz,dy=n/(sx*sz);''')
 change('''      !mc.level.hasChunkAt(at)||!mc.level.getBlockState(at).isAir())continue;''',
        '''      !mc.level.hasChunkAt(at)||!mc.level.getWorldBorder().isWithinBounds(at))continue;''')
+# B397: Java forbids redeclaring i inside the surface-sampling for-loop.
+# Keep all rotations; use a distinct local variable only for the inner loop.
+change('for(int i=0;i<rot%4;i++)state=state.rotate(Rotation.CLOCKWISE_90);',
+       'for(int rotationStep=0;rotationStep<rot%4;rotationStep++)state=state.rotate(Rotation.CLOCKWISE_90);')
 change('''   draw(mc,ev,cam,state,at.getX(),at.getY(),at.getZ(),1D);''',
 '''   // B392_BLUEPRINT_BLOCKED_VISIBLE: obstructed cells are red instead of gone.
    if(!mc.level.getBlockState(at).isAir())

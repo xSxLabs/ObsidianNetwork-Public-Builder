@@ -27,6 +27,8 @@ class TestIngame392(unittest.TestCase):
   self.assertIn("b392Surface",s)
   self.assertIn("B392_BLUEPRINT_FIRST_FRAME",s)
   self.assertIn("state=Blocks.RED_STAINED_GLASS.defaultBlockState();",s)
+  # B397: outer ghost sampling already owns i; nested rotations cannot redeclare it.
+  self.assertIn("for(int rotationStep=0;rotationStep<rot%4;rotationStep++)",s)
  def test_air_skip_and_missing_once_and_speed(self):
   s=(FEATURES/"apply-printer-speed-skip-air-392.py").read_text()
   for token in ("B392_AIR_ZERO_COST","while(index<plan.size()",
