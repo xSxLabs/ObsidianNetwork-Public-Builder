@@ -58,6 +58,16 @@ s=one(s,
   trackReceiver(world,this);
   player.sendSystemMessage(Component.literal("Signal Receiver paired | "+connectionStatus(world)+''',"receiver interact")
 s=one(s,
+ ''' public static void tick(Level l,BlockPos p,BlockState s,NetworkSignalRelayBlockEntity be){''',
+ ''' // Track paired receivers as soon as their chunk loads, even if that
+ // chunk is outside the block-entity ticking/simulation range.
+ @Override public void onLoad(){
+  super.onLoad();
+  if(level instanceof ServerLevel sl && !transmitter() && paired())
+   trackReceiver(sl,this);
+ }
+ public static void tick(Level l,BlockPos p,BlockState s,NetworkSignalRelayBlockEntity be){''',"receiver on-load")
+s=one(s,
  '''  if(l instanceof ServerLevel sl && be.transmitter() && be.paired())
    LIVE.computeIfAbsent(sl.getServer(),ignored->java.util.Collections.newSetFromMap(
       new java.util.IdentityHashMap<>())).add(be);
