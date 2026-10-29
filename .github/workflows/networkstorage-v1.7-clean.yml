@@ -1,3 +1,4 @@
+# Build391: cache decoded Blueprint blockstates once per card, eliminate O(n^2) Printer unpack/split
 # Build388: exact XZ footprint, isotropic exposed-face terrain; preserve Network/Custom holograms and blueprint support
 # Build 361: menu-synced used/total on 800 real cells, both Curios modes; release must stay regression-gated
 # Build 358: real 50-drive capacity and initial FE glider GameTest in both Curios configurations
@@ -190,6 +191,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_ingame_seven_fixes_368.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_map_blueprint_378.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_map_cubic_exposed_388.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_blueprint_printer_state_cache_391.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
@@ -2560,11 +2562,14 @@ jobs:
           python3 features/v173/apply-blueprint-limits-378.py
           python3 features/v173/apply-blueprint-compression-378.py
           python3 features/v173/apply-blueprint-cache-378.py
+          python3 features/v173/apply-blueprint-printer-state-cache-391.py
           grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXACT_MAP_FOOTPRINT' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXPOSED_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B378_COMPRESSED_BLUEPRINT' work/src/main/java/dev/obsidiannetwork/item/NetworkBlueprintItem.java
           grep -Fq 'B378_PRINTER_PLAN_CACHE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'B391_PRINTER_STATE_CACHE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'B391_NO_PER_BLOCK_DECOMPRESSION' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           set -x  # B375_DIAGNOSE_EXACT_CI_SOURCE_GUARD; turn off after source gates.
           grep -Fq 'V173_B338_CABLE_MODEL_REVEAL' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           grep -Fq 'V173_B345_HOLO_VISIBLE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
