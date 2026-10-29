@@ -36,7 +36,7 @@ class Build136(unittest.TestCase):
   for x in ("new ArmorStand(","addFreshEntity(","stand.setItemSlot("):
    self.assertNotIn(x,CAR)
  def test_correct_branch_and_pipeline(self):
-  self.assertIn("branches: [v1.7, v1.7.2, v1.7.3]",WF)
+  self.assertRegex(WF, r"branches: \[v1\.7, v1\.7\.2, v1\.7\.3, v1\.7\.4(?:, [^\]]+)?\]")
   self.assertIn("python3 features/v172/apply-network-planter-135.py",WF)
   self.assertIn("python3 features/v172/apply-power-armor-create-platform-136.py",WF)
 if __name__=="__main__":unittest.main()

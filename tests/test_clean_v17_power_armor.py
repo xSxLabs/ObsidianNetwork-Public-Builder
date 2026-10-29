@@ -10,7 +10,7 @@ class CleanV17Armor(unittest.TestCase):
  def test_new_only_and_no_legacy_generator(self):
   self.assertIn("apply-power-armor-stage1.py",WF)
   self.assertNotIn("private/v1.7/",WF)
-  self.assertIn("branches: [v1.7, v1.7.2, v1.7.3]",WF)
+  self.assertRegex(WF, r"branches: \[v1\.7, v1\.7\.2, v1\.7\.3, v1\.7\.4(?:, [^\]]+)?\]")
  def test_backup_before_wear_or_removal(self):
   self.assertLess(PATCH.index("loadouts.save(p,old)"),PATCH.index("station.clear();"))
   self.assertIn("saved backup",PATCH)
