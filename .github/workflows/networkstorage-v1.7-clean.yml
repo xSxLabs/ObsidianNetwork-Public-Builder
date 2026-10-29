@@ -2537,7 +2537,7 @@ jobs:
           python3 features/v173/apply-vision-holo-wheel-337.py
           python3 features/v173/apply-vision-model-338.py
           grep -Fq 'V173_B338_CABLE_MODEL_REVEAL' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
-          grep -Fq 'B337_CIRCULAR_FIVE_WEDGE' work/src/main/java/dev/obsidiannetwork/client/NetworkActionWheelClient.java
+          grep -Fq 'B340_EXACT_CIRCLE' work/src/main/java/dev/obsidiannetwork/client/NetworkActionWheelClient.java
           grep -Fq 'V173_B337_REAL_BLOCKS' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
           grep -Fq 'V173_B337_WORLD_VISION' /dev/null || true
           grep -Fq 'V173_HOLO_RENDER_328' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
