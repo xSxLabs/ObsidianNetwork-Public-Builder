@@ -80,16 +80,30 @@ transform("blockentity/NetworkDeviceBlockEntity.java",
       "network".equals(holoMode)?summary(world):"CUSTOM "+holoText.length()+" chars");
     return;''')
 
-# Sync the live network status to nearby clients; otherwise the new client
-# projection can remain stuck displaying the stale initial "IDLE" value.
-transform("blockentity/NetworkDeviceBlockEntity.java",
- ' private void setStatus(String s){if(!s.equals(status)){status=s;setChanged();}}',
- ''' private void setStatus(String s){if(!s.equals(status)){
-  status=s;setChanged();
+# Preserve source-specific status logic (other upgrades may have modified it).
+# Add a bounded client sync after status updates, without rewriting that method.
+status_file=J/"blockentity/NetworkDeviceBlockEntity.java"
+status_source=status_file.read_text(encoding="utf-8")
+anchor="void setStatus(String s)"
+assert status_source.count(anchor)==1,("V173_HOLO_STATUS_METHOD_DRIFT",status_source.count(anchor))
+method_start=status_source.index(anchor)
+open_brace=status_source.index("{",method_start)
+nest=0;method_end=None
+for i in range(open_brace,len(status_source)):
+ if status_source[i]=="{":nest+=1
+ elif status_source[i]=="}":
+  nest-=1
+  if nest==0:
+   method_end=i;break
+assert method_end is not None
+method=status_source[method_start:method_end]
+if "level.sendBlockUpdated(" not in method:
+ status_source=(status_source[:method_end]+'''
   if(level!=null&&!level.isClientSide()&&
      mode()==dev.obsidiannetwork.block.NetworkDeviceBlock.Mode.HOLOGRAM)
    level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),3);
- }}''')
+ '''+status_source[method_end:])
+ status_file.write_text(status_source,encoding="utf-8")
 
 # Tight 1-wide x 2-tall portal aperture; current logical anchor stays one block
 # so old worlds/owner-index/teleport selection remain valid.
