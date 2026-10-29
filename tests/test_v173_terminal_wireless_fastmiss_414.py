@@ -32,6 +32,8 @@ class WirelessTerminalFastMiss414(unittest.TestCase):
  def test_receiver_registration_lifecycle(self):
   for t in ("trackReceiver(world,this);",
             "else trackReceiver(sl,be);",
+            "@Override public void onLoad()",
+            "if(level instanceof ServerLevel sl && !transmitter() && paired())",
             "var receivers=LIVE_RX.get(sl);if(receivers!=null)receivers.remove(this);",
             "java.util.IdentityHashMap<>",
             "java.util.WeakHashMap<>"):
@@ -63,6 +65,7 @@ class WirelessTerminalFastMiss414(unittest.TestCase):
   self.assertIn(".mayReachReceiver(level,queried))return null;",text)
   self.assertIn("networkWireLoaded(level,neighbor,state)",text)
   self.assertIn("else trackReceiver(sl,be);",receiver)
+  self.assertIn("@Override public void onLoad()",receiver)
   self.assertIn("trackReceiver(world,this);",receiver)
   self.assertIn("receivers.remove(this);",receiver)
 if __name__=="__main__":unittest.main()
