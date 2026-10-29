@@ -176,6 +176,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_visual_306.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_ingame_roundup_314.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_map_volumetric_327.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_holo_vision_portal_328.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
@@ -2530,6 +2531,10 @@ jobs:
           python3 features/v173/apply-3dmaps-custom-portal-306.py
           python3 features/v173/apply-ingame-roundup-314.py
           python3 features/v173/apply-map-volumetric-327.py
+          python3 features/v173/apply-holo-vision-portals-328.py
+          grep -Fq 'V173_HOLO_RENDER_328' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
+          grep -Fq 'V173_PORTALGUN_1X2_328' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
+          grep -Fq 'V173_VISION_FACADE_ONLY_328' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
           grep -Fq 'V173_VOLUME_MAP_327' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_HOLO_SLOT_FREE_314' work/src/main/java/dev/obsidiannetwork/client/HologramConfigScreen.java
           grep -Fq 'V173_PORTAL_RENAME_314' work/src/main/java/dev/obsidiannetwork/portal/PortalRenamePayload.java
