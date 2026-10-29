@@ -195,6 +195,9 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_blueprint_printer_state_cache_391.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_ingame_392.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
+          # v1.7.4 parity with user-approved v1.7.3 v12 Build419.
+          python3 -m unittest discover -s tests -p 'test_v173_terminal_portal_409.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_terminal_wireless_fastmiss_414.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
           # powered piston UP and DOWN preserve original suit position.
@@ -2571,6 +2574,18 @@ jobs:
           # Build398: unfinished Holo Terminal, Printer, Schematic and Quill -> WIP.
           python3 features/v173/apply-wip-hide-398.py
           python3 tests/test_v173_wip_hide_398.py
+          # Preserve 1.7.3 v12 Build419 JEI, terminal performance and 4-way portals.
+          python3 features/v173/apply-jei-cosmetic-partial-404.py
+          python3 tests/test_v173_jei_cosmetic_partial_404.py
+          python3 features/v173/apply-hotfix-terminal-portals-409.py
+          python3 tests/test_v173_terminal_portal_409.py
+          python3 features/v173/apply-terminal-wireless-fastmiss-414.py
+          python3 tests/test_v173_terminal_wireless_fastmiss_414.py
+          grep -Fq 'B414_WIRELESS_RX_FAST_REJECT' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
+          grep -Fq 'B414_SINGLE_BLOCKSTATE_SCAN' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
+          grep -Fq 'B409_TERMINAL_BFS_TICK_CACHE' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
+          grep -Fq 'B409_PORTAL_FOUR_DIRECTIONS' work/src/main/java/dev/obsidiannetwork/portal/PortalGateBlock.java
+          grep -Fq 'B404_JEI_COSMETIC_MISSING' work/src/main/java/dev/obsidiannetwork/compat/jei/NetworkStorageRecipeTransferHandler.java
           # v1.7.4 Step 1: real uranium fuel chain, isolated from v1.7.3 freeze.
           python3 features/v174/apply-uranium-fuel-chain.py
           python3 tests/test_v174_uranium_fuel_chain.py
