@@ -59,12 +59,12 @@ map_section=map_section.replace("  return out;",'''  // V173_B357_MAP_BOTTOM_ALI
   // on/above the table. HEIGHT moves the whole map up exactly one block.
   if(out.isEmpty())return out;
   double lowest=Double.POSITIVE_INFINITY;
-  for(MapVoxel tile:out)lowest=Math.min(lowest,tile.y());
+  for(MapVoxel mapVoxel:out)lowest=Math.min(lowest,mapVoxel.y());
   double shift=(t.getY()+be.holoHeight())-lowest;
   java.util.ArrayList<MapVoxel> elevated=new java.util.ArrayList<>(out.size());
-  for(MapVoxel tile:out)
-   elevated.add(new MapVoxel(tile.state(),tile.x(),tile.y()+shift,
-                             tile.z(),tile.sx(),tile.sy(),tile.sz()));
+  for(MapVoxel mapVoxel:out)
+   elevated.add(new MapVoxel(mapVoxel.state(),mapVoxel.x(),mapVoxel.y()+shift,
+                             mapVoxel.z(),mapVoxel.sx(),mapVoxel.sy(),mapVoxel.sz()));
   return elevated;''',1)
 s=s[:start]+map_section+s[end:]
 p.write_text(s,encoding="utf-8")
