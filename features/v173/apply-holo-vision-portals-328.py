@@ -80,6 +80,17 @@ transform("blockentity/NetworkDeviceBlockEntity.java",
       "network".equals(holoMode)?summary(world):"CUSTOM "+holoText.length()+" chars");
     return;''')
 
+# Sync the live network status to nearby clients; otherwise the new client
+# projection can remain stuck displaying the stale initial "IDLE" value.
+transform("blockentity/NetworkDeviceBlockEntity.java",
+ ' private void setStatus(String s){if(!s.equals(status)){status=s;setChanged();}}',
+ ''' private void setStatus(String s){if(!s.equals(status)){
+  status=s;setChanged();
+  if(level!=null&&!level.isClientSide()&&
+     mode()==dev.obsidiannetwork.block.NetworkDeviceBlock.Mode.HOLOGRAM)
+   level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),3);
+ }}''')
+
 # Tight 1-wide x 2-tall portal aperture; current logical anchor stays one block
 # so old worlds/owner-index/teleport selection remain valid.
 portal=J/"client/V173WorldGhostRenderer.java"
@@ -287,20 +298,23 @@ transform(wheel,
 transform(wheel,
  '''  selected=distance<27||distance>108?-1:
     (Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?2:0));''',
- '''  selected=distance<27?(NetworkVisionClient.installed()?4:-1):
-    distance>108?-1:
+ '''  selected=NetworkVisionClient.installed()&&dx>=46&&dx<=110&&dy>=53&&dy<=92?4:
+    distance<27||distance>108?-1:
     (Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?2:0));''')
 transform(wheel,
  '''  g.text(mc.font,"xSxLabs",x-mc.font.width("xSxLabs")/2,y-9,0xff9bf7ff);
   g.text(mc.font,"G",x-mc.font.width("G")/2,y+4,0xffd0e2f2);''',
- '''  if(NetworkVisionClient.installed()){
-   g.text(mc.font,"NETWORK",x-mc.font.width("NETWORK")/2,y-10,0xff9bf7ff);
+ '''  g.text(mc.font,"xSxLabs",x-mc.font.width("xSxLabs")/2,y-9,0xff9bf7ff);
+  g.text(mc.font,"G",x-mc.font.width("G")/2,y+4,0xffd0e2f2);
+  // Optional fifth wheel action is offset: opening/releasing G at the
+  // screen center must NEVER toggle vision without deliberate selection.
+  if(NetworkVisionClient.installed()){
+   int shade=selected==4?0xf12ad5e9:0xe21f344b;
+   g.fill(x+46,y+53,x+110,y+92,shade);
+   g.text(mc.font,"NETWORK",x+79-mc.font.width("NETWORK")/2,y+61,0xff9bf7ff);
    String vis=NetworkVisionClient.active()?"VISION ON":"VISION OFF";
-   g.text(mc.font,vis,x-mc.font.width(vis)/2,y+3,
+   g.text(mc.font,vis,x+79-mc.font.width(vis)/2,y+75,
       NetworkVisionClient.active()?0xff62ffbe:0xffd0e2f2);
-  }else{
-   g.text(mc.font,"xSxLabs",x-mc.font.width("xSxLabs")/2,y-9,0xff9bf7ff);
-   g.text(mc.font,"G",x-mc.font.width("G")/2,y+4,0xffd0e2f2);
   }''')
 
 assert "V173_HOLO_RENDER_328" in (J/renderer).read_text()
