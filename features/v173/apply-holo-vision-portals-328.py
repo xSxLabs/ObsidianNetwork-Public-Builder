@@ -75,7 +75,7 @@ transform("blockentity/NetworkDeviceBlockEntity.java",
  '  if("map".equals(holoMode)){',
  '  if("map".equals(holoMode)||"network".equals(holoMode)||"custom".equals(holoMode)){')
 transform("blockentity/NetworkDeviceBlockEntity.java",
- '    setStatus("MAP 3D R="+holoRadius+" H="+holoHeight);return;',
+ '   setStatus("MAP 3D R="+holoRadius+" H="+holoHeight);return;',
  '''    setStatus("map".equals(holoMode)?"MAP 3D R="+holoRadius+" H="+holoHeight:
       "network".equals(holoMode)?summary(world):"CUSTOM "+holoText.length()+" chars");
     return;''')
