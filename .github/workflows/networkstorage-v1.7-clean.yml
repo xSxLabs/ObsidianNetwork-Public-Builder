@@ -196,6 +196,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_ingame_392.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_terminal_portal_409.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_terminal_wireless_fastmiss_414.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
           # powered piston UP and DOWN preserve original suit position.
@@ -2578,6 +2579,11 @@ jobs:
           # B409: restore legacy-fast terminal deposit/withdraw and directional Portal A/B.
           python3 features/v173/apply-hotfix-terminal-portals-409.py
           python3 tests/test_v173_terminal_portal_409.py
+          # B414: reject impossible wireless receivers before scanning, visit each loaded wire state once.
+          python3 features/v173/apply-terminal-wireless-fastmiss-414.py
+          python3 tests/test_v173_terminal_wireless_fastmiss_414.py
+          grep -Fq 'B414_WIRELESS_RX_FAST_REJECT' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
+          grep -Fq 'B414_SINGLE_BLOCKSTATE_SCAN' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
           grep -Fq 'B409_TERMINAL_BFS_TICK_CACHE' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
           grep -Fq 'B409_PORTAL_FOUR_DIRECTIONS' work/src/main/java/dev/obsidiannetwork/portal/PortalGateBlock.java
           grep -Fq 'B409_PORTAL_RENDER_AXIS' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
