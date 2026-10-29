@@ -194,16 +194,26 @@ transform("portal/PortalGateBlockEntity.java",
 spawner=J/"portal/PortalActionPayload.java"
 sp=spawner.read_text(encoding="utf-8")
 start=sp.index("  BlockPos side=pos.east();")
-end=sp.index('    tell(player,"Portal B needs',start)
-assert "pos.above(2)" in sp[start:end] and "other.above(2)" in sp[start:end]
-sp=sp[:start]+'''  if(pos.getY()<level.getMinY()||pos.getY()>level.getMaxY()-2||
+# The spawn guard was expanded by Build252/259; its warning sentence and
+# indentation are not stable. Bound the replacement by the *block placement*
+# statement instead, which preserves the preceding armor/owner validation.
+end=sp.index("  if(!level.setBlockAndUpdate(pos,",start)
+old_clearance=sp[start:end]
+assert "pos.above(2)" in old_clearance and "other.above(2)" in old_clearance, (
+  "V173_PORTAL_1X2_CLEARANCE_SOURCE_DRIFT",
+  "expected 2x3 height and lateral checks before block placement")
+assert "hasUpgrade(" not in old_clearance and "selected(" not in old_clearance, (
+  "V173_PORTAL_1X2_UNEXPECTED_OWNER_GATE")
+sp=sp[:start]+'''  // V173_PORTAL_1X2_SPAWN: a single column of two empty blocks.
+  // Ownership and Power Armor checks above remain unchanged.
+  if(pos.getY()<level.getMinY()||pos.getY()>level.getMaxY()-2||
       !level.getWorldBorder().isWithinBounds(pos)||
       !level.getWorldBorder().isWithinBounds(pos.above())||
       !level.getBlockState(pos).isAir()||
       !level.getBlockState(pos.above()).isAir()){
+   tell(player,"Portal B needs a clear 1x2 opening in front of you.");return;
+  }
 '''+sp[end:]
-sp=sp.replace("Portal B needs a clear 2x3 opening in front of you.",
-              "Portal B needs a clear 1x2 opening in front of you.",1)
 spawner.write_text(sp,encoding="utf-8")
 arrival=J/"portal/PortalGateBlockEntity.java"
 ar=arrival.read_text(encoding="utf-8")
