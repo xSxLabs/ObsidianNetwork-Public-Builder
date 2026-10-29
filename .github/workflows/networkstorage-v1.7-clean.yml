@@ -103,7 +103,7 @@ name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4]
+    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4, feature/v1.7.4-powerbank-core]
     paths:
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - 'patches/**'
