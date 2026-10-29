@@ -93,13 +93,13 @@ rewrite(portal,
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.core.Direction;""")
 rewrite(portal,
  """ private final boolean temporary;""",
  """ // B409_PORTAL_FOUR_DIRECTIONS: horizontal orientation persists in blockstate.
- public static final DirectionProperty FACING=BlockStateProperties.HORIZONTAL_FACING;
+ public static final Property<Direction> FACING=BlockStateProperties.HORIZONTAL_FACING;
  private final boolean temporary;""")
 rewrite(portal,
  """ public PortalGateBlock(Properties p,boolean temporary){super(p);this.temporary=temporary;}""",
