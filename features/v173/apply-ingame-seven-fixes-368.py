@@ -253,6 +253,10 @@ new='''  // B368_WHEEL_ALIGNED_LABELS: SAME angular centers as wheelSector().
   }'''
 assert s.count(old)==1,("B368_WHEEL_LABEL_DRIFT",s.count(old))
 s=s.replace(old,new,1)
+# B368_WHEEL_STRICT_HIT_RADIUS: selection only where pixels exist.
+oldRadius="selected=distance<27||distance>108?-1:"
+assert s.count(oldRadius)==1,("B368_WHEEL_RADIUS_DRIFT",s.count(oldRadius))
+s=s.replace(oldRadius,"selected=distance<28||distance>103?-1:",1)
 # Remove the *old* Vision fixed bottom-right text (it does not match
 # the 72-degree center); the new sector loop draws exactly one label.
 old='''  if(hasVision){

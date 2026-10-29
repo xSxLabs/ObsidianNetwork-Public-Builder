@@ -88,6 +88,7 @@ class IngameSevenFixes368(unittest.TestCase):
   self.assertIn("Math.round(76D*Math.cos(angle))",s)
   self.assertIn("new int[]{0,1,4,2,3}",s)
   self.assertIn("new int[]{0,1,2,3}",s)
+  self.assertIn("selected=distance<28||distance>103?-1:",s)
   for vision in (False,True):
    order=[0,1,4,2,3] if vision else [0,1,2,3]
    for slot,action in enumerate(order):
