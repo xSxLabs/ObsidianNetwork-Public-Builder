@@ -2592,6 +2592,9 @@ jobs:
           # v1.7.4 Build427: real shell/rods/controller foundation.
           python3 features/v174/apply-reactor-core-427.py
           python3 tests/test_v174_reactor_core_427.py
+          # B429 powerbank 10-100b FE, 3x3x3..12; inherited from green staged CI.
+          python3 features/v174/apply-powerbank-core-429.py
+          python3 tests/test_v174_powerbank_core_429.py
           grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXACT_MAP_FOOTPRINT' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXPOSED_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
