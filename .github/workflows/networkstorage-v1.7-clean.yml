@@ -2552,13 +2552,14 @@ jobs:
           python3 features/v173/apply-hologram-text-bundle-362.py
           python3 features/v173/apply-armor-fe-bar-stability-365.py
           python3 features/v173/apply-ingame-seven-fixes-368.py
+          set -x  # B375_DIAGNOSE_EXACT_CI_SOURCE_GUARD; turn off after source gates.
           grep -Fq 'V173_B338_CABLE_MODEL_REVEAL' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           grep -Fq 'V173_B345_HOLO_VISIBLE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'V173_B348_NETWORK_3D' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_B351_EXACT_NETWORK_SIZE' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_B351_VISION_FEEDBACK' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
           grep -Fq 'V173_B354_BUNDLE_NETWORK_LANE' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
-          grep -Fq 'V173_B357_MAP_BOTTOM_ALIGNED' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
+          grep -Fq 'B368_MAP_TABLETOP_CALIBRATION' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_B362_TEXT_ORDER' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_B362_BUNDLE_CONNECTIONS' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_B365_STABLE_ARMOR_FE_BAR' work/src/main/java/dev/obsidiannetwork/core/EnergyTool.java
@@ -2575,10 +2576,11 @@ jobs:
           grep -Fq 'V173_HOLO_RENDER_328' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_PORTALGUN_1X2_328' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_VISION_FACADE_ONLY_328' work/src/main/java/dev/obsidiannetwork/client/NetworkVisionClient.java
-          grep -Fq 'V173_VOLUME_MAP_327' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
+          grep -Fq 'B368_MAP_FIXED_VOLUME' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'V173_HOLO_SLOT_FREE_314' work/src/main/java/dev/obsidiannetwork/client/HologramConfigScreen.java
           grep -Fq 'V173_PORTAL_RENAME_314' work/src/main/java/dev/obsidiannetwork/portal/PortalRenamePayload.java
-          grep -Fq 'Radius = chunks' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
+          grep -Fq 'final int radius=16*radiusChunks' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
+          set +x
           echo 'V173_INGAME_ROUNDUP_314_COMPILED_SOURCES_PASS'
           grep -Fq 'V173_BLUEPRINT_NUDGE_PACKET' work/src/main/java/dev/obsidiannetwork/item/BlueprintPlacementPayload.java
           echo 'V173_BLUEPRINT_CONTROLS_BUILD210_SOURCES_PASS'
