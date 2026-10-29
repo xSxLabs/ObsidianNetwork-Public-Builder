@@ -30,6 +30,15 @@ class TestHologramHeightUp357(unittest.TestCase):
   ):
    self.assertIn(marker,s,marker)
 
+ def test_java_map_voxel_loop_does_not_shadow_tile_size(self):
+  # Build359 regression: sampleMap already declares double tile for LOD size.
+  s=PATCH.read_text(encoding="utf-8")
+  self.assertEqual(s.count("for(MapVoxel mapVoxel:out)"),2)
+  self.assertNotIn("for(MapVoxel tile:out)",s)
+  self.assertIn("double lowest=Double.POSITIVE_INFINITY;",s)
+  self.assertIn("mapVoxel.y()+shift",s)
+  self.assertIn("return elevated;",s)
+
  def test_height_monotonic_and_bottom_aligned(self):
   for terminal_y in (-64,0,65,320):
    previous=None
