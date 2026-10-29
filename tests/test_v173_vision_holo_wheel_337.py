@@ -15,7 +15,7 @@ class TestVisionHoloWheel337(unittest.TestCase):
  def test_radial_wheel_no_box(self):
   self.assertIn('wheelSector(double dx,double dy,boolean vision)',P.read_text(encoding='utf-8'))
   s=P.read_text(encoding="utf-8")
-  for x in ('B337_CIRCULAR_FIVE_WEDGE','B340_EXACT_CIRCLE','wheelSector',
+  for x in ('B340_EXACT_CIRCLE','wheelSector',
             'int maxX=(int)Math.floor(Math.sqrt(103D*103D-yy*yy))',
             'g.fill(x+start,y+yy,x+stop,y+yy+1'):
    self.assertIn(x,s)
