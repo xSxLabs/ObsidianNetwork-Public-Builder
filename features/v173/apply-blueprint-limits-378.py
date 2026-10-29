@@ -19,8 +19,8 @@ change(quill,"if(sx>MAX_SIZE||sy>MAX_SIZE||sz>MAX_SIZE){",
        "long volume=(long)sx*sy*sz;\n  if(volume<=0L||volume>MAX_BLOCKS){")
 change(quill,"Blueprint selection too large (max 16 x 16 x 16). Select the first corner again.",
        "Blueprint too large for available server memory (max \"+MAX_BLOCKS+\" blocks).")
-change(quill,"new ArrayList<>(sx*sy*sz)","new ArrayList<>((int)volume)")
-change(quill,"new ArrayList<>(sx*sy*sz)","new ArrayList<>((int)volume)")
+change(quill,"ArrayList<String> out=new ArrayList<>(sx*sy*sz);ArrayList<String> states=new ArrayList<>(sx*sy*sz);",
+       "ArrayList<String> out=new ArrayList<>((int)volume);ArrayList<String> states=new ArrayList<>((int)volume);")
 change("item/BlueprintPlacementPayload.java","sx>16||sy>16||sz>16||rot<0||rot>7",
        "(long)sx*sy*sz>NetworkBlueprintItem.MAX_BLOCKS||rot<0||rot>7")
 change("item/BlueprintPlacementPayload.java","NetworkBlueprintItem.blocks(stack).size()>4096",
