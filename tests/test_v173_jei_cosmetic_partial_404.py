@@ -12,6 +12,7 @@ for required in (
  "Type.COSMETIC",
  "getMissingCountHint()",
  "getButtonHighlightColor()",
+ "GuiGraphicsExtractor graphics,",
  "showError(",
  "drawHighlight(graphics,0x99FF3030)",
  "getSlotViews(RecipeIngredientRole.INPUT)",
