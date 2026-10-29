@@ -195,6 +195,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v173_blueprint_printer_state_cache_391.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_ingame_392.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_wireless_cable_entry_guard.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_terminal_portal_409.py' -v
           # Regression: Create class references client-only PoseStack but it
           # must be missing during the dedicated-server JVM test; assert
           # powered piston UP and DOWN preserve original suit position.
@@ -2574,6 +2575,12 @@ jobs:
           # B404 v1.7.3 priority JEI: cosmetic red missing slots; PLUS stays clickable.
           python3 features/v173/apply-jei-cosmetic-partial-404.py
           python3 tests/test_v173_jei_cosmetic_partial_404.py
+          # B409: restore legacy-fast terminal deposit/withdraw and directional Portal A/B.
+          python3 features/v173/apply-hotfix-terminal-portals-409.py
+          python3 tests/test_v173_terminal_portal_409.py
+          grep -Fq 'B409_TERMINAL_BFS_TICK_CACHE' work/src/main/java/dev/obsidiannetwork/network/NetworkSignalRelayBridge.java
+          grep -Fq 'B409_PORTAL_FOUR_DIRECTIONS' work/src/main/java/dev/obsidiannetwork/portal/PortalGateBlock.java
+          grep -Fq 'B409_PORTAL_RENDER_AXIS' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXACT_MAP_FOOTPRINT' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXPOSED_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
