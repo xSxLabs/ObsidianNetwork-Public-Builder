@@ -163,11 +163,44 @@ new=r''' // V173_PORTALGUN_1X2_328: cyan A, orange B; open curved 1x2 aperture.
 src=src[:start]+new+src[end:]
 portal.write_text(src,encoding="utf-8")
 transform("portal/PortalGateBlock.java",
- 'return box(0,0,6,16,48,10);',
+ 'return box(-8,0,6,24,48,10);',
  'return box(0,0,6,16,32,10);')
+# The wide 2x3 entry was a previous build-specific assumption; align
+# actual teleport hit detection and clearance with the new 1x2 model.
+transform("portal/PortalGateBlockEntity.java",
+ 'Math.abs(player.getX()-(pos.getX()+0.5))>1.02',
+ 'Math.abs(player.getX()-(pos.getX()+0.5))>0.52')
 transform("portal/PortalGateBlockEntity.java",
  'player.getY()>pos.getY()+2.85',
  'player.getY()>pos.getY()+1.85')
+
+# Release Build252/259/260's old 2x3 clearance; this visual portal is
+# one block wide and two tall. No requirement for vacant lateral neighbors
+# or a third headspace block on either end of a teleport.
+spawner=J/"portal/PortalActionPayload.java"
+sp=spawner.read_text(encoding="utf-8")
+start=sp.index("  BlockPos side=pos.east();")
+end=sp.index('    tell(player,"Portal B needs',start)
+assert "pos.above(2)" in sp[start:end] and "other.above(2)" in sp[start:end]
+sp=sp[:start]+'''  if(pos.getY()<level.getMinY()||pos.getY()>level.getMaxY()-2||
+      !level.getWorldBorder().isWithinBounds(pos)||
+      !level.getWorldBorder().isWithinBounds(pos.above())||
+      !level.getBlockState(pos).isAir()||
+      !level.getBlockState(pos.above()).isAir()){
+'''+sp[end:]
+sp=sp.replace("Portal B needs a clear 2x3 opening in front of you.",
+              "Portal B needs a clear 1x2 opening in front of you.",1)
+spawner.write_text(sp,encoding="utf-8")
+arrival=J/"portal/PortalGateBlockEntity.java"
+ar=arrival.read_text(encoding="utf-8")
+assert "exit.getY()>dest.getMaxY()-3" in ar
+assert "!dest.getWorldBorder().isWithinBounds(exit.above(2))||" in ar
+assert "!dest.getBlockState(exit.above(2)).isAir()" in ar
+ar=ar.replace("exit.getY()>dest.getMaxY()-3","exit.getY()>dest.getMaxY()-2",1)
+ar=ar.replace("       !dest.getWorldBorder().isWithinBounds(exit.above(2))||\n","",1)
+ar=ar.replace("       !dest.getBlockState(exit.above(2)).isAir()||\n","",1)
+ar=ar.replace("||\n       !dest.getBlockState(exit.above(2)).isAir()","",1)
+arrival.write_text(ar,encoding="utf-8")
 
 # VISION: no world particles, no revealing planters, energy fixtures or
 # machines. Only facaded network/other cables and importer/exporter blocks;
