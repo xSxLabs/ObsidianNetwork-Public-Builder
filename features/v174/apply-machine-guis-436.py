@@ -73,7 +73,7 @@ change("powerbank/PowerbankMenu.java",
  '   slots.set(i,new Slot(slots.get(i).container,idx,-100,-100){')
 # Use BlockEntity#saveWithoutMetadata for initial chunk loading and
 # getUpdatePacket for periodic live GUI updates; only 1 packet per 2 secs.
-const sync=r''' @Override public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider lookup){
+sync=r''' @Override public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider lookup){
   return saveWithoutMetadata(lookup);
  }
  @Override public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket(){
