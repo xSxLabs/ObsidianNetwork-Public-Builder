@@ -2917,6 +2917,7 @@ jobs:
           assert 'EnergyCableInputRenderer::new' in (j/'client/NetworkPlanterClientRenderRegistration.java').read_text()
           assert 'B508_PUMP_UPGRADE_BOTTOM_RIGHT' in (j/'client/V174MachineScreen.java').read_text()
           assert 'B508_PRINTER_SPEED_SLOT_ONLY' in (j/'client/NetworkPrinterScreen.java').read_text()
+          assert 'SPEED_UPGRADE.get()) && ' in (j/'menu/NetworkPrinterMenu.java').read_text()
           assert 'B508_MAP_FULL_RADIUS' in (j/'client/V173WorldGhostRenderer.java').read_text()
           assert 'B508_BANK_ACTUAL_IO_FE_PER_TICK' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
           assert 'B508_BANK_LIVE_IO' in (j/'client/V174MachineScreen.java').read_text()
