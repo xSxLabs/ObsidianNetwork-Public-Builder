@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """B445: scalable actual layer-diagram preview for the 5..64 reactor and 3..12 powerbank.
 
-Client-only visualization; no packets, world mutation, saved-data migration, or
+Client-only visualization; do not shadow the GUI `height` local in extractBackground.\nNo packets, world mutation, saved-data migration, or
 changes to validated reactor/powerbank structure rules.
 Runs strictly AFTER apply-guidebook-442.py.
 """
@@ -27,14 +27,14 @@ change('''  String[] rows=PLAN[page];
   for(int i=0;i<rows.length;i++)
    g.text(font,rows[i],12,27+i*9,0xffd7f8e3);''','''  if(page==7){
    int edge=showReactor?reactorSize:3;
-   int height=showReactor?reactorSize:powerbankHeight;
+   int structureHeight=showReactor?reactorSize:powerbankHeight;
    int layer=showReactor?reactorLayer:powerbankLayer;
    g.text(font,(showReactor?"R ":"P ")+edge,8,27,0xfff6e1a6);
-   g.text(font,edge+"x"+height+"x"+edge,116,16,0xfff6e1a6);
+   g.text(font,edge+"x"+structureHeight+"x"+edge,116,16,0xfff6e1a6);
    g.text(font,"TYPE",8,35,0xffa1f7ff);
    g.text(font,"- SIZE +",8,49,0xffa1f7ff);
    g.text(font,"- Y +",8,64,0xffa1f7ff);
-   g.text(font,"Y "+(layer+1)+"/"+height,116,75,0xffb9effa);
+   g.text(font,"Y "+(layer+1)+"/"+structureHeight,116,75,0xffb9effa);
   }else{
    String[] rows=PLAN[page];
    for(int i=0;i<rows.length;i++)
@@ -59,11 +59,11 @@ change('''  g.fill(x+105,y+34,x+170,y+49,0xff1d4153);
    // Diagram is a true XZ slice. Each square is one voxel, uniformly scaled.
    // 64x64 is capped at 4096 draws per frame; no world scanning.
    int size=showReactor?reactorSize:3;
-   int height=showReactor?reactorSize:powerbankHeight;
+   int structureHeight=showReactor?reactorSize:powerbankHeight;
    int layer=showReactor?reactorLayer:powerbankLayer;
    int step=Math.max(1,64/size),startX=x+49,startY=y+17;
    for(int z=0;z<size;z++)for(int xx=0;xx<size;xx++){
-    boolean outer=layer==0||layer==height-1||xx==0||z==0||xx==size-1||z==size-1;
+    boolean outer=layer==0||layer==structureHeight-1||xx==0||z==0||xx==size-1||z==size-1;
     int color=outer?0xff548ba4:0xff0d2330;
     if(showReactor&&!outer&&xx==size/2&&z==size/2)color=0xffedb257;
     // All service interfaces are on the shell on the first middle layer.
