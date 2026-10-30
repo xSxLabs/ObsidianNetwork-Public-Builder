@@ -161,7 +161,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py
-          echo 'B487_PRIVATE_PATCH_SYNTAX_PASS'
+          echo 'B488_PRIVATE_PATCH_SYNTAX_PASS'
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
       # Cache Gradle dependencies; cache/save below runs on red builds too.
