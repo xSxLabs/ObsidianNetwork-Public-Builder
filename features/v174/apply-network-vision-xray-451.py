@@ -12,6 +12,31 @@ p=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client/NetworkVisionCl
 s=p.read_text(encoding="utf-8")
 old=" @SubscribeEvent public static void hud(RenderGuiEvent.Post event){}"
 assert s.count(old)==1,("B451_VISION_ANCHOR_DRIFT",s.count(old))
+
+# B455_VISION_GLOBAL_REMOTE_GUARD: older native BER/facade renderers invoke
+# NetworkVisionClient.active(), not HUD. All entry points must fail closed on
+# external servers until a per-player server-authorized network feed exists.
+active_old=" public static boolean active(){return enabled&&ready();}"
+active_new=""" // B455_VISION_GLOBAL_REMOTE_GUARD: includes facades and bundled cable BERs.
+ public static boolean active(){
+  return enabled&&ready()&&Minecraft.getInstance().getSingleplayerServer()!=null;
+ }"""
+assert s.count(active_old)==1,("B455_VISION_ACTIVE_DRIFT",s.count(active_old))
+s=s.replace(active_old,active_new,1)
+toggle_old=""" public static void toggleFromWheel(){
+  var mc=Minecraft.getInstance();"""
+toggle_new=""" public static void toggleFromWheel(){
+  var mc=Minecraft.getInstance();
+  if(mc.getSingleplayerServer()==null){
+   enabled=false;
+   if(mc.player!=null)mc.player.sendOverlayMessage(
+      net.minecraft.network.chat.Component.literal(
+       "Network Vision: multiplayer access verification pending"));
+   return;
+  }"""
+assert s.count(toggle_old)==1,("B455_VISION_TOGGLE_DRIFT",s.count(toggle_old))
+s=s.replace(toggle_old,toggle_new,1)
+
 new=r''' // B451_VISION_THROUGH_WALL: draw projected outlines in screen space AFTER
  // world depth tests. The corners come from real NETWORK/IO voxel shapes.
  // No text labels, screen-space fake blocks, generic X-ray, or block mutations.
