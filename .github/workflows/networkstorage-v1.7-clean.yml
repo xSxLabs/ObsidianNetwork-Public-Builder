@@ -2598,6 +2598,11 @@ jobs:
           # B431 recovery and orphan port safety; no chunk loads.
           python3 features/v174/apply-multiblock-recovery-431.py
           python3 tests/test_v174_multiblock_recovery_431.py
+          # B433 native reactor fuel/water/FE cables; B434 FE electric water pump.
+          python3 features/v174/apply-reactor-ports-433.py
+          python3 tests/test_v174_reactor_ports_433.py
+          python3 features/v174/apply-water-pump-434.py
+          python3 tests/test_v174_water_pump_434.py
           grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXACT_MAP_FOOTPRINT' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXPOSED_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
