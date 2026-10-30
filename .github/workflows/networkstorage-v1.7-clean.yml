@@ -2868,7 +2868,6 @@ jobs:
           # B500: multiply cell storage by 5, preserving B499 transfer rates.
           python3 private/fixes/apply-v174-energy-cell-capacity-500.py
           grep -Fq 'B500_5X_ENERGY_CELL_CAPACITY_PASS' private/fixes/apply-v174-energy-cell-capacity-500.py
-          grep -Fq 'B500_5X_ENERGY_CELL_CAPACITY_PASS' /dev/null && exit 1 || true
           # Verify 16 inventory cards correspond to 64 actual work batches.
           grep -Fq 'Math.min(16,b392Speed.getCount())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'Math.min(16,speed.getCount())' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
