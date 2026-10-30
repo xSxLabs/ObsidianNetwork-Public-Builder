@@ -160,8 +160,8 @@ jobs:
       - name: Fast private v1.7.4 ingame patch syntax preflight
         run: |
           set -euo pipefail
-          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py
-          echo 'B488_PRIVATE_PATCH_SYNTAX_PASS'
+          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py
+          echo 'B489_PRIVATE_PATCH_SYNTAX_PASS'
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
       # Cache Gradle dependencies; cache/save below runs on red builds too.
@@ -2841,6 +2841,7 @@ jobs:
           # B485: entire white xSxLabs multiblock, speed, clean GUI and GuideME
           # integration applied privately after legacy source compatibility gates.
           python3 private/fixes/apply-v174-complete-white-multiblocks-485.py
+          python3 private/fixes/apply-v174-reactor-real-controls-489.py
           # Restore previous proven original blueprint/quill icon art.
           python3 features/v173/apply-blueprint-keycard-icons.py
           grep -Fq 'B485_VISIBLE_FORMED_SKIN' work/src/main/java/dev/obsidiannetwork/multiblock/MultiblockSkinBlock.java
