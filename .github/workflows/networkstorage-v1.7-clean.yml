@@ -2841,6 +2841,17 @@ jobs:
           # B485: entire white xSxLabs multiblock, speed, clean GUI and GuideME
           # integration applied privately after legacy source compatibility gates.
           python3 private/fixes/apply-v174-complete-white-multiblocks-485.py
+          # B493: material transparency, correct GuideME scene paths, and no
+          # duplicate craftable/creative legacy Multiblock Building Guide.
+          grep -Fq 'B493_GLASS_FULL_FACE' private/fixes/apply-v174-complete-white-multiblocks-485.py
+          test ! -e work/src/main/resources/data/obsidiannetwork/recipe/network_guidebook.json
+          grep -Fq 'src="assets/reactor_5x5x5.snbt"' work/src/main/resources/assets/obsidiannetwork/guides/obsidiannetwork/guide/reactor.md
+          grep -Fq 'src="assets/powerbank_3x3x3.snbt"' work/src/main/resources/assets/obsidiannetwork/guides/obsidiannetwork/guide/powerbank.md
+          if grep -Fq 'output.accept((ItemLike)NETWORK_GUIDEBOOK.get());' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java; then
+            echo 'B493_LEGACY_GUIDE_STILL_CREATIVE' >&2
+            exit 1
+          fi
+          echo 'B493_GLASS_GUIDEME_NO_LEGACY_GUIDE_CI_PASS'
           python3 private/fixes/apply-v174-reactor-real-controls-489.py
           # Restore previous proven original blueprint/quill icon art.
           python3 features/v173/apply-blueprint-keycard-icons.py
