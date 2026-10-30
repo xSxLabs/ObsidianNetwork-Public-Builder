@@ -103,7 +103,7 @@ name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4, feature/v1.7.4-multiblock-recovery]
+    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4, feature/v1.7.4-multiblock-recovery, feature/v1.7.4-machine-guis, feature/v1.7.4-multiblock-animations, feature/v1.7.4-nutrition, feature/v1.7.4-guidebook]
     paths:
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - 'patches/**'
@@ -854,13 +854,16 @@ jobs:
           echo '===== BUILD 101 JUNIT PASS ====='
           echo '===== BUILD 101 DEDICATED SERVER STARTUP GATE ====='
           set +e
-          timeout 90s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1
+          # B446: first CI boot may fetch 4,750 Mojang assets before NeoForge starts.
+          # Allow asset warm-up, but preserve the mandatory real server-start evidence below.
+          timeout --signal=TERM --kill-after=15s 600s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1
           SERVER_RC=$?
           set -e
           cat /tmp/build101-server.log
           # A healthy server normally remains running until timeout. Require evidence that NeoForge
           # reached server startup and reject crashes/exceptions before accepting timeout 124.
           if [ "$SERVER_RC" -ne 124 ]; then echo "server exited unexpectedly rc=$SERVER_RC"; exit 1; fi
+          # A timed-out asset download is NOT a green boot; require startup evidence.
           grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/build101-server.log
           if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
           echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
@@ -2603,6 +2606,18 @@ jobs:
           python3 tests/test_v174_reactor_ports_433.py
           python3 features/v174/apply-water-pump-434.py
           python3 tests/test_v174_water_pump_434.py
+          # B436 synchronized machine GUIs for reactor, Powerbank, pump.
+          python3 features/v174/apply-machine-guis-436.py
+          python3 tests/test_v174_machine_guis_436.py
+          # B437 controller-only operational animations.
+          python3 features/v174/apply-multiblock-animations-437.py
+          python3 tests/test_v174_multiblock_animations_437.py
+          # B438 Nutrinator + helmet Feeding Card and paste conservation.
+          python3 features/v174/apply-nutrition-438.py
+          python3 tests/test_v174_nutrition_438.py
+          # B442 craftable 8-page reactor/powerbank visual building guide.
+          python3 features/v174/apply-guidebook-442.py
+          python3 tests/test_v174_guidebook_442.py
           grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXACT_MAP_FOOTPRINT' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXPOSED_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
