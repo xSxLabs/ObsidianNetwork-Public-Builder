@@ -12,7 +12,8 @@ patch=(root/"features/v174/apply-network-vision-xray-469.py").read_text()
 workflow=(root/".github/workflows/networkstorage-v1.7-clean.yml").read_text()
 ast.parse(patch)
 assert "V173_B351_VISION_FEEDBACK" in patch
-assert 's.index(" @SubscribeEvent public static void hud(RenderGuiEvent.Post event){")' in patch
+assert 'B471 HUD closing brace missing' in patch
+assert 's=s[:start]+replacement+s[end:]' in patch
 assert "V174_XRAY_WORLD_WIREFRAME_B469" in patch
 assert "B471 HUD closing brace missing" in patch
 for marker in (
