@@ -2912,7 +2912,7 @@ jobs:
           # Verify 16 inventory cards correspond to 64 actual work batches.
           grep -Fq 'Math.min(16,b392Speed.getCount())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'Math.min(16,speed.getCount())' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
-          grep -Fq 'p.stacksTo(16)' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          grep -Fq 'p.stacksTo(64)' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           grep -Fq 'B496_HIDE_TOP_GHOSTS' work/src/main/java/dev/obsidiannetwork/client/V174MachineScreen.java
           grep -Fq 'B497_SCREEN_250_CENTER' work/src/main/java/dev/obsidiannetwork/client/V174MachineScreen.java
           grep -Fq 'B497_SCREEN_250_CENTER' work/src/main/java/dev/obsidiannetwork/client/NetworkPrinterScreen.java
