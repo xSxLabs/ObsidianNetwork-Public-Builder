@@ -2615,6 +2615,9 @@ jobs:
           # B442 craftable 8-page reactor/powerbank visual building guide.
           python3 features/v174/apply-guidebook-442.py
           python3 tests/test_v174_guidebook_442.py
+          # B445 dimension selector and every-layer pixel diagram (client only).
+          python3 features/v174/apply-guidebook-size-445.py
+          python3 tests/test_v174_guidebook_sizes_445.py
           grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXACT_MAP_FOOTPRINT' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXPOSED_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
