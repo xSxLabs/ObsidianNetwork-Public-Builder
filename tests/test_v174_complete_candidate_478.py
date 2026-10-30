@@ -80,8 +80,21 @@ if os.environ.get("V1_SOURCE_ROOT"):
                "NETWORK_BLUEPRINT","NETWORK_SCHEMATIC_QUILL"):
   assert "output.accept((ItemLike)"+field+".get());" in main,("hidden in creative",field)
  for item in ("network_hologram_terminal","network_printer","network_schematic_quill",
-              "uranium_rod","electric_water_pump","network_guidebook","nutrinator"):
+              "uranium_rod","electric_water_pump","nutrinator"):
   assert (r/"data/obsidiannetwork/recipe"/(item+".json")).is_file(),("missing recipe",item)
+ # GuideME is now the real building guide. The obsolete legacy book remains
+ # registered for save compatibility, but must no longer be craftable or creative.
+ guide_meta=(r/"META-INF/neoforge.mods.toml").read_text(encoding="utf-8")
+ if 'modId="guideme"' in guide_meta:
+  assert not (r/"data/obsidiannetwork/recipe/network_guidebook.json").exists(),"legacy guide recipe returned"
+  assert "output.accept((ItemLike)NETWORK_GUIDEBOOK.get());" not in main,"legacy guide creative returned"
+  guide=r/"assets/obsidiannetwork/guides/obsidiannetwork/guide"
+  for p in ("index.md","reactor.md","powerbank.md","pump.md","assets/reactor_5x5x5.snbt","assets/powerbank_3x3x3.snbt"):
+   assert (guide/p).is_file(),("GuideME missing guide asset",p)
+  assert 'src="assets/reactor_5x5x5.snbt"' in (guide/"reactor.md").read_text(encoding="utf-8")
+  assert 'src="assets/powerbank_3x3x3.snbt"' in (guide/"powerbank.md").read_text(encoding="utf-8")
+ else:
+  assert (r/"data/obsidiannetwork/recipe/network_guidebook.json").is_file(),"legacy guide recipe missing"
  assert not (j/"compat/jei/WipItemsJeiPlugin.java").exists(),"JEI WIP hidden"
  assert "B409_PORTAL_FOUR_DIRECTIONS" in (j/"portal/PortalGateBlock.java").read_text()
  assert "B404_JEI_COSMETIC_MISSING" in (j/"compat/jei/NetworkStorageRecipeTransferHandler.java").read_text()
@@ -111,9 +124,19 @@ if args.jar:
    "data/obsidiannetwork/recipe/network_schematic_quill.json",
    "data/obsidiannetwork/recipe/uranium_rod.json",
    "data/obsidiannetwork/recipe/electric_water_pump.json",
-   "data/obsidiannetwork/recipe/network_guidebook.json",
    "data/obsidiannetwork/recipe/nutrinator.json",
   )
+  guideme="assets/obsidiannetwork/guides/obsidiannetwork/guide/index.md" in present
+  if guideme:
+   extra=(
+    "assets/obsidiannetwork/guides/obsidiannetwork/guide/reactor.md",
+    "assets/obsidiannetwork/guides/obsidiannetwork/guide/powerbank.md",
+    "assets/obsidiannetwork/guides/obsidiannetwork/guide/assets/reactor_5x5x5.snbt",
+    "assets/obsidiannetwork/guides/obsidiannetwork/guide/assets/powerbank_3x3x3.snbt")
+   assert "data/obsidiannetwork/recipe/network_guidebook.json" not in present,"obsolete guide craftable in JAR"
+   needed=needed+extra
+  else:
+   needed=needed+("data/obsidiannetwork/recipe/network_guidebook.json",)
   missing=[name for name in needed if name not in present]
   assert not missing,("B478 missing assembled Java/assets",missing)
  report={
