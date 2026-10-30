@@ -157,7 +157,7 @@ edit("blockentity/NetworkPlanterBlockEntity.java",
  }
  private boolean fits(Map<Item,Integer> drops){''')
 edit("blockentity/NetworkPlanterBlockEntity.java",
- "   Map<Item,Integer> batch=be.harvest(world);",
+ "  Map<Item,Integer> batch=be.harvest(world);",
  r'''   if(!NetworkPlanterBlock.Plant.valid(be.seed)){
     java.util.List<ItemStack> batch=NetworkPlanterModCrops.harvest(world,pos,be.seed);
     // Fail closed when the mod provides no mature drops or requires an
