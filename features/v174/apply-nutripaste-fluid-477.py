@@ -64,8 +64,8 @@ public final class NutriPasteFluids {
 ''')
 
 once("ObsidianNetwork.java",
- "       BLOCKS.register(modEventBus);",
- "       BLOCKS.register(modEventBus);\n       dev.obsidiannetwork.nutrition.NutriPasteFluids.register(modEventBus);")
+ "      BLOCKS.register(modEventBus);",
+ "      BLOCKS.register(modEventBus);\n      dev.obsidiannetwork.nutrition.NutriPasteFluids.register(modEventBus);")
 
 once("nutrition/NutrinatorBlockEntity.java",
  '  public net.neoforged.neoforge.transfer.energy.EnergyHandler energyPort(){return energyPort;}',

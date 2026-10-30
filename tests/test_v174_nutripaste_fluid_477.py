@@ -15,6 +15,9 @@ for token in ("B477_NUTRIPASTE_REAL_FLUID","DeferredRegister.create(Registries.F
               "NutriPasteFluids.register(modEventBus)","nutrinatorPaste"):
  assert token in script,token
 assert wf.index("python3 features/v174/apply-wip-public-test-476.py") < wf.index("python3 features/v174/apply-nutripaste-fluid-477.py")
+# B479: six spaces in the genuine decompiled B475 mod constructor.
+assert \'"      BLOCKS.register(modEventBus);"\' in script
+assert \'"       BLOCKS.register(modEventBus);"\' not in script
 assert wf.rindex("python3 features/v174/apply-nutripaste-fluid-477.py") < wf.rindex("python3 tests/test_v174_nutripaste_fluid_477.py")
 if os.environ.get("V1_SOURCE_ROOT"):
  j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
