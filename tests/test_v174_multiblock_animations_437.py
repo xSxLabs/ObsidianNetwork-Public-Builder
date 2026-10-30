@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """B437: bounded visuals only when powered and operating."""
-import ast,os
+import ast,os,re
 from pathlib import Path
 r=Path(__file__).resolve().parents[1]
 p=(r/"features/v174/apply-multiblock-animations-437.py").read_text()
@@ -16,7 +16,8 @@ for x in ("V174_REACTOR_BOUNDED_ANIMATION_437",
  assert x in p,x
 assert p.count("level.addParticle(")==1
 assert p.count("world.addParticle(")==1
-assert p.count("l.addParticle(")==1
+# Match a distinct l variable, not the suffix of level.addParticle.
+assert len(re.findall(r"\bl\.addParticle\(",p))==1
 for x in ("python3 features/v174/apply-multiblock-animations-437.py",
           "python3 tests/test_v174_multiblock_animations_437.py"):assert x in w,x
 assert w.index("python3 features/v174/apply-machine-guis-436.py")<w.index("python3 features/v174/apply-multiblock-animations-437.py")
