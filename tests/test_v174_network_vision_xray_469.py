@@ -14,6 +14,7 @@ ast.parse(patch)
 assert "V173_B351_VISION_FEEDBACK" in patch
 assert 's.index(" @SubscribeEvent public static void hud(RenderGuiEvent.Post event){")' in patch
 assert "V174_XRAY_WORLD_WIREFRAME_B469" in patch
+assert "B471 HUD closing brace missing" in patch
 for marker in (
     '"obsidiannetwork".equals(key.getNamespace())',
     'name.equals("conduit_bundle")||name.endsWith("_cable")',
@@ -43,23 +44,39 @@ fixture=base[a:b]
 old_toggle=" public static void toggleFromWheel(){"
 assert fixture.count(old_toggle)==1
 fixture=fixture.replace(old_toggle,
-    " // V173_B351_VISION_FEEDBACK\\n"+old_toggle)
-with tempfile.TemporaryDirectory() as temp:
-    src=Path(temp)/"dev/obsidiannetwork/client/NetworkVisionClient.java"
-    src.parent.mkdir(parents=True)
-    src.write_text(fixture)
-    env=os.environ.copy()
-    env["V1_SOURCE_ROOT"]=temp
-    result=subprocess.run([sys.executable,str(root/"features/v174/apply-network-vision-xray-469.py")],
-                          env=env,capture_output=True,text=True)
-    assert result.returncode==0,result.stdout+result.stderr
-    generated=src.read_text()
-    assert generated.count("{")==generated.count("}"),"Broken NetworkVisionClient Java brace nesting"
-    assert generated.rstrip().endswith("}"),"Missing class closing brace"
-    assert "if(cable&&(" not in generated
-    assert "V174_XRAY_WORLD_WIREFRAME_B469" in generated
-    assert generated.count("public static void hud(")==1
-    assert generated.count("private static int xrayKind(")==1
+    " // V173_B351_VISION_FEEDBACK\n"+old_toggle)
+# Both real source shapes must work: expanded B328 and compact B337 HUD.
+compact_header=" @SubscribeEvent public static void hud(RenderGuiEvent.Post event){"
+compact_start=fixture.index(compact_header)
+compact_body_start=fixture.index("{",compact_start)
+depth=0
+compact_end=None
+for i in range(compact_body_start,len(fixture)):
+    if fixture[i]=="{": depth+=1
+    elif fixture[i]=="}":
+        depth-=1
+        if depth==0:
+            compact_end=i+1
+            break
+assert compact_end is not None
+compact=fixture[:compact_start]+compact_header+"}"+fixture[compact_end:]
+for shape, input_java in (("expanded_B328",fixture),("compact_B337",compact)):
+    with tempfile.TemporaryDirectory() as temp:
+        src=Path(temp)/"dev/obsidiannetwork/client/NetworkVisionClient.java"
+        src.parent.mkdir(parents=True)
+        src.write_text(input_java)
+        env=os.environ.copy()
+        env["V1_SOURCE_ROOT"]=temp
+        result=subprocess.run([sys.executable,str(root/"features/v174/apply-network-vision-xray-469.py")],
+                              env=env,capture_output=True,text=True)
+        assert result.returncode==0,shape+": "+result.stdout+result.stderr
+        generated=src.read_text()
+        assert generated.count("{")==generated.count("}"),shape+": unbalanced braces"
+        assert generated.rstrip().endswith("}"),shape+": missing class brace"
+        assert "if(cable&&(" not in generated,shape
+        assert "V174_XRAY_WORLD_WIREFRAME_B469" in generated,shape
+        assert generated.count("public static void hud(")==1,shape
+        assert generated.count("private static int xrayKind(")==1,shape
 
 if os.environ.get("V1_SOURCE_ROOT"):
     java=(Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client/NetworkVisionClient.java").read_text()

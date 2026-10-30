@@ -22,8 +22,24 @@ s=s.replace(needle,needle+'''
   private static BlockPos scannedCenter;
   private static int scannedAt=-1000000;
 ''',1)
-start=s.index(" @SubscribeEvent public static void hud(RenderGuiEvent.Post event){")
-end=s.index("\n }\n",start)
+# B471: find the method's closing brace structurally. B337 condensed HUD
+# into "hud(...){ }" without the old newline, and B470 failed on that format.
+signature=" @SubscribeEvent public static void hud(RenderGuiEvent.Post event){"
+assert s.count(signature)==1, "B471 HUD signature changed unexpectedly"
+start=s.index(signature)
+opening=s.index("{",start)
+depth=0
+end=None
+for i in range(opening,len(s)):
+ if s[i]=="{":
+  depth+=1
+ elif s[i]=="}":
+  depth-=1
+  if depth==0:
+   end=i+1
+   break
+assert end is not None and depth==0, "B471 HUD closing brace missing"
+assert s[end:].strip().startswith("}"), "B471 final Java class closing brace missing"
 replacement=r''' // Only own mod blocks are eligible. No terrain, machines or other mod IDs.
  private static int xrayKind(net.minecraft.world.level.block.state.BlockState state) {
   var key=BuiltInRegistries.BLOCK.getKey(state.getBlock());
@@ -122,7 +138,7 @@ replacement=r''' // Only own mod blocks are eligible. No terrain, machines or ot
  }
 '''
 # Keep closing class brace, replace HUD block and any internal code with helper methods.
-s=s[:start]+replacement+s[end+len("\n }\n"):]
+s=s[:start]+replacement+s[end:]
 assert s.count("V174_XRAY_WORLD_WIREFRAME_B469")>=2
 assert "if(cable&&(" not in s, "facade-only restriction unexpectedly survived"
 assert "xrayPositions.size()>=160" in s and "mc.level.hasChunkAt(at)" in s
