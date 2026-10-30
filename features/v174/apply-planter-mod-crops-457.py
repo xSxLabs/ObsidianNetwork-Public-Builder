@@ -114,7 +114,7 @@ edit("blockentity/NetworkPlanterBlockEntity.java",
  private static boolean seed(ItemStack s){return NetworkPlanterBlock.Plant.valid(s)
    ||NetworkPlanterModCrops.crop(s)!=null;}""")
 edit("blockentity/NetworkPlanterBlockEntity.java",
- "  private boolean pair(){\n   if(soil.isEmpty()||seed.isEmpty())return false;",
+ " private boolean pair(){\n  if(soil.isEmpty()||seed.isEmpty())return false;",
  """  private boolean pair(){
    if(soil.isEmpty()||seed.isEmpty())return false;
    if(!NetworkPlanterBlock.Plant.valid(seed))
