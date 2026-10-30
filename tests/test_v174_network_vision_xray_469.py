@@ -33,7 +33,7 @@ for marker in (
 for prohibited in ('setBlock(', 'setBlockEntity(', 'setChunkForced(', 'getChunk(', 'getServer().'):
     assert prohibited not in patch,prohibited
 assert workflow.index("python3 features/v174/apply-nightvision-warden-darkness-464.py") < workflow.index("python3 features/v174/apply-network-vision-xray-469.py")
-assert workflow.index("python3 features/v174/apply-network-vision-xray-469.py") < workflow.index("python3 tests/test_v174_network_vision_xray_469.py")
+assert workflow.rindex("python3 features/v174/apply-network-vision-xray-469.py") < workflow.rindex("python3 tests/test_v174_network_vision_xray_469.py")
 # B470: apply the real patch to the actual 328 baseline HUD. A regression
 # in the original whitespace or class/method brace boundary must fail here,
 # before the expensive game build.
