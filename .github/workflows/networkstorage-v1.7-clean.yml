@@ -2859,7 +2859,14 @@ jobs:
           python3 private/fixes/apply-v174-ingame-495.py
           python3 private/fixes/apply-v174-slots-496.py
           python3 private/fixes/apply-v174-energy-497.py
-          grep -Fq 'B495_16_SPEED_CARDS_X4_PUMP_AND_PRINTER_PASS' /dev/null || true
+          # Verify 16 inventory cards correspond to 64 actual work batches.
+          grep -Fq 'Math.min(16,b392Speed.getCount())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'Math.min(16,speed.getCount())' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
+          grep -Fq 'p.stacksTo(16)' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          grep -Fq 'B496_HIDE_TOP_GHOSTS' work/src/main/java/dev/obsidiannetwork/client/V174MachineScreen.java
+          grep -Fq 'B496_PLAYER_BOTTOM' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpMenu.java
+          grep -Fq 'B496_PLAYER_BOTTOM' work/src/main/java/dev/obsidiannetwork/powerbank/PowerbankMenu.java
+          grep -Fq 'B496_PLAYER_BOTTOM' work/src/main/java/dev/obsidiannetwork/reactor/ReactorMenu.java
           grep -Fq 'B495_SERVER_PLAYER_SLOTS' work/src/main/java/dev/obsidiannetwork/menu/NetworkPrinterMenu.java || grep -Fq 'B496_PLAYER_BOTTOM' work/src/main/java/dev/obsidiannetwork/menu/NetworkPrinterMenu.java
           grep -Fq 'B497_REACTOR_PORT_PUSH' work/src/main/java/dev/obsidiannetwork/reactor/ReactorControllerBlockEntity.java
           grep -Fq 'B497_ENERGY_SIDE_IO' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
