@@ -2886,6 +2886,7 @@ jobs:
           assert registry.count('"Transfer: Unlimited"') >= 4
           print('B502_SOLAR_UNLIMITED_OUTPUT_AND_PRODUCTION_REGRESSION_GATE_PASS')
           PY
+          # B504: rerun entire B503 feature batch with corrected powerbank 0px meter guard.
           # B503: B502-tested fixes consolidated before one full NeoForge build.
           python3 private/fixes/apply-v174-all-ingame-fixes-503.py
           python3 private/fixes/apply-v174-energy-cable-ui-503.py
