@@ -22,7 +22,7 @@ edit("nutrition/NutrinatorBlock.java",
  'Component.literal("xSxLabs Nutrinator @"+pos.getX()+","+pos.getY()+","+pos.getZ())')
 
 edit("nutrition/NutrinatorBlockEntity.java",
- '  public String status(){return "Paste "+paste+" / "+PASTE_CAPACITY+" mB, FE "+energy+", Speed "+level();}',
+ ' public String status(){return "Paste "+paste+" / "+PASTE_CAPACITY+" mB, FE "+energy+", Speed "+level();}',
  '''  public String status(){return "Paste "+paste+" / "+PASTE_CAPACITY+" mB, FE "+energy+", Speed "+level();}
   // B461_NUTRINATOR_CLIENT_SYNC: client sees the real server values.
   public long guiPaste(){return paste;}
