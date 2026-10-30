@@ -2681,11 +2681,6 @@ jobs:
           python3 tests/test_v174_nutripaste_fluid_477.py
           # B478: require all v1.7.4 systems simultaneously in generated source.
           python3 tests/test_v174_complete_candidate_478.py
-          # B483: source and original generated textures live ONLY in the
-          # private repository; public Actions is the free build runner.
-          python3 private/fixes/apply-v174-ingame-batch-483.py
-          grep -Fq 'B483_SPEED_64' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
-          grep -Fq 'B483_MAP_OCCUPIED_SURFACES' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXACT_MAP_FOOTPRINT' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXPOSED_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
@@ -2838,6 +2833,11 @@ jobs:
           grep -Fq 'V172_CREATE_MOVING_PLATFORM' work/src/main/java/dev/obsidiannetwork/powerarmor/PowerArmorCreatePlatformSupport.java
           test -f work/src/main/resources/data/obsidiannetwork/recipe/network_planter.json
           echo "V172_CREATE_AND_NETWORK_PLANTER_B136 PASS"
+          # B484: preserve all stable v1.7.3 diagnostic source gates BEFORE
+          # overriding the projector and printer with new private v1.7.4 code.
+          python3 private/fixes/apply-v174-ingame-batch-483.py
+          grep -Fq 'B483_SPEED_64' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'B483_MAP_OCCUPIED_SURFACES' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           python3 - <<'PY'
           from pathlib import Path
           import json
