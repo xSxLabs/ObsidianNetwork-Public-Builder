@@ -22,7 +22,7 @@ rep('public final class NutrinatorBlockEntity extends BlockEntity implements Con
     '''public final class NutrinatorBlockEntity extends BlockEntity implements WorldlyContainer {
   // B463_FOOD_INPUT_ONLY: only food slot zero is visible to sided item cables.
   private static final int[] EXTERNAL_INPUT_SLOTS={0};''')
-rep('  @Override public int getContainerSize(){return 27;}',
+rep(' @Override public int getContainerSize(){return 27;}',
     '''  @Override public int[] getSlotsForFace(Direction side){
    return EXTERNAL_INPUT_SLOTS.clone();
   }
