@@ -56,6 +56,32 @@ class StackUpgradeTests(unittest.TestCase):
    if not accepted: break
   self.assertEqual(src+sum(stored),1024)
   self.assertTrue(all(0<=x<=c for x,c in zip(stored,capacity)))
+ def test_v174_filters_are_checked_before_execute_on_both_item_paths(self):
+  tree=ast.parse(SRC)
+  methods={n.targets[0].id:ast.literal_eval(n.value)
+           for n in tree.body if isinstance(n,ast.Assign)
+           and len(n.targets)==1 and isinstance(n.targets[0],ast.Name)
+           and n.targets[0].id in ("standalone","network")}
+  cable=methods["standalone"]
+  conduit=methods["network"]
+  self.assertEqual(cable.count("V174_FILTER_SUCTION_466"),1)
+  self.assertEqual(conduit.count("V174_FILTER_MIXED_466"),1)
+  self.assertIn("this.cableAllows(in,",cable)
+  self.assertIn("filteredCable.cableAllows(src.side(),",conduit)
+  self.assertLess(cable.index("this.cableAllows(in,"),cable.index("ItemStack taken=src.extractItem(si,accepted,false);"))
+  self.assertLess(conduit.index("filteredCable.cableAllows(src.side(),"),conduit.index("ItemStack taken=from.extractItem(si,accepted,false);"))
+  self.assertIn("Math.min(16,stacks(in))",cable)
+  self.assertIn("Math.min(16,standalone.stacks(src.side()))",conduit)
+  self.assertIn("Math.min(16,bundle.logisticsStack(",conduit)
+  self.assertIn("if(sample.isEmpty())continue;",cable)
+  self.assertIn("if(sample.isEmpty())continue;",conduit)
+ def test_filter_model_allows_only_configured_item_with_no_loss(self):
+  for accepted in (set(),{"minecraft:diamond"}):
+   stock={"minecraft:diamond":5,"minecraft:emerald":3}
+   moved={k:v for k,v in stock.items() if not accepted or k in accepted}
+   remaining={k:v for k,v in stock.items() if accepted and k not in accepted}
+   self.assertEqual({k:moved.get(k,0)+remaining.get(k,0) for k in stock},stock)
+   self.assertEqual(moved,stock if not accepted else {"minecraft:diamond":5})
  def test_workflow_order(self):
   self.assertIn("test_v173_stack_upgrades_global.py",WF)
   self.assertIn("python3 patches/v173-stack-upgrades-global.py",WF)

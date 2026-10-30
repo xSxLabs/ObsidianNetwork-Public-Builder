@@ -41,6 +41,9 @@ standalone=r''' private final int[] xsxItemOutputCursor=new int[6],xsxItemInputC
     int si=(offset+j)%nslots;
     ItemStack sample=src.extractItem(si,64,true);
     if(sample.isEmpty())continue;
+    // V174_FILTER_SUCTION_466: check whitelist BEFORE any real extraction.
+    if(!this.cableAllows(in,
+        net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(sample.getItem())))continue;
     int start=Math.floorMod(xsxItemOutputCursor[side],destinations.size());
     for(int k=0;k<destinations.size();k++){
      Endpoint e=destinations.get((start+k)%destinations.size());
@@ -114,6 +117,10 @@ network=r'''   for(var src:sources){
       int si=(firstSlot+offset)%nslots;
       ItemStack sample=from.extractItem(si,64,true);
       if(sample.isEmpty())continue;
+      // V174_FILTER_MIXED_466: standalone ITEM filters also apply in mixed networks.
+      if(cable instanceof dev.obsidiannetwork.blockentity.LogisticsCableBlockEntity filteredCable
+         && !filteredCable.cableAllows(src.side(),
+             net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(sample.getItem())))continue;
       int start=Math.floorMod(rr.getOrDefault(slotKey,0),targets.size());
       for(int k=0;k<targets.size();k++){
        var dst=targets.get((start+k)%targets.size());
@@ -253,6 +260,8 @@ cable=(ROOT/"blockentity/LogisticsCableBlockEntity.java").read_text()
 assert "XSXLABS_BUNDLE_TPS_CACHE_V1" in ticker
 assert "if(network.type()!=ConduitType.ITEM||level.getGameTime()%5!=0)return;" in ticker
 assert "rr.put(slotKey,(start+k+1)%targets.size())" in ticker
+assert "V174_FILTER_SUCTION_466" in cable and "this.cableAllows(in," in cable
+assert "V174_FILTER_MIXED_466" in ticker and "filteredCable.cableAllows(src.side()," in ticker
 assert "MAX" not in "stacks(in)" or "Math.min(16,stacks(in))" in cable
 assert "if(!progressed)break;" in ticker and "if(!progressed)break;" in cable
 assert "Math.min(16,be.stackUpgrades)" in (ROOT/"blockentity/ExporterBlockEntity.java").read_text()
