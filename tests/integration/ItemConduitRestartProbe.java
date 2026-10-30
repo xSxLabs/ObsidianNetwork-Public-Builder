@@ -51,7 +51,7 @@ public final class ItemConduitRestartProbe {
                 report.put("server_jvm_pid", ProcessHandle.current().pid());
                 report.put("server_jvm_started", ProcessHandle.current().info().startInstant().orElseThrow().toString());
                 report.put("session", System.getenv("ON_ITEM_RESTART_SESSION"));
-                report.put("topologies", new String[]{"three_bundles", "three_standalone", "bundle_standalone_bundle", "standalone_bundle_standalone"});
+                report.put("topologies", new String[]{"three_bundles", "three_standalone", "bundle_standalone_bundle", "standalone_bundle_standalone", "filtered_standalone", "filtered_mixed"});
                 // Actual chunk tickets make block entities tick without any connected players.
                 server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "forceload add 0 0 31 31");
                 return;
@@ -69,6 +69,16 @@ public final class ItemConduitRestartProbe {
                 }
                 // Preserve explicit sparse filter slots as well as empty
                 // ghost positions across both dedicated-server JVMs.
+                // B467: true source-filter tests on both pure and mixed ITEM routes.
+                for (int lane = 4; lane < 6; lane++) {
+                    if (PHASE.equals("before")) create(level, lane);
+                    else {
+                        verifyModes(level, lane);
+                        verifyActiveSuctionFilter(level, lane, 5);
+                        chest(level, source(lane)).setItem(0, new ItemStack(Items.DIAMOND, 7));
+                    }
+                }
+                if (PHASE.equals("after")) report.put("active_filter_loaded_from_disk", true);
                 verifyFilterFixture(level);
                 // This fixture never configures an item whitelist. A blank
                 // eighteen-slot saved filter must still behave as unrestricted
@@ -84,11 +94,15 @@ public final class ItemConduitRestartProbe {
                 stage = 1;
                 stageStart = ticks;
             }
-            if (stage == 1 && allDrained(level)) {
+            if (stage == 1 && allDrained(level) && filteredDiamondsDelivered(level) && ticks - stageStart >= 50) {
                 for (int lane = 0; lane < 4; lane++) {
                     verifyModes(level, lane);
                     verifyContents(level, lane, PHASE.equals("after"));
                 }
+                for (int lane = 4; lane < 6; lane++)
+                    verifyActiveSuctionFilter(level, lane, PHASE.equals("before") ? 5 : 12);
+                report.put("active_filter_runtime_verified", true);
+                System.out.println("V174_ITEM_CABLE_ACTIVE_ALLOWLIST_RESTART_467 PASS phase=" + PHASE);
                 report.put("transfer_ticks", ticks - stageStart);
                 report.put("endpoint_diagnostics", diagnostics(level));
                 if (PHASE.equals("before")) finish(server, true, null);
@@ -117,6 +131,9 @@ public final class ItemConduitRestartProbe {
                     check(contents(chest(level, target(lane))).equals(expected), "Reconnect integrity failed: lane=" + lane);
                     verifyModes(level, lane);
                 }
+                for (int lane = 4; lane < 6; lane++)
+                    verifyActiveSuctionFilter(level, lane, 12);
+                report.put("active_filter_after_reconnect", true);
                 report.put("reconnect_ticks", ticks - stageStart);
                 report.put("item_conservation", true);
                 report.put("configuration_preserved", true);
@@ -167,13 +184,18 @@ public final class ItemConduitRestartProbe {
                     net.minecraft.resources.Identifier.fromNamespaceAndPath("minecraft", "diamond")),
                     "Cannot configure sparse saved ghost slot");
         }
+        if (lane >= 4) {
+            var filtered = (LogisticsCableBlockEntity) level.getBlockEntity(cable(lane, 0));
+            check(filtered.setCableFilterSlot(Direction.WEST, 7, BuiltInRegistries.ITEM.getKey(Items.DIAMOND)),
+                    "Cannot configure active suction filter lane=" + lane);
+        }
         chest(level, target(lane)).setItem(0, new ItemStack(Items.COBBLESTONE, 37));
         chest(level, source(lane)).setItem(0, new ItemStack(Items.DIAMOND, 5));
         chest(level, source(lane)).setItem(1, new ItemStack(Items.EMERALD, 3));
     }
 
     private static void placeCable(ServerLevel level, int lane, int index) {
-        boolean bundle = lane == 0 || lane == 2 && index != 1 || lane == 3 && index == 1;
+        boolean bundle = lane == 0 || lane == 2 && index != 1 || lane == 3 && index == 1 || lane == 5 && index == 1;
         level.setBlock(cable(lane, index), (bundle ? ObsidianNetwork.CONDUIT_BUNDLE.get() : ObsidianNetwork.ITEM_CABLE.get()).defaultBlockState(), 3);
         if (bundle) {
             var entity = (ConduitBundleBlockEntity) level.getBlockEntity(cable(lane, index));
@@ -196,6 +218,41 @@ public final class ItemConduitRestartProbe {
                 check(cable.mode(side) == (end == 0 ? LogisticsCableBlockEntity.Mode.IMPORT : LogisticsCableBlockEntity.Mode.EXPORT), "Standalone persisted mode changed");
             } else throw new IllegalStateException("Saved endpoint block entity missing at " + cable(lane, end));
         }
+    }
+
+    // B467_ACTIVE_FILTER_RUNTIME: verify actual ticks, inventory and persistence.
+    private static boolean filteredDiamondsDelivered(ServerLevel level) {
+        int expected = PHASE.equals("before") ? 5 : 12;
+        for (int lane = 4; lane < 6; lane++)
+            if (count(chest(level, target(lane)), Items.DIAMOND) != expected) return false;
+        return true;
+    }
+
+    private static void verifyActiveSuctionFilter(ServerLevel level, int lane, int diamonds) {
+        check(lane == 4 || lane == 5, "Invalid filtered fixture");
+        var sourceCable = (LogisticsCableBlockEntity) level.getBlockEntity(cable(lane, 0));
+        var diamond = BuiltInRegistries.ITEM.getKey(Items.DIAMOND);
+        var emerald = BuiltInRegistries.ITEM.getKey(Items.EMERALD);
+        check(sourceCable.mode(Direction.WEST) == LogisticsCableBlockEntity.Mode.IMPORT,
+                "Filtered suction mode lost lane=" + lane);
+        check(sourceCable.cableFilters(Direction.WEST).size() == 1
+                && sourceCable.cableFilters(Direction.WEST).contains(diamond),
+                "Active item filter lost lane=" + lane);
+        check(diamond.equals(sourceCable.cableFilterAt(Direction.WEST, 7)),
+                "Sparse filter slot 7 lost lane=" + lane);
+        check(sourceCable.cableAllows(Direction.WEST, diamond)
+                && !sourceCable.cableAllows(Direction.WEST, emerald),
+                "Allowlist unexpectedly accepts emerald lane=" + lane);
+        check(count(chest(level, source(lane)), Items.EMERALD) == 3,
+                "Filtered emerald removed from source lane=" + lane);
+        check(count(chest(level, source(lane)), Items.DIAMOND) == 0,
+                "Allowed diamonds still in source lane=" + lane);
+        check(count(chest(level, target(lane)), Items.DIAMOND) == diamonds,
+                "Diamond count mismatch lane=" + lane);
+        check(count(chest(level, target(lane)), Items.EMERALD) == 0,
+                "Filtered emerald leaked into target lane=" + lane);
+        check(count(chest(level, target(lane)), Items.COBBLESTONE) == 37,
+                "Target prefill corrupted lane=" + lane);
     }
 
     private static void verifyFilterFixture(ServerLevel level) {

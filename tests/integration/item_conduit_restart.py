@@ -134,6 +134,11 @@ def main():
         require(before["server_jvm_pid"] != after["server_jvm_pid"], "Test reused the same server JVM")
         require(before["server_jvm_started"] != after["server_jvm_started"], "Test reused a JVM start time")
         require(after.get("configuration_preserved") is True and after.get("item_conservation") is True, "Missing restart integrity checks")
+        require(all(report["phases"][p].get("active_filter_runtime_verified") is True
+                    for p in ("before", "after")), "Active filtered transfer failed in one of the two dedicated JVMs")
+        require(after.get("active_filter_loaded_from_disk") is True
+                and after.get("active_filter_after_reconnect") is True,
+                "Active suction filters not persisted or protected after reconnect")
         restart_candidates = sorted(p.parent for p in run.rglob("level.dat") if p.is_file())
         require(restart_candidates == [saved_world], "Dedicated server restarted with a different or ambiguous world")
         report["world_after_restart_sha256"] = world_manifest(saved_world)
