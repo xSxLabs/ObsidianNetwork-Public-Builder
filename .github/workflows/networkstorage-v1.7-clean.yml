@@ -2891,6 +2891,7 @@ jobs:
           # B503: B502-tested fixes consolidated before one full NeoForge build.
           python3 private/fixes/apply-v174-all-ingame-fixes-503.py
           python3 private/fixes/apply-v174-energy-cable-ui-503.py
+          # B513 retry: preserve all B508 changes, fix printer marker preflight.
           # B508: all user-reported ingame defects in one release candidate.
           python3 private/fixes/apply-v174-all-ingame-fixes-508.py
           python3 - <<'PY'
