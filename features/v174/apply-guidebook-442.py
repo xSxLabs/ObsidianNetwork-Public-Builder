@@ -135,7 +135,7 @@ public final class V174GuidebookScreen extends ContainerScreen {
   g.text(font,"< PREV",113,37,0xffa1f7ff);
   g.text(font,"NEXT >",113,54,0xffa1f7ff);
  }
- @Override protected void extractBackground(GuiGraphicsExtractor g,int mx,int my,float partial){
+ @Override public void extractBackground(GuiGraphicsExtractor g,int mx,int my,float partial){
   int x=getLeftPos(),y=getTopPos();
   int height=getImageHeight();
   g.fill(x-4,y-5,x+180,y+height+5,0xff2dc3d6);
