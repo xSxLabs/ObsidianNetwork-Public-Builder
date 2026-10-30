@@ -129,9 +129,8 @@ public final class V174NutrinatorScreen extends ContainerScreen {
   NutrinatorBlockEntity be=live();
   if(be!=null){
    meter(g,x+12,y+16,be.guiPaste(),be.guiPasteCapacity(),0xff51dda9);
-   // Secondary FE & helmet indicators are narrow to avoid the slot row.
-   meter(g,x+12,y+91,be.guiEnergy(),be.guiEnergyCapacity(),0xfff2d269);
-   meter(g,x+12,y+104,be.guiHelmetPaste(),be.guiHelmetCapacity(),0xff77b9ff);
+   // FE and helmet amounts are displayed in the header labels above.
+   // The vanilla inventory starts at y=84; never draw meters underneath it.
   }
   // Actual 36-player inventory slots retain their ChestMenu positions.
   for(int i=0;i<36;i++){
