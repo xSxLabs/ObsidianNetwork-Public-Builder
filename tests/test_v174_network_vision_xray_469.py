@@ -15,6 +15,8 @@ assert "V173_B351_VISION_FEEDBACK" in patch
 assert 'B471 HUD closing brace missing' in patch
 assert 's=s[:start]+replacement+s[end:]' in patch
 assert "V174_XRAY_WORLD_WIREFRAME_B469" in patch
+assert patch.count("net.minecraft.client.gui.GuiGraphicsExtractor g")==2
+assert "net.minecraft.client.gui.GuiGraphics g" not in patch
 assert "B471 HUD closing brace missing" in patch
 for marker in (
     '"obsidiannetwork".equals(key.getNamespace())',
@@ -78,6 +80,7 @@ for shape, input_java in (("expanded_B328",fixture),("compact_B337",compact)):
         assert "V174_XRAY_WORLD_WIREFRAME_B469" in generated,shape
         assert generated.count("public static void hud(")==1,shape
         assert generated.count("private static int xrayKind(")==1,shape
+        assert generated.count("net.minecraft.client.gui.GuiGraphicsExtractor g")==2,shape
 
 if os.environ.get("V1_SOURCE_ROOT"):
     java=(Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client/NetworkVisionClient.java").read_text()

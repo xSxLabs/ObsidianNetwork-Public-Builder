@@ -81,7 +81,7 @@ replacement=r''' // Only own mod blocks are eligible. No terrain, machines or ot
   if(!Float.isFinite(sx)||!Float.isFinite(sy))return null;
   return new float[]{sx,sy};
  }
- private static void wireLine(net.minecraft.client.gui.GuiGraphics g,
+ private static void wireLine(net.minecraft.client.gui.GuiGraphicsExtractor g,
     float[] a,float[] b,int color,int width,int height){
   if(a==null||b==null)return;
   // Entire offscreen segments do not need rasterization.
@@ -94,7 +94,7 @@ replacement=r''' // Only own mod blocks are eligible. No terrain, machines or ot
    if(px>=0&&px<width&&py>=0&&py<height)g.fill(px,py,px+1,py+1,color);
   }
  }
- private static void wireCube(net.minecraft.client.gui.GuiGraphics g,
+ private static void wireCube(net.minecraft.client.gui.GuiGraphicsExtractor g,
     BlockPos p,float half,int color,
     net.minecraft.world.phys.Vec3 origin,Quaternionf inv,
     double focal,int width,int height){
