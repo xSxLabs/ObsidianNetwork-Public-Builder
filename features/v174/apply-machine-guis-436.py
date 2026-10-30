@@ -20,8 +20,8 @@ change("reactor/ReactorControllerBlock.java",
  'Component.literal("Reactor | "+be.status())',
  'Component.literal("xSxLabs Reactor @"+p.getX()+","+p.getY()+","+p.getZ())')
 change("pump/ElectricWaterPumpBlock.java",
- 'Component.literal(be.status())',
- 'Component.literal("xSxLabs Water Pump @"+pos.getX()+","+pos.getY()+","+pos.getZ())')
+ 'Component.literal(be.status())));',
+ 'Component.literal("xSxLabs Water Pump @"+pos.getX()+","+pos.getY()+","+pos.getZ())));')
 
 # Powerbank is FE-only. A restricted top 9x3 utility menu allows the same
 # vanilla player inventory and renders a real FE gauge without fake item slots.

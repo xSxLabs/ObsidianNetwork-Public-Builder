@@ -131,9 +131,9 @@ public final class V174GuidebookScreen extends ContainerScreen {
   for(int i=0;i<rows.length;i++)
    g.text(font,rows[i],12,27+i*9,0xffd7f8e3);
   g.text(font,NOTE[page],8,73,0xffb2d1dc);
-  g.text(font,"< PREV",8,91,0xffa1f7ff);
-  g.text(font,"PAGE "+(page+1)+"/"+PLAN.length,67,91,0xffffffff);
-  g.text(font,"NEXT >",131,91,0xffa1f7ff);
+  g.text(font,"PAGE "+(page+1)+"/"+PLAN.length,121,4,0xffffffff);
+  g.text(font,"< PREV",113,37,0xffa1f7ff);
+  g.text(font,"NEXT >",113,54,0xffa1f7ff);
  }
  @Override protected void extractBackground(GuiGraphicsExtractor g,int mx,int my,float partial){
   int x=getLeftPos(),y=getTopPos();
@@ -141,7 +141,8 @@ public final class V174GuidebookScreen extends ContainerScreen {
   g.fill(x-4,y-5,x+180,y+height+5,0xff2dc3d6);
   g.fill(x,y,x+176,y+height,0xff102936);
   g.fill(x+5,y+22,x+171,y+72,0xff09212d);
-  g.fill(x+5,y+85,x+171,y+103,0xff1d4153);
+  g.fill(x+105,y+34,x+170,y+49,0xff1d4153);
+  g.fill(x+105,y+51,x+170,y+67,0xff1d4153);
   for(int i=0;i<36;i++){
    int sx=x+8+(i%9)*18,sy=y+(i<27?84+(i/9)*18:142);
    g.fill(sx-1,sy-1,sx+18,sy+18,0xff36687a);
@@ -151,9 +152,9 @@ public final class V174GuidebookScreen extends ContainerScreen {
  @Override public boolean mouseClicked(MouseButtonEvent e,boolean doubleClick){
   if(e.button()==0){
    double x=e.x()-getLeftPos(),y=e.y()-getTopPos();
-   if(y>=85D&&y<=107D){
-    if(x>=5D&&x<58D){page=(page+PLAN.length-1)%PLAN.length;return true;}
-    if(x>=119D&&x<=175D){page=(page+1)%PLAN.length;return true;}
+   if(x>=105D&&x<=170D){
+    if(y>=34D&&y<=49D){page=(page+PLAN.length-1)%PLAN.length;return true;}
+    if(y>=51D&&y<=67D){page=(page+1)%PLAN.length;return true;}
    }
   }
   return super.mouseClicked(e,doubleClick);
