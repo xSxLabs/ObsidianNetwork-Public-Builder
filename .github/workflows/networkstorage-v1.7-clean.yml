@@ -160,7 +160,7 @@ jobs:
       - name: Fast private v1.7.4 ingame patch syntax preflight
         run: |
           set -euo pipefail
-          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py private/fixes/apply-v174-energy-cell-capacity-500.py private/fixes/apply-v174-solar-unlimited-502.py
+          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py private/fixes/apply-v174-energy-cell-capacity-500.py private/fixes/apply-v174-solar-unlimited-502.py private/fixes/apply-v174-all-ingame-fixes-503.py private/fixes/apply-v174-energy-cable-ui-503.py
           echo 'B490_PRIVATE_PATCH_SYNTAX_PASS'
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
@@ -2885,6 +2885,28 @@ jobs:
               assert '"' + item + '"' in registry
           assert registry.count('"Transfer: Unlimited"') >= 4
           print('B502_SOLAR_UNLIMITED_OUTPUT_AND_PRODUCTION_REGRESSION_GATE_PASS')
+          PY
+          # B503: B502-tested fixes consolidated before one full NeoForge build.
+          python3 private/fixes/apply-v174-all-ingame-fixes-503.py
+          python3 private/fixes/apply-v174-energy-cable-ui-503.py
+          python3 - <<'PY'
+          from pathlib import Path
+          j=Path('work/src/main/java/dev/obsidiannetwork')
+          r=Path('work/src/main/resources/assets/obsidiannetwork')
+          assert 'B503_SLOT_INDEX_RESTORE' in (j/'menu/NetworkPrinterMenu.java').read_text()
+          for rel in ['reactor/ReactorMenu.java','powerbank/PowerbankMenu.java','pump/ElectricWaterPumpMenu.java']:
+              assert 'B503_SLOT_INDEX_RESTORE' in (j/rel).read_text(), rel
+          assert 'B503_MOUSE_INPUT_BOTTOM' in (j/'client/V174MachineScreen.java').read_text()
+          assert 'B503_MOUSE_INPUT_BOTTOM' in (j/'client/NetworkPrinterScreen.java').read_text()
+          assert 'B503_ACTIVE_MULTIBLOCK_LIGHT' in (j/'multiblock/MultiblockSkinBlock.java').read_text()
+          assert 'B503_ENERGY_CABLE_SIDE_GUI' in (j/'block/EnergyCableBlock.java').read_text()
+          assert 'B503_ENERGY_CABLE_REAL_SIX_FACE_MENU_PASS' in Path('private/fixes/apply-v174-energy-cable-ui-503.py').read_text()
+          for n in ['uranium_ore','deepslate_uranium_ore']:
+              assert '"parent": "minecraft:block/cube_all"' in (r/('models/block/'+n+'.json')).read_text()
+          for n in ['reactor_glass','powerbank_glass']:
+              assert (r/('textures/block/'+n+'_formed.png')).exists()
+          assert 'Math.max(48000,cols*cols*28)' in (j/'client/V173WorldGhostRenderer.java').read_text()
+          print('B503_FULL_INGAME_REGRESSION_SOURCE_GATE_PASS')
           PY
           # Verify 16 inventory cards correspond to 64 actual work batches.
           grep -Fq 'Math.min(16,b392Speed.getCount())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
