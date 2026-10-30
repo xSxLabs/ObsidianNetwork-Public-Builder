@@ -139,6 +139,15 @@ jobs:
         with:
           # Build exactly the triggering revision, not a later branch HEAD.
           ref: ${{ github.sha }}
+      # B473: cheap checks BEFORE private checkout, decompilation and Gradle.
+      - name: Fast v1.7.4 patch preflight (before Minecraft rebuild)
+        run: |
+          set -euo pipefail
+          python3 -m py_compile features/v174/*.py tests/test_v174_network_vision_xray_469.py
+          python3 tests/test_v174_network_vision_xray_469.py
+          python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
+          python3 -m unittest discover -s tests -p 'test_v173_stack_upgrades_global.py' -v
+          echo 'B473_FAST_V174_PREFLIGHT PASS'
       - uses: actions/checkout@v4
         with:
           repository: xSxLabs/ObsidianNetwork-Build
@@ -147,6 +156,16 @@ jobs:
           path: private
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
+      # Cache Gradle dependencies; cache/save below runs on red builds too.
+      - name: Restore NeoForge Gradle dependencies
+        id: v174_gradle_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/jars-9
+            ~/.gradle/wrapper
+          key: xsxlabs-neoforge-26-1-2-jdk25-linux-deps-v1
       - name: Reconstruct v1.0.5 baseline and inspect Importer
         run: |
           set -euo pipefail
@@ -3609,6 +3628,15 @@ jobs:
           test -s /tmp/xsxlabs-perf-hotpaths.json
           cp /tmp/xsxlabs-perf-hotpaths.json dist/perf-hotpaths.json
           test -s dist/diagnostic-report.json
+      - name: Save NeoForge dependencies even on red builds
+        if: always() && steps.v174_gradle_cache.outputs.cache-hit != 'true' && hashFiles('work/build.gradle') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/jars-9
+            ~/.gradle/wrapper
+          key: xsxlabs-neoforge-26-1-2-jdk25-linux-deps-v1
       - name: Upload failed ITEM restart diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
