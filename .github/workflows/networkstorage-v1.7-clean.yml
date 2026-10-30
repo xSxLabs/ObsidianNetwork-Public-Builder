@@ -2909,7 +2909,7 @@ jobs:
               assert '"parent": "minecraft:block/cube_all"' in (r/('models/block/'+n+'.json')).read_text()
           for n in ['reactor_glass','powerbank_glass']:
               assert (r/('textures/block/'+n+'_formed.png')).exists()
-          assert 'Math.max(48000,cols*cols*28)' in (j/'client/V173WorldGhostRenderer.java').read_text()
+          assert 'Math.max(48000,cols*cols*48)' in (j/'client/V173WorldGhostRenderer.java').read_text()
           # B508: fail if any new feature vanished during reconstruction.
           assert 'B508_CABLE_CLICKED_FACE_ONLY' in (j/'menu/EnergyCableConfigMenu.java').read_text()
           assert 'B508_INPUT_COLLAR_SYNC' in (j/'blockentity/EnergyCableBlockEntity.java').read_text()
