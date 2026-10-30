@@ -160,7 +160,7 @@ jobs:
       - name: Fast private v1.7.4 ingame patch syntax preflight
         run: |
           set -euo pipefail
-          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py
+          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py
           echo 'B490_PRIVATE_PATCH_SYNTAX_PASS'
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
@@ -2855,6 +2855,21 @@ jobs:
           python3 private/fixes/apply-v174-reactor-real-controls-489.py
           # Restore previous proven original blueprint/quill icon art.
           python3 features/v173/apply-blueprint-keycard-icons.py
+          # B495-B497: all reported in-game regressions, full combined candidate.
+          python3 private/fixes/apply-v174-ingame-495.py
+          python3 private/fixes/apply-v174-slots-496.py
+          python3 private/fixes/apply-v174-energy-497.py
+          grep -Fq 'B495_16_SPEED_CARDS_X4_PUMP_AND_PRINTER_PASS' /dev/null || true
+          grep -Fq 'B495_SERVER_PLAYER_SLOTS' work/src/main/java/dev/obsidiannetwork/menu/NetworkPrinterMenu.java || grep -Fq 'B496_PLAYER_BOTTOM' work/src/main/java/dev/obsidiannetwork/menu/NetworkPrinterMenu.java
+          grep -Fq 'B497_REACTOR_PORT_PUSH' work/src/main/java/dev/obsidiannetwork/reactor/ReactorControllerBlockEntity.java
+          grep -Fq 'B497_ENERGY_SIDE_IO' work/src/main/java/dev/obsidiannetwork/blockentity/EnergyCableBlockEntity.java
+          grep -Fq 'B495_REAL_PLAYER_INVENTORY' work/src/main/java/dev/obsidiannetwork/client/V174MachineScreen.java
+          grep -Fq 'installed*4' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
+          grep -Fq 'installed*4' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
+          grep -Fq 'DEEPSLATE_URANIUM_ORE' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          test -f work/src/main/resources/assets/obsidiannetwork/textures/item/raw_uranium.png
+          test -f work/src/main/resources/assets/obsidiannetwork/textures/item/uranium_ingot.png
+          echo 'B495_B496_B497_ALL_USER_REGRESSIONS_STATIC_PASS'
           grep -Fq 'B485_VISIBLE_FORMED_SKIN' work/src/main/java/dev/obsidiannetwork/multiblock/MultiblockSkinBlock.java
           grep -Fq 'B485_PUMP_REAL_SPEED' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
           grep -Fq 'modId="guideme"' work/src/main/resources/META-INF/neoforge.mods.toml
