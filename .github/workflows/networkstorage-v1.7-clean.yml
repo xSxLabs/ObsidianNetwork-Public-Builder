@@ -719,7 +719,7 @@ jobs:
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
           echo '===== V1.1.1 CONDUIT BUNDLE COMPILE PROBE ====='
-          (cd work && gradle --no-daemon --no-configuration-cache clean compileJava --stacktrace)
+          (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
           echo '===== V1.1.1 CONDUIT BUNDLE COMPILE PASS ====='
           echo '===== V1.1.1 CONDUIT BUNDLE RUNTIME/RESOURCE SMOKE ====='
           python3 - <<'PY'
@@ -878,15 +878,26 @@ jobs:
           set +e
           # B446: first CI boot may fetch 4,750 Mojang assets before NeoForge starts.
           # Allow asset warm-up, but preserve the mandatory real server-start evidence below.
-          timeout --signal=TERM --kill-after=15s 600s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1
+          # B482: end this gate promptly after the dedicated server reports READY.
+          # Preserve the full 600s cold-download allowance, but never idle for 10m on a healthy boot.
+          timeout --signal=TERM --kill-after=15s 600s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1 &
+          SERVER_PID=$!
+          SERVER_READY=0
+          for _ in $(seq 1 300); do
+            if grep -Eq 'Done \([0-9.]+s\)!.*For help, type "help"' /tmp/build101-server.log; then SERVER_READY=1; break; fi
+            if ! kill -0 "$SERVER_PID" 2>/dev/null; then break; fi
+            sleep 2
+          done
+          if [ "$SERVER_READY" -eq 1 ]; then kill -TERM "$SERVER_PID" 2>/dev/null || true; fi
+          wait "$SERVER_PID"
           SERVER_RC=$?
           set -e
-          cat /tmp/build101-server.log
-          # A healthy server normally remains running until timeout. Require evidence that NeoForge
-          # reached server startup and reject crashes/exceptions before accepting timeout 124.
-          if [ "$SERVER_RC" -ne 124 ]; then echo "server exited unexpectedly rc=$SERVER_RC"; exit 1; fi
-          # A timed-out asset download is NOT a green boot; require startup evidence.
-          grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/build101-server.log
+          tail -n 160 /tmp/build101-server.log
+          # No false green from a boot that did not finish; 143 is our intentional
+          # SIGTERM after readiness, 124 is the absolute cold-asset timeout.
+          if [ "$SERVER_READY" -ne 1 ]; then echo "server never became ready rc=$SERVER_RC"; exit 1; fi
+          if [ "$SERVER_RC" -ne 143 ] && [ "$SERVER_RC" -ne 124 ]; then echo "server exited unexpectedly rc=$SERVER_RC"; exit 1; fi
+          grep -Eq 'Done \([0-9.]+s\)!.*For help, type "help"' /tmp/build101-server.log
           if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
           echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
           echo '===== BUILD 215 CONDUIT BUNDLE NEOFORGE GAMETEST GATE ====='
@@ -2676,7 +2687,7 @@ jobs:
           grep -Fq 'B392_BLUEPRINT_CACHE' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B392_AIR_ZERO_COST' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'B392_SKIP_ONCE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
-          set -x  # B375_DIAGNOSE_EXACT_CI_SOURCE_GUARD; turn off after source gates.
+          # B482: do not enable shell xtrace while reconstructed sources are present.
           grep -Fq 'V173_B338_CABLE_MODEL_REVEAL' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           grep -Fq 'V173_B345_HOLO_VISIBLE' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'V173_B348_NETWORK_3D' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
@@ -3254,7 +3265,7 @@ jobs:
               patterns=('onLoad(', 'loadAdditional(', 'setLevel(', 'setRemoved(', 'onChunkUnloaded(', 'ensure(', 'scanEndpoints(', 'cacheEndpoints(', 'invalidateCapabilities(', 'setConduitFlags(')
               matches=[i for i,line in enumerate(lines) if any(token in line for token in patterns)]
               for i in matches[:24]:
-                  print('ITEM_RESTART_LIFECYCLE_LINE',rel,i+1,' '.join(lines[max(0,i-2):min(len(lines),i+5)]).strip()[:650])
+                  print('ITEM_RESTART_LIFECYCLE_LINE',rel,i+1,'[source redacted]')
           print('ITEM_RESTART_LIFECYCLE_DIAGNOSTIC_V1 PASS')
           PY
           # Capture complete restart-critical methods, not only truncated
@@ -3273,7 +3284,7 @@ jobs:
                   ranges=[(1,min(75,len(lines)))]
               for a,b in ranges:
                   for i in range(a-1,min(b,len(lines))):
-                      print('ITEM_RESTART_SOURCE',rel,i+1,lines[i][:1300])
+                      print('ITEM_RESTART_SOURCE',rel,i+1,'[source redacted]')
           print('ITEM_RESTART_SOURCE_DUMP_V1 PASS')
           PY
           # Restart regression gate: ITEM endpoints must revalidate on every transfer tick,
@@ -3610,7 +3621,7 @@ jobs:
           print('ITEM_CONDUIT_RESTART_DIAGNOSTIC_GATE PASS')
           PY
           echo '===== BUILD 101 FINAL BUILD ====='
-          (cd work && gradle --no-daemon --no-configuration-cache clean build --stacktrace)
+          (cd work && gradle --no-daemon --no-configuration-cache build --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
           echo '===== BUILD 101 ALL AUTOMATABLE GATES PASS ====='
 

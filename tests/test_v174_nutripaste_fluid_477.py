@@ -50,6 +50,8 @@ with tempfile.TemporaryDirectory() as tmp:
     env=env,text=True,capture_output=True)
  assert result.returncode==0,"B481 native-fluid injector failed preflight: "+result.stdout+result.stderr
  assert "NutriPasteFluids.register(modEventBus)" in (java/"ObsidianNetwork.java").read_text()
+ assert '.descriptionId("fluid.obsidiannetwork.nutripaste")' in (java/"nutrition/NutriPasteFluids.java").read_text()
+ assert "net.minecraft.Util.makeDescriptionId" not in (java/"nutrition/NutriPasteFluids.java").read_text()
  assert "B477_NUTRIPASTE_TRANSACTIONAL_FLUID" in (java/"nutrition/NutrinatorBlockEntity.java").read_text()
  assert "Capabilities.Fluid.BLOCK" in (java/"nutrition/NutrinatorCapabilities.java").read_text()
  assert (java/"nutrition/NutriPasteFluids.java").is_file()

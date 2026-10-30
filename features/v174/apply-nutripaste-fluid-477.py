@@ -48,7 +48,7 @@ public final class NutriPasteFluids {
  public static final DeferredHolder<FluidType,FluidType> TYPE =
      FLUID_TYPES.register("nutripaste",id -> new FluidType(
        FluidType.Properties.create()
-          .descriptionId(net.minecraft.Util.makeDescriptionId("fluid",id))
+          .descriptionId("fluid.obsidiannetwork.nutripaste")
           .canSwim(false)));
  public static final DeferredHolder<Fluid,BaseFlowingFluid.Source> SOURCE =
      FLUIDS.register("nutripaste",() -> new BaseFlowingFluid.Source(NutriPasteFluids.PROPERTIES));
