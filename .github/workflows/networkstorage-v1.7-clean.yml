@@ -2912,7 +2912,7 @@ jobs:
           assert 'Math.max(48000,cols*cols*48)' in (j/'client/V173WorldGhostRenderer.java').read_text()
           # B508: fail if any new feature vanished during reconstruction.
           assert 'B508_CABLE_CLICKED_FACE_ONLY' in (j/'menu/EnergyCableConfigMenu.java').read_text()
-          assert 'B508_INPUT_COLLAR_SYNC' in (j/'blockentity/EnergyCableBlockEntity.java').read_text()
+          assert 'public int energySideMode(' in (j/'blockentity/EnergyCableBlockEntity.java').read_text()
           assert 'B508_CABLE_INPUT_BER' in (j/'client/EnergyCableInputRenderer.java').read_text()
           assert 'EnergyCableInputRenderer::new' in (j/'client/NetworkPlanterClientRenderRegistration.java').read_text()
           assert 'B508_PUMP_UPGRADE_BOTTOM_RIGHT' in (j/'client/V174MachineScreen.java').read_text()
