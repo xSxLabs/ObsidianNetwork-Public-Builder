@@ -68,7 +68,7 @@ once("ObsidianNetwork.java",
  "      BLOCKS.register(modEventBus);\n      dev.obsidiannetwork.nutrition.NutriPasteFluids.register(modEventBus);")
 
 once("nutrition/NutrinatorBlockEntity.java",
- '  public net.neoforged.neoforge.transfer.energy.EnergyHandler energyPort(){return energyPort;}',
+ ' public net.neoforged.neoforge.transfer.energy.EnergyHandler energyPort(){return energyPort;}',
  '''  public net.neoforged.neoforge.transfer.energy.EnergyHandler energyPort(){return energyPort;}
   // B477_NUTRIPASTE_TRANSACTIONAL_FLUID: no paste created by external pipes.
   // One real NutriPaste tank, output only, independent from the FE inventory.
@@ -114,7 +114,7 @@ once("nutrition/NutrinatorBlockEntity.java",
     net.neoforged.neoforge.transfer.fluid.FluidResource> fluidPort(){return pastePort;}''')
 
 once("nutrition/NutrinatorCapabilities.java",
- '   e.registerBlockEntity(Capabilities.Item.BLOCK,ModBlockEntities.NUTRINATOR.get(),',
+ '  e.registerBlockEntity(Capabilities.Item.BLOCK,ModBlockEntities.NUTRINATOR.get(),',
  '''   e.registerBlockEntity(Capabilities.Fluid.BLOCK,ModBlockEntities.NUTRINATOR.get(),
      (be,side)->be.fluidPort());
    e.registerBlockEntity(Capabilities.Item.BLOCK,ModBlockEntities.NUTRINATOR.get(),''')
