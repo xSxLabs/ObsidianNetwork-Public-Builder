@@ -13,7 +13,7 @@ p=root/"client/NetworkVisionClient.java"
 s=p.read_text(encoding="utf-8")
 assert "V173_B351_VISION_FEEDBACK" in s, "B469 expected B351 final action-wheel Vision"
 assert "V173_VISION_FACADE_ONLY_328" in s, "B469 expected B328 projection"
-needle="  private static boolean enabled;"
+needle=" private static boolean enabled;"
 assert s.count(needle)==1, "B469 enabled state drift"
 s=s.replace(needle,needle+'''
   // V174_XRAY_WORLD_WIREFRAME_B469: source positions only, never world mutation.
@@ -122,10 +122,11 @@ replacement=r''' // Only own mod blocks are eligible. No terrain, machines or ot
  }
 '''
 # Keep closing class brace, replace HUD block and any internal code with helper methods.
-s=s[:start]+replacement+s[end:]
+s=s[:start]+replacement+s[end+len("\n }\n"):]
 assert s.count("V174_XRAY_WORLD_WIREFRAME_B469")>=2
 assert "if(cable&&(" not in s, "facade-only restriction unexpectedly survived"
 assert "xrayPositions.size()>=160" in s and "mc.level.hasChunkAt(at)" in s
 assert "wireCube(g,at" in s and "getGuiGraphics()" in s
+assert s.count("{")==s.count("}"), "B470 Java braces unbalanced after Vision HUD replacement"
 p.write_text(s,encoding="utf-8")
 print("V174_XRAY_WORLD_WIREFRAME_B469 PASS: bounded loaded-only 3D outlines through terrain, action wheel only")
