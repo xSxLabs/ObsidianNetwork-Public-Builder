@@ -2632,6 +2632,9 @@ jobs:
           # B464 Warden Darkness cannot override toggled, powered suit night vision.
           python3 features/v174/apply-nightvision-warden-darkness-464.py
           python3 tests/test_v174_nightvision_darkness_464.py
+          # B469: depth-independent loaded-only Network Vision wireframe.
+          python3 features/v174/apply-network-vision-xray-469.py
+          python3 tests/test_v174_network_vision_xray_469.py
           grep -Fq 'B378_ISOTROPIC_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXACT_MAP_FOOTPRINT' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           grep -Fq 'B388_EXPOSED_MAP' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
