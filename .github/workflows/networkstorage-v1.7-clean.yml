@@ -160,7 +160,7 @@ jobs:
       - name: Fast private v1.7.4 ingame patch syntax preflight
         run: |
           set -euo pipefail
-          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py
+          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-polish-485.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py
           echo 'B490_PRIVATE_PATCH_SYNTAX_PASS'
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
@@ -2836,6 +2836,7 @@ jobs:
           # B484: preserve all stable v1.7.3 diagnostic source gates BEFORE
           # overriding the projector and printer with new private v1.7.4 code.
           python3 private/fixes/apply-v174-ingame-batch-483.py
+          python3 private/fixes/apply-v174-polish-485.py
           grep -Fq 'B483_SPEED_64' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'B483_MAP_OCCUPIED_SURFACES' work/src/main/java/dev/obsidiannetwork/client/V173WorldGhostRenderer.java
           # B485: entire white xSxLabs multiblock, speed, clean GUI and GuideME
