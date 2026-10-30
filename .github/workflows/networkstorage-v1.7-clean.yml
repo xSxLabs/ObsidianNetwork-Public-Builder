@@ -854,13 +854,16 @@ jobs:
           echo '===== BUILD 101 JUNIT PASS ====='
           echo '===== BUILD 101 DEDICATED SERVER STARTUP GATE ====='
           set +e
-          timeout 90s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1
+          # B446: first CI boot may fetch 4,750 Mojang assets before NeoForge starts.
+          # Allow asset warm-up, but preserve the mandatory real server-start evidence below.
+          timeout --signal=TERM --kill-after=15s 600s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1
           SERVER_RC=$?
           set -e
           cat /tmp/build101-server.log
           # A healthy server normally remains running until timeout. Require evidence that NeoForge
           # reached server startup and reject crashes/exceptions before accepting timeout 124.
           if [ "$SERVER_RC" -ne 124 ]; then echo "server exited unexpectedly rc=$SERVER_RC"; exit 1; fi
+          # A timed-out asset download is NOT a green boot; require startup evidence.
           grep -Eq 'Done \([0-9.]+s\)!|For help, type "help"|Starting Minecraft server' /tmp/build101-server.log
           if grep -Eq 'Failed to start|Exception in server tick loop|ModLoadingException|LoadingFailedException' /tmp/build101-server.log; then exit 1; fi
           echo '===== BUILD 101 DEDICATED SERVER STARTUP PASS ====='
