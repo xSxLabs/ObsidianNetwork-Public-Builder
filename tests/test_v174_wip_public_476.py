@@ -15,7 +15,7 @@ assert "NETWORK_PRINTER_ITEM" in code
 assert "NETWORK_BLUEPRINT" in code
 assert "NETWORK_SCHEMATIC_QUILL" in code
 assert workflow.index("python3 features/v173/apply-wip-hide-398.py") < workflow.index("python3 features/v174/apply-wip-public-test-476.py")
-assert workflow.index("python3 features/v174/apply-wip-public-test-476.py") < workflow.index("python3 tests/test_v174_wip_public_476.py")
+assert workflow.rindex("python3 features/v174/apply-wip-public-test-476.py") < workflow.rindex("python3 tests/test_v174_wip_public_476.py")
 if os.environ.get("V1_SOURCE_ROOT"):
  java=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
  res=Path(os.environ["V1_RESOURCE_ROOT"])
