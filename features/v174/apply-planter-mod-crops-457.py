@@ -25,7 +25,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
@@ -43,9 +43,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class NetworkPlanterModCrops {
  private NetworkPlanterModCrops(){}
  private static final TagKey<Item> COMMON_SEEDS=TagKey.create(Registries.ITEM,
-       ResourceLocation.fromNamespaceAndPath("c","seeds"));
+       Identifier.fromNamespaceAndPath("c","seeds"));
  private static final TagKey<Block> COMMON_FARMLANDS=TagKey.create(Registries.BLOCK,
-       ResourceLocation.fromNamespaceAndPath("c","farmlands"));
+       Identifier.fromNamespaceAndPath("c","farmlands"));
  public static CropBlock crop(ItemStack seed){
   if(seed.isEmpty()||NetworkPlanterBlock.Plant.valid(seed))return null;
   if(seed.getItem() instanceof BlockItem bi && bi.getBlock() instanceof CropBlock plant)
@@ -59,7 +59,7 @@ public final class NetworkPlanterModCrops {
      name.endsWith("_seed")?name.substring(0,name.length()-5):name;
   // Namespace is always the seed's own mod: never infer an unrelated drop.
   for(String candidate:new String[]{stem+"_crop",stem+"_plant",stem}){
-   var key=ResourceLocation.fromNamespaceAndPath(id.getNamespace(),candidate);
+   var key=Identifier.fromNamespaceAndPath(id.getNamespace(),candidate);
    var block=BuiltInRegistries.BLOCK.getOptional(key).orElse(null);
    if(block instanceof CropBlock plant)return plant;
   }
