@@ -24,7 +24,9 @@ for marker in (
  assert marker in script,marker
 assert "g.text(mc.font" not in script, "Network Vision may not draw fake block labels"
 assert "mc.level.addParticle" not in script, "Never replace wireframes with particles"
-assert "setBlockAndUpdate(" not in script, "Must never mutate the world"
+# Inspect only the generated Java, not the Python patch's own security assertion.
+java=script.split("new=r'''",1)[1].split("'''",1)[0]
+assert "setBlockAndUpdate(" not in java, "Must never mutate the world"
 assert "getChunk(" not in script, "Must never synchronously force-load a chunk"
 assert "if(seen.size()<256&&seen.add(next))" in script
 assert "found.size()<64" in script
