@@ -2913,7 +2913,8 @@ jobs:
           # B508: fail if any new feature vanished during reconstruction.
           assert 'B508_CABLE_CLICKED_FACE_ONLY' in (j/'menu/EnergyCableConfigMenu.java').read_text()
           assert 'B508_INPUT_COLLAR_SYNC' in (j/'blockentity/EnergyCableBlockEntity.java').read_text()
-          assert 'B508_VISIBLE_ENERGY_INPUT_COLLAR' in (j/'block/EnergyCableBlock.java').read_text()
+          assert 'B508_CABLE_INPUT_BER' in (j/'client/EnergyCableInputRenderer.java').read_text()
+          assert 'EnergyCableInputRenderer::new' in (j/'client/NetworkPlanterClientRenderRegistration.java').read_text()
           assert 'B508_PUMP_UPGRADE_BOTTOM_RIGHT' in (j/'client/V174MachineScreen.java').read_text()
           assert 'B508_PRINTER_SPEED_SLOT_ONLY' in (j/'client/NetworkPrinterScreen.java').read_text()
           assert 'B508_MAP_FULL_RADIUS' in (j/'client/V173WorldGhostRenderer.java').read_text()
@@ -2924,8 +2925,7 @@ jobs:
               assert (r/('textures/item/'+item+'.png')).stat().st_size>100
           for ore in ('uranium_ore','deepslate_uranium_ore'):
               assert (r/('textures/block/'+ore+'_side.png')).stat().st_size>100
-          for side in ('down','up','north','south','west','east'):
-              assert (r/('models/block/energy_cable_input_'+side+'.json')).exists()
+          assert 'SnapshotJournal<long[]>' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
           print('B508_FULL_INGAME_SOURCE_AND_TEXTURE_GATE_PASS')
           print('B503_FULL_INGAME_REGRESSION_SOURCE_GATE_PASS')
           PY
@@ -3797,10 +3797,8 @@ jobs:
             model=json.loads(z.read(root+'models/block/'+ore+'.json'))
             assert model['parent']=='minecraft:block/cube_all'
             assert model['textures']['all']=='obsidiannetwork:block/'+ore+'_side'
-           for side in ('down','up','north','south','west','east'):
-            assert root+'models/block/energy_cable_input_'+side+'.json' in members
            for cls in ('powerbank/PowerbankBlockEntity.class','client/V174MachineScreen.class',
-                       'block/EnergyCableBlock.class','client/EnergyCableConfigScreen.class',
+                       'client/EnergyCableInputRenderer.class','client/EnergyCableConfigScreen.class',
                        'menu/EnergyCableConfigMenu.class','menu/NetworkPrinterMenu.class'):
             assert 'dev/obsidiannetwork/'+cls in members,cls
           print('B508_COMPILED_JAR_TEXTURES_AND_UI_GATE_PASS')
