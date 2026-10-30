@@ -2864,6 +2864,12 @@ jobs:
           grep -Fq 'Math.min(16,speed.getCount())' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
           grep -Fq 'p.stacksTo(16)' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           grep -Fq 'B496_HIDE_TOP_GHOSTS' work/src/main/java/dev/obsidiannetwork/client/V174MachineScreen.java
+          grep -Fq 'B497_SCREEN_250_CENTER' work/src/main/java/dev/obsidiannetwork/client/V174MachineScreen.java
+          grep -Fq 'B497_SCREEN_250_CENTER' work/src/main/java/dev/obsidiannetwork/client/NetworkPrinterScreen.java
+          if grep -Fq 'this.imageHeight=250;' work/src/main/java/dev/obsidiannetwork/client/V174MachineScreen.java work/src/main/java/dev/obsidiannetwork/client/NetworkPrinterScreen.java; then
+            echo 'B497_FINAL_IMAGE_HEIGHT_COMPILE_REGRESSION' >&2
+            exit 1
+          fi
           grep -Fq 'B496_PLAYER_BOTTOM' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpMenu.java
           grep -Fq 'B496_PLAYER_BOTTOM' work/src/main/java/dev/obsidiannetwork/powerbank/PowerbankMenu.java
           grep -Fq 'B496_PLAYER_BOTTOM' work/src/main/java/dev/obsidiannetwork/reactor/ReactorMenu.java
