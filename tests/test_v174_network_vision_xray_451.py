@@ -29,6 +29,12 @@ java=script.split("new=r'''",1)[1].split("'''",1)[0]
 assert "setBlockAndUpdate(" not in java, "Must never mutate the world"
 # B453: remote clients may not infer ownership from loaded chunk data.
 # Only an actual server-authorized player-scoped feed can lift this restriction.
+# Older cable, facade and wheel code call active(), so a HUD-only guard is insufficient.
+assert "B455_VISION_GLOBAL_REMOTE_GUARD" in script
+assert "Minecraft.getInstance().getSingleplayerServer()!=null" in script
+assert "if(mc.getSingleplayerServer()==null)" in script
+assert "multiplayer access verification pending" in script
+assert "active_old" in script and "toggle_old" in script
 assert "B453_VISION_REMOTE_FAIL_CLOSED" in java
 assert "if(mc.getSingleplayerServer()==null)" in java
 remote=java.split("if(mc.getSingleplayerServer()==null)",1)[1].split("sampleVision(mc);",1)[0]
