@@ -20,13 +20,17 @@ change(" private int page=0;",''' // B445_SCALED_LAYERS: independent client-side
  private boolean showReactor=true;
  private int reactorSize=5,reactorLayer=0,powerbankHeight=3,powerbankLayer=0;''')
 
+change('''  g.text(font,TITLE[page],8,15,0xfff5d68c);''',
+'''  if(page!=7)g.text(font,TITLE[page],8,15,0xfff5d68c);''')
+
 change('''  String[] rows=PLAN[page];
   for(int i=0;i<rows.length;i++)
    g.text(font,rows[i],12,27+i*9,0xffd7f8e3);''','''  if(page==7){
    int edge=showReactor?reactorSize:3;
    int height=showReactor?reactorSize:powerbankHeight;
    int layer=showReactor?reactorLayer:powerbankLayer;
-   g.text(font,(showReactor?"REACTOR ":"POWERBANK ")+edge+"x"+height+"x"+edge,8,27,0xfff6e1a6);
+   g.text(font,(showReactor?"R ":"P ")+edge,8,27,0xfff6e1a6);
+   g.text(font,edge+"x"+height+"x"+edge,116,16,0xfff6e1a6);
    g.text(font,"TYPE",8,35,0xffa1f7ff);
    g.text(font,"- SIZE +",8,49,0xffa1f7ff);
    g.text(font,"- Y +",8,64,0xffa1f7ff);
