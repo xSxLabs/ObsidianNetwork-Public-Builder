@@ -160,7 +160,7 @@ jobs:
       - name: Fast private v1.7.4 ingame patch syntax preflight
         run: |
           set -euo pipefail
-          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py private/fixes/apply-v174-energy-cell-capacity-500.py
+          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py private/fixes/apply-v174-energy-cell-capacity-500.py private/fixes/apply-v174-solar-unlimited-502.py
           echo 'B490_PRIVATE_PATCH_SYNTAX_PASS'
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
@@ -2868,6 +2868,24 @@ jobs:
           # B500: multiply cell storage by 5, preserving B499 transfer rates.
           python3 private/fixes/apply-v174-energy-cell-capacity-500.py
           grep -Fq 'B500_5X_ENERGY_CELL_CAPACITY_PASS' private/fixes/apply-v174-energy-cell-capacity-500.py
+          # B502: remove FE/t export cap from ALL 4 solar tiers while preserving
+          # per-tier generation, buffer capacity and atomic source/target transfer.
+          python3 private/fixes/apply-v174-solar-unlimited-502.py
+          python3 - <<'PY'
+          from pathlib import Path
+          j=Path('work/src/main/java/dev/obsidiannetwork')
+          solar=(j/'blockentity/SolarGeneratorBlockEntity.java').read_text()
+          registry=(j/'ObsidianNetwork.java').read_text()
+          assert 'new EnergyBuffer(this.tier.capacity(), this.tier.output(), this.tier.capacity())' in solar
+          assert 'long budget = be.energy.stored();' in solar
+          assert 'long made = Math.min(be.tier.output(), be.energy.capacity() - be.energy.stored());' in solar
+          assert 'long budget = Math.min(be.tier.output(), be.energy.stored());' not in solar
+          assert solar.index('be.energyJournal.updateSnapshots(tx);') < solar.index('long extracted = be.energy.extract(accepted);') < solar.index('tx.commit();')
+          for item in ['solar_generator','improved_solar_generator','advanced_solar_generator','elite_solar_generator']:
+              assert '"' + item + '"' in registry
+          assert registry.count('"Transfer: Unlimited"') >= 4
+          print('B502_SOLAR_UNLIMITED_OUTPUT_AND_PRODUCTION_REGRESSION_GATE_PASS')
+          PY
           # Verify 16 inventory cards correspond to 64 actual work batches.
           grep -Fq 'Math.min(16,b392Speed.getCount())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'Math.min(16,speed.getCount())' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
