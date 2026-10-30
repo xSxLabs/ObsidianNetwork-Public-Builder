@@ -27,6 +27,14 @@ assert "mc.level.addParticle" not in script, "Never replace wireframes with part
 # Inspect only the generated Java, not the Python patch's own security assertion.
 java=script.split("new=r'''",1)[1].split("'''",1)[0]
 assert "setBlockAndUpdate(" not in java, "Must never mutate the world"
+# B453: remote clients may not infer ownership from loaded chunk data.
+# Only an actual server-authorized player-scoped feed can lift this restriction.
+assert "B453_VISION_REMOTE_FAIL_CLOSED" in java
+assert "if(mc.getSingleplayerServer()==null)" in java
+remote=java.split("if(mc.getSingleplayerServer()==null)",1)[1].split("sampleVision(mc);",1)[0]
+assert "return;" in remote and "visionShapes=java.util.List.of()" in remote
+assert java.index("if(mc.getSingleplayerServer()==null)") < java.index("sampleVision(mc);")
+
 assert "getChunk(" not in script, "Must never synchronously force-load a chunk"
 assert "if(seen.size()<256&&seen.add(next))" in script
 assert "found.size()<64" in script
