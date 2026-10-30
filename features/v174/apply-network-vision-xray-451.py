@@ -4,8 +4,7 @@
 Runs after the v1.7.3 Vision / action-wheel patches and AFTER B445 guidebook.
 Only renders client GUI geometry. No world writes, packets, server topology,
 facade blockstate mutation, chunk loads or upgrade bypasses. This is a
-first-pass local-component visual implementation: multiplayer ownership
-authorisation still needs a dedicated server-authenticated visibility feed.
+first-pass local-component visual implementation: remote multiplayer is deliberately fail-closed until a dedicated server-authorised visibility feed exists.
 """
 import os
 from pathlib import Path
@@ -128,6 +127,14 @@ new=r''' // B451_VISION_THROUGH_WALL: draw projected outlines in screen space AF
  @SubscribeEvent public static void hud(RenderGuiEvent.Post event){
   if(!active()){visionShapes=java.util.List.of();visionSampleTick=Long.MIN_VALUE;return;}
   var mc=Minecraft.getInstance();
+  // B453_VISION_REMOTE_FAIL_CLOSED: client-only world reads cannot prove
+  // another multiplayer player's permission to reveal hidden networks.
+  // The view stays off on dedicated/remote servers until a server-validated
+  // per-player topology permission feed is implemented. Never trust client data.
+  if(mc.getSingleplayerServer()==null){
+   visionShapes=java.util.List.of();visionSampleTick=Long.MIN_VALUE;
+   return;
+  }
   if(mc.player==null||mc.level==null||mc.screen!=null)return;
   sampleVision(mc);
   if(visionShapes.isEmpty())return;
