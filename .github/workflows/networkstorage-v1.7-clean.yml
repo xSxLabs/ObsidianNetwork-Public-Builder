@@ -160,7 +160,7 @@ jobs:
       - name: Fast private v1.7.4 ingame patch syntax preflight
         run: |
           set -euo pipefail
-          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py
+          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py private/fixes/apply-v174-energy-cell-capacity-500.py
           echo 'B490_PRIVATE_PATCH_SYNTAX_PASS'
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
@@ -2865,6 +2865,10 @@ jobs:
           # B499: another 5x FE/t for all five Energy Cells (10x pre-B498 transfer).
           python3 private/fixes/apply-v174-energy-cell-transfer-499.py
           grep -Fq 'B499_5X_MORE_CELL_IN_OUT_FE_PER_TICK' private/fixes/apply-v174-energy-cell-transfer-499.py
+          # B500: multiply cell storage by 5, preserving B499 transfer rates.
+          python3 private/fixes/apply-v174-energy-cell-capacity-500.py
+          grep -Fq 'B500_5X_ENERGY_CELL_CAPACITY_PASS' private/fixes/apply-v174-energy-cell-capacity-500.py
+          grep -Fq 'B500_5X_ENERGY_CELL_CAPACITY_PASS' /dev/null && exit 1 || true
           # Verify 16 inventory cards correspond to 64 actual work batches.
           grep -Fq 'Math.min(16,b392Speed.getCount())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'Math.min(16,speed.getCount())' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
