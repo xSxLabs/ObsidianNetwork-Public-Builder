@@ -94,7 +94,9 @@ public final class ItemConduitRestartProbe {
                 stage = 1;
                 stageStart = ticks;
             }
-            if (stage == 1 && allDrained(level) && filteredDiamondsDelivered(level) && ticks - stageStart >= 50) {
+            if (stage == 1 && allDrained(level)) {
+                // B468: keep the shared restart hook stable for wireless CI injections.
+                if (!filteredDiamondsDelivered(level) || ticks - stageStart < 50) return;
                 for (int lane = 0; lane < 4; lane++) {
                     verifyModes(level, lane);
                     verifyContents(level, lane, PHASE.equals("after"));
