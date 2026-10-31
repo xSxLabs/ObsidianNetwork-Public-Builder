@@ -253,7 +253,7 @@ png("reactor_glass_formed_lit",lambda x,y:glass(x,y,False,True))
 (A/"models/block/reactor_glass_formed_lit.json").write_text(json.dumps({
  "parent":"minecraft:block/cube_all","textures":{"all":{
  "sprite":"obsidiannetwork:block/reactor_glass_formed_lit",
- "force_translucent":True}}},indent=2)+"\\n",encoding="utf8")
+ "force_translucent":True}}},indent=2)+"\n",encoding="utf8")
 png("powerbank_glass_formed",lambda x,y:glass(x,y,True,False))
 for detail in range(3):
  png("powerbank_glass_formed_lit_detail"+str(detail),
