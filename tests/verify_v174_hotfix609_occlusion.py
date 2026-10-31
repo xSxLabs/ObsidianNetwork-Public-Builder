@@ -24,7 +24,12 @@ for ident,cl,model in [
  java=(J/("nutrition/NutrinatorBlock.java" if ident=="NUTRINATOR" else "pump/ElectricWaterPumpBlock.java")).read_text(encoding="utf-8")
  assert "RenderShape.MODEL" in java
  blockmodel=json.loads((R/"models/block"/(model+".json")).read_text(encoding="utf-8"))
- assert blockmodel.get("parent")=="minecraft:block/cube_all",("B609_BLOCK_MODEL_DRIFT",model)
+ # These machines use inset, multi-cuboid hi-tech models, NOT full cubes.
+ # If the block wrongly occludes its neighbors, adjacent stone faces get
+ # culled and holes appear around the machine.
+ assert isinstance(blockmodel.get("elements"),list) and len(blockmodel["elements"])>=5,("B609_DETAILED_MODEL_MISSING",model)
+ assert all(len(e["from"])==3 and len(e["to"])==3 for e in blockmodel["elements"])
+ assert any(e["from"][0]>0 or e["to"][0]<16 for e in blockmodel["elements"]),("B609_EXPECTED_INSET_GEOMETRY",model)
  blockstate=json.loads((R/"blockstates"/(model+".json")).read_text(encoding="utf-8"))
  assert blockstate["variants"][""]["model"]=="obsidiannetwork:block/"+model
 # Tight client render regression test:
