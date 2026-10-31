@@ -31,7 +31,7 @@ patch("client/PowerArmorBuild98Client.java",
 # Remove misleading label. The framed slot alone indicates placement.
 patch("client/NetworkTankScreen.java",
  'g.text(font,"H",leftPos+10,topPos+17,0xff92ddd1,false);',
- '// B541_NO_H_LABEL: slot is self explanatory; no extra letter')
+ '/* B541_NO_H_LABEL: slot is self explanatory; no extra letter */')
 
 # One-tick helmet refill; nonempty slots only => no extra work for idle tanks.
 # Eimer output uses Fluid.getBucket(), never creates a bucket for arbitrary fluids.
