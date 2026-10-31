@@ -57,10 +57,23 @@ s=s.replace(before,new,1)
 # Vanilla GeckoLib transition visuals expire after 24 ticks. Recall must NOT:
 # the 28-tick brake/dock needs a longer lifetime and long-distance flight
 # may take hundreds of ticks. Only the normal equip/unequip visual expires.
-lifetime="if(!level().isClientSide()&&tickCount>23)discard();"
-assert s.count(lifetime)==1,("V175_VISUAL_LIFETIME_DRIFT",s.count(lifetime))
-s=s.replace(lifetime,
-    "if(!level().isClientSide()&&tickCount>23&&entityData.get(V175_PHASE)==0)discard(); // V175_RECALL_VISUAL_LIFETIME")
+# v1.7.2 already replaced the 24-tick visual expiry with a safe recall
+# activity check. Keep that authoritative lifecycle: flight, brake and dock
+# remain active until the transfer or abort; ordinary animations still expire.
+v172_recall_expiry='''if(!level().isClientSide()&&tickCount>23
+    &&(!entityTags().contains("xsxlabs_power_armor_recall_visual_v172")
+    ||!PowerArmorRecall.isVisualActive(getUUID())))discard();'''
+legacy_expiry="if(!level().isClientSide()&&tickCount>23)discard();"
+if s.count(v172_recall_expiry)==1:
+ assert s.count("PowerArmorRecall.isVisualActive(getUUID())")==1
+ s=s.replace(v172_recall_expiry,
+    v172_recall_expiry+" // V175_RECALL_VISUAL_LIFETIME: preserve v172 active-flight protection",1)
+elif s.count(legacy_expiry)==1:
+ # For future base revisions without v172, preserve normal expiry only.
+ s=s.replace(legacy_expiry,
+    "if(!level().isClientSide()&&tickCount>23&&entityData.get(V175_PHASE)==0)discard(); // V175_RECALL_VISUAL_LIFETIME",1)
+else:
+ raise AssertionError(("V175_VISUAL_EXPIRY_UNKNOWN",s[s.find("public void tick()"):s.find("public void tick()")+700]))
 assert "V175_PHASE" in s and 'thenLoop(' in s
 assert '"animation.power_armor.equip":"animation.power_armor.unequip"' in s
 put(visual,s)
