@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 p=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client/PowerArmorBuild98Client.java"
 s=p.read_text(encoding="utf-8")
-assert "BUILD119_HUNGER_ALIGNED_COMPACT_HUD" in s, "B537_MISSING_VANILLA_FE_HUD"
+assert 'g.text(mc.font,"ARMOR FE"' in s, "B538_MISSING_REAL_FE_LABEL"
 assert "B533_NUTRIPASTE_ARMOR_ROW" in s, "B537_MISSING_NUTRIPASTE_HUD"
 assert "B537_HUD_BOTTOM_LEFT_FE" not in s, "B537_ALREADY_APPLIED"
 
