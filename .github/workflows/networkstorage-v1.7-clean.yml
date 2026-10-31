@@ -3190,6 +3190,11 @@ jobs:
           python3 -m py_compile features/v174/apply-v174-hotfix605-energy-composite-renderer.py tests/verify_v174_hotfix605_renderer_contract.py
           python3 features/v174/apply-v174-hotfix605-energy-composite-renderer.py
           python3 tests/verify_v174_hotfix605_renderer_contract.py
+          # B609: maintain Energy facade composite and fix neighbor-face
+          # occlusion at both industrial machine registrations.
+          python3 -m py_compile features/v174/apply-v174-hotfix609-occlusion-and-facade-guard.py tests/verify_v174_hotfix609_occlusion.py
+          python3 features/v174/apply-v174-hotfix609-occlusion-and-facade-guard.py
+          python3 tests/verify_v174_hotfix609_occlusion.py
           python3 tests/verify_v174_hotfix602.py
           python3 tests/verify_v174_build591_contract.py
           # The inherited B579 FE test also checks the final B584 cable model.
