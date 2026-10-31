@@ -154,6 +154,8 @@ jobs:
           python3 tests/test_v174_all_user_fixes_533.py
           python3 tests/test_spark_solar_mspt_536.py
           python3 tests/test_v174_bottom_left_hud_537.py
+          python3 tests/test_v174_ingame_541.py
+          python3 tests/test_spark_energy_immutable_cut_mask_541.py
           python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_stack_upgrades_global.py' -v
           echo 'B473_FAST_V174_PREFLIGHT PASS'
@@ -2927,6 +2929,11 @@ jobs:
           python3 features/v174/apply-v174-assets-533.py
           # B537: FE and NutriPaste both anchored to bottom-left, transparent.
           python3 features/v174/apply-v174-bottom-left-hud-537.py
+          # B541: fast helmet/buckets, hotbar-side HUD, stronger formed styling.
+          python3 features/v174/apply-v174-ingame-541.py
+          # Spark day +20 MSPT: cache immutable cable cut-state bits only;
+          # never cache live topology, transfer capabilities, FE or transactions.
+          python3 patches/spark-energy-immutable-cut-mask-541.py
           # B530 source applies in the tail of B514d: ingame feedback, all together.
           python3 - <<'PY'
           import json
@@ -2997,8 +3004,10 @@ jobs:
           # B533 all new Java and fluid assets must actually enter the final JAR.
           assert 'B533_NUTRIPASTE_ARMOR_ROW' in (j/'client/PowerArmorBuild98Client.java').read_text()
           hud=(j/'client/PowerArmorBuild98Client.java').read_text()
-          assert 'B537_HUD_BOTTOM_LEFT_FE' in hud and 'B537_HUD_BOTTOM_LEFT_PASTE' in hud
-          assert 'getGuiScaledHeight()-61' in hud and 'getGuiScaledHeight()-85' in hud
+          assert 'B541_HUD_LEFT_OF_HOTBAR_FE' in hud and 'B541_HUD_LEFT_OF_HOTBAR_PASTE' in hud
+          assert 'B537_HUD_BOTTOM_LEFT_FE' not in hud and 'B537_HUD_BOTTOM_LEFT_PASTE' not in hud
+          assert 'B541_IMMUTABLE_ENERGY_CABLE_CUT_MASK' in (j/'blockentity/EnergyCableBlockEntity.java').read_text()
+          assert 'getGuiScaledHeight()-29' in hud and 'getGuiScaledHeight()-47' in hud
           assert '0x9b101923' not in hud
           print('B537_POWER_ARMOR_FE_AND_PASTE_BOTTOM_LEFT_TRANSPARENT_PASS')
           assert 'B533_HELMET_PASTE_TOOLTIP' in (j/'nutrition/NutriPasteTooltip.java').read_text()
@@ -3006,6 +3015,13 @@ jobs:
           assert 'B533_NETWORK_TANK_HELMET_FILL' in (j/'blockentity/NetworkTankBlockEntity.java').read_text()
           assert 'B533_NETWORK_TANK_HELMET_SLOT' in (j/'menu/NetworkTankMenu.java').read_text()
           assert 'B533_NETWORK_TANK_AUTOFILL_TICK' in (j/'block/NetworkTankBlock.java').read_text()
+          assert 'B541_FAST_HELMET' in (j/'blockentity/NetworkTankBlockEntity.java').read_text()
+          assert 'B541_BUCKET_ONLY' in (j/'blockentity/NetworkTankBlockEntity.java').read_text()
+          assert 'B541_TANK_HELMET_OR_EMPTY_BUCKET_ONLY' in (j/'menu/NetworkTankMenu.java').read_text()
+          assert 'B541_NO_H_LABEL' in (j/'client/NetworkTankScreen.java').read_text()
+          assert 'g.text(font,"H",' not in (j/'client/NetworkTankScreen.java').read_text()
+          assert 'NUTRIPASTE_BUCKET' in (j/'ObsidianNetwork.java').read_text()
+          assert 'nutripaste_bucket' in (r/'models/item/nutripaste_bucket.json').read_text()
           assert 'B533_ACTUAL_ENERGY_CABLE_CAP_TEXTURE' in (j/'client/EnergyCableInputRenderer.java').read_text()
           assert 'B533_BROWN_NUTRIPASTE_FLUID' in (j/'nutrition/client/NutriPasteFluidModels.java').read_text()
           assert 'bank&&state.is(dev.obsidiannetwork.ObsidianNetwork.POWERBANK_CASING.get())' in (j/'multiblock/MultiblockSkinBlock.java').read_text()
@@ -3013,6 +3029,12 @@ jobs:
               png=(r/('textures/block/'+name+'.png')).read_bytes()
               assert png.startswith(bytes.fromhex('89504e470d0a1a0a')) and len(png)>150,name
           assert (r/'models/block/powerbank_casing_formed_lit.json').is_file()
+          for machine in ('reactor_casing_formed','powerbank_casing_formed','powerbank_casing_formed_lit'):
+              model=json.loads((r/('models/block/'+machine+'.json')).read_text())
+              assert model['parent']=='minecraft:block/cube'
+              assert model['textures']['up']=='obsidiannetwork:block/'+machine+'_top'
+              assert model['textures']['north']=='obsidiannetwork:block/'+machine
+          print('B541_SERVER_HOTBAR_TANK_BUCKET_FORMED_CABLE_PERF_GATES_PASS')
           print('B533_USER_REPORTS_HUD_TOOLTIP_TANK_CABLE_FLUID_MODELS_PASS')
           # B540: actual cable model replaces the old inaccurate cyan-concrete cap.
           collar=(j/'client/EnergyCableInputRenderer.java').read_text()
