@@ -21,7 +21,8 @@ for ident,cl,model in [
  assert start<end<start+1200,("B609_DECLARATION_RANGE",ident)
  definition=s[start:end]
  assert "BLOCKS.registerBlock" in definition,("B609_REGISTRATION_CHANGED",ident)
- assert ".requiresCorrectToolForDrops().noOcclusion()" in definition,("B609_MUST_NOT_CULL_NEIGHBOR_FACES",ident)
+ assert ".noOcclusion()" in definition,("B609_MUST_NOT_CULL_NEIGHBOR_FACES",ident)
+ assert ".strength(" in definition,("B609_HAND_MINING_STRENGTH_REMOVED",ident)
  assert definition.count(".noOcclusion()")==1,("B609_DUPLICATE_CALL",ident)
  assert cl in definition,("B609_WRONG_TYPE",ident)
  java=(J/("nutrition/NutrinatorBlock.java" if ident=="NUTRINATOR" else "pump/ElectricWaterPumpBlock.java")).read_text(encoding="utf-8")
