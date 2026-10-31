@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""B537: mocked existing B119+B533 Java HUD, geometry and fail-closed tests."""
+"""B539: B121 violet FE and B533 paste HUD; bottom-left placement gates."""
 import os,subprocess,sys,tempfile,unittest
 from pathlib import Path
 SCRIPT=Path(__file__).resolve().parents[1]/"features/v174/apply-v174-bottom-left-hud-537.py"
 SOURCE='''public class PowerArmorBuild98Client {
  void hud(){
-  // BUILD119_HUNGER_ALIGNED_COMPACT_HUD
+  // BUILD121_UNFRAMED_VIOLET_FE_HUD
   int x=mc.getWindow().getGuiScaledWidth()/2+10;
-  int y=mc.getWindow().getGuiScaledHeight()-59;
-  g.fill(x-1,y-2,x+width+1,y+12,0x9b101923);
+  int y=mc.getWindow().getGuiScaledHeight()-52;
   g.text(mc.font,"ARMOR FE",x+2,y-1,0xffb9d6df);
   // B533_NUTRIPASTE_ARMOR_ROW
   int pasteWidth=70,px=mc.getWindow().getGuiScaledWidth()/2-91;

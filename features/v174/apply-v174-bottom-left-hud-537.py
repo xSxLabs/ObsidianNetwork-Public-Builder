@@ -4,7 +4,7 @@
 Both meters use the same screen-edge anchor, independent of hotbar, armor
 icons, health, hunger and Minecraft GUI scale. Keep existing energy/paste
 accounting and percent calculations; move/render ONLY the HUD geometry.
-Run after B533 NutriPaste injection and B119 compact Power Armor HUD.
+Run after B533 NutriPaste injection and B121 violet Power Armor HUD.
 """
 import os
 from pathlib import Path
@@ -25,11 +25,10 @@ def replace(old,new):
 # every resolution (rather than relative to screen center).
 replace("int x=mc.getWindow().getGuiScaledWidth()/2+10;",
         "int x=8; // B537_HUD_BOTTOM_LEFT_FE")
-replace("int y=mc.getWindow().getGuiScaledHeight()-59;",
+replace("int y=mc.getWindow().getGuiScaledHeight()-52;",
         "int y=mc.getWindow().getGuiScaledHeight()-61;")
-# Remove the opaque-looking backing rectangle, leaving text + narrow FE bar.
-replace("g.fill(x-1,y-2,x+width+1,y+12,0x9b101923);",
-        "// B537_NO_OPAQUE_FE_PANEL: transparent background, only meter line")
+# The B121 violet FE HUD already has no backing rectangle. Keep it intact.
+assert "0x9b101923" not in s, "B539_FE_PANEL_REGRESSION"
 # The paste line sits ABOVE the FE line, not the vanilla armor icons.
 replace("int pasteWidth=70,px=mc.getWindow().getGuiScaledWidth()/2-91;",
         "int pasteWidth=80,px=8; // B537_HUD_BOTTOM_LEFT_PASTE")
