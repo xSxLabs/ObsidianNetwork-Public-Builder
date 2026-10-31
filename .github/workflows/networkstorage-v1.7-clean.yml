@@ -232,7 +232,14 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v172_create_dedicated_hotfix.py' -v
           JAR=private/xSxLabs-Network-Storage-0.76.0-rc10.jar
           mkdir -p work/src/main/java work/src/main/resources
-          curl -fL --retry 4 -o work/vineflower.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+          # B521: keep exact Vineflower 1.11.1 output, but tolerate one Maven CDN returning 404.
+          for host in repo.maven.apache.org repo1.maven.org; do
+            if curl -fL --retry 3 --retry-all-errors --connect-timeout 10 --max-time 90 -o work/vineflower.jar "https://$host/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar" && jar tf work/vineflower.jar >/dev/null 2>&1; then
+              break
+            fi
+          done
+          test -s work/vineflower.jar
+          jar tf work/vineflower.jar >/dev/null
           java -jar work/vineflower.jar "$JAR" work/decompiled
           cp -a work/decompiled/dev work/src/main/java/
           MASTER="$GITHUB_WORKSPACE/$JAR"; (cd work/src/main/resources && jar xf "$MASTER")
