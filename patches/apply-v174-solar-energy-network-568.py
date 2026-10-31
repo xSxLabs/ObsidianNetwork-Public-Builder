@@ -90,13 +90,10 @@ for method in ("canEnergyEndpoint","canEnergyWire"):
  s=s[:start]+body+s[stop:]
 # The endpoint cache owner is likewise looked up by live position, not by
 # stale handler or by an arbitrary BFS root.
-start=s.index("private EnergyHandler liveBoundaryEnergy(")
-end=s.index("}",start)
-body=s[start:end]
+assert s.count("private EnergyHandler liveBoundaryEnergy(")==1
 old="server.getBlockEntity(cable)"
-assert body.count(old)==1,("B568_BOUNDARY_BE_SHAPE",body[:750])
-body=body.replace(old,"xsxLiveCable(server,cable)",1)
-s=s[:start]+body+s[end:]
+assert s.count(old)==1,("B568_BOUNDARY_BE_SHAPE",s.count(old))
+s=s.replace(old,"xsxLiveCable(server,cable)",1)
 # BE load after full NBT restore; newly placed cables see already placed panels.
 assert s.count("clearEnergyEndpointCaches();")>=3
 old="super.onLoad();\n      clearEnergyEndpointCaches();"
