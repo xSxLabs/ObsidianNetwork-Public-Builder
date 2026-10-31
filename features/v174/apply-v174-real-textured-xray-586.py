@@ -39,8 +39,8 @@ new=r'''
  // world walls. Perspective projection is unchanged: P' has identical
  // screen X,Y and appearance to P. Nothing changes in world data.
  // This avoids a costly second world render or per-pixel HUD rasterizer.
- private static final net.minecraft.client.renderer.block.BlockDisplayContext
-    b586ModelContext=net.minecraft.client.renderer.block.BlockDisplayContext.create();
+ private static final net.minecraft.client.renderer.block.model.BlockDisplayContext
+    b586ModelContext=net.minecraft.client.renderer.block.model.BlockDisplayContext.create();
  @SubscribeEvent
  public static void xrayTextured(
     net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent ev){

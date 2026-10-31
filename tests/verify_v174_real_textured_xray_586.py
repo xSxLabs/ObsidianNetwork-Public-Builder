@@ -10,6 +10,8 @@ assert "B586_TEXTURED_XRAY_REAL_BLOCK_MODEL" in s
 assert "B586_NO_WIREFRAME" in s
 assert "SubmitCustomGeometryEvent" in s
 assert "BlockModelRenderState" in s
+assert "net.minecraft.client.renderer.block.model.BlockDisplayContext" in s
+assert "net.minecraft.client.renderer.block.BlockDisplayContext" not in s
 assert "mc.getBlockModelResolver().update(model,state,b586ModelContext)" in s
 assert "model.submitWithZOffset(pose,collector,0x00f000f0" in s
 assert "refreshXray(mc)" in s
