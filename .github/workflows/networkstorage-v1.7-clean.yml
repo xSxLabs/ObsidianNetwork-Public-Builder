@@ -2958,6 +2958,7 @@ jobs:
           # never cache live topology, transfer capabilities, FE or transactions.
           python3 patches/spark-energy-immutable-cut-mask-541.py
           python3 patches/apply-v174-solar-energy-network-568.py
+          python3 patches/spark-energy-lockfree-cut-state-575.py
           # B571: verify the B568 code only AFTER injecting it into source.
           python3 - <<'PY_B571_ENERGY'
           from pathlib import Path
@@ -3154,6 +3155,9 @@ jobs:
           # B566: only formed glass gets seamless faces, never casing/loose glass.
           python3 features/v174/apply-v174-seamless-formed-glass-566.py
           python3 features/v174/apply-v174-powerbank-glass-568.py
+          python3 features/v174/apply-v174-ingame-regression-575.py
+          python3 tests/verify_v174_ingame_regression_575.py --source work/src/main/java/dev/obsidiannetwork --assets work/src/main/resources/assets/obsidiannetwork
+          python3 tests/verify_v174_reference_visuals_558.py --assets work/src/main/resources/assets/obsidiannetwork
           python3 tests/verify_v174_connected_glass_566.py --assets work/src/main/resources/assets/obsidiannetwork
           python3 - <<'PY_B558_BAND'
           from pathlib import Path
@@ -4009,6 +4013,7 @@ jobs:
           subprocess.run(['python3','tests/verify_compiled_energy_hotpath.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_v174_reference_visuals_558.py','--jar',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_v174_connected_glass_566.py','--jar',str(jars[0])],check=True)
+          subprocess.run(['python3','tests/verify_v174_ingame_regression_575.py','--jar',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_craft_slots.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_broadcast.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_network_elytra_speedcheck.py',str(jars[0])],check=True)
