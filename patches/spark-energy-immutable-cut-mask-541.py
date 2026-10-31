@@ -45,9 +45,10 @@ helper=r'''
   return (mask&(1<<face.get3DDataValue()))!=0;
  }
 '''
-s=s.replace(cls,cls+"\n"+helper,1)
 s,n=re.subn(old,lambda m:"xsxEnergyCut("+m.group(1)+","+m.group(2)+")",s)
 assert n==len(matches)
+# Insert helper only after transforming originals, never rewrite its fallback!
+s=s.replace(cls,cls+"\n"+helper,1)
 assert "source.extract(" in s and "target.insert(" in s
 assert "XSXLABS_SPARK_CABLE_ENDPOINT_CAPABILITY_CACHE_V1" in s
 assert s.count("xsxEnergyCut(")==len(matches)+1,("B542_CUT_COUNT",s.count("xsxEnergyCut("))
