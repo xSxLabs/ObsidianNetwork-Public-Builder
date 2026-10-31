@@ -26,9 +26,12 @@ for reg,kind,path in [("NUTRINATOR","Nutrinator","nutrinator"),
     assert start<end<start+1200,("B609_MACHINE_DECLARATION_RANGE",kind)
     section=s[start:end+1]
     assert re.search(r'BLOCKS\.registerBlock\s*\(\s*"'+path+r'"',section),("B609_MACHINE_REGISTRATION_CHANGED",kind,section[:650])
-    marker=".requiresCorrectToolForDrops()"
-    assert section.count(marker)==1 and ".noOcclusion()" not in section,("B609_MACHINE_PROPERTY_DRIFT",kind,section[:800])
-    patched=section.replace(marker,marker+".noOcclusion() /* B609_MACHINE_NO_OCCLUSION */",1)
+    # Preserve the CURRENT fast hand-break setting (strength 0/0); older
+    # 3/8 properties from the initial B438 overlay were superseded long ago.
+    strengths=list(re.finditer(r'\.strength\(\s*\d+(?:\.\d+)?F\s*,\s*\d+(?:\.\d+)?F\s*\)',section))
+    assert len(strengths)==1 and ".noOcclusion()" not in section,("B609_MACHINE_PROPERTY_DRIFT",kind,section[:800])
+    m=strengths[0]
+    patched=section[:m.end()]+".noOcclusion() /* B609_MACHINE_NO_OCCLUSION */"+section[m.end():]
     s=s[:start]+patched+s[end+1:]
 assert s.count("B609_MACHINE_NO_OCCLUSION")==2
 p.write_text(s,encoding="utf-8")
