@@ -2974,7 +2974,9 @@ jobs:
           # B530 must actually reach the reconstructed source before compilation.
           assert 'B530_REACTOR_RUN_LIGHT' in (j/'reactor/ReactorControllerBlockEntity.java').read_text()
           assert 'B530_POWERBANK_CHARGE_LIGHT' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
-          assert 'B530_NUTRIPASTE_SECOND_HUD' in (j/'client/PowerArmorBuild98Client.java').read_text()
+          # B540: B530 second HUD was deliberately replaced by B533/B537 layout.
+          assert 'B533_NUTRIPASTE_ARMOR_ROW' in (j/'client/PowerArmorBuild98Client.java').read_text()
+          assert 'B537_HUD_BOTTOM_LEFT_FE' in (j/'client/PowerArmorBuild98Client.java').read_text()
           assert 'B530_AUTOMATIC_HELMET_FEED' in (j/'nutrition/PowerArmorFeeding.java').read_text()
           assert 'B530_NUTRI_THREE_REAL_CLIENT_SLOTS' in (j/'client/V174NutrinatorScreen.java').read_text()
           assert 'B530_LIVE_GLASS_LIGHT' in (j/'multiblock/MultiblockSkinBlock.java').read_text()
@@ -3012,7 +3014,11 @@ jobs:
               assert png.startswith(bytes.fromhex('89504e470d0a1a0a')) and len(png)>150,name
           assert (r/'models/block/powerbank_casing_formed_lit.json').is_file()
           print('B533_USER_REPORTS_HUD_TOOLTIP_TANK_CABLE_FLUID_MODELS_PASS')
-          assert 'Blocks.CYAN_CONCRETE.defaultBlockState()' in (j/'client/EnergyCableInputRenderer.java').read_text()
+          # B540: actual cable model replaces the old inaccurate cyan-concrete cap.
+          collar=(j/'client/EnergyCableInputRenderer.java').read_text()
+          assert 'resolver.update(out.cap,be.getBlockState(),DISPLAY);' in collar
+          assert 'B533_ACTUAL_ENERGY_CABLE_CAP_TEXTURE' in collar
+          assert 'Blocks.CYAN_CONCRETE.defaultBlockState()' not in collar
           print('B530_USER_INGAME_REPORTS_APPLIED_PASS')
           assert 'be.getLevel().getEntitiesOfClass' in (j/'blockentity/NetworkDeviceBlockEntity.java').read_text()
           assert 'e.entityTags().contains(be.labelTag())' in (j/'blockentity/NetworkDeviceBlockEntity.java').read_text()
