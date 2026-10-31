@@ -30,6 +30,9 @@ class WirelessDenseRuntimeContracts(unittest.TestCase):
             "check(dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(",
         ):
             self.assertIn(marker,S,marker)
+        self.assertIn("B574_DENSE_CHUNK_TICK_WARMUP",S)
+        self.assertEqual(S.count(".thenExecuteAfter(160,()->{"),1)
+        self.assertEqual(S.count(".thenExecuteAfter(120,()->{"),1)
         self.assertEqual(S.count("world.setChunkForced(cx,cz,true)"),1)
         self.assertEqual(S.count("world.setChunkForced(cx,cz,false)"),1)
 

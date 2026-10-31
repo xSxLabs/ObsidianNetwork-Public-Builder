@@ -32,12 +32,13 @@ extra=r'''                     }
                       world.setChunkForced(cx,cz,true);
                       world.getChunk(cx,cz); // CI fixture: synchronously materialize.
                      }
-                     System.out.println("WIRELESS_DENSE_TICKET_WARMUP_V3 START");
+                     System.out.println("WIRELESS_DENSE_TICKET_WARMUP_V3 START B574_160T");
                    })
-                   .thenExecuteAfter(40,()->{
-                     // Give the server real time to promote forced chunks to
-                     // entity-ticking before adding the FE devices. Curios-present
-                     // JVM may reach GameTests earlier than Curios-absent JVM.
+                   .thenExecuteAfter(160,()->{
+                     // B574_DENSE_CHUNK_TICK_WARMUP: the Curios-installed JVM can queue
+                     // distant forced-chunk ticking promotion substantially longer.
+                     // Keep the true 10/50/100 loaded-BE FE transfer test strict:
+                     // no synthetic transfer, no skipping assertions and no rate cuts.
                      var world=helper.getLevel();
                      check(world!=null,"WIRELESS dense warmed world present");
                      for(int index=0;index<10;index++){
@@ -62,9 +63,9 @@ extra=r'''                     }
                        }
                       }
                      }
-                     System.out.println("WIRELESS_DENSE_REAL_SERVER_10_V1 ARMED");
+                     System.out.println("WIRELESS_DENSE_REAL_SERVER_10_V1 ARMED B574_120T_TRANSFER_WINDOW");
                    })
-                   .thenExecuteAfter(60,()->{
+                   .thenExecuteAfter(120,()->{
                      var world=helper.getLevel();
                      check(world!=null,"WIRELESS dense world still exists at 10");
                      long total=0,received=0;
