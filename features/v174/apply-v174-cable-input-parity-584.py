@@ -16,7 +16,7 @@ def once(old,new):
 # Keep renderer's six independent INPUT flags, actual energy-cable stem and
 # true block light; remove BOTH fake oversized black frame and cyan center.
 once("  public final BlockModelRenderState dark=new BlockModelRenderState();\n","")
-once("  if(out.active)resolver.update(out.dark,Blocks.BLACK_CONCRETE.defaultBlockState(),DISPLAY);\n","")
+once("  if(out.active)resolver.update(out.dark,Blocks.BLACK_CONCRETE.defaultBlockState(),DISPLAY);","")
 once("resolver.update(out.cap,Blocks.IRON_BLOCK.defaultBlockState(),DISPLAY);",
      "resolver.update(out.cap,dev.obsidiannetwork.ObsidianNetwork.XSX_ENERGY_INPUT_COLLAR.get().defaultBlockState(),DISPLAY);")
 start=s.index(" // B579_ENERGY_INPUT_BLACK_FRAME:")
