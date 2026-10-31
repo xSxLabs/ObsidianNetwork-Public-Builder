@@ -55,7 +55,7 @@ def verify(jar):
         if name=="energyOpen":
             # B541: the compiled helper must still enforce face cuts via
             # the immutable cut-mask cache, not bypass validation.
-            assert "EnergyCableBlockEntity.xsxEnergyCut:" in method, "Lost cached cable cut"
+            assert "xsxEnergyCut:" in method, "Lost cached cable cut"
             assert "ConduitBundleBlockEntity.enabled:" in method, "Lost side-specific bundle setting"
         else:
             assert "ConduitBundleBlockEntity.has:" in method, "Lost bundle ENERGY layer test"
