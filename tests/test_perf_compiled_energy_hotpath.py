@@ -25,13 +25,22 @@ def method(name):
         "      24: // Field ConduitBundleBlockEntity$Layer.ENERGY",
     ]
     if name=="energyOpen":
-        contract+=["      28: // Method EnergyCableBlock.isCut:",
+        contract+=["      28: // Method xsxEnergyCut:",
                    "      32: // Method ConduitBundleBlockEntity.enabled:"]
     else:
         contract+=["      28: // Method ConduitBundleBlockEntity.has:"]
     return "\n".join(contract)+"\n"
 
-BASE=method("energyCable")+"\n"+method("energyOpen")+"\n  private static void following();\n"
+CUT_METHOD="""  private static boolean xsxEnergyCut(BlockState, Direction);
+    Code:
+       0: // Field XSX_CUT_MASKS:
+       4: // InterfaceMethod Map.get:
+       8: // Method EnergyCableBlock.isCut:
+      12: // Method Direction.get3DDataValue:
+      16: // InterfaceMethod Map.put:
+"""
+
+BASE=method("energyCable")+"\n"+method("energyOpen")+"\n"+CUT_METHOD+"\n  private static void following();\n"
 CACHE="""final class EnergyCableBlockEntity$XsxRegisteredEnergyBlocks {
   private static final Block ENERGY;
   private static final Block BUNDLE;
@@ -73,6 +82,11 @@ class CompiledEnergyContractTest(TestCase):
                 "ServerLevel.getBlockEntity:",
                 "ConduitBundleBlockEntity$Layer.ENERGY",
                 "EnergyCableBlock.isCut:",
+                "xsxEnergyCut:",
+                "XSX_CUT_MASKS:",
+                "Direction.get3DDataValue:",
+                "Map.get:",
+                "Map.put:",
                 "ConduitBundleBlockEntity.enabled:",
                 "ConduitBundleBlockEntity.has:",
             ):
