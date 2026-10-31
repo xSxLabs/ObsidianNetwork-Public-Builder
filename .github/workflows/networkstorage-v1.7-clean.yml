@@ -105,7 +105,7 @@ name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4, feature/v1.7.4-multiblock-recovery, feature/v1.7.4-machine-guis, feature/v1.7.4-multiblock-animations, feature/v1.7.4-nutrition, feature/v1.7.4-guidebook, feature/v1.7.4-guidebook-sizes, feature/v1.7.4-planter-mod-crops, feature/v1.7.4-batched-polish-461]
+    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4, feature/v1.7.4-multiblock-recovery, feature/v1.7.4-machine-guis, feature/v1.7.4-multiblock-animations, feature/v1.7.4-nutrition, feature/v1.7.4-guidebook, feature/v1.7.4-guidebook-sizes, feature/v1.7.4-planter-mod-crops, feature/v1.7.4-batched-polish-461, hotfix/v1.7.4-cable-drops-facades]
     paths:
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - 'patches/**'
@@ -3179,14 +3179,29 @@ jobs:
           # B598: strict cable capability directions, changed-only Nutrinator GUI sync, neutral glazing.
           python3 -m py_compile features/v174/apply-v174-build598.py
           python3 features/v174/apply-v174-build598.py
-          # v1.7.5: all 24 original textured rigs, submitted choreography,
-          # safe cross-dimensional horizontal recall + brake/dock.
-          # Branch v1.7.5 is intentionally NOT in automatic push triggers:
-          # do not run a build until all integration checks are approved.
+          # B602: single integrated v1.7.4 cable-drop/facade and Ultra texture hotfix.
+          python3 -m py_compile features/v174/apply-v174-hotfix602.py tests/verify_v174_hotfix602.py
+          python3 features/v174/apply-v174-hotfix602.py
+          # B603: correct the actual ENERGY FACADED=INVISIBLE render path.
+          python3 -m py_compile features/v174/apply-v174-hotfix603-energy-facade-render.py
+          python3 features/v174/apply-v174-hotfix603-energy-facade-render.py
+          # B605: the INPUT collar BER was overriding the facade BER on one
+          # Energy Cable BE. Register exactly one combined renderer for both.
+          python3 -m py_compile features/v174/apply-v174-hotfix605-energy-composite-renderer.py tests/verify_v174_hotfix605_renderer_contract.py
+          python3 features/v174/apply-v174-hotfix605-energy-composite-renderer.py
+          python3 tests/verify_v174_hotfix605_renderer_contract.py
+          # B609: maintain Energy facade composite and fix neighbor-face
+          # occlusion at both industrial machine registrations.
+          python3 -m py_compile features/v174/apply-v174-hotfix609-occlusion-and-facade-guard.py tests/verify_v174_hotfix609_occlusion.py
+          python3 features/v174/apply-v174-hotfix609-occlusion-and-facade-guard.py
+          python3 tests/verify_v174_hotfix609_occlusion.py
+          # v1.7.5 manual-only: after ALL B617 patches, before unchanged regression gates.
+          # The v1.7.5 branch must remain excluded from automatic push triggers.
           python3 -m py_compile features/v175/apply-v175-animation-rigs.py features/v175/apply-v175-recall-phases.py tests/verify_v175_animation_integration.py
           python3 features/v175/apply-v175-animation-rigs.py
           python3 features/v175/apply-v175-recall-phases.py
           python3 tests/verify_v175_animation_integration.py
+          python3 tests/verify_v174_hotfix602.py
           python3 tests/verify_v174_build591_contract.py
           # The inherited B579 FE test also checks the final B584 cable model.
           python3 tests/verify_v174_ingame_smooth_579.py
