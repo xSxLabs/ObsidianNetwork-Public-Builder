@@ -152,6 +152,7 @@ jobs:
           python3 tests/test_v174_complete_candidate_478.py
           python3 tests/test_v174_multiblock_lit_blockstates_531.py
           python3 tests/test_v174_all_user_fixes_533.py
+          python3 tests/test_spark_solar_mspt_536.py
           python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_stack_upgrades_global.py' -v
           echo 'B473_FAST_V174_PREFLIGHT PASS'
@@ -2882,6 +2883,9 @@ jobs:
           # B502: remove FE/t export cap from ALL 4 solar tiers while preserving
           # per-tier generation, buffer capacity and atomic source/target transfer.
           python3 private/fixes/apply-v174-solar-unlimited-502.py
+          # B536: reduce solar FE endpoint scans after B502 unlimited output;
+          # preserve exact per-tick generation, atomic transactions and rotation.
+          python3 patches/spark-solar-mspt-mask-536.py
           python3 - <<'PY'
           from pathlib import Path
           j=Path('work/src/main/java/dev/obsidiannetwork')
@@ -2889,6 +2893,11 @@ jobs:
           registry=(j/'ObsidianNetwork.java').read_text()
           assert 'new EnergyBuffer(this.tier.capacity(), this.tier.output(), this.tier.capacity())' in solar
           assert 'long budget = be.energy.stored();' in solar
+          assert 'B536_SOLAR_MSPT_FACE_MASK' in solar
+          assert 'xsxLiveSolarFaces(server)!=0' in solar
+          assert 'now-xsxSolarLastFaceScan<40L' in solar
+          assert 'budget -= accepted;' in solar
+          assert '() -> {xsxSolarFacesDirty=true;}' in solar
           assert 'long made = Math.min(be.tier.output(), be.energy.capacity() - be.energy.stored());' in solar
           assert 'long budget = Math.min(be.tier.output(), be.energy.stored());' not in solar
           assert solar.index('be.energyJournal.updateSnapshots(tx);') < solar.index('long extracted = be.energy.extract(accepted);') < solar.index('tx.commit();')

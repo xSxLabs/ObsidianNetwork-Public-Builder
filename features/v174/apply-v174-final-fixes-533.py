@@ -113,8 +113,8 @@ change("blockentity/NetworkTankBlockEntity.java",
  'tank.deserialize(in.childOrEmpty("tank"));}',
  '''tank.deserialize(in.childOrEmpty("tank"));helmet.setItem(0,in.read("xsxTankHelmet",net.minecraft.world.item.ItemStack.CODEC).orElse(net.minecraft.world.item.ItemStack.EMPTY));}''')
 change("block/NetworkTankBlock.java",
- " @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}",
- ''' @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
+ "@Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}",
+ '''@Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
  // B533_NETWORK_TANK_AUTOFILL_TICK: shared by 64K,256K,1024K,4096K tiers.
  @Override public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T>
  getTicker(Level l,BlockState s,net.minecraft.world.level.block.entity.BlockEntityType<T> t){
