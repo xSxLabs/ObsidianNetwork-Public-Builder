@@ -45,9 +45,9 @@ s=swap(s,"(long)be.rodAssemblies*600L*20L*(100-be.controlRodInsertion)/100L",
 s=swap(s,"  be.storedFe+=generated;",
          """  be.storedFe+=generated;
   be.b579ActualGeneration=generated;""")
-s=swap(s,"  if(!(level instanceof ServerLevel sl))return;",
-         """  if(!(level instanceof ServerLevel sl))return;
-  be.b579ActualGeneration=0L;""")
+# Preserve the previous tick's actual production until the GUI's existing
+# five-tick viewer sync runs; clear/measure after that sync (inside the
+# maintenance/non-maintenance generation paths) to avoid a permanent zero HUD.
 marker=" private long b514Output=0L,b514OutputAccum=0L,b514OutputWindow=-1L,b514LastExport=-1L;"
 s=swap(s,marker,marker+"""
  // B579_REACTOR_REAL_GENERATION_GUI: last actual tick, not hypothetical FE.
