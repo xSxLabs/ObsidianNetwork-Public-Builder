@@ -15,20 +15,22 @@ import os,re
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 p=J/"ObsidianNetwork.java"
 s=p.read_text(encoding="utf-8")
-for reg,kind in [("NUTRINATOR","Nutrinator"),("ELECTRIC_WATER_PUMP","Electric Water Pump")]:
-    pat=r'(?P<declaration>public\s+static\s+final\s+DeferredBlock<[^;]+?\b'+reg+r'\s*=\s*BLOCKS\.registerBlock\s*\([\s\S]*?)(?P<properties>p\s*->\s*p\.mapColor\(MapColor\.METAL\)\.strength\(3\.0F,\s*8\.0F\)\.requiresCorrectToolForDrops\(\))(?P<tail>\s*\)\s*;)'
-    matches=list(re.finditer(pat,s))
-    assert len(matches)==1,("B609_MACHINE_REGISTRATION_DRIFT",kind,len(matches))
-    m=matches[0]
-    replacement=m.group("properties").replace(".requiresCorrectToolForDrops()", ".requiresCorrectToolForDrops().noOcclusion()")
-    assert replacement!=m.group("properties")
-    s=s[:m.start("properties")]+replacement+s[m.end("properties"):]
-assert s.count("B609_MACHINE_NO_OCCLUSION")==0
-# One token marker near the actual registrations for diagnostics.
-s=s.replace("p -> p.mapColor(MapColor.METAL).strength(3.0F,8.0F).requiresCorrectToolForDrops().noOcclusion()",
-'''p -> p.mapColor(MapColor.METAL).strength(3.0F,8.0F).requiresCorrectToolForDrops().noOcclusion() // B609_MACHINE_NO_OCCLUSION''',1)
-# Java line comments may swallow registration terminator! Prefer block comment.
-s=s.replace(" // B609_MACHINE_NO_OCCLUSION", " /* B609_MACHINE_NO_OCCLUSION */")
+for reg,kind,path in [("NUTRINATOR","Nutrinator","nutrinator"),
+                     ("ELECTRIC_WATER_PUMP","Electric Water Pump","electric_water_pump")]:
+    # Anchor on the unique registration symbol instead of an exact generic
+    # DeferredBlock declaration; private reconstruction reformats its type.
+    hits=list(re.finditer(r"\\b"+reg+r"\\s*=",s))
+    assert len(hits)==1,("B609_MACHINE_SYMBOL_DRIFT",kind,len(hits))
+    start=hits[0].start()
+    end=s.find(";",start)
+    assert start<end<start+1200,("B609_MACHINE_DECLARATION_RANGE",kind)
+    section=s[start:end+1]
+    assert re.search(r'BLOCKS\\.registerBlock\\s*\\(\\s*"'+path+r'"',section),("B609_MACHINE_REGISTRATION_CHANGED",kind,section[:650])
+    marker=".requiresCorrectToolForDrops()"
+    assert section.count(marker)==1 and ".noOcclusion()" not in section,("B609_MACHINE_PROPERTY_DRIFT",kind,section[:800])
+    patched=section.replace(marker,marker+".noOcclusion() /* B609_MACHINE_NO_OCCLUSION */",1)
+    s=s[:start]+patched+s[end+1:]
+assert s.count("B609_MACHINE_NO_OCCLUSION")==2
 p.write_text(s,encoding="utf-8")
 for loc in ["nutrition/NutrinatorBlock.java","pump/ElectricWaterPumpBlock.java"]:
     code=(J/loc).read_text(encoding="utf-8")
