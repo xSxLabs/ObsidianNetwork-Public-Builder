@@ -14,10 +14,13 @@ for ident,cl,model in [
  ("NUTRINATOR","NutrinatorBlock","nutrinator"),
  ("ELECTRIC_WATER_PUMP","ElectricWaterPumpBlock","electric_water_pump")
 ]:
- pattern=r"public\s+static\s+final\s+DeferredBlock<[^;]+?\b"+ident+r"\s*=\s*BLOCKS\.registerBlock\s*\([\s\S]*?(?=;)"
- m=list(re.finditer(pattern,s))
- assert len(m)==1,("B609_REG_MISSING_OR_DUPLICATE",ident,len(m))
- definition=m[0].group()
+ hits=list(re.finditer(r'\b'+ident+r'\s*=',s))
+ assert len(hits)==1,("B609_REG_MISSING_OR_DUPLICATE",ident,len(hits))
+ start=hits[0].start()
+ end=s.find(";",start)
+ assert start<end<start+1200,("B609_DECLARATION_RANGE",ident)
+ definition=s[start:end]
+ assert "BLOCKS.registerBlock" in definition,("B609_REGISTRATION_CHANGED",ident)
  assert ".requiresCorrectToolForDrops().noOcclusion()" in definition,("B609_MUST_NOT_CULL_NEIGHBOR_FACES",ident)
  assert definition.count(".noOcclusion()")==1,("B609_DUPLICATE_CALL",ident)
  assert cl in definition,("B609_WRONG_TYPE",ident)
