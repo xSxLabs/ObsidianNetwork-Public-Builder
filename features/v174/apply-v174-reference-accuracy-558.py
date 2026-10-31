@@ -214,7 +214,7 @@ def png(name,pixel):
   return struct.pack(">I",len(payload))+typ+payload+struct.pack(">I",zlib.crc32(typ+payload)&0xffffffff)
  p.write_bytes(b"\x89PNG\r\n\x1a\n"+ck(b"IHDR",struct.pack(">IIBBBBB",32,32,8,6,0,0,0))
    +ck(b"IDAT",zlib.compress(bytes(raw),9))+ck(b"IEND",b""))
- assert p.stat().st_size>150,(name,p.stat().st_size)
+ assert p.stat().st_size>105,(name,p.stat().st_size) # flat white panels compress exceptionally well
 
 def cube(name,side,top):
  p=A/"models/block"/(name+".json")

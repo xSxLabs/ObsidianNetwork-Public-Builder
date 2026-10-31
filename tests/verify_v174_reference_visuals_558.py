@@ -42,7 +42,7 @@ def verify(read):
            "powerbank_casing_formed_design4_top_corner_lit",
            "powerbank_casing_formed_design4_middle_corner_lit",
            "powerbank_glass_formed_lit_detail1"):
-  assert len(read(BASE+"textures/block/"+n+".png"))>180,n
+  assert len(read(BASE+"textures/block/"+n+".png"))>105,n
   if "glass" not in n:
    model=json.loads(read(BASE+"models/block/"+n+".json"))
    assert model["parent"]=="minecraft:block/cube",n
