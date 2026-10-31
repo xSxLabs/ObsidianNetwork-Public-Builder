@@ -21,19 +21,18 @@ src=once(src,
  '''public static final BooleanProperty LIT=BooleanProperty.create("lit");
  // B553_ASSEMBLED_RIM: 0=mid/neutral, 1=bottom, 2=top.
  // Only assigned once on forming, never recalculated every frame/tick.
+ public static final BooleanProperty CORNER=BooleanProperty.create("corner");
  public static final net.minecraft.world.level.block.state.properties.IntegerProperty RIM=
     net.minecraft.world.level.block.state.properties.IntegerProperty.create("rim",0,2);''')
 src=once(src,
  'registerDefaultState(defaultBlockState().setValue(FORMED,false).setValue(ACTIVE,false).setValue(LIT,false));',
- 'registerDefaultState(defaultBlockState().setValue(FORMED,false).setValue(ACTIVE,false).setValue(LIT,false).setValue(RIM,0));')
-src=once(src,'builder.add(FORMED,ACTIVE,LIT);','builder.add(FORMED,ACTIVE,LIT,RIM);')
+ 'registerDefaultState(defaultBlockState().setValue(FORMED,false).setValue(ACTIVE,false).setValue(LIT,false).setValue(RIM,0).setValue(CORNER,false));')
+src=once(src,'builder.add(FORMED,ACTIVE,LIT);','builder.add(FORMED,ACTIVE,LIT,RIM,CORNER);')
 # The cyan strips on the charged powerbank casing must actually switch from
 # standby to active. Previously B530 illuminated only the GLASS block; that
 # meant the B533 charged casing texture could NEVER display in gameplay.
-src=once(src,
- 'if(glass&&state.getValue(LIT)!=lit)',
- '''if((glass||(bank&&state.is(dev.obsidiannetwork.ObsidianNetwork.POWERBANK_CASING.get())))
-      &&state.getValue(LIT)!=lit)''')
+# B535 already lights charged powerbank CASINGS. Do not overwrite it.
+assert 'if((glass||(bank&&state.is(dev.obsidiannetwork.ObsidianNetwork.POWERBANK_CASING.get())))&&state.getValue(LIT)!=lit)' in src, "B555_BANK_LIT_STATE_MISSING"
 
 anchor=' @Override protected MapCodec<? extends Block> codec()'
 method=r''' // B553_ON_FORM_VISUAL_BANDS: one bounded scan per successful assembly.
@@ -46,6 +45,8 @@ method=r''' // B553_ON_FORM_VISUAL_BANDS: one bounded scan per successful assemb
   java.util.ArrayList<net.minecraft.core.BlockPos> skinPositions=new java.util.ArrayList<>();
   queue.add(controller);
   int low=Integer.MAX_VALUE,high=Integer.MIN_VALUE;
+  int minX=Integer.MAX_VALUE,maxX=Integer.MIN_VALUE;
+  int minZ=Integer.MAX_VALUE,maxZ=Integer.MIN_VALUE;
   final int radius=bank?12:64,limit=bank?1200:90000;
   while(!queue.isEmpty()&&visited.size()<limit){
    var p=queue.removeFirst();
@@ -63,6 +64,8 @@ method=r''' // B553_ON_FORM_VISUAL_BANDS: one bounded scan per successful assemb
     skinPositions.add(p);
    }
    low=Math.min(low,p.getY());high=Math.max(high,p.getY());
+   minX=Math.min(minX,p.getX());maxX=Math.max(maxX,p.getX());
+   minZ=Math.min(minZ,p.getZ());maxZ=Math.max(maxZ,p.getZ());
    for(var d:net.minecraft.core.Direction.values()){
     var next=p.relative(d);
     if(!visited.contains(next.asLong())
@@ -78,8 +81,11 @@ method=r''' // B553_ON_FORM_VISUAL_BANDS: one bounded scan per successful assemb
    if(!(state.getBlock() instanceof MultiblockSkinBlock)
       ||!state.getValue(FORMED))continue;
    int band=p.getY()==low?1:p.getY()==high?2:0;
-   if(state.getValue(RIM)!=band)
-    sl.setBlock(p,state.setValue(RIM,band),3);
+   // Corner pillars stay white: the dark vents belong on the beams.
+   boolean corner=(p.getX()==minX||p.getX()==maxX)
+       &&(p.getZ()==minZ||p.getZ()==maxZ);
+   if(state.getValue(RIM)!=band||state.getValue(CORNER)!=corner)
+    sl.setBlock(p,state.setValue(RIM,band).setValue(CORNER,corner),3);
   }
  }
 '''
@@ -139,6 +145,24 @@ def reactor(x,y,band):
   if band==1 and 5<=x<=10 and 22<=y<=26:
    c=(199,211,220,255) if x in (5,10) or y in (22,26) else (89,112,128,255)
  return c
+def corner_face(x,y,band,lit,bank):
+ c=white(x,y)
+ # Corner posts: white structural corner beams, never a ventilation grate.
+ # Image #4: slender cyan LEDs join the horizontal rails at the corners.
+ if bank and band in (1,2):
+  strip=band==2 and 25<=y<=30 or band==1 and 1<=y<=6
+  if strip:
+   if y in (25,30,1,6):c=(68,90,105,255)
+   else:c=(102,243,255,255) if lit else (90,163,185,255)
+  # Dark graphite node with a bright inner LED; not a full dark tile.
+  if (x,y) in ((5,5),(26,5),(5,26),(26,26)):
+   c=(53,80,97,255)
+ elif not bank and band in (1,2):
+  if (y<=2 and band==2) or (y>=29 and band==1):
+   c=(177,191,203,255)
+  if x in (1,30):c=(203,214,222,255)
+ return c
+
 def bank(x,y,band,charged):
  c=white(x,y)
  if band==2:
@@ -167,11 +191,17 @@ for band,postfix in ((0,"middle"),(1,"bottom"),(2,"top")):
  name="reactor_casing_formed_design3_"+postfix
  texture(name,lambda x,y,band=band:reactor(x,y,band))
  mkmodel(name,name,"reactor_casing_formed_top")
+ cornername="reactor_casing_formed_design3_"+postfix+"_corner"
+ texture(cornername,lambda x,y,band=band:corner_face(x,y,band,False,False))
+ mkmodel(cornername,cornername,"reactor_casing_formed_top")
  for lit in (False,True):
   variant="_lit" if lit else ""
   name="powerbank_casing_formed_design4_"+postfix+variant
   texture(name,lambda x,y,band=band,lit=lit:bank(x,y,band,lit))
   mkmodel(name,name,"powerbank_casing_formed"+("_lit" if lit else "")+"_top")
+  cornername="powerbank_casing_formed_design4_"+postfix+"_corner"+variant
+  texture(cornername,lambda x,y,band=band,lit=lit:corner_face(x,y,band,lit,True))
+  mkmodel(cornername,cornername,"powerbank_casing_formed"+("_lit" if lit else "")+"_top")
 
 # All four skins use one stable property shape; the two glass families ignore
 # position, retaining uninterrupted transparency and B530 light variants.
@@ -182,15 +212,16 @@ for name in ("reactor_casing","reactor_glass","powerbank_casing","powerbank_glas
  variants={}
  for base_key,base_value in old["variants"].items():
   for band in range(3):
-   key=base_key+",rim="+str(band)
-   model=base_value["model"]
-   if "casing" in name and "formed=true" in base_key:
-    part={0:"middle",1:"bottom",2:"top"}[band]
-    flavor="design3" if name.startswith("reactor") else "design4"
-    suffix="_lit" if (name.startswith("powerbank") and "lit=true" in base_key) else ""
-    model="obsidiannetwork:block/"+name+"_formed_"+flavor+"_"+part+suffix
-   variants[key]={"model":model}
- assert len(variants)==24
+   for corner in (False,True):
+    key=base_key+",rim="+str(band)+",corner="+str(corner).lower()
+    model=base_value["model"]
+    if "casing" in name and "formed=true" in base_key:
+     part={0:"middle",1:"bottom",2:"top"}[band]
+     flavor="design3" if name.startswith("reactor") else "design4"
+     suffix="_lit" if (name.startswith("powerbank") and "lit=true" in base_key) else ""
+     model="obsidiannetwork:block/"+name+"_formed_"+flavor+"_"+part+("_corner" if corner else "")+suffix
+    variants[key]={"model":model}
+ assert len(variants)==48
  p.write_text(json.dumps({"variants":variants},indent=2)+"\n",encoding="utf-8")
 
 # Verify the compiled materials are precisely selected by assembly state:
