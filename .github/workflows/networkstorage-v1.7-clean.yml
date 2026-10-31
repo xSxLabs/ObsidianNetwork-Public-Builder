@@ -3224,6 +3224,12 @@ jobs:
           python3 -m py_compile features/v175/apply-v175-original-piece-assembly.py tests/verify_v175_original_piece_assembly.py
           python3 features/v175/apply-v175-original-piece-assembly.py
           python3 tests/verify_v175_original_piece_assembly.py
+          # B630: source all visible moving armor surfaces from the REAL worn
+          # 64x32 MK-specific humanoid + leggings PNGs, never from synthetic
+          # GeckoLib replacement colors; keep recall and all clip timings.
+          python3 -m py_compile features/v175/apply-v175-worn-uv-match.py tests/verify_v175_worn_uv_match.py
+          python3 features/v175/apply-v175-worn-uv-match.py
+          python3 tests/verify_v175_worn_uv_match.py
           # v1.7.5: both uranium ores require iron+ pickaxes, Fortune/Silk Touch,
           # plus common ore tags for default Veinminer group; no extra ticking.
           python3 -m py_compile features/v175/apply-v175-uranium-enchant-veinminer.py tests/verify_v175_uranium_enchants.py
