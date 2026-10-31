@@ -1,3 +1,4 @@
+# Build 522: fail-closed Hologram FE tick injection matches actual hologram call
 # Build 520: use actual extractBackground HologramConfigScreen draw method, keep HUD FE regression gate
 # Build392: full world-height 3D MAP, real Blueprint ghost, Printer speed+skip+air; one integrated build
 # Build391: cache decoded Blueprint blockstates once per card, eliminate O(n^2) Printer unpack/split
