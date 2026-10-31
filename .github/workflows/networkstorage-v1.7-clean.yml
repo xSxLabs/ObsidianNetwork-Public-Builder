@@ -2942,6 +2942,8 @@ jobs:
           assert 'B514_BANK_FE_T_WINDOW' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
           assert 'B514_HOLO_NO_POWER' in (j/'blockentity/NetworkDeviceBlockEntity.java').read_text()
           assert 'B514_HOLO_1M_FE_GUI' in (j/'client/HologramConfigScreen.java').read_text()
+          assert 'guiHoloStoredFe()' in (j/'client/HologramConfigScreen.java').read_text()
+          assert 'guiHoloCapacity()' in (j/'client/HologramConfigScreen.java').read_text()
           for name in ['nutrinator','electric_water_pump']:
               model=json.loads((r/('models/block/'+name+'.json')).read_text())
               assert len(model['elements'])>=8
