@@ -160,8 +160,8 @@ jobs:
       - name: Fast private v1.7.4 ingame patch syntax preflight
         run: |
           set -euo pipefail
-          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py private/fixes/apply-v174-energy-cell-capacity-500.py private/fixes/apply-v174-solar-unlimited-502.py private/fixes/apply-v174-all-ingame-fixes-503.py private/fixes/apply-v174-energy-cable-ui-503.py private/fixes/apply-v174-all-ingame-fixes-508.py
-          echo 'B508_PRIVATE_PATCH_SYNTAX_PASS'
+          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py private/fixes/apply-v174-energy-cell-capacity-500.py private/fixes/apply-v174-solar-unlimited-502.py private/fixes/apply-v174-all-ingame-fixes-503.py private/fixes/apply-v174-energy-cable-ui-503.py private/fixes/apply-v174-all-ingame-fixes-508.py private/fixes/apply-v174-test-roundup-514a.py private/fixes/apply-v174-test-roundup-514b.py private/fixes/apply-v174-test-roundup-514c.py
+          echo 'B514_PRIVATE_PATCH_SYNTAX_PASS'
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
       # Cache Gradle dependencies; cache/save below runs on red builds too.
@@ -2894,6 +2894,10 @@ jobs:
           # B513 retry: preserve all B508 changes, fix printer marker preflight.
           # B508: all user-reported ingame defects in one release candidate.
           python3 private/fixes/apply-v174-all-ingame-fixes-508.py
+          # B514 complete in-game user feedback in ONE coherent candidate.
+          python3 private/fixes/apply-v174-test-roundup-514a.py
+          python3 private/fixes/apply-v174-test-roundup-514b.py
+          python3 private/fixes/apply-v174-test-roundup-514c.py
           python3 - <<'PY'
           from pathlib import Path
           j=Path('work/src/main/java/dev/obsidiannetwork')
@@ -2928,6 +2932,20 @@ jobs:
           for ore in ('uranium_ore','deepslate_uranium_ore'):
               assert (r/('textures/block/'+ore+'_side.png')).stat().st_size>100
           assert 'SnapshotJournal<long[]>' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
+          assert 'B514_ENERGY_FACE_SELECTION_ITEM_CABLE_PARITY' in (j/'block/EnergyCableBlock.java').read_text() or 'B514_CABLE_ITEM_PARITY' in (j/'block/EnergyCableBlock.java').read_text()
+          assert 'B514_NUTRI_CLIENT_SLOT_IDENTITY' in (j/'client/V174NutrinatorScreen.java').read_text()
+          assert 'B514_MAP_BATCHED' in (j/'client/V173WorldGhostRenderer.java').read_text()
+          assert 'B514_VISION_CABLE_GEOMETRY' in (j/'client/NetworkVisionClient.java').read_text()
+          assert 'B514_REACTOR_ACTUAL_FE_OUTPUT' in (j/'reactor/ReactorControllerBlockEntity.java').read_text()
+          assert 'B514_BANK_FE_T_WINDOW' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
+          for name in ['nutrinator','electric_water_pump']:
+              model=json.loads((r/('models/block/'+name+'.json')).read_text())
+              assert len(model['elements'])>=8
+          for name in ['reactor','powerbank']:
+              page=(r/('guides/obsidiannetwork/guide/'+name+'.md')).read_text()
+              assert '<GameScene ' in page and '<Block id=' in page
+              assert '<ImportStructure ' not in page
+          print('B514_ALL_IN_GAME_FIXES_SOURCE_GATE_PASS')
           print('B508_FULL_INGAME_SOURCE_AND_TEXTURE_GATE_PASS')
           print('B503_FULL_INGAME_REGRESSION_SOURCE_GATE_PASS')
           PY
@@ -3804,6 +3822,20 @@ jobs:
                        'menu/EnergyCableConfigMenu.class','menu/NetworkPrinterMenu.class'):
             assert 'dev/obsidiannetwork/'+cls in members,cls
           print('B508_COMPILED_JAR_TEXTURES_AND_UI_GATE_PASS')
+          # B514 post-build content and Java class verification.
+          with zipfile.ZipFile(jar) as z:
+           members=set(z.namelist());root='assets/obsidiannetwork/'
+           for nm in ('nutrinator','electric_water_pump'):
+            model=json.loads(z.read(root+'models/block/'+nm+'.json'))
+            assert len(model['elements'])>=8, nm
+           for nm in ('reactor','powerbank'):
+            guide=z.read(root+'guides/obsidiannetwork/guide/'+nm+'.md').decode()
+            assert '<Block id=' in guide and '<ImportStructure ' not in guide
+           for cls in ('client/V174NutrinatorScreen.class','client/NetworkVisionClient.class',
+                       'client/V173WorldGhostRenderer.class','reactor/ReactorControllerBlockEntity.class',
+                       'blockentity/NetworkDeviceBlockEntity.class'):
+            assert 'dev/obsidiannetwork/'+cls in members
+          print('B514_POSTBUILD_3D_GUIDEME_UI_TELEMETRY_AND_MAP_GATE_PASS')
           PY_B508_JAR
       - name: Save NeoForge dependencies even on red builds
         if: always() && steps.v174_gradle_cache.outputs.cache-hit != 'true' && hashFiles('work/build.gradle') != ''
