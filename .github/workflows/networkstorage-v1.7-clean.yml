@@ -3230,6 +3230,12 @@ jobs:
           python3 -m py_compile features/v175/apply-v175-worn-uv-match.py tests/verify_v175_worn_uv_match.py
           python3 features/v175/apply-v175-worn-uv-match.py
           python3 tests/verify_v175_worn_uv_match.py
+          # B631 film-style normal SUIT back-entry/exit: two hinged rear
+          # halves, fixed actual worn chest plate; scale away ONLY static
+          # interior when the back opens, restore before end. NO recall edits.
+          python3 -m py_compile features/v175/apply-v175-back-hatch-631.py tests/verify_v175_back_hatch_631.py
+          python3 features/v175/apply-v175-back-hatch-631.py
+          python3 tests/verify_v175_back_hatch_631.py
           # v1.7.5: both uranium ores require iron+ pickaxes, Fortune/Silk Touch,
           # plus common ore tags for default Veinminer group; no extra ticking.
           python3 -m py_compile features/v175/apply-v175-uranium-enchant-veinminer.py tests/verify_v175_uranium_enchants.py
