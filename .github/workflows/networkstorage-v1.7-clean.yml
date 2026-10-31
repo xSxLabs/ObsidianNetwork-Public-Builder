@@ -2909,6 +2909,7 @@ jobs:
           python3 private/fixes/apply-v174-test-roundup-514c.py
           python3 private/fixes/apply-v174-test-roundup-514d.py
           python3 - <<'PY'
+          import json
           from pathlib import Path
           j=Path('work/src/main/java/dev/obsidiannetwork')
           r=Path('work/src/main/resources/assets/obsidiannetwork')
