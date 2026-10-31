@@ -153,6 +153,7 @@ jobs:
           python3 tests/test_v174_multiblock_lit_blockstates_531.py
           python3 tests/test_v174_all_user_fixes_533.py
           python3 tests/test_spark_solar_mspt_536.py
+          python3 tests/test_v174_bottom_left_hud_537.py
           python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_stack_upgrades_global.py' -v
           echo 'B473_FAST_V174_PREFLIGHT PASS'
@@ -2924,6 +2925,8 @@ jobs:
           # B533 all user-reported in-game issues; original v1.7.3 freeze unchanged.
           python3 features/v174/apply-v174-final-fixes-533.py
           python3 features/v174/apply-v174-assets-533.py
+          # B537: FE and NutriPaste both anchored to bottom-left, transparent.
+          python3 features/v174/apply-v174-bottom-left-hud-537.py
           # B530 source applies in the tail of B514d: ingame feedback, all together.
           python3 - <<'PY'
           import json
@@ -2991,6 +2994,11 @@ jobs:
           print('B533_EIGHT_STATES_SOURCE_GATE_PASS')
           # B533 all new Java and fluid assets must actually enter the final JAR.
           assert 'B533_NUTRIPASTE_ARMOR_ROW' in (j/'client/PowerArmorBuild98Client.java').read_text()
+          hud=(j/'client/PowerArmorBuild98Client.java').read_text()
+          assert 'B537_HUD_BOTTOM_LEFT_FE' in hud and 'B537_HUD_BOTTOM_LEFT_PASTE' in hud
+          assert 'getGuiScaledHeight()-61' in hud and 'getGuiScaledHeight()-85' in hud
+          assert '0x9b101923' not in hud
+          print('B537_POWER_ARMOR_FE_AND_PASTE_BOTTOM_LEFT_TRANSPARENT_PASS')
           assert 'B533_HELMET_PASTE_TOOLTIP' in (j/'nutrition/NutriPasteTooltip.java').read_text()
           assert 'B533_NUTRINATOR_TANK_LIVE_FILL' in (j/'client/V174NutrinatorScreen.java').read_text()
           assert 'B533_NETWORK_TANK_HELMET_FILL' in (j/'blockentity/NetworkTankBlockEntity.java').read_text()
