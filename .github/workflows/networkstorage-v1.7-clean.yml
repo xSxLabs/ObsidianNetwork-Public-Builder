@@ -155,6 +155,7 @@ jobs:
           python3 tests/test_spark_solar_mspt_536.py
           python3 tests/test_v174_bottom_left_hud_537.py
           python3 tests/test_v174_ingame_541.py
+          python3 tests/test_v174_ingame_552.py
           python3 tests/test_spark_energy_immutable_cut_mask_541.py
           python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_stack_upgrades_global.py' -v
@@ -2935,6 +2936,9 @@ jobs:
           python3 features/v174/apply-v174-bottom-left-hud-537.py
           # B541: fast helmet/buckets, hotbar-side HUD, stronger formed styling.
           python3 features/v174/apply-v174-ingame-541.py
+          # B552: user in-game reports: 50% lower HUD, solid teal input
+          # collars, borderless assembled reactor/powerbank casing skins.
+          python3 features/v174/apply-v174-ingame-552.py
           # Spark day +20 MSPT: cache immutable cable cut-state bits only;
           # never cache live topology, transfer capabilities, FE or transactions.
           python3 patches/spark-energy-immutable-cut-mask-541.py
@@ -3011,7 +3015,10 @@ jobs:
           assert 'B541_HUD_LEFT_OF_HOTBAR_FE' in hud and 'B541_HUD_LEFT_OF_HOTBAR_PASTE' in hud
           assert 'B537_HUD_BOTTOM_LEFT_FE' not in hud and 'B537_HUD_BOTTOM_LEFT_PASTE' not in hud
           assert 'B541_IMMUTABLE_ENERGY_CABLE_CUT_MASK' in (j/'blockentity/EnergyCableBlockEntity.java').read_text()
-          assert 'getGuiScaledHeight()-29' in hud and 'getGuiScaledHeight()-47' in hud
+          assert 'B552_HALF_SIZE_FE_TEXT' in hud and 'B552_HALF_SIZE_PASTE_TEXT' in hud
+          assert hud.count('g.pose().scale(.5f,.5f);')==3
+          assert 'getGuiScaledHeight()-14' in hud and 'getGuiScaledHeight()-28' in hud
+          assert 'final int width=60;' in hud and 'int pasteWidth=60,px=' in hud
           assert '0x9b101923' not in hud
           print('B537_POWER_ARMOR_FE_AND_PASTE_BOTTOM_LEFT_TRANSPARENT_PASS')
           assert 'B533_HELMET_PASTE_TOOLTIP' in (j/'nutrition/NutriPasteTooltip.java').read_text()
@@ -3042,7 +3049,18 @@ jobs:
           print('B533_USER_REPORTS_HUD_TOOLTIP_TANK_CABLE_FLUID_MODELS_PASS')
           # B540: actual cable model replaces the old inaccurate cyan-concrete cap.
           collar=(j/'client/EnergyCableInputRenderer.java').read_text()
-          assert 'resolver.update(out.cap,be.getBlockState(),DISPLAY);' in collar
+          assert 'resolver.update(out.cap,dev.obsidiannetwork.ObsidianNetwork.XSX_ENERGY_INPUT_COLLAR.get().defaultBlockState(),DISPLAY);' in collar
+          assert 'B552_SOLID_CABLE_COLORED_INPUT_COLLAR' in collar
+          assert 'XSX_ENERGY_INPUT_COLLAR' in (j/'ObsidianNetwork.java').read_text()
+          assert collar.count('10/16f')==12 and collar.count('3/16f')>=12
+          assert (r/'models/block/xsx_energy_input_collar.json').is_file()
+          assert (r/'blockstates/xsx_energy_input_collar.json').is_file()
+          assert (r/'textures/block/xsx_energy_input_collar.png').is_file()
+          for n in ('reactor_casing_formed','reactor_casing_formed_top',
+                    'powerbank_casing_formed','powerbank_casing_formed_top',
+                    'powerbank_casing_formed_lit','powerbank_casing_formed_lit_top'):
+              assert (r/('textures/block/'+n+'.png')).is_file(),n
+          print('B552_HUD_REAL_SOLID_INPUT_COLLARS_JOINED_FORMED_ASSETS_SOURCE_PASS')
           assert 'B533_ACTUAL_ENERGY_CABLE_CAP_TEXTURE' in collar
           assert 'Blocks.CYAN_CONCRETE.defaultBlockState()' not in collar
           print('B530_USER_INGAME_REPORTS_APPLIED_PASS')
