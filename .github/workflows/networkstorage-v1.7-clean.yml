@@ -3162,6 +3162,10 @@ jobs:
           # lower-cost actual cable paths in Vision, blue/black energy input).
           python3 features/v174/apply-v174-ingame-smooth-579.py
           python3 tests/verify_v174_ingame_smooth_579.py
+          # Build 581: preserve all FE conservation tests, amortize reactor
+          # port capability resolution and render actual cable edges cheaper.
+          python3 features/v174/apply-v174-tick-performance-581.py
+          python3 tests/verify_v174_tick_performance_581.py
           python3 tests/verify_v174_ingame_regression_575.py --source work/src/main/java/dev/obsidiannetwork --assets work/src/main/resources/assets/obsidiannetwork
           python3 tests/verify_v174_reference_visuals_558.py --assets work/src/main/resources/assets/obsidiannetwork
           python3 tests/verify_v174_connected_glass_566.py --assets work/src/main/resources/assets/obsidiannetwork
