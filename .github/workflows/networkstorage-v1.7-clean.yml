@@ -2983,7 +2983,7 @@ jobs:
           assert 'B530_POWERBANK_CHARGE_LIGHT' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
           # B540: B530 second HUD was deliberately replaced by B533/B537 layout.
           assert 'B533_NUTRIPASTE_ARMOR_ROW' in (j/'client/PowerArmorBuild98Client.java').read_text()
-          assert 'B537_HUD_BOTTOM_LEFT_FE' in (j/'client/PowerArmorBuild98Client.java').read_text()
+          assert 'B541_HUD_LEFT_OF_HOTBAR_FE' in (j/'client/PowerArmorBuild98Client.java').read_text()
           assert 'B530_AUTOMATIC_HELMET_FEED' in (j/'nutrition/PowerArmorFeeding.java').read_text()
           assert 'B530_NUTRI_THREE_REAL_CLIENT_SLOTS' in (j/'client/V174NutrinatorScreen.java').read_text()
           assert 'B530_LIVE_GLASS_LIGHT' in (j/'multiblock/MultiblockSkinBlock.java').read_text()
