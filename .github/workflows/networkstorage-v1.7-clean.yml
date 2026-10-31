@@ -3176,6 +3176,9 @@ jobs:
           python3 features/v174/apply-v174-build591.py
           python3 -m py_compile features/v174/apply-v174-build593.py
           python3 features/v174/apply-v174-build593.py
+          # B598: strict cable capability directions, changed-only Nutrinator GUI sync, neutral glazing.
+          python3 -m py_compile features/v174/apply-v174-build598.py
+          python3 features/v174/apply-v174-build598.py
           python3 tests/verify_v174_build591_contract.py
           # The inherited B579 FE test also checks the final B584 cable model.
           python3 tests/verify_v174_ingame_smooth_579.py
