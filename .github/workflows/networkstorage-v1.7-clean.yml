@@ -3236,6 +3236,13 @@ jobs:
           python3 -m py_compile features/v175/apply-v175-back-hatch-631.py tests/verify_v175_back_hatch_631.py
           python3 features/v175/apply-v175-back-hatch-631.py
           python3 tests/verify_v175_back_hatch_631.py
+          # B632: wearable body proportions on every outer moving shell part.
+          # Underlying 24 worn image atlases, rear opening and full MK42-style
+          # Recall pose/flight/keyframes remain strictly byte-for-byte intact.
+          # No player movement: exit suit is still placed in front (B117).
+          python3 -m py_compile features/v175/apply-v175-worn-shell-geometry-632.py tests/verify_v175_worn_shell_geometry_632.py
+          python3 features/v175/apply-v175-worn-shell-geometry-632.py
+          python3 tests/verify_v175_worn_shell_geometry_632.py
           # v1.7.5: both uranium ores require iron+ pickaxes, Fortune/Silk Touch,
           # plus common ore tags for default Veinminer group; no extra ticking.
           python3 -m py_compile features/v175/apply-v175-uranium-enchant-veinminer.py tests/verify_v175_uranium_enchants.py
