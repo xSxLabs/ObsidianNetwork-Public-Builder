@@ -3093,20 +3093,21 @@ jobs:
           assert 'B553_ASSEMBLED_RIM' in skin
           assert 'B553_ON_FORM_VISUAL_BANDS' in skin
           assert 'IntegerProperty.create("rim",0,2)' in skin
-          assert 'builder.add(FORMED,ACTIVE,LIT,RIM);' in skin
+          assert 'builder.add(FORMED,ACTIVE,LIT,RIM,CORNER);' in skin
           assert 'B553_REACTOR_DESIGN_3' in (j/'reactor/ReactorControllerBlockEntity.java').read_text()
           assert 'B553_POWERBANK_DESIGN_4' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
           assert 'bank&&state.is(dev.obsidiannetwork.ObsidianNetwork.POWERBANK_CASING.get())' in skin
           for name in ('reactor_casing','reactor_glass','powerbank_casing','powerbank_glass'):
            data=json.loads((a/'blockstates'/(name+'.json')).read_text())['variants']
-           assert len(data)==24, (name,len(data))
+           assert len(data)==48, (name,len(data))
            for key,value in data.items():
-            assert key.count('rim=')==1
+            assert key.count('rim=')==1 and key.count('corner=')==1
             if 'formed=false' in key: assert '_formed_' not in value['model']
             elif 'casing' in name:
              assert ('design3' if name.startswith('reactor') else 'design4') in value['model']
           for name in ('reactor_casing_formed_design3_top','reactor_casing_formed_design3_bottom',
-                       'powerbank_casing_formed_design4_top_lit','powerbank_casing_formed_design4_bottom_lit'):
+                       'powerbank_casing_formed_design4_top_lit','powerbank_casing_formed_design4_bottom_lit',
+                       'reactor_casing_formed_design3_top_corner','powerbank_casing_formed_design4_bottom_corner_lit'):
            assert (a/'textures/block'/(name+'.png')).stat().st_size>140
            assert (a/'models/block'/(name+'.json')).is_file()
           print('B553_ASSEMBLED_USER_REFERENCE_DESIGN_3_4_CI_PASS')
