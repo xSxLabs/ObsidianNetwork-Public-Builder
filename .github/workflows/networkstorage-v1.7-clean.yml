@@ -3195,12 +3195,20 @@ jobs:
           python3 -m py_compile features/v174/apply-v174-hotfix609-occlusion-and-facade-guard.py tests/verify_v174_hotfix609_occlusion.py
           python3 features/v174/apply-v174-hotfix609-occlusion-and-facade-guard.py
           python3 tests/verify_v174_hotfix609_occlusion.py
-          # v1.7.5 manual-only: after ALL B617 patches, before unchanged regression gates.
-          # The v1.7.5 branch must remain excluded from automatic push triggers.
+          # v1.7.5 integrated builds: after ALL B617 patches, before unchanged regression gates.
+          # v1.7.5 builds are authorized by user's explicit 'build' command.
           python3 -m py_compile features/v175/apply-v175-animation-rigs.py features/v175/apply-v175-recall-phases.py tests/verify_v175_animation_integration.py
           python3 features/v175/apply-v175-animation-rigs.py
           python3 features/v175/apply-v175-recall-phases.py
           python3 tests/verify_v175_animation_integration.py
+          # B622: user's in-game reference: a SINGLE hinge-mounted helmet mask,
+          # rear split opening at outer seams, full six-face detailed interior
+          # textures, forward helmet-first recall and rear boot nozzle effects.
+          # The owned ArmorStand is temporarily hidden ONLY during the visual,
+          # with normal cleanup and load/restart recovery; no inventory changes.
+          python3 -m py_compile features/v175/apply-v175-cinematic-polish.py tests/verify_v175_cinematic_polish.py
+          python3 features/v175/apply-v175-cinematic-polish.py
+          python3 tests/verify_v175_cinematic_polish.py
           # v1.7.5: both uranium ores require iron+ pickaxes, Fortune/Silk Touch,
           # plus common ore tags for default Veinminer group; no extra ticking.
           python3 -m py_compile features/v175/apply-v175-uranium-enchant-veinminer.py tests/verify_v175_uranium_enchants.py
