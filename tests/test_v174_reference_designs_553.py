@@ -29,7 +29,7 @@ class DesignChoices(unittest.TestCase):
   s=self.s
   self.assertIn("bank&&state.is(dev.obsidiannetwork.ObsidianNetwork.POWERBANK_CASING.get())",s)
   self.assertIn('suffix="_lit" if',s)
-  self.assertIn("bank_face",s)
+  self.assertIn("def bank(x,y,band,charged):",s)
  def test_original_lit_and_unformed_still_supported(self):
   s=self.s
   self.assertIn('builder.add(FORMED,ACTIVE,LIT,RIM);',s)
