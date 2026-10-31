@@ -2915,7 +2915,6 @@ jobs:
           assert 'B547_SOLAR_SPARSE_FACE_WALK' in solar
           assert 'B565_SOLAR_FULL_BUFFER_SKY_FASTPATH' in solar
           assert 'B566_SOLAR_SKY_BLOCKPOS_REUSE' in solar
-          assert 'B568_SOLAR_AUTO_IMPORT_NEIGHBOR' in solar
           assert 'Integer.numberOfTrailingZeros(solarRotated)' in solar
           assert 'xsxLiveSolarFaces(server)!=0' in solar
           assert 'now-xsxSolarLastFaceScan<40L' in solar
@@ -2959,6 +2958,23 @@ jobs:
           # never cache live topology, transfer capabilities, FE or transactions.
           python3 patches/spark-energy-immutable-cut-mask-541.py
           python3 patches/apply-v174-solar-energy-network-568.py
+          # B571: verify the B568 code only AFTER injecting it into source.
+          python3 - <<'PY_B571_ENERGY'
+          from pathlib import Path
+          j=Path('work/src/main/java/dev/obsidiannetwork')
+          cable=(j/'blockentity/EnergyCableBlockEntity.java').read_text()
+          solar=(j/'blockentity/SolarGeneratorBlockEntity.java').read_text()
+          assert 'B568_SOLAR_AUTO_IMPORT_NEIGHBOR' in solar
+          assert 'B568_PER_TICK_LIVE_CABLE_BE_LOOKUP' in cable
+          assert 'B568_SOLAR_AUTO_IMPORT_FACE' in cable
+          assert 'xsxAutoImportSolar(sl,worldPosition)' in solar
+          assert 'xsxSolarInputIfBoth(side)' in cable
+          assert 'xsxSolarInputIfBoth(side.getOpposite())' in cable
+          assert 'long budget = be.energy.stored();' in solar
+          assert 'be.energyJournal.updateSnapshots(tx);' in solar
+          assert 'budget -= accepted;' in solar
+          print('B571_POSTPATCH_SOLAR_ENERGY_CONTRACT_PASS')
+          PY_B571_ENERGY
           # B530 source applies in the tail of B514d: ingame feedback, all together.
           python3 - <<'PY'
           import json
