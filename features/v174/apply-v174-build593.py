@@ -110,7 +110,12 @@ p=J/"blockentity/EnergyCableBlockEntity.java";s=p.read_text(encoding="utf-8")
 old='if(st.getValue(cut)!=closed)level.setBlock(worldPosition,st.setValue(cut,closed),3);'
 assert s.count(old)==1,("B593_OFF_CUT_ANCHOR",s.count(old))
 s=s.replace(old,'''if(st.getValue(cut)!=closed){
-      level.setBlock(worldPosition,st.setValue(cut,closed),3);
+      // B597_OFF_UPDATE_ACTUAL_ARM: CUT alone leaves the rendered arm property stale.
+      var neighbor=worldPosition.relative(side);
+      var changed=level.hasChunkAt(neighbor)
+        ?dev.obsidiannetwork.block.EnergyCableBlock.toggleCut(st,side,level.getBlockState(neighbor))
+        :st.setValue(cut,closed);
+      level.setBlock(worldPosition,changed,3);
       level.updateNeighborsAt(worldPosition,st.getBlock());
       // B593_OFF_REBUILD_ADJACENCY: client arms and vanilla neighbor shape.
       level.sendBlockUpdated(worldPosition,st,level.getBlockState(worldPosition),3);
@@ -134,4 +139,4 @@ assert "PASTE_CAPACITY=1_000_000L" in (J/"nutrition/NutrinatorBlockEntity.java")
 assert "be.fuelTicks=600;" in (J/"reactor/ReactorControllerBlockEntity.java").read_text()
 assert json.loads((R/"data/obsidiannetwork/recipe/ultra_solar_generator.json").read_text())["result"]["id"]=="obsidiannetwork:ultra_solar_generator"
 assert (R/"data/obsidiannetwork/loot_table/blocks/ultra_solar_generator.json").is_file()
-print("B596_TANK_SYNC_FUEL_30S_NUTRIPASTE_1M_NO_BUCKETS_ULTRA_TOOLTIP_INSTANT_OFF_REFRESH_PASS")
+print("B597_CABLE_REAL_ARM_TANK_SYNC_FUEL_30S_NUTRIPASTE_1M_NO_BUCKETS_PASS")
