@@ -3182,6 +3182,9 @@ jobs:
           # B602: single integrated v1.7.4 cable-drop/facade and Ultra texture hotfix.
           python3 -m py_compile features/v174/apply-v174-hotfix602.py tests/verify_v174_hotfix602.py
           python3 features/v174/apply-v174-hotfix602.py
+          # B603: correct the actual ENERGY FACADED=INVISIBLE render path.
+          python3 -m py_compile features/v174/apply-v174-hotfix603-energy-facade-render.py
+          python3 features/v174/apply-v174-hotfix603-energy-facade-render.py
           python3 tests/verify_v174_hotfix602.py
           python3 tests/verify_v174_build591_contract.py
           # The inherited B579 FE test also checks the final B584 cable model.
