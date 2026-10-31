@@ -3156,6 +3156,8 @@ jobs:
           python3 features/v174/apply-v174-seamless-formed-glass-566.py
           python3 features/v174/apply-v174-powerbank-glass-568.py
           python3 features/v174/apply-v174-ingame-regression-575.py
+          python3 features/v174/apply-v174-reactor-production-x5-577.py
+          python3 tests/verify_v174_reactor_production_x5_577.py
           python3 tests/verify_v174_ingame_regression_575.py --source work/src/main/java/dev/obsidiannetwork --assets work/src/main/resources/assets/obsidiannetwork
           python3 tests/verify_v174_reference_visuals_558.py --assets work/src/main/resources/assets/obsidiannetwork
           python3 tests/verify_v174_connected_glass_566.py --assets work/src/main/resources/assets/obsidiannetwork
