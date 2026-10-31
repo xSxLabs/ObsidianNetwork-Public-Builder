@@ -3195,6 +3195,13 @@ jobs:
           python3 -m py_compile features/v174/apply-v174-hotfix609-occlusion-and-facade-guard.py tests/verify_v174_hotfix609_occlusion.py
           python3 features/v174/apply-v174-hotfix609-occlusion-and-facade-guard.py
           python3 tests/verify_v174_hotfix609_occlusion.py
+          # B624: cable bundle ENERGY hot-path; reuse the same immutable node
+          # position per dispatch rather than querying the BE once per face.
+          # Assert full live direction/capability/FE/transaction parity.
+          python3 -m py_compile patches/v175-cable-bundle-node-position-fastpath.py tests/test_v175_cable_bundle_energy_pos.py
+          python3 -m unittest discover -s tests -p 'test_v175_cable_bundle_energy_pos.py' -v
+          python3 patches/v175-cable-bundle-node-position-fastpath.py
+          grep -Fq 'V175_B624_CABLE_BUNDLE_NODE_POSITION_HOIST' work/src/main/java/dev/obsidiannetwork/conduit/EnergyConduitTicker.java
           # v1.7.5 integrated builds: after ALL B617 patches, before unchanged regression gates.
           # v1.7.5 builds are authorized by user's explicit 'build' command.
           python3 -m py_compile features/v175/apply-v175-animation-rigs.py features/v175/apply-v175-recall-phases.py tests/verify_v175_animation_integration.py

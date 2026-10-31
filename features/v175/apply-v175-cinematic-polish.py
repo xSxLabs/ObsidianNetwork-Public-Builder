@@ -198,7 +198,11 @@ cleanup=cleanup.replace("stand.setInvisible(false)",
  "stand.removeTag(\"xsxlabs_v175_temporarily_hidden_world_suit\");stand.setInvisible(false)",1)
 s=s[:start]+cleanup+s[end:]
 end=s.rfind("\n}")
-assert end>0 and "@EventBusSubscriber" in s
+assert end>0,("V175_SUIT_END_MISSING",end)
+# This class is registered explicitly by the existing NeoForge event bus.
+# Adding a second annotation/register would duplicate ALL preexisting hooks.
+main=(J/"ObsidianNetwork.java").read_text(encoding="utf-8")
+assert main.count("NeoForge.EVENT_BUS.register(dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.class);")==1,("V175_SUIT_WORLD_EVENT_REGISTRATION_DRIFT",main.count("PowerArmorSuitWorld.class"))
 s=s[:end]+'''
  // V175_RESTART_SAFE_OVERLAY: never persist an invisible real world suit.
  // Only runs when a tagged entity joins, not in the per-tick hot path.
