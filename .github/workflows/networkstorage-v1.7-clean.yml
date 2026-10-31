@@ -159,6 +159,7 @@ jobs:
           python3 tests/test_v174_ingame_552.py
           python3 tests/test_v174_reference_designs_553.py
           python3 tests/test_v174_reference_accuracy_558.py
+          python3 tests/test_v174_connected_glass_566.py
           python3 tests/test_spark_energy_immutable_cut_mask_541.py
           python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_stack_upgrades_global.py' -v
@@ -2897,6 +2898,8 @@ jobs:
           python3 patches/spark-solar-sparse-faces-547.py
           # B565: full-buffer panels bypass sky lookup; never skip FE export.
           python3 patches/spark-solar-full-buffer-sky-fastpath-565.py
+          # B566: stable sky-query position, no change in sky sampling or FE/t.
+          python3 patches/apply-solar-sky-pos-reuse-566.py
           python3 - <<'PY'
           from pathlib import Path
           j=Path('work/src/main/java/dev/obsidiannetwork')
@@ -2907,6 +2910,7 @@ jobs:
           assert 'B536_SOLAR_MSPT_FACE_MASK' in solar
           assert 'B547_SOLAR_SPARSE_FACE_WALK' in solar
           assert 'B565_SOLAR_FULL_BUFFER_SKY_FASTPATH' in solar
+          assert 'B566_SOLAR_SKY_BLOCKPOS_REUSE' in solar
           assert 'Integer.numberOfTrailingZeros(solarRotated)' in solar
           assert 'xsxLiveSolarFaces(server)!=0' in solar
           assert 'now-xsxSolarLastFaceScan<40L' in solar
@@ -3121,6 +3125,9 @@ jobs:
           # sprites selected at *assembly*, no added server ticking.
           python3 features/v174/apply-v174-reference-accuracy-558.py
           python3 tests/verify_v174_reference_visuals_558.py --assets work/src/main/resources/assets/obsidiannetwork
+          # B566: only formed glass gets seamless faces, never casing/loose glass.
+          python3 features/v174/apply-v174-seamless-formed-glass-566.py
+          python3 tests/verify_v174_connected_glass_566.py --assets work/src/main/resources/assets/obsidiannetwork
           python3 - <<'PY_B558_BAND'
           from pathlib import Path
           x=Path('work/src/main/java/dev/obsidiannetwork/multiblock/MultiblockSkinBlock.java').read_text()
@@ -3974,6 +3981,7 @@ jobs:
           subprocess.run(['python3','tests/verify_compiled_solar_cache.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_energy_hotpath.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_v174_reference_visuals_558.py','--jar',str(jars[0])],check=True)
+          subprocess.run(['python3','tests/verify_v174_connected_glass_566.py','--jar',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_craft_slots.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_broadcast.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_network_elytra_speedcheck.py',str(jars[0])],check=True)
