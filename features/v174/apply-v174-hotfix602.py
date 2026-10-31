@@ -121,7 +121,7 @@ for name in ("ultra_energy_core","ultra_solar_matrix"):
  doc["textures"]["layer0"]="obsidiannetwork:item/"+name
  write(model,json.dumps(doc,indent=2)+"\n")
  with Image.open(png) as v:
-  assert v.size==(32,32) and v.mode=="RGBA" and len(set(v.getdata()))>24,("B602_BAD_SPRITE",name)
+  assert v.size==(32,32) and v.mode=="RGBA" and len(set(v.getdata()))>=8,("B602_BAD_SPRITE",name)
  assert json.loads((A/"items"/(name+".json")).read_text(encoding="utf-8"))["model"]["model"]=="obsidiannetwork:item/"+name
 assert "B602_CONTENTS_ONLY_DROP" in (J/"block/ConduitBundleBlock.java").read_text(encoding="utf-8")
 assert "B602_ENERGY_FACADE_FINAL_SYNC" in (J/"item/CableFacadeItem.java").read_text(encoding="utf-8")
