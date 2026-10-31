@@ -18,7 +18,11 @@ facade=src("item/CableFacadeItem.java")
 assert "B602_ENERGY_FACADE_FINAL_SYNC" in facade
 assert "EnergyCableBlock.FACADED" in facade and "requestModelDataUpdate()" in facade
 client=src("client/ClientModEvents.java")
-assert "ModBlockEntities.ENERGY_CABLE.get(), dev.obsidiannetwork.client.render.CableFacadeRenderer::new" in client
+# B605: keep both the selected facade and INPUT collar with one renderer.
+# The historical separate facade registration was overwritten at client load.
+assert "ModBlockEntities.ENERGY_CABLE.get(), dev.obsidiannetwork.client.EnergyCableCompositeRenderer::new" in client
+assert "new CableFacadeRenderer<>" in src("client/EnergyCableCompositeRenderer.java")
+assert "new EnergyCableInputRenderer(" in src("client/EnergyCableCompositeRenderer.java")
 for name in ("ultra_energy_core","ultra_solar_matrix"):
  image=A/"textures/item"/(name+".png")
  with Image.open(image) as im:
