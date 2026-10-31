@@ -72,6 +72,8 @@ assert 'stand.addTag("xsxlabs_v175_temporarily_hidden_world_suit")' in world
 assert "stand.setInvisible(true)" in world
 assert "stand.setInvisible(false)" in world
 assert "v175RestoreWorldSuitOnLoad" in world
+assert 'stand.entityTags().contains("xsxlabs_v175_temporarily_hidden_world_suit")' in world
+assert "stand.getTags()" not in world
 assert "stand.removeTag" in world
 assert "PowerArmorSuitWorld.recallEquip(stand,player)" in rec
 assert "V175_RECOVERY_SAFE_DOCK" in rec

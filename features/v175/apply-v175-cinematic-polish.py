@@ -211,7 +211,7 @@ s=s[:end]+'''
        net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e){
   if(e.getLevel().isClientSide())return;
   if(e.getEntity() instanceof ArmorStand stand
-     &&stand.getTags().contains("xsxlabs_v175_temporarily_hidden_world_suit")){
+     &&stand.entityTags().contains("xsxlabs_v175_temporarily_hidden_world_suit")){
    stand.removeTag("xsxlabs_v175_temporarily_hidden_world_suit");
    stand.setInvisible(false);
   }
