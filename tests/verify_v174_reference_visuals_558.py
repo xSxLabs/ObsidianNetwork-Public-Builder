@@ -62,9 +62,18 @@ def verify(read):
  # The corner post must be different from its straight beam and body.
  corner=sprite("powerbank_casing_formed_design4_top_corner_lit")
  middle=sprite("powerbank_casing_formed_design4_middle_corner_lit")
- assert corner.getpixel((16,15))[0]<120,"Bank corner is not graphite-metal"
+ assert corner.getpixel((16,26))[0]<120,"Bank rail no longer locks into graphite corner"
+ assert corner.getpixel((5,26))[1]>230,"Cyan rail does not enter top corner"
+ assert corner.getpixel((16,15))[0]>210,"White corner pillar replaced by black screen"
  assert middle.getpixel((3,15))[1]>190,"Vertical corner LED missing"
  assert corner.tobytes()!=on.tobytes()
+ # B559 reactor operating glass has true blue equipment glow, still transparent.
+ assert "obsidiannetwork:block/reactor_glass_formed_lit" in {
+  v["model"] for k,v in variants("reactor_glass").items()
+  if "formed=true" in k and "lit=true" in k}
+ assert json.loads(read(BASE+"models/block/reactor_glass_formed_lit.json"))["parent"]=="minecraft:block/cube_all"
+ glow=sprite("reactor_glass_formed_lit")
+ assert glow.getpixel((16,15))[2]>210 and glow.getpixel((16,15))[3]<180
  # Glass is physical translucent tinted glazing, not empty alpha 9.
  glass1=sprite("reactor_glass_formed")
  glass2=sprite("powerbank_glass_formed")
