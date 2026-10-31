@@ -2935,6 +2935,7 @@ jobs:
           assert 'SnapshotJournal<long[]>' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
           assert 'B514_ENERGY_FACE_SELECTION_ITEM_CABLE_PARITY' in (j/'block/EnergyCableBlock.java').read_text() or 'B514_CABLE_ITEM_PARITY' in (j/'block/EnergyCableBlock.java').read_text()
           assert 'B514_NUTRI_CLIENT_SLOT_IDENTITY' in (j/'client/V174NutrinatorScreen.java').read_text()
+          assert 'B514_NUTRI_BOTTOM_GRID' in (j/'client/V174NutrinatorScreen.java').read_text()
           assert 'B514_MAP_BATCHED' in (j/'client/V173WorldGhostRenderer.java').read_text()
           assert 'B514_VISION_CABLE_GEOMETRY' in (j/'client/NetworkVisionClient.java').read_text()
           assert 'B514_REACTOR_ACTUAL_FE_OUTPUT' in (j/'reactor/ReactorControllerBlockEntity.java').read_text()
