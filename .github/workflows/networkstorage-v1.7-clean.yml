@@ -157,6 +157,7 @@ jobs:
           python3 tests/test_v174_ingame_541.py
           python3 tests/test_v174_ingame_552.py
           python3 tests/test_v174_reference_designs_553.py
+          python3 tests/test_v174_reference_accuracy_558.py
           python3 tests/test_spark_energy_immutable_cut_mask_541.py
           python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_stack_upgrades_global.py' -v
@@ -3112,6 +3113,18 @@ jobs:
            assert (a/'models/block'/(name+'.json')).is_file()
           print('B553_ASSEMBLED_USER_REFERENCE_DESIGN_3_4_CI_PASS')
           PY_B553_VISUAL
+          # User-selected reference designs B558: actual panel/LED/corner/glass
+          # sprites selected at *assembly*, no added server ticking.
+          python3 features/v174/apply-v174-reference-accuracy-558.py
+          python3 tests/verify_v174_reference_visuals_558.py --assets work/src/main/resources/assets/obsidiannetwork
+          python3 - <<'PY_B558_BAND'
+          from pathlib import Path
+          x=Path('work/src/main/java/dev/obsidiannetwork/multiblock/MultiblockSkinBlock.java').read_text()
+          assert 'B558_REACTOR_MIXED_PANELS' in x and 'B558_ONLY_ON_ASSEMBLY' in x
+          assert 'builder.add(FORMED,ACTIVE,LIT,RIM,CORNER,DETAIL);' in x
+          assert 'state.setValue(RIM,band).setValue(CORNER,corner).setValue(DETAIL,detail)' in x
+          print('B558_ONLY_FORMED_STATE_DETAIL_CHANGES_PASS')
+          PY_B558_BAND
           # Verify 16 inventory cards correspond to 64 actual work batches.
           grep -Fq 'Math.min(16,b392Speed.getCount())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'Math.min(16,speed.getCount())' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
@@ -3955,6 +3968,7 @@ jobs:
           subprocess.run(['python3','tests/verify_compiled_spark_live_scan_guards.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_solar_cache.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_energy_hotpath.py',str(jars[0])],check=True)
+          subprocess.run(['python3','tests/verify_v174_reference_visuals_558.py','--jar',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_craft_slots.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_terminal_broadcast.py',str(jars[0])],check=True)
           subprocess.run(['python3','tests/verify_compiled_network_elytra_speedcheck.py',str(jars[0])],check=True)
