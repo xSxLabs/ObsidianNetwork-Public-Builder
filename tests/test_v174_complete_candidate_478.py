@@ -93,6 +93,11 @@ if os.environ.get("V1_SOURCE_ROOT"):
  for item in ("network_hologram_terminal","network_printer","network_schematic_quill",
               "uranium_rod","electric_water_pump","nutrinator"):
   assert (r/"data/obsidiannetwork/recipe"/(item+".json")).is_file(),("missing recipe",item)
+ # B528: post-B514 resource cleanup must not ship loot referencing technical
+ # blocks that have no registered BlockItem (actual B526 resource reload error).
+ if "B514_HOLO_NO_POWER" in (j/"blockentity/NetworkDeviceBlockEntity.java").read_text(encoding="utf-8"):
+  for technical in ("multi_cable","network_portal_b"):
+   assert not (r/"data/obsidiannetwork/loot_table/blocks"/(technical+".json")).exists(),("B528 invalid technical block loot",technical)
  # GuideME is now the real building guide. The obsolete legacy book remains
  # registered for save compatibility, but must no longer be craftable or creative.
  guide_meta=(r/"META-INF/neoforge.mods.toml").read_text(encoding="utf-8")
