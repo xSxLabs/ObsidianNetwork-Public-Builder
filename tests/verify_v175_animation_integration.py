@@ -7,7 +7,7 @@ from pathlib import Path
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 A=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
 all_clips={"animation.power_armor."+n for n in
- ("open","close","recall_flight","recall_brake","recall_dock")}
+ ("open","close","equip","unequip","recall_flight","recall_brake","recall_dock")}
 for tier in range(1,25):
  prefix=f"power_armor_visual_mk{tier}"
  model=json.loads((A/"geckolib/models/entity"/(prefix+".geo.json")).read_text(encoding="utf-8"))
@@ -43,6 +43,15 @@ for tier in range(1,25):
    assert clip["bones"]["rear_left"]["rotation"]["1.0"]["vector"]==[0,0,0]
    assert clip["bones"]["rear_right"]["rotation"]["1.0"]["vector"]==[0,0,0]
    assert clip["bones"]["faceplate"]["rotation"]["1.0"]["vector"]==[0,0,0]
+  if clipname.endswith(("equip","unequip")):
+   # Both normal transitions must show the mechanical opening and finish
+   # fully closed, without the player seeing a permanently opened mannequin.
+   rear=clip["bones"]["rear_left"]["rotation"]
+   mask=clip["bones"]["faceplate"]["rotation"]
+   assert rear["0"]["vector"]==[0,0,0] and rear["1.0"]["vector"]==[0,0,0], (tier,clipname,"rear terminal")
+   assert mask["0"]["vector"]==[0,0,0] and mask["1.0"]["vector"]==[0,0,0], (tier,clipname,"mask terminal")
+   assert abs(rear["0.55"]["vector"][1])>65, (tier,clipname,"rear fails to split")
+   assert abs(mask["0.32"]["vector"][0])>100, (tier,clipname,"mask fails to lift")
   if clipname.endswith("close"):
    assert clip["bones"]["faceplate"]["rotation"]["1.0"]["vector"]==[0,0,0]
       # Last closed frame must have an intact faceplate.
@@ -50,7 +59,7 @@ vis=(J/"powerarmor/PowerArmorVisualEntity.java").read_text(encoding="utf-8")
 rec=(J/"powerarmor/PowerArmorRecall.java").read_text(encoding="utf-8")
 world=(J/"powerarmor/PowerArmorSuitWorld.java").read_text(encoding="utf-8")
 assert all(s in vis for s in ("V175_PHASE","beginPhase(int next)","thenLoop(","recall_flight","recall_brake","recall_dock"))
-assert '"animation.power_armor.close":"animation.power_armor.open"' in vis, "V175_EQUIP_UNEQUIP_DIRECTION_REVERSED"
+assert '"animation.power_armor.equip":"animation.power_armor.unequip"' in vis, "V175_EQUIP_UNEQUIP_ACTIONS_NOT_BOUND"
 assert "V175_RECALL_VISUAL_LIFETIME" in vis
 assert "tickCount>23&&entityData.get(V175_PHASE)==0" in vis, "V175_RECALL_GHOST_DISCARDED_PREMATURELY"
 assert all(s in rec for s in ("V175_RECALL_DOCK","V175_RECOVERY_SAFE_DOCK","DOCKING.remove(player.getUUID())",
@@ -63,4 +72,4 @@ assert "stand.setInvisible(true);" not in world
 assert "PowerArmorRuntime.full(player)" in world
 assert "stand.discard();" in world
 assert "for(EquipmentSlot slot:PowerArmorRuntime.SLOTS)" in world
-print("V175_PREBUILD_GATE_GREEN: 24 unique textured rigs; 120 valid clips; cosmetic recall states; source suit preserved")
+print("V175_PREBUILD_GATE_GREEN: 24 unique textured rigs; 168 valid clips; cosmetic recall states; source suit preserved")

@@ -16,6 +16,18 @@ def smooth(a,b,t):
  x=max(0.,min(1.,(t-a)/(b-a)))
  return x*x*(3.-2.*x)
 def curve(action,t):
+ # The actual normal actions both open and close in one complete cinematic
+ # transaction, matching the 20-tick world/entity ownership transition.
+ # The stand is placed/worn only by the pre-existing authoritative lifecycle.
+ if action in ("equip","unequip"):
+  def env(a,b,c,d):return smooth(a,b,t)*(1-smooth(c,d,t))
+  if action=="equip":
+   return dict(mask=env(.00,.18,.68,.95),
+      rear=env(.09,.28,.61,.88),chest=env(.11,.31,.62,.88),
+      arm=env(.16,.34,.64,.90),leg=env(.18,.37,.65,.91),root=0)
+  return dict(mask=env(.00,.18,.70,.94),
+     rear=env(.12,.34,.63,.91),chest=env(.15,.36,.65,.91),
+     arm=env(.19,.39,.66,.93),leg=env(.20,.41,.68,.94),root=0)
  if action=="open":
   return dict(mask=smooth(.02,.23,t),rear=smooth(.13,.59,t),
    chest=smooth(.14,.63,t),arm=smooth(.19,.66,t),leg=smooth(.21,.68,t),root=0)
@@ -65,7 +77,7 @@ def clip(name):
  return {"animation_length":1.0 if name not in ("recall_flight","recall_brake") else (.35 if name=="recall_brake" else 1.0),
          "loop":"loop" if name=="recall_flight" else "hold_on_last_frame",
          "bones":bones}
-names=("open","close","recall_flight","recall_brake","recall_dock")
+names=("open","close","equip","unequip","recall_flight","recall_brake","recall_dock")
 for tier in range(1,25):
  name="power_armor_visual_mk"+str(tier)
  path=file(name);asset=animation(name)
@@ -142,4 +154,4 @@ target.parent.mkdir(parents=True,exist_ok=True)
 assert not target.exists(),("V175_CHOREOGRAPHY_CLASS_COLLISION",target)
 shutil.copy2(source,target)
 assert (target.read_text(encoding="utf-8")==source.read_text(encoding="utf-8"))
-print("V175_24_TIER_RIGS_PASS: 24 original textured atlases; hinged backs, real faceplates, forearms/boots; 5 clips per tier")
+print("V175_24_TIER_RIGS_PASS: 24 original textured atlases; hinged backs, real faceplates, forearms/boots; 7 clips per tier, full normal equip/unequip cycles")
