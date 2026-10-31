@@ -17,8 +17,13 @@ def once(old,new):
 # true block light; remove BOTH fake oversized black frame and cyan center.
 once("  public final BlockModelRenderState dark=new BlockModelRenderState();\n","")
 once("  if(out.active)resolver.update(out.dark,Blocks.BLACK_CONCRETE.defaultBlockState(),DISPLAY);","")
-once("resolver.update(out.cap,Blocks.IRON_BLOCK.defaultBlockState(),DISPLAY);",
-     "resolver.update(out.cap,dev.obsidiannetwork.ObsidianNetwork.XSX_ENERGY_INPUT_COLLAR.get().defaultBlockState(),DISPLAY);")
+# B552 already replaced the iron model with the registered solid collar.
+# Retain it when present; only adapt an older iron-backed source if needed.
+actual="resolver.update(out.cap,dev.obsidiannetwork.ObsidianNetwork.XSX_ENERGY_INPUT_COLLAR.get().defaultBlockState(),DISPLAY);"
+if actual not in s:
+ once("resolver.update(out.cap,Blocks.IRON_BLOCK.defaultBlockState(),DISPLAY);",actual)
+else:
+ assert s.count(actual)==1,("B588_DUPLICATE_BLUE_MODEL",s.count(actual))
 start=s.index(" // B579_ENERGY_INPUT_BLACK_FRAME:")
 end=s.index(" @Override public void submit(InputState state,PoseStack pose,",start)
 s=s[:start]+''' // B584_ITEM_CABLE_IDENTICAL_INPUT: 4/16 wide, 2/16 thick per
