@@ -54,7 +54,7 @@ STEEL=(126,149,165);GRAPHITE=(32,48,64);SHADOW=(65,88,106)
 CYAN=(66,239,255);CYANHI=(168,255,255);DIM=(83,148,172)
 
 def neutral(x,y):
- d=(x*11+y*7+x*y)%7-3
+ d=(x*11+y*7+x*y)%3-1
  c=tuple(col(v+d) for v in W)
  if x==31:c=(221,230,236)
  if y==31:c=(222,230,236)
@@ -118,9 +118,10 @@ def reactor_corner(x,y,band):
    if g is not None:c=g
   if (x,y) in ((3,3),(28,3),(3,28),(28,28)):c=rgba((57,76,90))
  else:
-  if x in (3,28):c=rgba((210,222,232))
-  if 22<=x<=28 and 11<=y<=19:
-   c=rgba((178,195,207)) if x in (22,28) or y in (11,19) else rgba((111,131,145))
+  # Smooth continuous white corner pillar, no rectangular gadget stamped
+  # on every height segment. Reference #3 keeps the middle columns clean.
+  if x in (3,28):c=rgba((222,230,237))
+  if x in (4,27):c=rgba((250,252,254))
  return c
 
 def bank_panel(x,y,band,lit):
@@ -147,21 +148,30 @@ def bank_panel(x,y,band,lit):
 def bank_corner(x,y,band,lit):
  c=groove(x,y)
  if band==0:
-  # Reference #4: a white full-height pillar, a hairline of cyan on
-  # both outside edges, dark cap fasteners only on top/bottom.
-  if x in (1,30):c=rgba((172,191,204))
+  # Reference #4 has a smooth WHITE pillar with two very thin running
+  # cyan edges; dark metal appears at its top and base, not full height.
+  if x in (1,30):c=rgba((179,194,206))
   if x in (3,28):c=rgba(CYAN if lit else DIM)
-  if x in (4,27):c=rgba((218,233,239))
+  if x in (4,27):c=rgba((227,237,243))
  else:
-  if x in (0,1,2,29,30,31):c=rgba((86,107,125))
-  if y in (0,1,2,29,30,31):c=rgba((68,88,107))
-  if 4<=x<=27 and 5<=y<=26:
-   c=rgba((78,105,126)) if x in (4,27) or y in (5,26) else rgba((45,66,87))
-  if x in (8,23) and 8<=y<=24:c=rgba((127,145,159))
-  if y in (10,11,19,20) and 10<=x<=21:
-   c=rgba(CYAN if lit else DIM)
-  if 11<=x<=20 and 14<=y<=16:
-   c=rgba((94,244,255) if lit else (104,145,164))
+  # Metallic bridge / 90-degree corner fitting, NOT a full black screen.
+  # The LED strips enter the corner from both sides at the SAME Y as
+  # the straight upper and lower rails; short cyan stubs wrap around it.
+  y0=25 if band==2 else 3
+  if y in (y0-2,y0+4):c=rgba((128,146,159))
+  if y in (y0-1,y0+3):c=rgba((59,84,100))
+  if y0<=y<=y0+2:
+   if x<=9 or x>=22:
+    c=rgba(CYANHI if lit and y==y0+1 else CYAN if lit else DIM)
+   else:
+    c=rgba((42,64,82))
+  # A narrow graphite square frames the white structural joint.
+  if x in (10,21) and y0-4<=y<=y0+5:c=rgba((92,114,131))
+  if 11<=x<=20 and y0-4<=y<=y0-2:c=rgba((70,92,107))
+  if 11<=x<=20 and y0+3<=y<=y0+5:c=rgba((70,92,107))
+  # Steel screws anchor the corner assembly without covering the beam.
+  if (x,y) in ((7,y0-3),(24,y0-3),(7,y0+4),(24,y0+4)):
+   c=rgba((181,196,207))
  return c
 
 def glass(x,y,bank,lit=False,detail=0):
@@ -172,6 +182,10 @@ def glass(x,y,bank,lit=False,detail=0):
  if x in (1,30) or y in (1,30):return (52,73,91,142)
  if x in (2,29) or y in (2,29):return (105,139,160,81)
  c=(40+grain,67+grain,84+grain,39 if not lit else 49)
+ if not bank and lit and 11<=x<=20 and 8<=y<=25:
+  # Operated reactor: soft electric-blue machinery light behind dark
+  # glass. This does not paint glowing strips on the white reactor shell.
+  return (52,169,234,88 if x in (12,19) else 114)
  if bank and lit and detail in (1,2):
   # A translucent cyan vertical *core hint* seen through each lit pane.
   # This is a CLIENT material effect, not a fictitious energy container.
@@ -233,6 +247,13 @@ for nm in ("reactor_casing_formed_top","powerbank_casing_formed_top",
  png(nm,lambda x,y:neutral(x,y) if x not in (0,31) and y not in (0,31) else rgba((207,221,230)))
 
 png("reactor_glass_formed",lambda x,y:glass(x,y,False))
+png("reactor_glass_formed_lit",lambda x,y:glass(x,y,False,True))
+# B559_REACTOR_LIT_GLASS: use the already-supported translucent cube_all
+# model format, and the existing LIT BlockState (no new runtime ticker).
+(A/"models/block/reactor_glass_formed_lit.json").write_text(json.dumps({
+ "parent":"minecraft:block/cube_all","textures":{"all":{
+ "sprite":"obsidiannetwork:block/reactor_glass_formed_lit",
+ "force_translucent":True}}},indent=2)+"\\n",encoding="utf8")
 png("powerbank_glass_formed",lambda x,y:glass(x,y,True,False))
 for detail in range(3):
  png("powerbank_glass_formed_lit_detail"+str(detail),
@@ -260,6 +281,8 @@ for block in ("reactor_casing","reactor_glass","powerbank_casing","powerbank_gla
    model=value["model"]
    if formed and block=="reactor_casing":
     model=model+"_detail"+str(detail)
+   elif formed and block=="reactor_glass" and "lit=true" in key:
+    model="obsidiannetwork:block/reactor_glass_formed_lit"
    elif formed and block=="powerbank_glass" and "lit=true" in key:
     model="obsidiannetwork:block/powerbank_glass_formed_lit_detail"+str(detail)
    new[key+",detail="+str(detail)]={"model":model}
@@ -272,6 +295,8 @@ for block in ("reactor_casing","reactor_glass","powerbank_casing","powerbank_gla
    assert "design3" in v["model"] and "_detail" in v["model"]
   if block=="powerbank_casing" and "formed=true" in key:
    assert "design4" in v["model"]
+  if block=="reactor_glass" and "formed=true" in key and "lit=true" in key:
+   assert v["model"].endswith("reactor_glass_formed_lit")
   if block=="powerbank_glass" and "formed=true" in key and "lit=true" in key:
    assert "glass_formed_lit_detail" in v["model"]
 print("B558_EXACT_REFERENCE_FAMILIES_REACTOR_3_POWERBANK_4_FORMED_MATERIALS_PASS")
