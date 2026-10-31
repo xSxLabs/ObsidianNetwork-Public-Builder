@@ -33,7 +33,7 @@ helper=r'''
  }
  private static final ThreadLocal<XsxCableTickRefs> XSX_CABLE_TICK_REFS=
      ThreadLocal.withInitial(XsxCableTickRefs::new);
- private static EnergyCableBlockEntity xsxLiveCable(ServerLevel server,BlockPos pos) {
+ private static net.minecraft.world.level.block.entity.BlockEntity xsxLiveCable(ServerLevel server,BlockPos pos) {
   var refs=XSX_CABLE_TICK_REFS.get();
   long tick=server.getGameTime();
   if(refs.world!=server || refs.tick!=tick) {
