@@ -82,11 +82,29 @@ public final class UltraSolarTooltip {
   if(!e.getItemStack().is(ObsidianNetwork.ULTRA_SOLAR_GENERATOR_ITEM.get()))return;
   e.getToolTip().add(Component.literal("Produktion: 46.080 FE/t"));
   e.getToolTip().add(Component.literal("Speicher: 32.000.000 FE"));
-  e.getToolTip().add(Component.literal("Transferlimit: 46.080 FE/t (Zielwert)"));
+  e.getToolTip().add(Component.literal("Transferlimit: bis zu 32.000.000 FE/t (Speichergrenze)"));
   e.getToolTip().add(Component.literal("Rezept: 9 Elite Solar Panels + 8 Ultra Energy Cores"));
  }
 }
 ''',encoding="utf-8")
+# B596_TANK_REAL_CLIENT_SYNC: existing tank onContentsChanged already invokes
+# sendBlockUpdated. The BE lacked update packet/tag, so Jade saw server fluid
+# while inventory and in-world renderer always read an empty client BE.
+p=J/"blockentity/NetworkTankBlockEntity.java";src=p.read_text(encoding="utf-8")
+anchor='public int capacity(){return capacity;}'
+assert src.count(anchor)==1,("B596_TANK_CLIENT_PACKET_ANCHOR",src.count(anchor))
+src=src.replace(anchor,anchor+'''
+ // B596_NETWORK_TANK_NBT_PACKET: existing on-change updates now carry tank content.
+ @Override public net.minecraft.nbt.CompoundTag getUpdateTag(
+     net.minecraft.core.HolderLookup.Provider registries){
+  return saveWithoutMetadata(registries);
+ }
+ @Override public net.minecraft.network.protocol.Packet<
+     net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket(){
+  return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+ }
+''',1)
+p.write_text(src,encoding="utf-8")
 # Make existing face OFF transition recalculate neighbor arms immediately on server.
 p=J/"blockentity/EnergyCableBlockEntity.java";s=p.read_text(encoding="utf-8")
 old='if(st.getValue(cut)!=closed)level.setBlock(worldPosition,st.setValue(cut,closed),3);'
@@ -111,8 +129,9 @@ for path in ("menu/NetworkTankMenu.java","client/NetworkTankScreen.java",
                                "guiPaste","getUpdatePacket","public static final Tier","transferLimit")):
    print("B593_SOURCE_LINE",path,line.strip()[:240])
 # Fail-closed checks on output assets and effective postpatch Java.
+assert "B596_NETWORK_TANK_NBT_PACKET" in (J/"blockentity/NetworkTankBlockEntity.java").read_text()
 assert "PASTE_CAPACITY=1_000_000L" in (J/"nutrition/NutrinatorBlockEntity.java").read_text()
 assert "be.fuelTicks=600;" in (J/"reactor/ReactorControllerBlockEntity.java").read_text()
 assert json.loads((R/"data/obsidiannetwork/recipe/ultra_solar_generator.json").read_text())["result"]["id"]=="obsidiannetwork:ultra_solar_generator"
 assert (R/"data/obsidiannetwork/loot_table/blocks/ultra_solar_generator.json").is_file()
-print("B593_FUEL_30S_NUTRIPASTE_1M_NO_BUCKETS_ULTRA_TOOLTIP_INSTANT_OFF_REFRESH_PASS")
+print("B596_TANK_SYNC_FUEL_30S_NUTRIPASTE_1M_NO_BUCKETS_ULTRA_TOOLTIP_INSTANT_OFF_REFRESH_PASS")
