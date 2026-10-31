@@ -68,7 +68,17 @@ cache=''' // B581_REACTOR_CACHE: avoid repeated expensive capability resolution
 '''
 s=s.replace(push,cache+push,1)
 start=s.index(push)
-end=s.index("\n public net.neoforged.neoforge.transfer.energy.EnergyHandler energyPort()",start)
+opening=s.index("{",start)
+depth=0
+end=None
+for i in range(opening,len(s)):
+ if s[i]=="{":depth+=1
+ elif s[i]=="}":
+  depth-=1
+  if depth==0:
+   end=i+1
+   break
+assert end is not None, "B581_REACTOR_METHOD_BOUNDARY"
 region=s[start:end]
 old='for(net.minecraft.core.Direction dir:net.minecraft.core.Direction.values()){'
 assert region.count(old)==1,("B581_DIRECTION_LOOP",region.count(old))
