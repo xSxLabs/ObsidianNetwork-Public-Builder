@@ -45,14 +45,24 @@ new=''' @Override public void registerControllers(AnimatableManager.ControllerRe
    String clip=switch(p){
     case 3 -> "animation.power_armor.recall_brake";
     case 4 -> "animation.power_armor.recall_dock";
+    // Preserve original v1.7.4 lifecycle: entering closes the suit,
+    // leaving opens it into its freestanding world pose.
     default -> entityData.get(ENTERING)
-       ?"animation.power_armor.open":"animation.power_armor.close";
+       ?"animation.power_armor.close":"animation.power_armor.open";
    };
    return state.setAndContinue(RawAnimation.begin().thenPlay(clip));
   }));
  }'''
 s=s.replace(before,new,1)
+# Vanilla GeckoLib transition visuals expire after 24 ticks. Recall must NOT:
+# the 28-tick brake/dock needs a longer lifetime and long-distance flight
+# may take hundreds of ticks. Only the normal equip/unequip visual expires.
+lifetime="if(!level().isClientSide()&&tickCount>23)discard();"
+assert s.count(lifetime)==1,("V175_VISUAL_LIFETIME_DRIFT",s.count(lifetime))
+s=s.replace(lifetime,
+    "if(!level().isClientSide()&&tickCount>23&&entityData.get(V175_PHASE)==0)discard(); // V175_RECALL_VISUAL_LIFETIME")
 assert "V175_PHASE" in s and 'thenLoop(' in s
+assert '"animation.power_armor.close":"animation.power_armor.open"' in s
 put(visual,s)
 p=J/"powerarmor/PowerArmorRecall.java";s=p.read_text(encoding="utf-8")
 assert "V173_RECALL_GHOST_FLIGHT174" in s,"v1.7.4 optimized ghost recall must be retained"

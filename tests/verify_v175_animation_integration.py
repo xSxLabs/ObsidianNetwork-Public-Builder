@@ -50,6 +50,9 @@ vis=(J/"powerarmor/PowerArmorVisualEntity.java").read_text(encoding="utf-8")
 rec=(J/"powerarmor/PowerArmorRecall.java").read_text(encoding="utf-8")
 world=(J/"powerarmor/PowerArmorSuitWorld.java").read_text(encoding="utf-8")
 assert all(s in vis for s in ("V175_PHASE","beginPhase(int next)","thenLoop(","recall_flight","recall_brake","recall_dock"))
+assert '"animation.power_armor.close":"animation.power_armor.open"' in vis, "V175_EQUIP_UNEQUIP_DIRECTION_REVERSED"
+assert "V175_RECALL_VISUAL_LIFETIME" in vis
+assert "tickCount>23&&entityData.get(V175_PHASE)==0" in vis, "V175_RECALL_GHOST_DISCARDED_PREMATURELY"
 assert all(s in rec for s in ("V175_RECALL_DOCK","V175_RECOVERY_SAFE_DOCK","DOCKING.remove(player.getUUID())",
  "visual.beginPhase(2)","visual.beginPhase(progress<8?3:4)","PowerArmorSuitWorld.recallEquip(stand,player)",
  "PowerArmorRecallTickets.ticket","V173_RECALL_GHOST_FLIGHT174"))
