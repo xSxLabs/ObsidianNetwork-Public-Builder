@@ -34,21 +34,31 @@ s=s.replace(needle,needle+'''
 assert s.count('g.pose().pushMatrix();')==4
 assert s.count('g.pose().popMatrix();')==4
 p.write_text(s,encoding="utf-8")
-# Existing reactor GUI already shows actual FE/t and current rod assemblies.
-# The maximum is rod count * 120 FE/t, independent of rod insertion/shutdown.
-# Display in existing right-side control panel; no server tick or new packet.
+# B572: The B514b panel moves ROD INSERT up to y=21 and already draws
+# live OUTPUT at y=150. Use a separate MAX line at 161 (inside 168px
+# panel), never overlap control buttons or the measured FE output.
+# Capacity is computed from synced assembly count rather than fuel status.
+be=root/"reactor/ReactorControllerBlockEntity.java"
+src=be.read_text(encoding="utf-8")
+getter='public int guiRodInsertion(){return controlRodInsertion;}'
+assert src.count(getter)==1,("B572_REACTOR_GETTER_DRIFT",src.count(getter))
+assert 'public int guiRodAssemblies()' not in src
+src=src.replace(getter,getter+'\n public int guiRodAssemblies(){return rodAssemblies;}',1)
+assert 'out.putInt("reactorAssemblies",rodAssemblies);' in src
+be.write_text(src,encoding="utf-8")
 p=root/"client/V174MachineScreen.java"
 s=p.read_text(encoding="utf-8")
 assert "B568_REACTOR_MAX_DESIGN_FE_PER_TICK" not in s
-needle='g.text(font,"ROD INSERT "+ctrl.guiRodInsertion()+"%",185,92,0xffb2d8f1);'
-assert s.count(needle)==1,("B568_REACTOR_GUI_SHAPE",s.count(needle))
+needle='g.text(font,"ROD INSERT "+ctrl.guiRodInsertion()+"%",185,21,0xffb2d8f1);'
+assert s.count(needle)==1,("B572_REACTOR_GUI_SHAPE",s.count(needle))
+assert s.count('g.text(font,"OUTPUT "+compact(ctrl.guiActualOutputFePerTick())+" FE/t"')==1
 s=s.replace(needle,needle+'''
-    // B568_REACTOR_MAX_DESIGN_FE_PER_TICK: actual formed multiblock rod
-    // assemblies, not current fuel/water/buffer throttle or rod insertion.
+    // B568_REACTOR_MAX_DESIGN_FE_PER_TICK: max generation per tick
+    // of the actual formed rod assembly count, even with controls inserted.
     long b568Maximum=ctrl.guiFormed()?120L*ctrl.guiRodAssemblies():0L;
     String b568MaximumLabel="MAX "+b568Maximum+" FE/t";
     g.pose().pushMatrix();
-    g.pose().translate(185f,155f);
+    g.pose().translate(185f,161f);
     g.pose().scale(.65f,.65f);
     g.text(font,b568MaximumLabel,0,0,0xff83e4ef);
     g.pose().popMatrix();''',1)
