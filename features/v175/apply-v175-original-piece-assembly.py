@@ -120,17 +120,19 @@ for mk in range(1,25):
     index={b["name"]:b for b in bs}
     assert len(bs)==len(index)==28 and set(PIECES).issubset(index),("B626_TIER_ORIGINAL_RIG_DRIFT",mk)
     assert index["visor"]["parent"]=="faceplate" and index["faceplate"]["parent"]=="helmet"
-    # All independent pieces need world/root-space pivots. Closed poses remain
-    # visually identical because no pivot, cube origin or UV is changed.
-    for b in ("left_forearm","right_forearm","left_boot","right_boot",
-              "left_shoulder","right_shoulder","reactor"):
-        index[b]["parent"]="root"
+    # The existing rig hierarchy is intentionally untouched, so normal
+    # entering/exiting remains the B625 articulated back-opening animation.
+    for child,parent in (("left_forearm","left_arm"),("right_forearm","right_arm"),
+       ("left_boot","left_leg"),("right_boot","right_leg"),
+       ("left_shoulder","left_arm"),("right_shoulder","right_arm"),
+       ("reactor","spine")):
+        assert index[child]["parent"]==parent,(mk,child,"B625_NORMAL_RIG_PARENT_DRIFT")
     for i in ("rear_left","rear_right"):
         assert abs(index[i]["pivot"][0])==4.4
     an=src["animations"]
     assert len(an)==7 and all(FACES+x in an for x in
         ("equip","unequip","recall_flight","recall_brake","recall_dock"))
-    for action in ("equip","unequip","recall_brake","recall_dock"):
+    for action in ("recall_brake","recall_dock"):
         an[FACES+action]=make_clip(action)
     # The already-correct B625 head-first horizontal flight is unchanged.
     assert all(k["vector"][0]==90 for k in an[FACES+"recall_flight"]["bones"]["root"]["rotation"].values())
@@ -143,36 +145,17 @@ def replace(s,old,new,label):
     assert n==1,("B626_JAVA_SOURCE_DRIFT",label,n)
     return s.replace(old,new,1)
 
-# NORMAL equip and unequip must run for the entire assembly. Physical owner
-# stays on the invisible real ArmorStand until the final authoritative step.
-world=J/"powerarmor/PowerArmorSuitWorld.java"
-s=world.read_text(encoding="utf-8")
-start=s.find(" private static Animation startAnimation(")
-end=s.find(" @SubscribeEvent public static void transitionTick(",start)
-assert 0<=start<end,("B626_NORMAL_VISUAL_LIFECYCLE_DRIFT",start,end)
-region=s[start:end]
-assert region.count("new Animation(stand,20,entering,")==3,("B626_NORMAL_DURATION_SOURCE_DRIFT",region.count("new Animation(stand,20,entering,"))
-region=region.replace("new Animation(stand,20,entering,","new Animation(stand,52,entering,")
-s=s[:start]+region+s[end:]
-s=replace(s,"int t=21-animation.ticks();","int t=53-animation.ticks();","normal-tick-count")
-# Safe fallback if a client cannot render GeckoLib; preserve the previous
-# 20-frame armor-stand pose trajectory, stretched to the full 52 ticks.
-original="pose(stand,t,animation.entering());"
-if s.count(original)==1:
-    s=s.replace(original,"pose(stand,Math.min(20,(int)Math.round(t*20.0D/52.0D)),animation.entering());",1)
-assert 'stand.addTag("xsxlabs_v175_temporarily_hidden_world_suit")' in s
-assert "v175RestoreWorldSuitOnLoad" in s
-assert "stand.removeTag" in s and "stand.entityTags()" in s
-world.write_text(s,encoding="utf-8")
-
-visual=J/"powerarmor/PowerArmorVisualEntity.java"
-s=visual.read_text(encoding="utf-8")
-# Longer server safety window; recall visuals are still protected by
-# PowerArmorRecall.isVisualActive() and are explicitly discarded on release.
-s=replace(s,"tickCount>23","tickCount>55","visual-expiry-52ticks")
-assert "PowerArmorRecall.isVisualActive(getUUID())" in s
-assert "V175_RECALL_VISUAL_LIFETIME" in s
-visual.write_text(s,encoding="utf-8")
+# Normal enter/exit keep their *original* B625 20-tick split-back/mask
+# mechanics; third-party-inspired part flight belongs to RECALL ONLY.
+# No world suit timing or visual expiry changes are allowed here.
+world=(J/"powerarmor/PowerArmorSuitWorld.java").read_text(encoding="utf-8")
+visual=(J/"powerarmor/PowerArmorVisualEntity.java").read_text(encoding="utf-8")
+assert world.count("new Animation(stand,20,entering,")==3
+assert "int t=21-animation.ticks();" in world
+assert "v175RestoreWorldSuitOnLoad" in world
+assert "stand.entityTags()" in world
+assert "tickCount>23" in visual
+assert "PowerArmorRecall.isVisualActive(getUUID())" in visual
 
 recall=J/"powerarmor/PowerArmorRecall.java"
 s=recall.read_text(encoding="utf-8")
@@ -188,4 +171,4 @@ assert "PowerArmorSuitWorld.recallEquip(stand,player)" in s
 assert "DOCKING.remove(player.getUUID())" in s
 assert "visual.beginPhase(2)" in s
 recall.write_text(s,encoding="utf-8")
-print(TAG+": 24 original tier-textured suits, 17 independently arriving parts, 52-tick montage, single faceplate, rollback-safe timed recall")
+print(TAG+": RECALL ONLY: 24 original tier-textured rigs, 17 staggered parts, 52-tick dock, B625 normal 20-tick split-back enter/exit unchanged")
