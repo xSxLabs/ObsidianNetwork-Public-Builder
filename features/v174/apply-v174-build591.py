@@ -58,22 +58,9 @@ save(p,s)
 # --- POWERBANK: OUTPUT is an active server-tick producer, with atomic sink-first transfer.
 p=J/"powerbank/PowerbankBlockEntity.java";s=load(p)
 assert "B579_BANK_ROLLING_20" in s and "activePorts" in s
-needle=" public static void tick(Level level,BlockPos at,BlockState state,PowerbankBlockEntity be){"
-if needle not in s:
- m=re.search(r'public static void tick\s*\(\s*Level\s+\w+,\s*BlockPos\s+\w+,\s*BlockState\s+\w+,\s*PowerbankBlockEntity\s+\w+\)\s*\{',s)
- assert m,("B591_BANK_TICK_SIGNATURE",s.find("public static void tick"))
- needle=m.group()
- # Derive argument variables from signature.
- args=re.search(r'\(\s*Level\s+(\w+),\s*BlockPos\s+(\w+),\s*BlockState\s+(\w+),\s*PowerbankBlockEntity\s+(\w+)\)',needle).groups()
-else: args=("level","at","state","be")
-levelVar,posVar,stateVar,beVar=args
-# Insert after ServerLevel instance guard, before any 20 tick revalidation.
-idx=s.index(needle)+len(needle)
-tickBody=s[idx:s.index("}",idx)]
-guard=re.search(r'if\s*\(\s*!\s*\(\s*'+re.escape(levelVar)+r'\s+instanceof\s+ServerLevel\s+(\w+)\s*\)\s*\|\|\s*'+re.escape(beVar)+r'\.mode\(\)\s*!=\s*PowerbankBlock\.Mode\.CONTROLLER\s*\)\s*return\s*;',s[idx:idx+450])
-assert guard,("B591_BANK_TICK_GUARD",s[idx:idx+500])
-guard_end=idx+guard.end();sl=guard.group(1)
-s=s[:guard_end]+"\n  // B591_POWERBANK_OUTPUT_PUSH: active only if a real output has stored FE.\n  "+beVar+".b591PushOutput("+sl+");"+s[guard_end:]
+guard='  if(!(world instanceof ServerLevel sl)||be.mode()!=PowerbankBlock.Mode.CONTROLLER)return;'
+assert s.count(guard)==1,("B592_CONTROLLER_TICK_GUARD",s.count(guard))
+s=s.replace(guard,guard+"\n  // B592_POWERBANK_OUTPUT_TICK\n  be.b591PushOutput(sl);",1)
 marker=" private final net.neoforged.neoforge.transfer.transaction.SnapshotJournal<long[]> journal="
 helper=r'''
  // B591_POWERBANK_OUTPUT_PUSH: bounded by actual validated shell ports.
@@ -215,6 +202,15 @@ s=load(p);s=once(s,'("reactor_glass_formed",(43,104,148,81))',
 s=once(s,'("reactor_glass_formed_lit",(49,160,232,103))',
          '("reactor_glass_formed_lit",(49,160,232,74))',str(p))
 save(p,s)
+
+# Keep the legacy B579 FE regression strict while changing ONLY its fuel rate
+# expectation: the earlier 1x assertion must now require 5x consumption.
+p=Path(__file__).resolve().parent.parent.parent/"tests/verify_v174_ingame_smooth_579.py"
+assert p.is_file(),("B591_B579_GATE_PATH",p)
+check=load(p)
+check=once(check,'assert "be.fuelTicks=Math.max(0,be.fuelTicks-activity);" in react',
+                  'assert "be.fuelTicks=Math.max(0,be.fuelTicks-5*activity);" in react',str(p))
+save(p,check)
 
 # --- ULTRA SOLAR: new tier only; no change in 4 existing solar tick paths.
 main=J/"ObsidianNetwork.java";s=load(main)
