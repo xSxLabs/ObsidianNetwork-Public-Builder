@@ -132,4 +132,14 @@ for tier in range(1,25):
  assert (A/"textures/entity"/(name+".png")).is_file(),("V175_NO_ORIGINAL_TEXTURE",tier)
 # Compatibility: the existing renderers resolve original model identifiers and
 # original per-tier PNG. The only additions are bones/animation clips.
+# Preserve the supplied standalone Java choreography inside the NeoForge mod
+# sources. GeckoLib curves above are the optimized, per-tier render binding.
+import shutil
+source=Path(__file__).resolve().parent/"java/ArmorAssemblyAnimation.java"
+assert source.is_file() and "public interface SuitRig" in source.read_text(encoding="utf-8")
+target=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client/animation/ArmorAssemblyAnimation.java"
+target.parent.mkdir(parents=True,exist_ok=True)
+assert not target.exists(),("V175_CHOREOGRAPHY_CLASS_COLLISION",target)
+shutil.copy2(source,target)
+assert (target.read_text(encoding="utf-8")==source.read_text(encoding="utf-8"))
 print("V175_24_TIER_RIGS_PASS: 24 original textured atlases; hinged backs, real faceplates, forearms/boots; 5 clips per tier")
