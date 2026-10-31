@@ -31,7 +31,7 @@ else:
  renderer=(a.source/"client/EnergyCableInputRenderer.java").read_text()
  solar=(a.source/"blockentity/SolarGeneratorBlockEntity.java").read_text()
  skin=(a.source/"multiblock/MultiblockSkinBlock.java").read_text()
- assert "long b568Maximum=120L*Math.max(0,ctrl.guiRodAssemblies()); // B575_REACTOR_MAX_SYNCED_RODS" in hud
+ assert "long b568Maximum=600L*Math.max(0,ctrl.guiRodAssemblies()); // B577_REACTOR_MAX_GUI_X5 B575_REACTOR_MAX_SYNCED_RODS" in hud
  assert "guiFormed()?120L*ctrl.guiRodAssemblies()" not in hud
  assert "B575_SLIM_BLUE_INPUT_SOCKET" in renderer
  assert renderer.count("6/16f,2/16f,6/16f")>=2
