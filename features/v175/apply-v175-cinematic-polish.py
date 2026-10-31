@@ -186,13 +186,17 @@ replacement='''  // V175_CINEMATIC_SINGLE_MESH: hide ONLY while the actual Geo v
   return new Animation(stand,20,entering,visual);'''
 assert s.count(legacy)==1,("V175_STAND_OVERLAY_SOURCE_DRIFT",s.count(legacy))
 s=s.replace(legacy,replacement,1)
-old='''if(!stand.isRemoved()){stand.setInvisible(false);pose(stand,20,false);}'''
-new='''if(!stand.isRemoved()){
-   stand.removeTag("xsxlabs_v175_temporarily_hidden_world_suit");
-   stand.setInvisible(false);pose(stand,20,false);
-  }'''
-assert s.count(old)==1,("V175_ANIMATION_CLEANUP_DRIFT",s.count(old))
-s=s.replace(old,new,1)
+# Different release-line patches reformat the cleanup method. Modify its
+# actual body, not an obsolete one-line spelling from the initial generator.
+start=s.find("private static void cleanup(Animation transition)")
+end=s.find("private static Animation startAnimation",start)
+assert 0<=start<end,("V175_ANIMATION_CLEANUP_METHOD_DRIFT",start,end)
+cleanup=s[start:end]
+assert "ArmorStand stand=transition.stand();" in cleanup,("V175_CLEANUP_NO_REAL_OWNER",cleanup[:650])
+assert cleanup.count("stand.setInvisible(false)")>=1,("V175_CLEANUP_NO_VISIBILITY_RESTORE",cleanup[:900])
+cleanup=cleanup.replace("stand.setInvisible(false)",
+ "stand.removeTag(\"xsxlabs_v175_temporarily_hidden_world_suit\");stand.setInvisible(false)",1)
+s=s[:start]+cleanup+s[end:]
 end=s.rfind("\n}")
 assert end>0 and "@EventBusSubscriber" in s
 s=s[:end]+'''
