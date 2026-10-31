@@ -113,6 +113,6 @@ for path in ("menu/NetworkTankMenu.java","client/NetworkTankScreen.java",
 # Fail-closed checks on output assets and effective postpatch Java.
 assert "PASTE_CAPACITY=1_000_000L" in (J/"nutrition/NutrinatorBlockEntity.java").read_text()
 assert "be.fuelTicks=600;" in (J/"reactor/ReactorControllerBlockEntity.java").read_text()
-assert '"ultra_solar_generator"' in (R/"data/obsidiannetwork/recipe/ultra_solar_generator.json").read_text()
+assert json.loads((R/"data/obsidiannetwork/recipe/ultra_solar_generator.json").read_text())["result"]["id"]=="obsidiannetwork:ultra_solar_generator"
 assert (R/"data/obsidiannetwork/loot_table/blocks/ultra_solar_generator.json").is_file()
 print("B593_FUEL_30S_NUTRIPASTE_1M_NO_BUCKETS_ULTRA_TOOLTIP_INSTANT_OFF_REFRESH_PASS")
