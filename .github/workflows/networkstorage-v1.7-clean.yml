@@ -3201,6 +3201,11 @@ jobs:
           python3 features/v175/apply-v175-animation-rigs.py
           python3 features/v175/apply-v175-recall-phases.py
           python3 tests/verify_v175_animation_integration.py
+          # v1.7.5: both uranium ores require iron+ pickaxes, Fortune/Silk Touch,
+          # plus common ore tags for default Veinminer group; no extra ticking.
+          python3 -m py_compile features/v175/apply-v175-uranium-enchant-veinminer.py tests/verify_v175_uranium_enchants.py
+          python3 features/v175/apply-v175-uranium-enchant-veinminer.py
+          python3 tests/verify_v175_uranium_enchants.py
           python3 tests/verify_v174_hotfix602.py
           python3 tests/verify_v174_build591_contract.py
           # The inherited B579 FE test also checks the final B584 cable model.
