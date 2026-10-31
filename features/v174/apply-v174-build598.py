@@ -36,7 +36,9 @@ for meth,allowed in (("insert","true"),("extract","false"),("getAmountAsLong","f
  m=re.search(r"\bpublic\s+(?:int|long)\s+"+meth+r"\s*\([^)]*\)\s*\{",body)
  assert m,("B598_CAPABILITY_METHOD_NOT_FOUND",meth)
  inject="\n    // B598_REAL_SIDE_GATE: no capability bypass of INPUT/OUTPUT/OFF.\n    if(!EnergyCableBlockEntity.this.b598BoundaryAllows(this.exposedSide,"+allowed+"))return 0;\n"
- assert inject not in body
+ # Each method gets its own guard. extract() and getAmountAsLong()
+ # intentionally use the same OUTPUT-side rule.
+ assert "B598_REAL_SIDE_GATE" not in body[m.end():m.end()+80],("B598_DOUBLE_METHOD_GATE",meth)
  body=body[:m.end()]+inject+body[m.end():]
 s=s[:start]+body+s[end:]
 anchor=" // B591_ENERGY_DIRECTED_WALK:"
