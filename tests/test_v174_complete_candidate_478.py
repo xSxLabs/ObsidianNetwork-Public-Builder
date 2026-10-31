@@ -107,8 +107,15 @@ if os.environ.get("V1_SOURCE_ROOT"):
   guide=r/"assets/obsidiannetwork/guides/obsidiannetwork/guide"
   for p in ("index.md","reactor.md","powerbank.md","pump.md","assets/reactor_5x5x5.snbt","assets/powerbank_3x3x3.snbt"):
    assert (guide/p).is_file(),("GuideME missing guide asset",p)
-  assert 'src="assets/reactor_5x5x5.snbt"' in (guide/"reactor.md").read_text(encoding="utf-8")
-  assert 'src="assets/powerbank_3x3x3.snbt"' in (guide/"powerbank.md").read_text(encoding="utf-8")
+  # B529: before B514 GuideME uses an ImportStructure source file,
+  # afterwards B514 builds a compatible GameScene with explicit Block elements.
+  # Both must reference a real bundled 3D guide, not an empty placeholder.
+  for page,scene in (("reactor","reactor_5x5x5"),("powerbank","powerbank_3x3x3")):
+   body=(guide/(page+".md")).read_text(encoding="utf-8")
+   if "<Block id=" in body:
+    assert "<GameScene " in body and "<ImportStructure " not in body,("B529 invalid 3D GameScene",page)
+   else:
+    assert ('src="assets/'+scene+'.snbt"') in body,("B529 missing pre-B514 guide scene",page)
  else:
   assert (r/"data/obsidiannetwork/recipe/network_guidebook.json").is_file(),"legacy guide recipe missing"
  assert not (j/"compat/jei/WipItemsJeiPlugin.java").exists(),"JEI WIP hidden"
