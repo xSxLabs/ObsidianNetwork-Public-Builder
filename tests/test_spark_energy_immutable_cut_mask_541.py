@@ -10,7 +10,7 @@ class SolarDaytimePerf(unittest.TestCase):
   for phrase in ("B541_IMMUTABLE_ENERGY_CABLE_CUT_MASK",
        "Collections.synchronizedMap(new java.util.IdentityHashMap<>()",
        "ENERGY_SCAN_DIRECTIONS","EnergyCableBlock.isCut(st,side)",
-       "face.get3DDataValue()", "assert n==6",
+       "face.get3DDataValue()", "assert n==len(matches)",
        "source.extract(", "target.insert(", "cableBudget-- > 0"):
    self.assertIn(phrase,s)
  def test_all_state_masks_are_same_as_uncached_flags(self):
