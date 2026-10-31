@@ -2908,6 +2908,7 @@ jobs:
           python3 private/fixes/apply-v174-test-roundup-514b.py
           python3 private/fixes/apply-v174-test-roundup-514c.py
           python3 private/fixes/apply-v174-test-roundup-514d.py
+          # B530 source applies in the tail of B514d: ingame feedback, all together.
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -2951,6 +2952,15 @@ jobs:
           assert 'B514_REACTOR_ACTUAL_FE_OUTPUT' in (j/'reactor/ReactorControllerBlockEntity.java').read_text()
           assert 'B514_BANK_FE_T_WINDOW' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
           assert 'B514_HOLO_NO_POWER' in (j/'blockentity/NetworkDeviceBlockEntity.java').read_text()
+          # B530 must actually reach the reconstructed source before compilation.
+          assert 'B530_REACTOR_RUN_LIGHT' in (j/'reactor/ReactorControllerBlockEntity.java').read_text()
+          assert 'B530_POWERBANK_CHARGE_LIGHT' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
+          assert 'B530_NUTRIPASTE_SECOND_HUD' in (j/'client/PowerArmorBuild98Client.java').read_text()
+          assert 'B530_AUTOMATIC_HELMET_FEED' in (j/'nutrition/PowerArmorFeeding.java').read_text()
+          assert 'B530_NUTRI_THREE_REAL_CLIENT_SLOTS' in (j/'client/V174NutrinatorScreen.java').read_text()
+          assert 'B530_LIVE_GLASS_LIGHT' in (j/'multiblock/MultiblockSkinBlock.java').read_text()
+          assert 'Blocks.CYAN_CONCRETE.defaultBlockState()' in (j/'client/EnergyCableInputRenderer.java').read_text()
+          print('B530_USER_INGAME_REPORTS_APPLIED_PASS')
           assert 'be.getLevel().getEntitiesOfClass' in (j/'blockentity/NetworkDeviceBlockEntity.java').read_text()
           assert 'e.entityTags().contains(be.labelTag())' in (j/'blockentity/NetworkDeviceBlockEntity.java').read_text()
           assert 'B514_HOLO_1M_FE_GUI' in (j/'client/HologramConfigScreen.java').read_text()
