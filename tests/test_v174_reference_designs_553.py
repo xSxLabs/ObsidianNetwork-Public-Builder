@@ -14,7 +14,7 @@ class DesignChoices(unittest.TestCase):
   self.assertIn("B553_REACTOR_DESIGN_3",s)
   self.assertIn("B553_POWERBANK_DESIGN_4",s)
   self.assertIn('if "formed=false" in key:',s)
-  self.assertIn('assert len(variants)==24',s)
+  self.assertIn('assert len(variants)==48',s)
   self.assertIn("design3",s)
   self.assertIn("design4",s)
  def test_real_y_bands_with_no_per_tick_render(self):
@@ -23,6 +23,9 @@ class DesignChoices(unittest.TestCase):
   self.assertIn("p.getY()==low?1:p.getY()==high?2:0",s)
   self.assertIn("if(!queue.isEmpty()||high<=low)return;",s)
   self.assertIn("state.setValue(RIM,band)",s)
+  self.assertIn("state.setValue(RIM,band).setValue(CORNER,corner)",s)
+  self.assertIn("minX=Integer.MAX_VALUE",s)
+  self.assertIn("corner_face",s)
   self.assertNotIn("animateTick",s)
   self.assertNotIn("new BlockEntityRenderer",s)
  def test_bank_casing_lit_actually_changes(self):
@@ -32,7 +35,7 @@ class DesignChoices(unittest.TestCase):
   self.assertIn("def bank(x,y,band,charged):",s)
  def test_original_lit_and_unformed_still_supported(self):
   s=self.s
-  self.assertIn('builder.add(FORMED,ACTIVE,LIT,RIM);',s)
+  self.assertIn('builder.add(FORMED,ACTIVE,LIT,RIM,CORNER);',s)
   self.assertIn('for name in ("reactor_casing","reactor_glass","powerbank_casing","powerbank_glass")',s)
 if __name__=="__main__":
  unittest.main()
