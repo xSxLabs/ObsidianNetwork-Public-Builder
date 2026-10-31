@@ -39,7 +39,9 @@ change("multiblock/MultiblockSkinBlock.java",
        &&(p.getZ()==minZ||p.getZ()==maxZ);
    // B558_ONLY_ON_ASSEMBLY: vary vents, controls and blank ceramic
    // on the reactor perimeter; keep charged powerbank bands continuous.
-   int detail=bank?0:Math.floorMod(p.getX()*11+p.getZ()*7,3);''')
+   int detail=bank
+     ?Math.floorMod((p.getX()-minX)+(p.getZ()-minZ),3)
+     :Math.floorMod(p.getX()*11+p.getZ()*7,3);''')
 change("multiblock/MultiblockSkinBlock.java",
  "if(state.getValue(RIM)!=band||state.getValue(CORNER)!=corner)\n    sl.setBlock(p,state.setValue(RIM,band).setValue(CORNER,corner),3);",
  """if(state.getValue(RIM)!=band||state.getValue(CORNER)!=corner||state.getValue(DETAIL)!=detail)
