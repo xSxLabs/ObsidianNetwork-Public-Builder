@@ -132,6 +132,18 @@ s=one(s,'("reactor_glass_formed",(43,104,148,56))',
 s=one(s,'("reactor_glass_formed_lit",(49,160,232,74))',
         '("reactor_glass_formed_lit",(250,250,250,20))',"B575_glass_lit")
 write(p,s)
+# B601: uniformly transparent glass encodes to tiny valid PNGs. The previous
+# B558 byte-size heuristic rejects that optimization even when image is valid.
+# Replace only the glass exception with stronger actual pixel and size checks.
+p=T/"verify_v174_reference_visuals_558.py";gate=read(p)
+old='  assert len(read(BASE+"textures/block/"+n+".png"))>105,n'
+assert gate.count(old)==1,("B601_B558_BYTE_SIZE_DRIFT",gate.count(old))
+new='''  if "glass" in n:
+   glass=sprite(n)
+   assert glass.size==(32,32) and glass.getpixel((16,16))==(250,250,250,20),n
+  else:
+   assert len(read(BASE+"textures/block/"+n+".png"))>105,n'''
+write(p,gate.replace(old,new,1))
 # B558 reference gate checks alpha >=20 and tinted turquoise; the new neutral
 # glass must stay transparent while meeting its contrast and lighting rules.
 assert all((Image.open(A/"textures/block"/(n+".png")).convert("RGBA").getpixel((12,12))
