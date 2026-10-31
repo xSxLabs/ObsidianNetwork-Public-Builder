@@ -40,12 +40,10 @@ p.write_text(s,encoding="utf-8")
 # Capacity is computed from synced assembly count rather than fuel status.
 be=root/"reactor/ReactorControllerBlockEntity.java"
 src=be.read_text(encoding="utf-8")
-getter='public int guiRodInsertion(){return controlRodInsertion;}'
-assert src.count(getter)==1,("B572_REACTOR_GETTER_DRIFT",src.count(getter))
-assert 'public int guiRodAssemblies()' not in src
-src=src.replace(getter,getter+'\n public int guiRodAssemblies(){return rodAssemblies;}',1)
-assert 'out.putInt("reactorAssemblies",rodAssemblies);' in src
-be.write_text(src,encoding="utf-8")
+# B485 already added guiRodAssemblies(); never inject duplicate Java methods.
+assert src.count('public int guiRodAssemblies(){return rodAssemblies;}')==1,("B573_EXISTING_REACTOR_GETTER",src.count('guiRodAssemblies()'))
+assert src.count('public int guiRodInsertion(){return controlRodInsertion;}')==1
+assert src.count('public boolean guiFormed(){return formed;}')==1
 p=root/"client/V174MachineScreen.java"
 s=p.read_text(encoding="utf-8")
 assert "B568_REACTOR_MAX_DESIGN_FE_PER_TICK" not in s
