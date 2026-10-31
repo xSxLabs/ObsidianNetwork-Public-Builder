@@ -150,6 +150,7 @@ jobs:
           python3 tests/test_v174_wip_public_476.py
           python3 tests/test_v174_nutripaste_fluid_477.py
           python3 tests/test_v174_complete_candidate_478.py
+          python3 tests/test_v174_multiblock_lit_blockstates_531.py
           python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_stack_upgrades_global.py' -v
           echo 'B473_FAST_V174_PREFLIGHT PASS'
@@ -2908,6 +2909,8 @@ jobs:
           python3 private/fixes/apply-v174-test-roundup-514b.py
           python3 private/fixes/apply-v174-test-roundup-514c.py
           python3 private/fixes/apply-v174-test-roundup-514d.py
+          # B531: B530's new LIT property needs 4 model variants for each skin.
+          python3 features/v174/apply-multiblock-lit-blockstates-531.py
           # B530 source applies in the tail of B514d: ingame feedback, all together.
           python3 - <<'PY'
           import json
@@ -2959,6 +2962,15 @@ jobs:
           assert 'B530_AUTOMATIC_HELMET_FEED' in (j/'nutrition/PowerArmorFeeding.java').read_text()
           assert 'B530_NUTRI_THREE_REAL_CLIENT_SLOTS' in (j/'client/V174NutrinatorScreen.java').read_text()
           assert 'B530_LIVE_GLASS_LIGHT' in (j/'multiblock/MultiblockSkinBlock.java').read_text()
+          for name in ('reactor_casing','reactor_glass','powerbank_casing','powerbank_glass'):
+              variants=json.loads((r/('blockstates/'+name+'.json')).read_text())['variants']
+              expected={f'formed={formed},lit={lit}' for formed in ('false','true') for lit in ('false','true')}
+              assert set(variants)==expected,('B531_LIT_SKIN_MODEL_INCOMPLETE',name)
+              for formed in ('false','true'):
+                  model='obsidiannetwork:block/'+name+('_formed' if formed=='true' else '')
+                  for lit in ('false','true'):
+                      assert variants[f'formed={formed},lit={lit}']['model']==model
+          print('B531_FORMED_LIT_ALL_FOUR_SKIN_MODELS_PASS')
           assert 'Blocks.CYAN_CONCRETE.defaultBlockState()' in (j/'client/EnergyCableInputRenderer.java').read_text()
           print('B530_USER_INGAME_REPORTS_APPLIED_PASS')
           assert 'be.getLevel().getEntitiesOfClass' in (j/'blockentity/NetworkDeviceBlockEntity.java').read_text()
