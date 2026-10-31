@@ -3179,6 +3179,14 @@ jobs:
           # B598: strict cable capability directions, changed-only Nutrinator GUI sync, neutral glazing.
           python3 -m py_compile features/v174/apply-v174-build598.py
           python3 features/v174/apply-v174-build598.py
+          # v1.7.5: all 24 original textured rigs, submitted choreography,
+          # safe cross-dimensional horizontal recall + brake/dock.
+          # Branch v1.7.5 is intentionally NOT in automatic push triggers:
+          # do not run a build until all integration checks are approved.
+          python3 -m py_compile features/v175/apply-v175-animation-rigs.py features/v175/apply-v175-recall-phases.py tests/verify_v175_animation_integration.py
+          python3 features/v175/apply-v175-animation-rigs.py
+          python3 features/v175/apply-v175-recall-phases.py
+          python3 tests/verify_v175_animation_integration.py
           python3 tests/verify_v174_build591_contract.py
           # The inherited B579 FE test also checks the final B584 cable model.
           python3 tests/verify_v174_ingame_smooth_579.py
