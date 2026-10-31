@@ -2902,6 +2902,8 @@ jobs:
           python3 patches/spark-solar-full-buffer-sky-fastpath-565.py
           # B566: stable sky-query position, no change in sky sampling or FE/t.
           python3 patches/apply-solar-sky-pos-reuse-566.py
+          # B568: solar auto-import + per-tick live cable-BE identity cache.
+          # Applied later after B541 cable source transforms.
           python3 - <<'PY'
           from pathlib import Path
           j=Path('work/src/main/java/dev/obsidiannetwork')
@@ -2913,6 +2915,7 @@ jobs:
           assert 'B547_SOLAR_SPARSE_FACE_WALK' in solar
           assert 'B565_SOLAR_FULL_BUFFER_SKY_FASTPATH' in solar
           assert 'B566_SOLAR_SKY_BLOCKPOS_REUSE' in solar
+          assert 'B568_SOLAR_AUTO_IMPORT_NEIGHBOR' in solar
           assert 'Integer.numberOfTrailingZeros(solarRotated)' in solar
           assert 'xsxLiveSolarFaces(server)!=0' in solar
           assert 'now-xsxSolarLastFaceScan<40L' in solar
@@ -2951,9 +2954,11 @@ jobs:
           # B552: user in-game reports: 50% lower HUD, solid teal input
           # collars, borderless assembled reactor/powerbank casing skins.
           python3 features/v174/apply-v174-ingame-552.py
+          python3 features/v174/apply-v174-hud-reactor-568.py
           # Spark day +20 MSPT: cache immutable cable cut-state bits only;
           # never cache live topology, transfer capabilities, FE or transactions.
           python3 patches/spark-energy-immutable-cut-mask-541.py
+          python3 patches/apply-v174-solar-energy-network-568.py
           # B530 source applies in the tail of B514d: ingame feedback, all together.
           python3 - <<'PY'
           import json
@@ -2976,6 +2981,9 @@ jobs:
           # B508: fail if any new feature vanished during reconstruction.
           assert 'B508_CABLE_CLICKED_FACE_ONLY' in (j/'menu/EnergyCableConfigMenu.java').read_text()
           assert 'public int energySideMode(' in (j/'blockentity/EnergyCableBlockEntity.java').read_text()
+          assert 'B568_PER_TICK_LIVE_CABLE_BE_LOOKUP' in (j/'blockentity/EnergyCableBlockEntity.java').read_text()
+          assert 'B568_UNIFIED_HUD_LABELS' in (j/'client/PowerArmorBuild98Client.java').read_text()
+          assert 'B568_REACTOR_MAX_DESIGN_FE_PER_TICK' in (j/'client/V174MachineScreen.java').read_text()
           assert 'B508_CABLE_INPUT_BER' in (j/'client/EnergyCableInputRenderer.java').read_text()
           assert 'EnergyCableInputRenderer::new' in (j/'client/NetworkPlanterClientRenderRegistration.java').read_text()
           assert 'B508_PUMP_UPGRADE_BOTTOM_RIGHT' in (j/'client/V174MachineScreen.java').read_text()
@@ -3028,7 +3036,7 @@ jobs:
           assert 'B537_HUD_BOTTOM_LEFT_FE' not in hud and 'B537_HUD_BOTTOM_LEFT_PASTE' not in hud
           assert 'B541_IMMUTABLE_ENERGY_CABLE_CUT_MASK' in (j/'blockentity/EnergyCableBlockEntity.java').read_text()
           assert 'B552_HALF_SIZE_FE_TEXT' in hud and 'B552_HALF_SIZE_PASTE_TEXT' in hud
-          assert hud.count('g.pose().scale(.5f,.5f);')==3
+          assert hud.count('g.pose().scale(.6f,.6f);')==4
           assert 'getGuiScaledHeight()-14' in hud and 'getGuiScaledHeight()-28' in hud
           assert 'final int width=60;' in hud and 'int pasteWidth=60,px=' in hud
           assert '0x9b101923' not in hud
@@ -3129,6 +3137,7 @@ jobs:
           python3 tests/verify_v174_reference_visuals_558.py --assets work/src/main/resources/assets/obsidiannetwork
           # B566: only formed glass gets seamless faces, never casing/loose glass.
           python3 features/v174/apply-v174-seamless-formed-glass-566.py
+          python3 features/v174/apply-v174-powerbank-glass-568.py
           python3 tests/verify_v174_connected_glass_566.py --assets work/src/main/resources/assets/obsidiannetwork
           python3 - <<'PY_B558_BAND'
           from pathlib import Path
