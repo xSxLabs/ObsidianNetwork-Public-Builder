@@ -160,7 +160,7 @@ jobs:
       - name: Fast private v1.7.4 ingame patch syntax preflight
         run: |
           set -euo pipefail
-          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py private/fixes/apply-v174-energy-cell-capacity-500.py private/fixes/apply-v174-solar-unlimited-502.py private/fixes/apply-v174-all-ingame-fixes-503.py private/fixes/apply-v174-energy-cable-ui-503.py private/fixes/apply-v174-all-ingame-fixes-508.py private/fixes/apply-v174-test-roundup-514a.py private/fixes/apply-v174-test-roundup-514b.py private/fixes/apply-v174-test-roundup-514c.py
+          python3 -m py_compile private/fixes/apply-v174-ingame-batch-483.py private/fixes/apply-v174-complete-white-multiblocks-485.py private/fixes/apply-v174-reactor-real-controls-489.py private/fixes/apply-v174-ingame-495.py private/fixes/apply-v174-slots-496.py private/fixes/apply-v174-energy-497.py private/fixes/apply-v174-energy-cell-transfer-498.py private/fixes/apply-v174-energy-cell-transfer-499.py private/fixes/apply-v174-energy-cell-capacity-500.py private/fixes/apply-v174-solar-unlimited-502.py private/fixes/apply-v174-all-ingame-fixes-503.py private/fixes/apply-v174-energy-cable-ui-503.py private/fixes/apply-v174-all-ingame-fixes-508.py private/fixes/apply-v174-test-roundup-514a.py private/fixes/apply-v174-test-roundup-514b.py private/fixes/apply-v174-test-roundup-514c.py private/fixes/apply-v174-test-roundup-514d.py
           echo 'B514_PRIVATE_PATCH_SYNTAX_PASS'
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '25'}
@@ -2898,6 +2898,7 @@ jobs:
           python3 private/fixes/apply-v174-test-roundup-514a.py
           python3 private/fixes/apply-v174-test-roundup-514b.py
           python3 private/fixes/apply-v174-test-roundup-514c.py
+          python3 private/fixes/apply-v174-test-roundup-514d.py
           python3 - <<'PY'
           from pathlib import Path
           j=Path('work/src/main/java/dev/obsidiannetwork')
