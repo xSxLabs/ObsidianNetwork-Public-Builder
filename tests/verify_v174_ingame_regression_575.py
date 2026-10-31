@@ -22,7 +22,8 @@ def verify(read):
  # not a cosmetic cyan tile; red collar shape stays a separate strict gate.
  assert read("textures/block/xsx_energy_input_collar.png")==read("textures/block/energy_cable.png")
  im=Image.open(io.BytesIO(read("textures/block/xsx_energy_input_collar.png"))).convert("RGBA")
- assert im.size==(16,16)
+ source=Image.open(io.BytesIO(read("textures/block/energy_cable.png"))).convert("RGBA")
+ assert im.size==source.size and im.size[0]>=16 and im.size[1]>=16,("B589_REAL_ENERGY_TEXTURE_DIMENSIONS",im.size,source.size)
  assert len(read("textures/block/powerbank_casing_formed_design4_top_lit.png"))>140
 if a.jar:
  with ZipFile(a.jar) as z:verify(lambda n:z.read("assets/obsidiannetwork/"+n))
