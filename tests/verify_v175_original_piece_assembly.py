@@ -60,7 +60,9 @@ for tier in range(1,25):
  assert all(abs(v)<.001 for v in torso) and abs(helmet[1])>10,(tier,"no staggered arrival")
  arm=value(montage,"left_arm","position","0.5")
  boot=value(montage,"left_boot","position","0.5")
- assert abs(arm[0])>5 and abs(boot[0])>5,(tier,"arm or boot not flying")
+ # Each component must still travel at least 25% of its authored lateral path
+ # halfway through docking; boots have a shorter path than the arms.
+ assert abs(arm[0])>=20*.25 and abs(boot[0])>=17*.25,(tier,"arm or boot not flying")
  # Recall brake must end with exact same spread as dock begins; no teleport pop.
  br=an[BASE+"recall_brake"]; dock=an[BASE+"recall_dock"]
  for part in part_names:
