@@ -64,13 +64,24 @@ if os.environ.get("V1_SOURCE_ROOT"):
   "pump/ElectricWaterPumpBlockEntity.java":("FluidResource","water"),
   "nutrition/NutriPasteFluids.java":("B477_NUTRIPASTE_REAL_FLUID","flowing_nutripaste"),
   "nutrition/NutrinatorBlockEntity.java":("nutrinatorPaste","PASTE_CAPACITY","B477_NUTRIPASTE_TRANSACTIONAL_FLUID"),
-  "client/NetworkVisionClient.java":("V174_XRAY_WORLD_WIREFRAME_B469","wireCube","toggleFromWheel"),
+  "client/NetworkVisionClient.java":("V174_XRAY_WORLD_WIREFRAME_B469","toggleFromWheel"),
   "blockentity/NetworkDeviceBlockEntity.java":("printer","holo"),
   "client/V174GuidebookScreen.java":("reactor","powerbank"),
  }
  for relative,markers in expect.items():
   src=(j/relative).read_text(encoding="utf-8")
   for marker in markers: assert marker.lower() in src.lower(),(relative,marker)
+ # B527: early feature gate runs before the B514 private shape replacement,
+ # while final JAR gate runs after it. Preserve both checks, never re-add
+ # full-block blue rectangles just to satisfy an obsolete method name.
+ vision=(j/"client/NetworkVisionClient.java").read_text(encoding="utf-8")
+ if "B514_VISION_CABLE_GEOMETRY" in vision:
+  for marker in ("private static void wirePipe(", "private static void pipeAt(",
+                 "pipeAt(g,at,state,color,origin,inverse,focal,width,height);"):
+   assert marker in vision,("B527 shaped xray cable rendering missing",marker)
+  assert "wireCube(g,at" not in vision,"B527 old blue box call returned"
+ else:
+  assert "wireCube(g,at" in vision,"B527 B469 pre-B514 vision geometry missing"
  main=(j/"ObsidianNetwork.java").read_text(encoding="utf-8")
  for field in ("URANIUM_ORE","URANIUM_INGOT","URANIUM_ROD","NETWORK_PLANTER_ITEM",
                "NETWORK_HOLOGRAM_TERMINAL_ITEM","NETWORK_PRINTER_ITEM",
