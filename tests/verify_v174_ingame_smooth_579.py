@@ -27,9 +27,10 @@ assert "B579_VISION_CACHED_CONNECTIONS" in vision
 assert "int steps=Math.min(32," in vision
 assert "xrayPositions.size()>=160" in vision
 assert "if((b579VisionMasks.getOrDefault(pos,0)" in vision
-assert "B579_ENERGY_INPUT_BLACK_FRAME" in socket
-assert "Blocks.BLACK_CONCRETE.defaultBlockState()" in socket
-assert socket.count("dark(state,pose,collector,") == 6
+# B584 eliminates the oversized B579 black frame in favor of the exact
+# original item-cable input collar + unchanged blue-black energy sprite.
+assert "B584_ITEM_CABLE_IDENTICAL_INPUT" in socket
+assert "BLACK_CONCRETE" not in socket
 assert socket.count("cap(state,pose,collector,") == 6
 # Equivalence across realistic rod numbers and insertion values (unclamped).
 for rods in (0,1,5,15,30,100,1024):

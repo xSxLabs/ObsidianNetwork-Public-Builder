@@ -3166,6 +3166,9 @@ jobs:
           # port capability resolution and render actual cable edges cheaper.
           python3 features/v174/apply-v174-tick-performance-581.py
           python3 tests/verify_v174_tick_performance_581.py
+          # B584 copy exact original red item input-collar geometry and use true blue-black cable texture.
+          python3 features/v174/apply-v174-cable-input-parity-584.py
+          python3 tests/verify_v174_cable_input_parity_584.py
           python3 tests/verify_v174_ingame_regression_575.py --source work/src/main/java/dev/obsidiannetwork --assets work/src/main/resources/assets/obsidiannetwork
           python3 tests/verify_v174_reference_visuals_558.py --assets work/src/main/resources/assets/obsidiannetwork
           python3 tests/verify_v174_connected_glass_566.py --assets work/src/main/resources/assets/obsidiannetwork

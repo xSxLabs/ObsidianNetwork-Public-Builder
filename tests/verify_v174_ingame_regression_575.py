@@ -18,9 +18,11 @@ def verify(read):
   model=json.loads(read("models/block/"+n+".json"))
   assert model["ambientocclusion"] is False
   assert model["parent"] in ("minecraft:block/cube","minecraft:block/cube_all")
+ # B584: exact visual parity uses the real blue-black cable texture,
+ # not a cosmetic cyan tile; red collar shape stays a separate strict gate.
+ assert read("textures/block/xsx_energy_input_collar.png")==read("textures/block/energy_cable.png")
  im=Image.open(io.BytesIO(read("textures/block/xsx_energy_input_collar.png"))).convert("RGBA")
- assert im.size==(16,16) and im.getpixel((8,8))==(34,184,229,255)
- assert all(b>r*1.6 and g>r*2 for r,g,b,alpha in im.getdata())
+ assert im.size==(16,16)
  assert len(read("textures/block/powerbank_casing_formed_design4_top_lit.png"))>140
 if a.jar:
  with ZipFile(a.jar) as z:verify(lambda n:z.read("assets/obsidiannetwork/"+n))
@@ -34,7 +36,9 @@ else:
  assert "long b568Maximum=600L*Math.max(0,ctrl.guiRodAssemblies()); // B577_REACTOR_MAX_GUI_X5 B575_REACTOR_MAX_SYNCED_RODS" in hud
  assert "guiFormed()?120L*ctrl.guiRodAssemblies()" not in hud
  assert "B575_SLIM_BLUE_INPUT_SOCKET" in renderer
- assert renderer.count("6/16f,2/16f,6/16f")>=2
+ assert "B584_ITEM_CABLE_IDENTICAL_INPUT" in renderer
+ assert renderer.count("cap(state,pose,collector,")==6
+ assert "Blocks.BLACK_CONCRETE" not in renderer
  assert "B575_LOCK_FREE_CUT_MASK_READ" in cable
  assert "synchronizedMap(new java.util.IdentityHashMap" not in cable
  assert "new java.util.concurrent.ConcurrentHashMap<>()" in cable
