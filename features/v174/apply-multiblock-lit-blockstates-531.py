@@ -1,30 +1,31 @@
 #!/usr/bin/env python3
-"""B531: add all formed/LIT model variants after B530's glass lighting."""
-import json
-import os
+"""B532: B503 ACTIVE and B530 LIT must be registered and modeled together."""
+import json,os
 from pathlib import Path
-
-ASSETS=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
+A=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
+JAVA=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/multiblock/MultiblockSkinBlock.java"
 SKINS=("reactor_casing","reactor_glass","powerbank_casing","powerbank_glass")
-
 def patch():
-    for name in SKINS:
-        path=ASSETS/"blockstates"/(name+".json")
-        data=json.loads(path.read_text(encoding="utf-8"))
-        originals={
-            "formed=false":{"model":"obsidiannetwork:block/"+name},
-            "formed=true":{"model":"obsidiannetwork:block/"+name+"_formed"},
-        }
-        assert data.get("variants")==originals,("B531_UNEXPECTED_PRE_LIGHT_SKIN",name,data.get("variants"))
-        for formed in (False,True):
-            model=name+("_formed" if formed else "")
-            assert (ASSETS/"models/block"/(model+".json")).is_file(),("B531_MISSING_SKIN_MODEL",model)
-        data["variants"]={
-            "formed="+str(formed).lower()+",lit="+str(lit).lower():dict(originals["formed="+str(formed).lower()])
-            for formed in (False,True) for lit in (False,True)
-        }
-        path.write_text(json.dumps(data,indent=2)+"\n",encoding="utf-8")
-    print("B531_COMPLETE_FORMED_AND_LIT_BLOCKSTATES_PASS")
-
-if __name__=="__main__":
-    patch()
+ s=JAVA.read_text()
+ assert 'BooleanProperty ACTIVE=BooleanProperty.create("active")' in s
+ assert 'BooleanProperty LIT=BooleanProperty.create("lit")' in s
+ for before,after in (
+  ('registerDefaultState(defaultBlockState().setValue(FORMED,false).setValue(ACTIVE,false));',
+   'registerDefaultState(defaultBlockState().setValue(FORMED,false).setValue(ACTIVE,false).setValue(LIT,false));'),
+  ('builder.add(FORMED,ACTIVE);','builder.add(FORMED,ACTIVE,LIT);')):
+  assert s.count(before)==1,("B532_JAVA_ANCHOR",before,s.count(before))
+  s=s.replace(before,after,1)
+ JAVA.write_text(s)
+ for name in SKINS:
+  p=A/"blockstates"/(name+".json")
+  data=json.loads(p.read_text())
+  original={f"formed={str(f).lower()},active={str(a).lower()}":{"model":"obsidiannetwork:block/"+name+("_formed" if f else "")} for f in (False,True) for a in (False,True)}
+  assert data.get("variants")==original,("B532_EXPECT_FOUR_OLD_STATES",name,data.get("variants"))
+  for f in (False,True):
+   model=name+("_formed" if f else "")
+   assert (A/"models/block"/(model+".json")).is_file(),("B532_MISSING_MODEL",model)
+  data["variants"]={f"formed={str(f).lower()},active={str(a).lower()},lit={str(l).lower()}":dict(original[f"formed={str(f).lower()},active={str(a).lower()}"]) for f in (False,True) for a in (False,True) for l in (False,True)}
+  assert len(data["variants"])==8
+  p.write_text(json.dumps(data,indent=2)+"\n")
+ print("B532_EIGHT_STATES_JAVA_AND_MODEL_REGISTRATION_PASS")
+if __name__=="__main__":patch()
