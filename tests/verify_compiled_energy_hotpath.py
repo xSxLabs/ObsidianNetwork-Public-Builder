@@ -53,10 +53,18 @@ def verify(jar):
         assert "ConduitBundleBlockEntity" in method, f"Lost live bundle type in {name}"
         assert "ConduitBundleBlockEntity$Layer.ENERGY" in method, f"Wrong bundle layer in {name}"
         if name=="energyOpen":
-            assert "EnergyCableBlock.isCut:" in method, "Lost cable cut"
+            # B541: the compiled helper must still enforce face cuts via
+            # the immutable cut-mask cache, not bypass validation.
+            assert "EnergyCableBlockEntity.xsxEnergyCut:" in method, "Lost cached cable cut"
             assert "ConduitBundleBlockEntity.enabled:" in method, "Lost side-specific bundle setting"
         else:
             assert "ConduitBundleBlockEntity.has:" in method, "Lost bundle ENERGY layer test"
+    # The B541 cache must retain the real cable-cut semantics in bytecode.
+    cut=method_code(code,"xsxEnergyCut")
+    assert "EnergyCableBlock.isCut:" in cut, "Cut cache no longer reads real face cuts"
+    assert "XSX_CUT_MASKS:" in cut, "Immutable face cache missing"
+    assert "Direction.get3DDataValue:" in cut, "Cut face indexing changed"
+    assert "Map.get:" in cut and "Map.put:" in cut, "Cut cache lifecycle missing"
     # Require a real one-time nested-class initializer in the distributable
     # JAR, not just a reference to an undeclared field in transformed source.
     cache=subprocess.run(["javap","-c","-p","-classpath",str(jar),CACHE_CLASS],
