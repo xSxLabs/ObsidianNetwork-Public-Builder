@@ -19,13 +19,13 @@ for reg,kind,path in [("NUTRINATOR","Nutrinator","nutrinator"),
                      ("ELECTRIC_WATER_PUMP","Electric Water Pump","electric_water_pump")]:
     # Anchor on the unique registration symbol instead of an exact generic
     # DeferredBlock declaration; private reconstruction reformats its type.
-    hits=list(re.finditer(r"\\b"+reg+r"\\s*=",s))
+    hits=list(re.finditer(r"\b"+reg+r"\s*=",s))
     assert len(hits)==1,("B609_MACHINE_SYMBOL_DRIFT",kind,len(hits))
     start=hits[0].start()
     end=s.find(";",start)
     assert start<end<start+1200,("B609_MACHINE_DECLARATION_RANGE",kind)
     section=s[start:end+1]
-    assert re.search(r'BLOCKS\\.registerBlock\\s*\\(\\s*"'+path+r'"',section),("B609_MACHINE_REGISTRATION_CHANGED",kind,section[:650])
+    assert re.search(r'BLOCKS\.registerBlock\s*\(\s*"'+path+r'"',section),("B609_MACHINE_REGISTRATION_CHANGED",kind,section[:650])
     marker=".requiresCorrectToolForDrops()"
     assert section.count(marker)==1 and ".noOcclusion()" not in section,("B609_MACHINE_PROPERTY_DRIFT",kind,section[:800])
     patched=section.replace(marker,marker+".noOcclusion() /* B609_MACHINE_NO_OCCLUSION */",1)
