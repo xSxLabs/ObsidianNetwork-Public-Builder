@@ -3181,7 +3181,7 @@ jobs:
           assert 'EnergyTool.setEnergy(out,EnergyTool.capacity(out))' in s
           print('WIRELESS_SMITHING_ONLY_AND_EXPLICIT_RESTORE_SOURCE_GATE_V1 PASS')
           PY
-          grep -Fq '.strength(0.6F,6.0F).noOcclusion()' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
+          grep -Fq '.strength(0.0F,0.0F).noOcclusion()' work/src/main/java/dev/obsidiannetwork/ObsidianNetwork.java
           grep -Fq 'WIRELESS_QUICK_MINE_CRAFT_DROP_V2' features/wireless-energy/apply-wireless-quick-mine.py
           python3 - <<'PY'
           from pathlib import Path
