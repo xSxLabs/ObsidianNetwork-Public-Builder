@@ -2889,6 +2889,8 @@ jobs:
           # B536: reduce solar FE endpoint scans after B502 unlimited output;
           # preserve exact per-tick generation, atomic transactions and rotation.
           python3 patches/spark-solar-mspt-mask-536.py
+          # B547: iterate only live FE faces, preserving all six-side arbitration and FE/t.
+          python3 patches/spark-solar-sparse-faces-547.py
           python3 - <<'PY'
           from pathlib import Path
           j=Path('work/src/main/java/dev/obsidiannetwork')
@@ -2897,6 +2899,8 @@ jobs:
           assert 'new EnergyBuffer(this.tier.capacity(), this.tier.output(), this.tier.capacity())' in solar
           assert 'long budget = be.energy.stored();' in solar
           assert 'B536_SOLAR_MSPT_FACE_MASK' in solar
+          assert 'B547_SOLAR_SPARSE_FACE_WALK' in solar
+          assert 'Integer.numberOfTrailingZeros(solarRotated)' in solar
           assert 'xsxLiveSolarFaces(server)!=0' in solar
           assert 'now-xsxSolarLastFaceScan<40L' in solar
           assert 'budget -= accepted;' in solar
