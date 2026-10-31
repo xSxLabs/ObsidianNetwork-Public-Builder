@@ -3185,6 +3185,11 @@ jobs:
           # B603: correct the actual ENERGY FACADED=INVISIBLE render path.
           python3 -m py_compile features/v174/apply-v174-hotfix603-energy-facade-render.py
           python3 features/v174/apply-v174-hotfix603-energy-facade-render.py
+          # B605: the INPUT collar BER was overriding the facade BER on one
+          # Energy Cable BE. Register exactly one combined renderer for both.
+          python3 -m py_compile features/v174/apply-v174-hotfix605-energy-composite-renderer.py tests/verify_v174_hotfix605_renderer_contract.py
+          python3 features/v174/apply-v174-hotfix605-energy-composite-renderer.py
+          python3 tests/verify_v174_hotfix605_renderer_contract.py
           python3 tests/verify_v174_hotfix602.py
           python3 tests/verify_v174_build591_contract.py
           # The inherited B579 FE test also checks the final B584 cable model.
