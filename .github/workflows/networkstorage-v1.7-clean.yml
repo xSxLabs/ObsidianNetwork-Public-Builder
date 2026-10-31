@@ -3121,6 +3121,7 @@ jobs:
           from pathlib import Path
           x=Path('work/src/main/java/dev/obsidiannetwork/multiblock/MultiblockSkinBlock.java').read_text()
           assert 'B558_REACTOR_MIXED_PANELS' in x and 'B558_ONLY_ON_ASSEMBLY' in x
+          assert 'Math.floorMod((p.getX()-minX)+(p.getZ()-minZ),3)' in x
           assert 'builder.add(FORMED,ACTIVE,LIT,RIM,CORNER,DETAIL);' in x
           assert 'state.setValue(RIM,band).setValue(CORNER,corner).setValue(DETAIL,detail)' in x
           print('B558_ONLY_FORMED_STATE_DETAIL_CHANGES_PASS')

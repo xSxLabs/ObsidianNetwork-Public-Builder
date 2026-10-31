@@ -20,6 +20,7 @@ class VisualRegression(unittest.TestCase):
   s=self.s
   self.assertIn("B558_ONLY_ON_ASSEMBLY",s)
   self.assertIn("Math.floorMod(p.getX()*11+p.getZ()*7,3)",s)
+  self.assertIn("Math.floorMod((p.getX()-minX)+(p.getZ()-minZ),3)",s)
   self.assertNotIn("animateTick",s)
   self.assertNotIn("new BlockEntityRenderer",s)
   self.assertNotIn("getGameTime",s)
