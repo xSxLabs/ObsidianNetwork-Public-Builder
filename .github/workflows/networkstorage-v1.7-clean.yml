@@ -156,6 +156,7 @@ jobs:
           python3 tests/test_v174_bottom_left_hud_537.py
           python3 tests/test_v174_ingame_541.py
           python3 tests/test_v174_ingame_552.py
+          python3 tests/test_v174_reference_designs_553.py
           python3 tests/test_spark_energy_immutable_cut_mask_541.py
           python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
           python3 -m unittest discover -s tests -p 'test_v173_stack_upgrades_global.py' -v
@@ -3080,6 +3081,36 @@ jobs:
           print('B508_FULL_INGAME_SOURCE_AND_TEXTURE_GATE_PASS')
           print('B503_FULL_INGAME_REGRESSION_SOURCE_GATE_PASS')
           PY
+          # B553 strict user reference: reactor #3 industry, bank #4 neon
+          # assembly-only positional skins, no server-side renderer/ticks.
+          python3 features/v174/apply-v174-reference-designs-553.py
+          python3 - <<'PY_B553_VISUAL'
+          import json
+          from pathlib import Path
+          j=Path('work/src/main/java/dev/obsidiannetwork')
+          a=Path('work/src/main/resources/assets/obsidiannetwork')
+          skin=(j/'multiblock/MultiblockSkinBlock.java').read_text()
+          assert 'B553_ASSEMBLED_RIM' in skin
+          assert 'B553_ON_FORM_VISUAL_BANDS' in skin
+          assert 'IntegerProperty.create("rim",0,2)' in skin
+          assert 'builder.add(FORMED,ACTIVE,LIT,RIM);' in skin
+          assert 'B553_REACTOR_DESIGN_3' in (j/'reactor/ReactorControllerBlockEntity.java').read_text()
+          assert 'B553_POWERBANK_DESIGN_4' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
+          assert 'bank&&state.is(dev.obsidiannetwork.ObsidianNetwork.POWERBANK_CASING.get())' in skin
+          for name in ('reactor_casing','reactor_glass','powerbank_casing','powerbank_glass'):
+           data=json.loads((a/'blockstates'/(name+'.json')).read_text())['variants']
+           assert len(data)==24, (name,len(data))
+           for key,value in data.items():
+            assert key.count('rim=')==1
+            if 'formed=false' in key: assert '_formed_' not in value['model']
+            elif 'casing' in name:
+             assert ('design3' if name.startswith('reactor') else 'design4') in value['model']
+          for name in ('reactor_casing_formed_design3_top','reactor_casing_formed_design3_bottom',
+                       'powerbank_casing_formed_design4_top_lit','powerbank_casing_formed_design4_bottom_lit'):
+           assert (a/'textures/block'/(name+'.png')).stat().st_size>140
+           assert (a/'models/block'/(name+'.json')).is_file()
+          print('B553_ASSEMBLED_USER_REFERENCE_DESIGN_3_4_CI_PASS')
+          PY_B553_VISUAL
           # Verify 16 inventory cards correspond to 64 actual work batches.
           grep -Fq 'Math.min(16,b392Speed.getCount())' work/src/main/java/dev/obsidiannetwork/blockentity/NetworkDeviceBlockEntity.java
           grep -Fq 'Math.min(16,speed.getCount())' work/src/main/java/dev/obsidiannetwork/pump/ElectricWaterPumpBlockEntity.java
