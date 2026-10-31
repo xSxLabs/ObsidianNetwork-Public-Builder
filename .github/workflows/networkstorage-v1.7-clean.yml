@@ -159,6 +159,8 @@ jobs:
           python3 tests/test_v174_ingame_552.py
           python3 tests/test_v174_reference_designs_553.py
           python3 tests/test_v174_reference_accuracy_558.py
+          # B567: visual fixture requires Pillow during early preflight.
+          python3 -m pip install --user --quiet pillow
           python3 tests/test_v174_connected_glass_566.py
           python3 tests/test_spark_energy_immutable_cut_mask_541.py
           python3 -m unittest discover -s tests -p 'test_wireless_private_network_restart.py' -v
