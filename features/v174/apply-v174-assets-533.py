@@ -117,4 +117,14 @@ public final class NutriPasteFluidModels {
  }
 }
 ''')
+# B535: B530 illuminated glass alone; actually light POWERBANK CASING too.
+# The casing state must flip LIT when charge changes, or its cyan bands stay dark.
+skin=J/"multiblock/MultiblockSkinBlock.java"
+source=skin.read_text()
+old='if(glass&&state.getValue(LIT)!=lit)'
+assert source.count(old)==1,("B535_BANK_CASING_LIGHT_ANCHOR",source.count(old))
+source=source.replace(old,
+ 'if((glass||(bank&&state.is(dev.obsidiannetwork.ObsidianNetwork.POWERBANK_CASING.get())))&&state.getValue(LIT)!=lit)',1)
+skin.write_text(source)
+print("B535_POWERBANK_CHARGE_CASING_LINES_ACTIVE_PASS")
 print("B533_INDUSTRIAL_REACTOR_CYAN_BANK_AND_BROWN_FLUID_MODELS_PASS")

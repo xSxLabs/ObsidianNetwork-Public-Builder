@@ -2989,6 +2989,7 @@ jobs:
           assert 'B533_NETWORK_TANK_AUTOFILL_TICK' in (j/'block/NetworkTankBlock.java').read_text()
           assert 'B533_ACTUAL_ENERGY_CABLE_CAP_TEXTURE' in (j/'client/EnergyCableInputRenderer.java').read_text()
           assert 'B533_BROWN_NUTRIPASTE_FLUID' in (j/'nutrition/client/NutriPasteFluidModels.java').read_text()
+          assert 'bank&&state.is(dev.obsidiannetwork.ObsidianNetwork.POWERBANK_CASING.get())' in (j/'multiblock/MultiblockSkinBlock.java').read_text()
           for name in ('nutripaste_still','nutripaste_flowing','reactor_casing_formed','powerbank_casing_formed','powerbank_casing_formed_lit'):
               png=(r/('textures/block/'+name+'.png')).read_bytes()
               assert png.startswith(bytes.fromhex('89504e470d0a1a0a')) and len(png)>150,name
