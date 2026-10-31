@@ -75,7 +75,26 @@ if os.environ.get("V1_SOURCE_ROOT"):
  # while final JAR gate runs after it. Preserve both checks, never re-add
  # full-block blue rectangles just to satisfy an obsolete method name.
  vision=(j/"client/NetworkVisionClient.java").read_text(encoding="utf-8")
- if "B514_VISION_CABLE_GEOMETRY" in vision:
+ if "B581_VISION_SHARED_VERTICES" in vision:
+  # B583: B581 deliberately removed the redundant full-prism wirePipe
+  # function. Demand the same actual connected-pipe geometry in its new,
+  # more efficient implementation; do NOT accept blue whole-block boxes.
+  for marker in (
+   "B514_VISION_CABLE_GEOMETRY",
+   "private static void pipeAt(",
+   "pipeAt(g,at,state,color,origin,inverse,focal,width,height);",
+   "b579VisionMasks.getOrDefault(pos,0)",
+   "wireLine(g,core[i],core[other],color,width,height);",
+   "wireLine(g,core[near[i]],far[i],color,width,height);",
+   "wireLine(g,far[i],far[j],color,width,height);",
+   "if(Integer.bitCount(near[i]^near[j])==1)",
+   "xrayPositions.size()>=160",
+   "mc.level.hasChunkAt(at)"
+  ):
+   assert marker in vision,("B583 optimized 3D cable xray contract missing",marker)
+  assert "wirePipe(" not in vision,"B583 duplicate geometry returned"
+  assert "wireCube(g,at" not in vision,"B583 old blue full-block boxes returned"
+ elif "B514_VISION_CABLE_GEOMETRY" in vision:
   for marker in ("private static void wirePipe(", "private static void pipeAt(",
                  "pipeAt(g,at,state,color,origin,inverse,focal,width,height);"):
    assert marker in vision,("B527 shaped xray cable rendering missing",marker)
