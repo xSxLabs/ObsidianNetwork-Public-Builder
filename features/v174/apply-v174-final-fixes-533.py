@@ -20,7 +20,7 @@ new=r'''   // B533_NUTRIPASTE_ARMOR_ROW: slim, transparent, above vanilla armor 
    double pasteFraction=Math.max(0D,Math.min(1D,pasteMb/(double)pasteCap));
    int pastePct=(int)Math.round(pasteFraction*100D);
    int pasteWidth=70,px=mc.getWindow().getGuiScaledWidth()/2-91;
-   int py=mc.getWindow().getGuiScaledHeight()-99;
+   int py=mc.getWindow().getGuiScaledHeight()-66;
    int pasteColor=pasteFraction<0.15?0xffe5a880:0xff85e7b4;
    String pasteLabel="PASTE "+pastePct+"%";
    g.text(mc.font,pasteLabel,px,py,pasteColor);
@@ -47,7 +47,7 @@ public final class NutriPasteTooltip {
   long stored=NutriPaste.stored(stack),max=NutriPaste.HELMET_CAPACITY;
   int pct=(int)Math.round(100D*stored/max);
   event.getToolTip().add(Component.literal(
-    "NutriPaste: "+stored+" / "+max+" mB ("+pct+"%)").withColor(0xff8dd1a7));
+    "NutriPaste: "+stored+" / "+max+" mB ("+pct+"%)").withStyle(style->style.withColor(0xff8dd1a7)));
  }
 }
 ''')

@@ -98,14 +98,14 @@ p.parent.mkdir(parents=True,exist_ok=True)
 p.write_text(r'''package dev.obsidiannetwork.nutrition.client;
 import dev.obsidiannetwork.nutrition.NutriPasteFluids;
 import net.minecraft.client.renderer.block.FluidModel;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterFluidModelsEvent;
 /** B533_BROWN_NUTRIPASTE_FLUID: model for native fluid tank renderers. */
-@EventBusSubscriber(modid="obsidiannetwork", bus=EventBusSubscriber.Bus.MOD, value=Dist.CLIENT)
+@EventBusSubscriber(modid="obsidiannetwork", value=Dist.CLIENT)
 public final class NutriPasteFluidModels {
  private NutriPasteFluidModels(){}
  @SubscribeEvent public static void register(RegisterFluidModelsEvent event){
