@@ -72,7 +72,7 @@ for tier in range(1,25):
 world=(J/"powerarmor/PowerArmorSuitWorld.java").read_text()
 vis=(J/"powerarmor/PowerArmorVisualEntity.java").read_text()
 rec=(J/"powerarmor/PowerArmorRecall.java").read_text()
-assert world.count("new Animation(stand,52,entering,")==2
+assert world.count("new Animation(stand,52,entering,")==3
 assert "int t=53-animation.ticks();" in world
 assert "Math.round(t*20.0D/52.0D)" in world
 assert "xsxlabs_v175_temporarily_hidden_world_suit" in world

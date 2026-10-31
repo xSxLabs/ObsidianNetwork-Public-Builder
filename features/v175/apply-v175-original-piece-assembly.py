@@ -151,7 +151,7 @@ start=s.find(" private static Animation startAnimation(")
 end=s.find(" @SubscribeEvent public static void transitionTick(",start)
 assert 0<=start<end,("B626_NORMAL_VISUAL_LIFECYCLE_DRIFT",start,end)
 region=s[start:end]
-assert region.count("new Animation(stand,20,entering,")==2,("B626_NORMAL_DURATION_SOURCE_DRIFT",region.count("new Animation(stand,20,entering,"))
+assert region.count("new Animation(stand,20,entering,")==3,("B626_NORMAL_DURATION_SOURCE_DRIFT",region.count("new Animation(stand,20,entering,"))
 region=region.replace("new Animation(stand,20,entering,","new Animation(stand,52,entering,")
 s=s[:start]+region+s[end:]
 s=replace(s,"int t=21-animation.ticks();","int t=53-animation.ticks();","normal-tick-count")
