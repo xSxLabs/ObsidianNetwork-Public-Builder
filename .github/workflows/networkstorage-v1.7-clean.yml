@@ -2951,6 +2951,7 @@ jobs:
           assert 'B514_REACTOR_ACTUAL_FE_OUTPUT' in (j/'reactor/ReactorControllerBlockEntity.java').read_text()
           assert 'B514_BANK_FE_T_WINDOW' in (j/'powerbank/PowerbankBlockEntity.java').read_text()
           assert 'B514_HOLO_NO_POWER' in (j/'blockentity/NetworkDeviceBlockEntity.java').read_text()
+          assert 'be.getLevel().getEntitiesOfClass' in (j/'blockentity/NetworkDeviceBlockEntity.java').read_text()
           assert 'B514_HOLO_1M_FE_GUI' in (j/'client/HologramConfigScreen.java').read_text()
           assert 'guiHoloStoredFe()' in (j/'client/HologramConfigScreen.java').read_text()
           assert 'guiHoloCapacity()' in (j/'client/HologramConfigScreen.java').read_text()
