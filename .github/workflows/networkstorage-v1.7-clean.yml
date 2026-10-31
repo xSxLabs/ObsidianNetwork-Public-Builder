@@ -3168,6 +3168,9 @@ jobs:
           # B584 copy exact original red item input-collar geometry and use true blue-black cable texture.
           python3 features/v174/apply-v174-cable-input-parity-584.py
           python3 tests/verify_v174_cable_input_parity_584.py
+          # B586: actual textured cable models rendered through walls, NOT HUD lines.
+          python3 features/v174/apply-v174-real-textured-xray-586.py
+          python3 tests/verify_v174_real_textured_xray_586.py
           # The inherited B579 FE test also checks the final B584 cable model.
           python3 tests/verify_v174_ingame_smooth_579.py
           python3 tests/verify_v174_ingame_regression_575.py --source work/src/main/java/dev/obsidiannetwork --assets work/src/main/resources/assets/obsidiannetwork

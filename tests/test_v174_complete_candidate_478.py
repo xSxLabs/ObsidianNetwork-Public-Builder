@@ -75,7 +75,15 @@ if os.environ.get("V1_SOURCE_ROOT"):
  # while final JAR gate runs after it. Preserve both checks, never re-add
  # full-block blue rectangles just to satisfy an obsolete method name.
  vision=(j/"client/NetworkVisionClient.java").read_text(encoding="utf-8")
- if "B581_VISION_SHARED_VERTICES" in vision:
+ if "B586_TEXTURED_XRAY_REAL_BLOCK_MODEL" in vision:
+  for marker in ("B586_NO_WIREFRAME", "SubmitCustomGeometryEvent",
+                 "BlockModelRenderState", "submitWithZOffset(",
+                 "mc.getBlockModelResolver().update(model,state,b586ModelContext)",
+                 "xrayPositions.size()>=160", "mc.level.hasChunkAt(at)"):
+   assert marker in vision,("B586 missing real textured through-wall renderer",marker)
+  assert "pipeAt(g,at,state" not in vision,"B586 old blue pipe outlines returned"
+  assert "wireCube(g,at" not in vision,"B586 old blue boxes returned"
+ elif "B581_VISION_SHARED_VERTICES" in vision:
   # B583: B581 deliberately removed the redundant full-prism wirePipe
   # function. Demand the same actual connected-pipe geometry in its new,
   # more efficient implementation; do NOT accept blue whole-block boxes.
