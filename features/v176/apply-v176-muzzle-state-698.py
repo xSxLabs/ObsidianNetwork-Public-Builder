@@ -2,6 +2,7 @@
 """v1.7.6 B698: eliminate stale armed state and alternate real turret muzzles.
 
 Ordering: after B696 and B697. Maintains existing Follow/Turret event-only HUD.
+Does not alter user-supplied world/recall transition animation keyframes.
 """
 import os
 from pathlib import Path
