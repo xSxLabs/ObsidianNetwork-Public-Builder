@@ -82,7 +82,7 @@
 # User-authorized compile of additional mixed ITEM/FLUID fixes (e71b24e)
 # v1.6 compile retry: correct facade interaction variable names (private 70d7c46)
 name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
-run-name: ${{ github.ref_name == 'v1.7.5' && 'B633 (v1.7.5) - exit back to player' || 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)' }}
+run-name: ${{ github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B634_EXPLICIT_BUILD_20261101') && 'B634 (v1.7.5) - cinematic armor hatch' || 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)' }}
 # User-authorized corrected v1.6 build #5 succeeded; manual dispatch retained.
 # BUILD LOCK ACTIVE after successful run #5 (37959480117).
 # Original public workflow unchanged.
@@ -137,7 +137,7 @@ jobs:
     # v1.7.5 strict buildlock: B633 explicitly requested on 2026-11-01.
     # Future pushes create at most a skipped run; only a new user-approved
     # marker in the HEAD commit or a manual dispatch can compile v1.7.5.
-    if: github.ref != 'refs/heads/v1.7.5' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'B633_EXPLICIT_BUILD_20261101')
+    if: github.ref != 'refs/heads/v1.7.5' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'B633_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B634_EXPLICIT_BUILD_20261101')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -3255,6 +3255,13 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v175_exit_back_to_player_633.py' -v
           python3 features/v175/apply-v175-exit-back-to-player-633.py
           V175_B633_VERIFY_GENERATED=1 python3 tests/test_v175_exit_back_to_player_633.py
+          # B634: single-surface film-style MK1..24 rear hatch. The transient
+          # Geo mesh alone renders during the normal animation; real stand
+          # keeps all four actual ItemStacks. 48-tick visuals and lifecycle,
+          # 114deg rear hatches, hinged mask; no recall behavior changes.
+          python3 -m py_compile features/v175/apply-v175-cinematic-single-shell-634.py tests/verify_v175_cinematic_single_shell_634.py
+          python3 features/v175/apply-v175-cinematic-single-shell-634.py
+          python3 tests/verify_v175_cinematic_single_shell_634.py
           # v1.7.5: both uranium ores require iron+ pickaxes, Fortune/Silk Touch,
           # plus common ore tags for default Veinminer group; no extra ticking.
           python3 -m py_compile features/v175/apply-v175-uranium-enchant-veinminer.py tests/verify_v175_uranium_enchants.py
