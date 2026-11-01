@@ -152,6 +152,7 @@ jobs:
           set -euo pipefail
           python3 -m py_compile features/v176/*.py tests/test_v176_micro_mg_module.py
           python3 -m unittest discover -s tests -p 'test_v176_micro_mg_module.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_attack_wheel_anchor_670.py' -v
           mkdir -p /tmp/v176-micromg-rules
           javac -d /tmp/v176-micromg-rules features/v176/java/V176MicroMgRules.java features/v176/java/V176MicroMgRulesTest.java
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176MicroMgRulesTest
