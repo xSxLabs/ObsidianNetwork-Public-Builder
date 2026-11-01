@@ -19,8 +19,8 @@ def edit(rel, before, after):
 # vanilla entity tags do not travel in the spawn packet; CustomName metadata
 # does, while its visible flag remains false.
 edit("powerarmor/PowerArmorSuitWorld.java",
- '   stand.setInvisible(false);\n   pose(stand,0,false);',
- '   stand.setInvisible(false);\n   stand.setCustomName(Component.literal("xsxlabs_v176_owner_"+player.getUUID()));\n   stand.setCustomNameVisible(false);\n   pose(stand,0,false);')
+ '  stand.setInvisible(false);\n  pose(stand,0,false);',
+ '  stand.setInvisible(false);\n  stand.setCustomName(Component.literal("xsxlabs_v176_owner_"+player.getUUID()));\n  stand.setCustomNameVisible(false);\n  pose(stand,0,false);')
 edit("powerarmor/V176CompanionMode.java",
  '  ArmorStand suit=find(player,72.0D);\n  if(suit==null||suit.isInvisible())return;',
  '  ArmorStand suit=find(player,72.0D);\n  if(suit==null||suit.isInvisible())return;\n'
