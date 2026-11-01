@@ -47,7 +47,7 @@ replace("powerarmor/ArmorStationBlock.java",
       if("micro_mg".equals(removed))
        left.removeIf(V176LootingSupport::isLootingToken);''')
 replace("powerarmor/ArmorStationMenu.java",
- '      ItemStack disk=new ItemStack(PowerArmorCards.item(id));',
+ 'ItemStack disk=new ItemStack(PowerArmorCards.item(id));',
  '''      ItemStack disk=new ItemStack(PowerArmorCards.item(id));
       if("micro_mg".equals(id))
        V176LootingSupport.restore(disk,String.join(",",values),owner.registryAccess());''')
@@ -60,17 +60,17 @@ replace("powerarmor/ArmorStationMenu.java",
     if(micro)values.removeIf(V176LootingSupport::isLootingToken);
     chest.set(''')
 replace("powerarmor/ArmorStationMenu.java",
- '    setCarried(new ItemStack(item));',
+ 'setCarried(new ItemStack(item));',
  '    setCarried(returned);')
 replace("powerarmor/ArmorStationMenu.java",
- '    values.add(insertion,card.upgradeId);',
+ 'values.add(insertion,card.upgradeId);',
  '''    values.add(insertion,card.upgradeId);
     if("micro_mg".equals(card.upgradeId)){
      int loot=V176LootingSupport.itemLevel(carried,owner.registryAccess());
      if(loot>0)values.add(insertion+1,"micro_mg_looting_"+loot);
     }''')
 replace("powerarmor/ArmorStationMenu.java",
- '   for(int n=0;n<take;n++)values.add(card.upgradeId);',
+ 'for(int n=0;n<take;n++)values.add(card.upgradeId);',
  '''   for(int n=0;n<take;n++){
     values.add(card.upgradeId);
     if("micro_mg".equals(card.upgradeId)){
