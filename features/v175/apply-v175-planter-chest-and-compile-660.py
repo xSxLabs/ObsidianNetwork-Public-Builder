@@ -1,28 +1,32 @@
 #!/usr/bin/env python3
-"""B660: fix LocalPlayer/server type mixup, and keep chests usable under all planters."""
+"""B661 revised B660: tolerate all actual planter property-builder variants."""
 import os,re
 from pathlib import Path
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 client=J/"client/PowerArmorExitInputLock654.java"
 s=client.read_text(encoding="utf8")
-broken="v->v.isOpeningFor654(p.getUUID()) && (!v.isClosingFor659(p.getUUID()) || !dev.obsidiannetwork.powerarmor.PowerArmorRuntime.full(p))"
-assert s.count(broken)==1,("B660_LOCAL_PLAYER_ANCHOR",s.count(broken))
-s=s.replace(broken,"v->v.isOpeningFor654(p.getUUID())",1)
-assert "PowerArmorRuntime.full(p)" not in s
-client.write_text(s,encoding="utf8")
-# Minecraft Java chest checks redstone-conductive blocks directly above it.
-# This preserves all existing physical and graphical behavior of the planter.
+bad="v->v.isOpeningFor654(p.getUUID()) && (!v.isClosingFor659(p.getUUID()) || !dev.obsidiannetwork.powerarmor.PowerArmorRuntime.full(p))"
+assert s.count(bad)==1,("B660_LOCAL_PLAYER_ANCHOR",s.count(bad))
+client.write_text(s.replace(bad,"v->v.isOpeningFor654(p.getUUID())"),encoding="utf8")
 registry=J/"ObsidianNetwork.java"
 s=registry.read_text(encoding="utf8")
-pat=re.compile(
- r'(BLOCKS\.registerBlock\("network_planter(?:_stripped_[a-z_]+)?",\s*'
- r'dev\.obsidiannetwork\.block\.NetworkPlanterBlock::new,\s*'
- r'p\s*->\s*p\.mapColor\(MapColor\.WOOD\)\.strength\(1\.0F,6\.0F\)\.noOcclusion\(\))(\);)')
-names=re.findall(r'BLOCKS\.registerBlock\("(network_planter(?:_stripped_[a-z_]+)?)"',s)
-assert names and len(names)==len(set(names)),("B660_PLANTER_NAMES",names)
-s,count=pat.subn(lambda m:m.group(1)+'.isRedstoneConductor((state,level,pos)->false)'+m.group(2),s)
-assert count==len(names),("B660_REGISTRY_DRIFT",count,len(names),names)
-assert "BLOCKS.registerBlock(\"network_planter\"" in s
+allNames=re.findall(r'BLOCKS\.registerBlock\("(network_planter(?:_stripped_[a-z_]+)?)"',s)
+assert allNames and len(allNames)==len(set(allNames)),("B661_NAMES",allNames)
+# Match each actual registration as a UNIT, independently of hardness,
+# formatting, sounds or previously added BlockBehaviour properties.
+pat=re.compile(r'BLOCKS\.registerBlock\("(network_planter(?:_stripped_[a-z_]+)?)"[^;]*?NetworkPlanterBlock::new[^;]*?;',re.S)
+seen=[]
+def fix(m):
+ name=m.group(1);source=m.group(0);seen.append(name)
+ assert source.rstrip().endswith(");"),("B661_REGISTRATION_FORMAT",name)
+ assert re.search(r'\bp\s*->\s*p\.',source),("B661_NOT_PROPERTIES_LAMBDA",name)
+ assert "isRedstoneConductor(" not in source,("B661_DUPLICATE",name)
+ # Append only ONE property; preserve the existing block, shape, inventory,
+ # collision, animations, growth, capability and all existing properties.
+ return source.rstrip()[:-2]+".isRedstoneConductor((state,level,pos)->false));"
+s,n=pat.subn(fix,s)
+assert n==len(allNames)==len(set(seen)),("B661_REGISTRY_DRIFT",n,len(allNames),seen,allNames)
+assert set(seen)==set(allNames),("B661_NAMES_DRIFT",seen,allNames)
 registry.write_text(s,encoding="utf8")
-print("B660_LOCAL_PLAYER_COMPILE_FIX_PASS")
-print("B660_PLANTER_CHEST_NONCONDUCTOR_PASS variants="+str(count))
+print("B661_LOCAL_PLAYER_COMPILE_FIX_PASS")
+print("B661_CHEST_OPEN_UNDER_PLANTER_PASS variants="+str(n))
