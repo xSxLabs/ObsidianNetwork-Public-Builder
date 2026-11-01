@@ -160,7 +160,7 @@ public final class V176PowerSleepServer {
     return; // never skip another player's night without their consent
   }
   long day=world.getDayTime();
-  world.setDayTime(Math.addExact(Math.floorDiv(day,24000L)+1L,0L)*24000L);
+  world.setDayTime(Math.multiplyExact(Math.addExact(Math.floorDiv(day,24000L),1L),24000L));
   for(ServerPlayer other:java.util.List.copyOf(SLEEPING.keySet())){
    if(other.level()==world)stop(other,"Power Armor Sleep: MORNING");
   }
