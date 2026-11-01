@@ -158,6 +158,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_companion_676.py' -v
           python3 -m pip install --user --quiet pillow
           python3 -m unittest discover -s tests -p 'test_v176_safety_visual_697.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_muzzle_698.py' -v
           mkdir -p /tmp/v176-micromg-rules
           javac -d /tmp/v176-micromg-rules features/v176/java/V176MicroMgRules.java features/v176/java/V176MicroMgRulesTest.java
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176MicroMgRulesTest
@@ -3970,6 +3971,8 @@ jobs:
             python3 features/v176/apply-v176-companion-676.py
             python3 features/v176/apply-v176-safety-696.py
             python3 features/v176/apply-v176-visual-697.py
+            python3 features/v176/apply-v176-muzzle-state-698.py
+            echo 'B698_ALTERNATING_TURRET_MUZZLE_AND_TRANSFER_GUARD PASS'
             echo 'B697_ARM_BARRELS_24_STYLES_AND_PLAYER_SYNC PASS'
             echo 'B696_PROJECTILE_BYSTANDER_GUARDS PASS'
             echo 'B676_FOLLOW_TURRET_ACTIONWHEEL PASS'
