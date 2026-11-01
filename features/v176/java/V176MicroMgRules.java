@@ -8,7 +8,7 @@ package dev.obsidiannetwork.powerarmor;
 public final class V176MicroMgRules {
  private V176MicroMgRules(){}
  public static final long FE_PER_SHOT=3000L;
- public static final int COOLDOWN_TICKS=5; // Max 4 projectiles / second at 20 TPS
+ public static final int COOLDOWN_TICKS=2; // 2/3-tick beat => exactly max 8 shots/sec at 20 TPS
  public static final int AUTO_TARGET_RANGE_SQ=16*16;
  public static final int MANUAL_MAX_RANGE=24;
  public static final float DAMAGE_HP=2.0f;
@@ -29,7 +29,9 @@ public final class V176MicroMgRules {
   return mode==CompanionMode.TURRET;
  }
  public static boolean cooldownReady(long tick,long lastShotTick){
-  return lastShotTick<0 || (tick>=lastShotTick && tick-lastShotTick>=COOLDOWN_TICKS);
+  if(lastShotTick<0)return true; // First trigger responds instantly.
+  return tick>=lastShotTick && tick-lastShotTick>=COOLDOWN_TICKS
+      &&(tick%5L==0L||tick%5L==2L); // 0,2,5,7,... 8 shots per second
  }
  public static boolean canSpawn(long fe,long tick,long lastShotTick){
   return fe>=FE_PER_SHOT&&cooldownReady(tick,lastShotTick);
