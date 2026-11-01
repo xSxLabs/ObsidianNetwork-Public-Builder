@@ -20,7 +20,7 @@ test=r'''
                   // B717: real server-side shot + exact FE + module gated
                   // + real enchantment registry; no mock projectile simulation.
                   if(tier==0){
-                    var chest=player.getItemBySlot(slots[1]);
+                    net.minecraft.world.item.ItemStack chest=player.getItemBySlot(slots[1]);
                     var card=new net.minecraft.world.item.ItemStack(ObsidianNetwork.POWER_CARD_MICRO_MG.get());
                     var lookup=level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
                     var loot=lookup.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LOOTING);
@@ -44,6 +44,9 @@ test=r'''
                       "B717 real Attack Mode activation rejected");
                     check(dev.obsidiannetwork.powerarmor.V176AttackModeServer.on(player),
                       "B717 installed weapon not recognized");
+                    // B755: toggle sync replaces the ItemStack in the slot.
+                    // Assert FE on the equipped live stack, not the stale handle.
+                    chest=player.getItemBySlot(slots[1]);
                     var bullets=level.getEntitiesOfClass(
                       dev.obsidiannetwork.powerarmor.V176MicroMgProjectile.class,
                       new net.minecraft.world.phys.AABB(base).inflate(40D));
@@ -65,6 +68,9 @@ test=r'''
                       "B717 Attack Mode deactivation rejected");
                     check(!dev.obsidiannetwork.powerarmor.V176AttackModeServer.on(player),
                       "B717 disabled attack kept a weapon state");
+                    chest=player.getItemBySlot(slots[1]);
+                    check(dev.obsidiannetwork.core.EnergyTool.energy(chest)==before-3000L,
+                      "B755 disabling Attack changed remaining FE");
                     chest.set(dev.obsidiannetwork.registry.ModDataComponents.POWER_ARMOR_UPGRADES.get(),
                       protectionFive);
                     dev.obsidiannetwork.core.EnergyTool.setEnergy(chest,0L);
