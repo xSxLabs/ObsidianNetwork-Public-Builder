@@ -156,6 +156,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_looting_674.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_projectile_675.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_companion_676.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_safety_visual_697.py' -v
           mkdir -p /tmp/v176-micromg-rules
           javac -d /tmp/v176-micromg-rules features/v176/java/V176MicroMgRules.java features/v176/java/V176MicroMgRulesTest.java
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176MicroMgRulesTest
@@ -3966,6 +3967,10 @@ jobs:
             python3 features/v176/apply-v176-looting-674.py
             python3 features/v176/apply-v176-projectile-675.py
             python3 features/v176/apply-v176-companion-676.py
+            python3 features/v176/apply-v176-safety-696.py
+            python3 features/v176/apply-v176-visual-697.py
+            echo 'B697_ARM_BARRELS_24_STYLES_AND_PLAYER_SYNC PASS'
+            echo 'B696_PROJECTILE_BYSTANDER_GUARDS PASS'
             echo 'B676_FOLLOW_TURRET_ACTIONWHEEL PASS'
             echo 'B675_FE_MICRO_MG_PROJECTILE_INTEGRATED PASS'
             echo 'B674_LOOTING_ANVIL_ROUNDTRIP PASS'
@@ -4298,12 +4303,16 @@ jobs:
            'dev/obsidiannetwork/powerarmor/V176LootingEvents.class',
            'dev/obsidiannetwork/powerarmor/V176CompanionMode.class',
            'dev/obsidiannetwork/client/V176MicroMgFireClient.class',
-           'dev/obsidiannetwork/client/V176CompanionClient.class'
+           'dev/obsidiannetwork/client/V176CompanionClient.class',
+           'dev/obsidiannetwork/client/V176MicroMgVisualClient.class'
           ]
           with ZipFile(jar) as z:
            names=set(z.namelist())
            for required_class in required: assert required_class in names,required_class
-          print('V176_B676_JAR_BINARY_GATE_PASS')
+           for tier in range(1,25):
+            texture=f'assets/obsidiannetwork/textures/entity/micro_mg_mk{tier}.png'
+            assert texture in names,texture
+          print('V176_B697_COMPLETE_MODULE_LOOTING_PROJECTILES_FOLLOW_TURRET_AND_24_VISUALS_PASS')
           PY_V176_JAR
           fi
           sha256sum dist/*.jar > dist/SHA256SUMS.txt
