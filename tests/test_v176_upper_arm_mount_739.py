@@ -45,6 +45,8 @@ class UpperRightArmFixture(unittest.TestCase):
    self.assertIn(".addBox(-1.35F,6.0F,-3.05F,2.7F,4.3F,0.65F)",render)
    self.assertNotIn(".addBox(-1.6F,6.0F,1.65F",render)
    self.assertNotIn("model.leftArm",render)
+   self.assertNotIn("under the RIGHT wrist",render)
+   self.assertIn("TOP of extended RIGHT arm",render)
    self.assertIn("7.0F/16.0F,-2.25F/16.0F",render)
    self.assertIn(".add(0,-0.19D,0)",(j/"powerarmor/V176MicroMgFire.java").read_text())
    self.assertIn(".add(0,0.02D,0)",(j/"powerarmor/V176CompanionMode.java").read_text())
