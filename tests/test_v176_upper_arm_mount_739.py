@@ -14,7 +14,7 @@ class UpperRightArmFixture(unittest.TestCase):
       // after the right arm raises. Old 9px shoulder-overhanging barrel removed.
       .texOffs(0,0).addBox(-0.8F,6.0F,-1.6F,1.6F,5.5F,1.8F)
       .texOffs(0,9).addBox(-1.1F,10.5F,-1.9F,2.2F,1.3F,2.4F)
-      .texOffs(0,15).addBox(-1.25F,6.0F,-1.9F,2.5F,2.8F),
+      .texOffs(0,15).addBox(-1.25F,6.0F,-1.9F,2.5F,2.8F,2.8F),
       .texOffs(12,0).addBox(-1.6F,6.0F,1.65F,3.2F,4.6F,0.65F),
   // First the actual rear forearm shell hinges out by only 19 degrees.
   pose.pushPose();
