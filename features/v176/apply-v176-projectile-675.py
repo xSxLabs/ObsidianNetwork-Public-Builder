@@ -98,7 +98,8 @@ public final class V176MicroMgFire {
  private V176MicroMgFire(){}
  private static final Map<UUID,Long> LAST=new HashMap<>();
  public static int fire(ServerPlayer p){
-  if(!(p.level() instanceof ServerLevel world)||!V176AttackModeServer.on(p))return 0;
+  if(!V176AttackModeServer.on(p))return 0;
+  ServerLevel world=(ServerLevel)p.level();
   ItemStack chest=p.getItemBySlot(EquipmentSlot.CHEST);
   long now=world.getGameTime();
   long previous=LAST.getOrDefault(p.getUUID(),-1L);
