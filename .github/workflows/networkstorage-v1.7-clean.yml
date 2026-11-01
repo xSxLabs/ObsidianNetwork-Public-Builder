@@ -4313,6 +4313,7 @@ jobs:
           cp work/build/libs/*.jar dist/
           if [ "$GITHUB_REF_NAME" = "v1.7.6" ]; then
             python3 - <<'PY_V176_JAR'
+          import json
           from pathlib import Path
           from zipfile import ZipFile
           jar,=list(Path('dist').glob('*.jar'))
