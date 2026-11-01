@@ -19,7 +19,7 @@ def edit(rel,old,new):
 # Pure rules are updated in features/v176/java/V176MicroMgRules.java BEFORE
 # fast javac preflight and copied by install-v176-java-rules.py.
 rules=(J/"powerarmor/V176MicroMgRules.java").read_text(encoding="utf-8")
-assert "COOLDOWN_TICKS=2" in rules and "tick%5L==0L||tick%5L==2L" in rules, "V176_B729_EIGHT_SHOT_RULES_DRIFT"
+assert "COOLDOWN_TICKS=1" in rules and "tick%5L!=4L" in rules, "V176_B729_RATE_RULES_DRIFT"
 
 edit("powerarmor/V176MicroMgFire.java",
  '''  double side=((now/5L)&1L)==0L?0.27D:-0.27D;
