@@ -189,14 +189,16 @@ assert 'case 5 -> "animation.power_armor.recall_approach";' in s
 visual.write_text(s,encoding="utf-8")
 rec=J/"powerarmor/PowerArmorRecall.java"
 s=rec.read_text(encoding="utf-8")
-anchor="   double distance=delta.length();"
-assert s.count(anchor)==1
-s=s.replace(anchor,anchor+'''
-   // B642_EARLY_RECALL_PIECES: start fully synchronized part separation
-   // 14 blocks away, not just when the wearer is almost touched (6 blocks).
-   // Real ItemStacks remain source-owned until the existing safe commit.
-   if(distance>6.0D&&distance<=14.0D&&!DOCKING.containsKey(player.getUUID()))
-    visual.beginPhase(5);''')
+# B644: use the verified, stable docking CONDITION rather than the
+# exact formatting of a preceding 'double distance' declaration.
+# The B637/641 game gate already proved this branch exists.
+anchor="if(distance<=6.0D || DOCKING.containsKey(player.getUUID())){"
+assert s.count(anchor)==1,("B644_RECALL_DOCK_CONDITION",s.count(anchor))
+s=s.replace(anchor,'''// V175_B644_EARLY_RECALL_PIECES: server-synced 14-block approach;
+  // begin breaking into ORIGINAL armor parts before docking starts.
+  if(distance>6.0D&&distance<=14.0D&&!DOCKING.containsKey(player.getUUID()))
+   visual.beginPhase(5);
+  '''+anchor,1)
 assert "if(progress<52)" in s and "PowerArmorSuitWorld.recallEquip(stand,player)" in s
 assert "distance<=6.0D || DOCKING.containsKey(player.getUUID())" in s
 assert "player.level().addFreshEntity(visual)" in s
