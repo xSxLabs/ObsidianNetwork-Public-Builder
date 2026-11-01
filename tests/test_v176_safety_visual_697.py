@@ -53,6 +53,8 @@ class ArmorGunsFinalTests(unittest.TestCase):
    owner=(j/"powerarmor/PowerArmorSuitWorld.java").read_text()
    client=(j/"client/V176CompanionClient.java").read_text()
    self.assertIn("micro_mg_turret_on",companion)
+   # Follow/Turret: display ON/OFF only when a command toggles the mode.
+   self.assertEqual(companion.count('display(player,(turret?"Turret":"Follow")+" Mode: "+(was?"OFF":"ON"));'),1)
    self.assertIn('shot.addTag("xsxlabs_v176_automatic_bullet")',companion)
    self.assertIn('target instanceof net.minecraft.world.entity.monster.Monster',shot)
    self.assertIn('stand.setCustomNameVisible(false)',owner)
