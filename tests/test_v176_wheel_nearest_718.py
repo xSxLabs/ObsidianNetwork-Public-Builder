@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """B718 Action Wheel chooses nearest owner-authenticated suit."""
+# B718 final complete-package verification: original v1.7.5 transitions unchanged.
 import os,subprocess,sys,tempfile,unittest
 from pathlib import Path
 SCRIPT=Path(__file__).resolve().parents[1]/"features/v176/apply-v176-wheel-nearest-718.py"
