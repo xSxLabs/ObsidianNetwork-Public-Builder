@@ -14,6 +14,7 @@ rules={
  "V176BackpackCodec.java":"backpack",
  "V176BackpackItemState.java":"backpack",
  "V176PowerMonitorRules.java":"power",
+ "V176PowerRateMeter.java":"power",
  "V176PowerSleepRules.java":"powerarmor",
 }
 for name,directory in rules.items():
