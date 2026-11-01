@@ -33,19 +33,52 @@ replace("powerarmor/UpgradeCardItem.java",
   return super.isPrimaryItemFor(stack,enchantment);
  }''')
 replace("powerarmor/ArmorStationBlock.java",
- '        installed.isEmpty()?card.upgradeId:installed+","+card.upgradeId);',
+ 'installed.isEmpty()?card.upgradeId:installed+","+card.upgradeId);',
  '        V176LootingSupport.install(installed,card.upgradeId,held,p.registryAccess()));')
 replace("powerarmor/ArmorStationBlock.java",
- '      if(!p.getInventory().add(new ItemStack(cardItem))){',
+ 'if(!p.getInventory().add(new ItemStack(cardItem))){',
  '''      ItemStack returned=new ItemStack(cardItem);
       if("micro_mg".equals(removed))
        V176LootingSupport.restore(returned,installed,p.registryAccess());
       if(!p.getInventory().add(returned)){''')
 replace("powerarmor/ArmorStationBlock.java",
- '      left.remove(i);',
+ 'left.remove(i);',
  '''      left.remove(i);
       if("micro_mg".equals(removed))
        left.removeIf(V176LootingSupport::isLootingToken);''')
+replace("powerarmor/ArmorStationMenu.java",
+ '      ItemStack disk=new ItemStack(PowerArmorCards.item(id));',
+ '''      ItemStack disk=new ItemStack(PowerArmorCards.item(id));
+      if("micro_mg".equals(id))
+       V176LootingSupport.restore(disk,String.join(",",values),owner.registryAccess());''')
+replace("powerarmor/ArmorStationMenu.java",
+ '    values.remove(i);\n    chest.set(',
+ '''    ItemStack returned=new ItemStack(item);
+    boolean micro="micro_mg".equals(values.get(i));
+    if(micro)V176LootingSupport.restore(returned,String.join(",",values),owner.registryAccess());
+    values.remove(i);
+    if(micro)values.removeIf(V176LootingSupport::isLootingToken);
+    chest.set(''')
+replace("powerarmor/ArmorStationMenu.java",
+ '    setCarried(new ItemStack(item));',
+ '    setCarried(returned);')
+replace("powerarmor/ArmorStationMenu.java",
+ '    values.add(insertion,card.upgradeId);',
+ '''    values.add(insertion,card.upgradeId);
+    if("micro_mg".equals(card.upgradeId)){
+     int loot=V176LootingSupport.itemLevel(carried,owner.registryAccess());
+     if(loot>0)values.add(insertion+1,"micro_mg_looting_"+loot);
+    }''')
+replace("powerarmor/ArmorStationMenu.java",
+ '   for(int n=0;n<take;n++)values.add(card.upgradeId);',
+ '''   for(int n=0;n<take;n++){
+    values.add(card.upgradeId);
+    if("micro_mg".equals(card.upgradeId)){
+     int loot=V176LootingSupport.itemLevel(stack,owner.registryAccess());
+     if(loot>0)values.add("micro_mg_looting_"+loot);
+    }
+   }''')
+
 source=J/"powerarmor/V176LootingSupport.java"
 assert not source.exists()
 source.write_text("""package dev.obsidiannetwork.powerarmor;
@@ -74,13 +107,16 @@ public final class V176LootingSupport {
   }
   return module?found:0;
  }
+ public static int itemLevel(ItemStack input,HolderLookup.Provider registries){
+  var holder=registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING);
+  return Math.max(0,Math.min(3,input.getEnchantmentLevel(holder)));
+ }
  public static String install(String installed,String upgradeId,ItemStack input,
                               HolderLookup.Provider registries){
   String prior=installed==null?"":installed;
   String result=prior.isEmpty()?upgradeId:prior+","+upgradeId;
   if(!"micro_mg".equals(upgradeId))return result;
-  var holder=registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING);
-  int n=Math.max(0,Math.min(3,input.getEnchantmentLevel(holder)));
+  int n=itemLevel(input,registries);
   return n==0?result:result+","+PREFIX+n;
  }
  public static void restore(ItemStack card,String installed,HolderLookup.Provider registries){
