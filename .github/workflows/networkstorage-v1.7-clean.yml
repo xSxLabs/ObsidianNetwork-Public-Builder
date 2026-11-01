@@ -82,7 +82,7 @@
 # User-authorized compile of additional mixed ITEM/FLUID fixes (e71b24e)
 # v1.6 compile retry: correct facade interaction variable names (private 70d7c46)
 name: 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)'
-run-name: ${{ github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B658_EXPLICIT_BUILD_20261101') && 'B658 (v1.7.5) - MK1/MK2 isolated walk-in GameTest' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B662_EXPLICIT_BUILD_20261101') && 'B662 (v1.7.5) - invisible during power armor entry' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B661_EXPLICIT_BUILD_20261101') && 'B661 (v1.7.5) - robust planter registry repair' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B660_EXPLICIT_BUILD_20261101') && 'B660 (v1.7.5) - compile repair and chest-safe planter' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B659_EXPLICIT_BUILD_20261101') && 'B659 (v1.7.5) - exit visibility, entry timing and recipe collisions' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B657_EXPLICIT_BUILD_20261101') && 'B657 (v1.7.5) - corrected 26.1 entry APIs' || 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)' }}
+run-name: ${{ github.ref_name == 'v1.7.6' && contains(github.event.head_commit.message, 'B663_EXPLICIT_BUILD_20261101') && 'B663 (v1.7.6) - Micro-MG registry and source-contract probe' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B658_EXPLICIT_BUILD_20261101') && 'B658 (v1.7.5) - MK1/MK2 isolated walk-in GameTest' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B662_EXPLICIT_BUILD_20261101') && 'B662 (v1.7.5) - invisible during power armor entry' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B661_EXPLICIT_BUILD_20261101') && 'B661 (v1.7.5) - robust planter registry repair' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B660_EXPLICIT_BUILD_20261101') && 'B660 (v1.7.5) - compile repair and chest-safe planter' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B659_EXPLICIT_BUILD_20261101') && 'B659 (v1.7.5) - exit visibility, entry timing and recipe collisions' || github.ref_name == 'v1.7.5' && contains(github.event.head_commit.message, 'B657_EXPLICIT_BUILD_20261101') && 'B657 (v1.7.5) - corrected 26.1 entry APIs' || 'xSxLabs Network Storage v1.7 CLEAN (never old legacy)' }}
 # User-authorized corrected v1.6 build #5 succeeded; manual dispatch retained.
 # BUILD LOCK ACTIVE after successful run #5 (37959480117).
 # Original public workflow unchanged.
@@ -106,7 +106,7 @@ run-name: ${{ github.ref_name == 'v1.7.5' && contains(github.event.head_commit.m
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4, v1.7.5, feature/v1.7.4-multiblock-recovery, feature/v1.7.4-machine-guis, feature/v1.7.4-multiblock-animations, feature/v1.7.4-nutrition, feature/v1.7.4-guidebook, feature/v1.7.4-guidebook-sizes, feature/v1.7.4-planter-mod-crops, feature/v1.7.4-batched-polish-461, hotfix/v1.7.4-cable-drops-facades]
+    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4, v1.7.5, v1.7.6, feature/v1.7.4-multiblock-recovery, feature/v1.7.4-machine-guis, feature/v1.7.4-multiblock-animations, feature/v1.7.4-nutrition, feature/v1.7.4-guidebook, feature/v1.7.4-guidebook-sizes, feature/v1.7.4-planter-mod-crops, feature/v1.7.4-batched-polish-461, hotfix/v1.7.4-cable-drops-facades]
     paths:
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - 'patches/**'
@@ -137,7 +137,7 @@ jobs:
     # v1.7.5 strict buildlock: B633 explicitly requested on 2026-11-01.
     # Future pushes create at most a skipped run; only a new user-approved
     # marker in the HEAD commit or a manual dispatch can compile v1.7.5.
-    if: github.ref != 'refs/heads/v1.7.5' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'B633_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B634_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B635_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B636_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B637_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B638_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B639_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B640_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B641_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B642_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B643_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B644_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B645_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B646_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B647_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B648_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B649_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B650_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B651_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B652_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B653_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B654_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B655_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B656_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B657_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B658_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B659_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B660_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B661_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B662_EXPLICIT_BUILD_20261101')
+    if: (github.ref != 'refs/heads/v1.7.5' && github.ref != 'refs/heads/v1.7.6') || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'B633_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B634_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B635_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B636_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B637_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B638_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B639_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B640_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B641_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B642_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B643_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B644_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B645_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B646_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B647_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B648_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B649_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B650_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B651_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B652_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B653_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B654_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B655_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B656_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B657_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B658_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B659_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B660_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B661_EXPLICIT_BUILD_20261101') || contains(github.event.head_commit.message, 'B662_EXPLICIT_BUILD_20261101') || (github.ref == 'refs/heads/v1.7.6' && contains(github.event.head_commit.message, 'B663_EXPLICIT_BUILD_20261101'))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -146,6 +146,13 @@ jobs:
         with:
           # Build exactly the triggering revision, not a later branch HEAD.
           ref: ${{ github.sha }}
+      - name: B663 v1.7.6 module fast preflight
+        if: github.ref == 'refs/heads/v1.7.6'
+        run: |
+          set -euo pipefail
+          python3 -m py_compile features/v176/*.py tests/test_v176_micro_mg_module.py
+          python3 -m unittest discover -s tests -p 'test_v176_micro_mg_module.py' -v
+          echo 'B663_V176_MICRO_MG_PREFLIGHT PASS'
       # B640: fast regression for the real zero-hardness registrations that
       # made B639 red. Validate BEFORE private checkout and reconstruction.
       - name: B640 multiblock mining 12-block preflight
@@ -3938,6 +3945,16 @@ jobs:
           python3 features/v175/apply-v175-entry-invisibility-662.py
           python3 features/v175/inject-v175-entry-invisibility-gametest-662.py
           python3 tests/verify_v175_b662.py
+          # B663: first v1.7.6 integration step, on the new branch ONLY.
+          # Register the craftable Micro-MG via existing ArmorStation card storage.
+          # Record REAL reconstructed APIs for future Attack/Follow/Turret,
+          # backpack and power monitor integration, without guessing 26.1 APIs.
+          if [ "$GITHUB_REF_NAME" = "v1.7.6" ]; then
+            python3 features/v176/apply-v176-micro-mg-module.py
+            python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
+            python3 features/v176/inspect-v176-source-contracts.py
+            echo 'B663_MODULE_AND_CONTRACTS PASS'
+          fi
           # Build 289: real 9-slot BE handler mutation/no-op stress (postpatch only).
           python3 patches/inject-terminal-craft-slot-noop-gametest.py
           # Build 291: run actual menu QUICK_MOVE on 50-drive, 800-cell network.
@@ -4337,6 +4354,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - name: Upload v1.1.1 shared-conduit test JAR
+        # B663 remains a non-distributable compatibility probe: no v1.7.6 JAR yet.
+        if: github.ref != 'refs/heads/v1.7.6'
         uses: actions/upload-artifact@v4
         with:
           name: xsxlabs-network-storage-v1.7-clean-candidate
