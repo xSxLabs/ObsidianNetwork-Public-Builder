@@ -10,6 +10,14 @@ class TestLooting(unittest.TestCase):
    (root/"powerarmor").mkdir(parents=True)
    (root/"powerarmor/UpgradeCardItem.java").write_text(
     ' public UpgradeCardItem(Properties p,String id){super(p.stacksTo(16));this.upgradeId=id;}')
+   (root/"powerarmor/ArmorStationMenu.java").write_text("""
+      ItemStack disk=new ItemStack(PowerArmorCards.item(id));
+    values.remove(i);
+    chest.set(
+    setCarried(new ItemStack(item));
+    values.add(insertion,card.upgradeId);
+   for(int n=0;n<take;n++)values.add(card.upgradeId);
+""")
    (root/"powerarmor/ArmorStationBlock.java").write_text("""
         installed.isEmpty()?card.upgradeId:installed+","+card.upgradeId);
       if(!p.getInventory().add(new ItemStack(cardItem))){
@@ -27,6 +35,10 @@ class TestLooting(unittest.TestCase):
    self.assertIn('V176LootingSupport.restore(',suit)
    self.assertIn('left.removeIf(V176LootingSupport::isLootingToken)',suit)
    self.assertIn('return module?found:0;',helper)
+   menu=(root/'powerarmor/ArmorStationMenu.java').read_text()
+   self.assertIn('V176LootingSupport.restore(returned',menu)
+   self.assertIn('V176LootingSupport.itemLevel(carried',menu)
+   self.assertIn('V176LootingSupport.itemLevel(stack',menu)
    evt=(root/'powerarmor/V176LootingEvents.java').read_text()
    self.assertIn('EnchantedEntityLootEvent',evt)
    self.assertIn('event.setEnchantmentLevel(n)',evt)
