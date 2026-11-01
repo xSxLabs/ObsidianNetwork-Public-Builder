@@ -7,7 +7,7 @@ public final class V176MicroMgRulesTest {
  public static void main(String[] args){
   var r=V176MicroMgRules.class;
   okay(V176MicroMgRules.FE_PER_SHOT==3000L,"FE cost");
-  okay(V176MicroMgRules.COOLDOWN_TICKS==2,"minimum 2 ticks, 8 shots/sec alternating 2/3");
+  okay(V176MicroMgRules.COOLDOWN_TICKS==1,"minimum 1 tick, 16 shots/sec every 4 of 5");
   okay(!V176MicroMgRules.shouldShowAttackAction(true,false),"module-gated wheel");
   okay(!V176MicroMgRules.shouldShowAttackAction(false,true),"worn-only wheel");
   okay(V176MicroMgRules.shouldShowAttackAction(true,true),"equipped module");
@@ -27,7 +27,7 @@ public final class V176MicroMgRulesTest {
   long previous=-1L;int bullets=0;
   for(long now=0;now<20;now++)
    if(V176MicroMgRules.canSpawn(3000,now,previous)){bullets++;previous=now;}
-  okay(bullets==8,"exactly 8 real FE projectile authorizations per 20 ticks, got "+bullets);
+  okay(bullets==16,"exactly 16 real FE projectile authorizations per 20 ticks, got "+bullets);
   okay(!V176MicroMgRules.canTurretFire(V176MicroMgRules.CompanionMode.FOLLOW,
    true,true,false,true,50,3000,100,-1),"follow cannot attack");
   okay(V176MicroMgRules.canTurretFire(V176MicroMgRules.CompanionMode.TURRET,
