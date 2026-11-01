@@ -176,9 +176,9 @@ public final class V176MicroMgVisualClient {
   if(mc.level==null)return;
   Entity entity=mc.level.getEntity(event.getRenderState().id);
   if(!(entity instanceof Player player))return;
-  int tier=tier(entity);
+  int tier=tier(player);
   if(tier==0)return;
-  ItemStack chest=entity.getItemBySlot(EquipmentSlot.CHEST);
+  ItemStack chest=player.getItemBySlot(EquipmentSlot.CHEST);
   boolean armed=has(chest,"micro_mg")&&has(chest,"micro_mg_on");
   float amount=extension(entity.getId(),armed);
   if(amount>0.0F)
