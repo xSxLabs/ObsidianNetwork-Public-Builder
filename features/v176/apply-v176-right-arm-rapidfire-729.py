@@ -16,14 +16,10 @@ def edit(rel,old,new):
 
 # 8 shots per 20 TPS second: at ticks mod 5 == 0 or 2.
 # 2 tick minimum and 3 tick alternate prevent >8/s despite client packet spam.
-edit("powerarmor/V176MicroMgRules.java",
- ''' public static final int COOLDOWN_TICKS=5; // Max 4 projectiles / second at 20 TPS''',
- ''' public static final int COOLDOWN_TICKS=2; // 2/3-tick beat => exactly max 8 shots/sec at 20 TPS''')
-edit("powerarmor/V176MicroMgRules.java",
- '''  return lastShotTick<0 || (tick>=lastShotTick && tick-lastShotTick>=COOLDOWN_TICKS);''',
- '''  if(lastShotTick<0)return true; // First trigger responds instantly.
-  return tick>=lastShotTick && tick-lastShotTick>=COOLDOWN_TICKS
-      &&(tick%5L==0L||tick%5L==2L); // 0,2,5,7,... 8 shots per second''')
+# Pure rules are updated in features/v176/java/V176MicroMgRules.java BEFORE
+# fast javac preflight and copied by install-v176-java-rules.py.
+rules=(J/"powerarmor/V176MicroMgRules.java").read_text(encoding="utf-8")
+assert "COOLDOWN_TICKS=2" in rules and "tick%5L==0L||tick%5L==2L" in rules, "V176_B729_EIGHT_SHOT_RULES_DRIFT"
 
 edit("powerarmor/V176MicroMgFire.java",
  '''  double side=((now/5L)&1L)==0L?0.27D:-0.27D;
