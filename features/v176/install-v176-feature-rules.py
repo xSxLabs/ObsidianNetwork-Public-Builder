@@ -12,6 +12,7 @@ target=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 rules={
  "V176BackpackRules.java":"backpack",
  "V176BackpackCodec.java":"backpack",
+ "V176BackpackItemState.java":"backpack",
  "V176PowerMonitorRules.java":"power",
  "V176PowerSleepRules.java":"powerarmor",
 }
