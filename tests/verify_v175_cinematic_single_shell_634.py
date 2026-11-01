@@ -64,6 +64,10 @@ assert "PowerArmorRuntime.SLOTS" in world and "stand.discard();" in world
 assert "tickCount>51" in visual and "PowerArmorRecall.isVisualActive(getUUID())" in visual
 assert '\"animation.power_armor.equip\":\"animation.power_armor.unequip\"' in visual
 assert "RenderLivingEvent.Pre" in guard and "RegisterRenderStateModifiersEvent" in guard
+# B635: NeoForge 26.1 places this mod-bus event in client.renderstate,
+# NOT client.event. Fail before Gradle if the wrong import comes back.
+assert "import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;" in guard
+assert "import net.neoforged.neoforge.client.event.RegisterRenderStateModifiersEvent;" not in guard
 assert "PowerArmorSuitWorld.full(stand)" in guard and "stand.isInvisible()" in guard
 assert "getRenderDataOrDefault(HIDE_OWNER,false)" in guard and "event.setCanceled(true)" in guard
 assert "V175_HEAD_FIRST_JETS" in (J/"powerarmor/PowerArmorRecall.java").read_text()
