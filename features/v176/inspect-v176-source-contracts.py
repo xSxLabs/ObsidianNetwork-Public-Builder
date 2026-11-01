@@ -14,6 +14,8 @@ FILES={
  "ACTION_CLIENT":"client/PowerArmorBuild98Client.java",
  "SERVER_COMMANDS":"powerarmor/PowerArmorCommands.java",
  "ARMOR_STATION":"powerarmor/ArmorStationBlock.java",
+ "ARMOR_MENU":"powerarmor/ArmorStationMenu.java",
+ "ARMOR_STAND":"powerarmor/PowerArmorStand.java",
  "UPGRADE_ITEM":"powerarmor/UpgradeCardItem.java",
  "KEYS":"powerarmor/PowerArmorExitKeyClient.java",
  "STORAGE_MENU":"menu/StorageTerminalMenu.java",
@@ -31,7 +33,7 @@ for label,rel in FILES.items():
   continue
  lines=p.read_text(encoding="utf-8").splitlines()
  print("V176_CLASS",label,rel,"lines",len(lines))
- if label in ("ACTION_WHEEL","ARMOR_RUNTIME","SERVER_COMMANDS","UPGRADE_ITEM","KEYS"):
+ if label in ("ACTION_WHEEL","ARMOR_RUNTIME","SERVER_COMMANDS","UPGRADE_ITEM","KEYS","ARMOR_MENU","ARMOR_STAND"):
   selected=list(enumerate(lines,1))
  elif label in ("SUIT_WORLD","SUIT_VISUAL","ARMOR_STATION","STORAGE_MENU","ACTION_CLIENT"):
   indices={i for i,s in enumerate(lines) if any(k in s.lower() for k in KEYWORDS)}
