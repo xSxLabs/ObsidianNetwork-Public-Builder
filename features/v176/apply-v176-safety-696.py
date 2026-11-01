@@ -15,14 +15,31 @@ def edit(rel, before, after):
     assert src.count(before)==1, ("V176_B696_SOURCE_DRIFT",rel,src.count(before),before[:90])
     path.write_text(src.replace(before,after,1),encoding="utf-8")
 
+# Ensure suit ownership can be checked on *remote clients*. Persistent
+# vanilla entity tags do not travel in the spawn packet; CustomName metadata
+# does, while its visible flag remains false.
+edit("powerarmor/PowerArmorSuitWorld.java",
+ '   stand.setInvisible(false);\n   pose(stand,0,false);',
+ '   stand.setInvisible(false);\n   stand.setCustomName(Component.literal("xsxlabs_v176_owner_"+player.getUUID()));\n   stand.setCustomNameVisible(false);\n   pose(stand,0,false);')
+edit("powerarmor/V176CompanionMode.java",
+ '  ArmorStand suit=find(player,72.0D);\n  if(suit==null||suit.isInvisible())return;',
+ '  ArmorStand suit=find(player,72.0D);\n  if(suit==null||suit.isInvisible())return;\n'
+ '  if(suit.getCustomName()==null || !suit.getCustomName().getString().equals("xsxlabs_v176_owner_"+player.getUUID())){\n'
+ '   suit.setCustomName(Component.literal("xsxlabs_v176_owner_"+player.getUUID()));\n'
+ '   suit.setCustomNameVisible(false);\n'
+ '  }')
+
 # A real nearby suit must have BOTH the dedicated marker and exact owner tag.
 # Vanilla armor stands belonging to others must never hijack the radial wheel.
 edit("client/V176CompanionClient.java",
  '''    new AABB(mc.player.blockPosition()).inflate(16.0D),s->{
       int tier=PowerArmorRuntime.tier(s.getItemBySlot(EquipmentSlot.HEAD),0);''',
  '''    new AABB(mc.player.blockPosition()).inflate(16.0D),s->{
-      if(!s.entityTags().contains("xsxlabs_power_armor_suit_v17") ||
-         !s.entityTags().contains("xsxlabs_power_armor_owner_"+mc.player.getUUID()))return false;
+      // Entity tags are NOT synced to the client. Verify the owner through
+      // the invisible, metadata-synchronized custom name instead.
+      if(s.getCustomName()==null ||
+         !s.getCustomName().getString().equals("xsxlabs_v176_owner_"+mc.player.getUUID()))
+         return false;
       int tier=PowerArmorRuntime.tier(s.getItemBySlot(EquipmentSlot.HEAD),0);''')
 
 # Projectiles are physically simulated, and can pass a player/pet before reaching
