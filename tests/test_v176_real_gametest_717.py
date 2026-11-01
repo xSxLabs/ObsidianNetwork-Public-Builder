@@ -22,7 +22,7 @@ class LiveWeaponTestWiring(unittest.TestCase):
                   stands.get(0).discard();
                   System.out.println("POWER_ARMOR_REAL_ROUNDTRIP_V69 PASS tier=MK"+(tier+1)+
                       " first_exit=true duplicate_click_guard=true previous_armor_restored=true protection5_roundtrip=true");
-// POWER_ARMOR_REAL_ROUNDTRIP_V69 dummy
+// End of isolated roundtrip fixture
 '''
    }
    for name,src in fixtures.items():
