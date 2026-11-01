@@ -28,8 +28,10 @@ class ExitBackToPlayer633(unittest.TestCase):
         self.assertLess(wf.index("apply-v175-exit-back-to-player-633.py"),
                         wf.index("apply-v175-uranium-enchant-veinminer.py"))
         push_branches = next(line for line in wf.splitlines() if "branches: [" in line)
-        self.assertNotIn("v1.7.5", push_branches,
-                         "B633 MUST NOT trigger a build without the user's build command")
+        self.assertIn("v1.7.5", push_branches)
+        # Only the user-requested B633 launch marker may execute the full job.
+        self.assertIn("github.ref != 'refs/heads/v1.7.5'", wf)
+        self.assertIn("B633_EXPLICIT_BUILD_20261101", wf)
         self.assertIn("workflow_dispatch:", wf)
     def test_patch_only_yaw_and_keeps_front_placement(self):
         # Minimal generated Java fixture: match B117 source, and include
