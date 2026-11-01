@@ -47,9 +47,6 @@ edit(rel,
   pose.translate(0.14F,0.12F,-0.10F);''',
  '''  // Camera-side right arm: raise top-mounted gun above the forearm surface.
   pose.translate(0.14F,-0.035F,-0.12F);''')
-edit(rel,
- '''  pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-19.0F));''',
- '''  pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-19.0F));''') if False else None
 edit("powerarmor/V176MicroMgFire.java",
  '''  // Only the wearer's RIGHT wrist has a muzzle. Left arm remains unarmed.
   Vec3 origin=p.getEyePosition().add(dir.scale(0.50D))
