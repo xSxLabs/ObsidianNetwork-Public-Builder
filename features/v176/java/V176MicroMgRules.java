@@ -31,7 +31,7 @@ public final class V176MicroMgRules {
  public static boolean cooldownReady(long tick,long lastShotTick){
   if(lastShotTick<0)return true; // First trigger responds instantly.
   return tick>=lastShotTick && tick-lastShotTick>=COOLDOWN_TICKS
-      &&(tick%5L==0L||tick%5L==2L); // 0,2,5,7,... 8 shots per second
+      &&tick%5L!=4L; // 0,1,2,3,5,6,7,8,... 16 shots per second
  }
  public static boolean canSpawn(long fe,long tick,long lastShotTick){
   return fe>=FE_PER_SHOT&&cooldownReady(tick,lastShotTick);
