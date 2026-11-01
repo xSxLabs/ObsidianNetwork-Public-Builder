@@ -167,6 +167,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_upper_arm_mount_739.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_upper_arm_deployment_745.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_ingame_visual_follow_750.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_ingame_feedback_757.py' -v
           mkdir -p /tmp/v176-micromg-rules
           javac -d /tmp/v176-micromg-rules features/v176/java/V176MicroMgRules.java features/v176/java/V176MicroMgRulesTest.java
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176MicroMgRulesTest
@@ -3989,6 +3990,8 @@ jobs:
             python3 features/v176/apply-v176-upper-arm-mount-739.py
             python3 features/v176/apply-v176-upper-arm-deployment-745.py
             python3 features/v176/apply-v176-ingame-visual-follow-750.py
+            python3 features/v176/apply-v176-ingame-feedback-757.py
+            echo 'B757_16_RPS_FIRST_PERSON_ARM_TURRET_GLASS_ICE_FOLLOW_ICON PASS'
             echo 'B750_VISIBLE_GUN_RAISED_ARM_AND_FOLLOW_ANIMATIONS PASS'
             echo 'B745_TRUE_UPPER_RIGHT_ARM_STAGED_DEPLOYMENT PASS'
             echo 'B739_UPPER_RIGHT_ARM_MOUNT_WITH_OPENING_HATCH PASS'
