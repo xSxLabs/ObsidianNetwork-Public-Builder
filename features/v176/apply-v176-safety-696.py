@@ -2,7 +2,7 @@
 """v1.7.6 B696: projectile bystander safety, suit targeting and mode cleanup.
 
 Runs only after the existing B676 FE/projectile/companion overlays.
-No change to Recall, entry/exit, variant textures or old armor stations.
+No change to Recall, entry/exit animation keyframes, variants or armor stations.
 """
 import os
 from pathlib import Path
