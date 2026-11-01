@@ -91,4 +91,36 @@ public final class V176LootingSupport {
  }
 }
 """,encoding="utf-8")
+source=J/"powerarmor/V176LootingEvents.java"
+assert not source.exists()
+source.write_text("""package dev.obsidiannetwork.powerarmor;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.enchanting.EnchantedEntityLootEvent;
+
+/** Use the real vanilla loot tables rather than inventing after-death bonus drops. */
+@EventBusSubscriber(modid="obsidiannetwork")
+public final class V176LootingEvents {
+ private V176LootingEvents(){}
+ public static final String SHOT_PREFIX="xsxlabs_micro_mg_looting_";
+ public static void mark(Projectile shot,int looting){
+  if(looting>=1&&looting<=3)shot.addTag(SHOT_PREFIX+looting);
+ }
+ public static int level(Entity shot){
+  if(!(shot instanceof Projectile))return 0;
+  for(int n=3;n>=1;n--)
+   if(shot.entityTags().contains(SHOT_PREFIX+n))return n;
+  return 0;
+ }
+ @SubscribeEvent public static void onLoot(EnchantedEntityLootEvent event){
+  if(!event.getEnchantment().is(Enchantments.LOOTING))return;
+  Entity direct=event.getDamageSource().getDirectEntity();
+  int n=level(direct);
+  if(n>event.getEnchantmentLevel())event.setEnchantmentLevel(n);
+ }
+}
+""",encoding="utf-8")
 print("V176_B674_LOOTING_ANVIL_AND_STATION_ROUNDTRIP_PASS")
