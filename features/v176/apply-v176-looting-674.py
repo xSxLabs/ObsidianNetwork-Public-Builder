@@ -57,8 +57,7 @@ replace("powerarmor/ArmorStationMenu.java",
     boolean micro="micro_mg".equals(values.get(i));
     if(micro)V176LootingSupport.restore(returned,String.join(",",values),owner.registryAccess());
     values.remove(i);
-    if(micro)values.removeIf(V176LootingSupport::isLootingToken);
-    chest.set(''')
+    if(micro)values.removeIf(V176LootingSupport::isLootingToken);''')
 replace("powerarmor/ArmorStationMenu.java",
  'setCarried(new ItemStack(item));',
  '    setCarried(returned);')
