@@ -160,7 +160,7 @@ for old,new,count in (
  ("new Animation(stand,48,entering,","new Animation(stand,80,entering,",3),
  ("int t=49-animation.ticks();","int t=81-animation.ticks();",1),
  ("progress/48F","progress/80F",1),
- ("pose(stand,48,false)","pose(stand,80,false)",1)):
+ ("pose(stand,48,false)","pose(stand,80,false)",2)):
  assert s.count(old)==count,("B642_80_TICK_RUNTIME",old,s.count(old))
  s=s.replace(old,new)
 # Neutral fallback world-stand pose while the owner mesh is visible:
