@@ -35,14 +35,23 @@ def find_registration(code,name):
 
 for name in ids:
  start,end,entry=find_registration(s,name)
- assert ".requiresCorrectToolForDrops()" in entry,("B639_REQUIRE_PICKAXE",name,entry)
+ # B640: The CURRENT multiblock skin is intentionally installed as
+ # .strength(0.0F,0.0F) WITHOUT a correct-tool requirement by a later v1.7.4
+ # reconstruction patch. Reapply actual survival mining properties HERE,
+ # after all legacy overlays. Don't change constructor, noOcclusion, geometry,
+ # render state or multiblock logic. All 12 names get the same rule.
  hits=list(re.finditer(
    r'\.strength\(\s*([0-9]+(?:\.[0-9]+)?F)\s*,\s*([0-9]+(?:\.[0-9]+)?F)\s*\)',entry))
- assert len(hits)==1,("B639_STRENGTH_DRIFT",name,len(hits),entry)
+ assert len(hits)==1,("B640_STRENGTH_DRIFT",name,len(hits),entry)
  strength=hits[0]
- old=strength.group(1)
- assert old in ("3.0F","3.5F","6.0F"),("B639_UNEXPECTED_EXISTING_HARDNESS",name,old)
- entry=entry[:strength.start(1)]+"6.0F"+entry[strength.end(1):]
+ old_hard,old_blast=strength.group(1),strength.group(2)
+ assert old_hard in ("0.0F","3.0F","3.5F","6.0F"),(
+   "B640_UNEXPECTED_EXISTING_HARDNESS",name,old_hard)
+ assert old_blast in ("0.0F","9.0F"),(
+   "B640_UNEXPECTED_EXISTING_BLAST_RESISTANCE",name,old_blast)
+ has_tool=".requiresCorrectToolForDrops()" in entry
+ replacement=".strength(6.0F,9.0F)"+("" if has_tool else ".requiresCorrectToolForDrops()")
+ entry=entry[:strength.start()]+replacement+entry[strength.end():]
  s=s[:start]+entry+s[end:]
 assert s!=before
 mod.write_text(s,encoding="utf-8")
@@ -64,4 +73,4 @@ for name in ids:
    r'\.strength\(\s*6\.0F\s*,\s*[0-9]+(?:\.[0-9]+)?F\s*\)',
    entry))==1,(name,"mining hardness was not updated",entry)
 
-print("V175_B639_ALL_REACTOR_POWERBANK_PICKAXE_PASS: 7 reactor + 5 powerbank blocks; hardness 6.0, correct-tool required, all 12 mineable/pickaxe; ~20 ticks Netherite; no gameplay changes")
+print("V175_B640_ALL_REACTOR_POWERBANK_PICKAXE_PASS: 7 reactor + 5 powerbank blocks; hardness 6.0, correct-tool required, all 12 mineable/pickaxe; ~20 ticks Netherite; no gameplay changes")
