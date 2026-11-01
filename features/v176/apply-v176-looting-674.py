@@ -52,7 +52,7 @@ replace("powerarmor/ArmorStationMenu.java",
       if("micro_mg".equals(id))
        V176LootingSupport.restore(disk,String.join(",",values),owner.registryAccess());''')
 replace("powerarmor/ArmorStationMenu.java",
- '    values.remove(i);\n    chest.set(',
+ 'values.remove(i);',
  '''    ItemStack returned=new ItemStack(item);
     boolean micro="micro_mg".equals(values.get(i));
     if(micro)V176LootingSupport.restore(returned,String.join(",",values),owner.registryAccess());
