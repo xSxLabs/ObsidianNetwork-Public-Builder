@@ -172,6 +172,12 @@ jobs:
           javac -d /tmp/v176-micromg-rules features/v176/java/V176MicroMgRules.java features/v176/java/V176MicroMgRulesTest.java
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176MicroMgRulesTest
           echo 'B664_V176_MICRO_MG_RULES_PREFLIGHT PASS'
+          javac -d /tmp/v176-micromg-rules features/v176/java/V176BackpackRules.java features/v176/java/V176BackpackRulesTest.java features/v176/java/V176PowerMonitorRules.java features/v176/java/V176PowerMonitorRulesTest.java features/v176/java/V176PowerSleepRules.java features/v176/java/V176PowerSleepRulesTest.java
+          java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.backpack.V176BackpackRulesTest
+          java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.power.V176PowerMonitorRulesTest
+          java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176PowerSleepRulesTest
+          python3 -m py_compile features/v176/generate-v176-backpack-24-models.py features/v176/apply-v176-powerarmor-sleep.py features/v176/install-v176-feature-rules.py
+          echo 'B767_V176_BACKPACK_POWER_MONITOR_SLEEP_RULES_PREFLIGHT PASS'
       # B640: fast regression for the real zero-hardness registrations that
       # made B639 red. Validate BEFORE private checkout and reconstruction.
       - name: B640 multiblock mining 12-block preflight
@@ -3991,6 +3997,11 @@ jobs:
             python3 features/v176/apply-v176-upper-arm-deployment-745.py
             python3 features/v176/apply-v176-ingame-visual-follow-750.py
             python3 features/v176/apply-v176-ingame-feedback-757.py
+            # Add-only v1.7.6 feature source and original color matched assets.
+            # NO build is authorized by this push; the existing explicit gate remains.
+            python3 features/v176/install-v176-feature-rules.py
+            python3 features/v176/apply-v176-powerarmor-sleep.py
+            python3 features/v176/generate-v176-backpack-24-models.py
             echo 'B757_16_RPS_FIRST_PERSON_ARM_TURRET_GLASS_ICE_FOLLOW_ICON PASS'
             echo 'B750_VISIBLE_GUN_RAISED_ARM_AND_FOLLOW_ANIMATIONS PASS'
             echo 'B745_TRUE_UPPER_RIGHT_ARM_STAGED_DEPLOYMENT PASS'
