@@ -179,18 +179,21 @@ new="""   // V175_B637_CREATIVE_JETS: glide OR card-enabled powered creative fli
    if(!boost && p.tickCount%2!=0)continue;"""
 assert s.count(old)==1,("B637 jets gate",s.count(old))
 s=s.replace(old,new)
-old="   Vec3 backwards=look.scale(-0.3);"
-assert s.count(old)==1
-s=s.replace(old,"   Vec3 backwards=creativeArmor?new Vec3(0D,-.24D,0D):look.scale(-.3);")
-old="""     mc.level.addParticle(ParticleTypes.END_ROD,px,py,pz,
-       -look.x*(boost?0.18:0.06),-look.y*(boost?0.18:0.06)-0.02,
-       -look.z*(boost?0.18:0.06));"""
-new="""     mc.level.addParticle(ParticleTypes.END_ROD,px,py,pz,
+# B638: the integrated B124 + later overlays change the jet offset text.
+# Preserve the validated four-nozzle placement. B637 previously asserted a
+# stale exact line and stopped the build before it reached Java.
+# Rewrite ONLY the existing END_ROD velocity, keeping the gliding behavior.
+import re
+pattern=re.compile(r"mc\.level\.addParticle\(ParticleTypes\.END_ROD,px,py,pz,[^;]{0,360}\);",re.S)
+matches=list(pattern.finditer(s))
+assert len(matches)==1,("B638_END_ROD_EMITTER_COUNT",len(matches))
+original=matches[0].group(0)
+assert all(x in original for x in ("look.x","look.y","look.z","boost"))
+new="""mc.level.addParticle(ParticleTypes.END_ROD,px,py,pz,
        creativeArmor?0D:-look.x*(boost?0.18:0.06),
        creativeArmor?-.14D:-look.y*(boost?0.18:0.06)-0.02,
        creativeArmor?0D:-look.z*(boost?0.18:0.06));"""
-assert s.count(old)==1,("B637 particle vector",s.count(old))
-s=s.replace(old,new)
+s=s[:matches[0].start()]+new+s[matches[0].end():]
 assert s.count("for(var p:mc.level.players())")==1
 assert s.count("for(int limb=0;limb<4;limb++)")==1
 assert "ParticleTypes.CLOUD" in s and "BUILD124_SHARED_ELYTRA_PARTICLES" in s
