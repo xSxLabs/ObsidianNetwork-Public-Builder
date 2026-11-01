@@ -22,13 +22,13 @@ edit("powerarmor/PowerArmorCommands.java",
  '   .then(Commands.literal("attack").executes(c->V176AttackModeServer.toggle(c.getSource().getPlayerOrException()))));')
 # Existing PowerArmorRuntime is already subscribed by the mod.
 edit("powerarmor/PowerArmorRuntime.java",
- '   if(!(event.getEntity() instanceof ServerPlayer p))return;\n   if(p.tickCount%5!=0)return;',
- '   if(!(event.getEntity() instanceof ServerPlayer p))return;\n'
- '   V176AttackModeServer.maintain(p);\n   if(p.tickCount%5!=0)return;')
+ '  if(!(event.getEntity() instanceof ServerPlayer p))return;\n  if(p.tickCount%5!=0)return;',
+ '  if(!(event.getEntity() instanceof ServerPlayer p))return;\n'
+ '  V176AttackModeServer.maintain(p);\n  if(p.tickCount%5!=0)return;')
 # The world stand must not inherit an active "worn gun" mode on transfer.
 edit("powerarmor/PowerArmorSuitWorld.java",
- '   for(EquipmentSlot slot:PowerArmorRuntime.SLOTS)worn.add(player.getItemBySlot(slot).copy());',
- '   for(EquipmentSlot slot:PowerArmorRuntime.SLOTS)worn.add(player.getItemBySlot(slot).copy());\n'
+ '  for(EquipmentSlot slot:PowerArmorRuntime.SLOTS)worn.add(player.getItemBySlot(slot).copy());',
+ '  for(EquipmentSlot slot:PowerArmorRuntime.SLOTS)worn.add(player.getItemBySlot(slot).copy());\n'
  '   V176AttackModeServer.clearFromChest(worn.get(1));')
 
 wheel="client/NetworkActionWheelClient.java"
