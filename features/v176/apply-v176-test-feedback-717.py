@@ -11,6 +11,7 @@ J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 def edit(rel, old, new):
  p=J/rel
  s=p.read_text(encoding="utf-8")
+ assert "if(p.connection!=null)" not in s,("V176_B717_ALREADY_APPLIED",rel)
  assert s.count(old)==1,("V176_B717_SOURCE_DRIFT",rel,s.count(old))
  p.write_text(s.replace(old,new,1),encoding="utf-8")
 
