@@ -145,12 +145,9 @@ edit("client/V176MicroMgVisualClient.java",
  @SubscribeEvent public static void worldSuit(RenderLivingEvent.Post<?,?,?> event){""")
 edit("client/V176MicroMgVisualClient.java",
 """  if(event.getRenderState().entityType!=EntityType.ARMOR_STAND)return;""",
-"""  // Filter against the actual world entity below, not the base enum type:
-  // custom PowerArmorStand entity types are valid ArmorStand subclasses too.
-  if(event.getRenderState().entityType!=EntityType.ARMOR_STAND
-     && !(Minecraft.getInstance().level!=null
-       && Minecraft.getInstance().level.getEntity(event.getRenderState().id)
-           instanceof ArmorStand))return;""")
+"""  // RenderLivingEvent has LivingEntityRenderState without an entity id.
+  // The current owned world suits are vanilla ArmorStand entities.
+  if(event.getRenderState().entityType!=EntityType.ARMOR_STAND)return;""")
 
 visual=(J/"client/V176MicroMgVisualClient.java").read_text(encoding="utf-8")
 mode=(J/"powerarmor/V176CompanionMode.java").read_text(encoding="utf-8")
