@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 p=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/build103/Build103GameTests.java"
 s=p.read_text(encoding="utf-8")
+assert "V176_B717_REAL_BULLET_FE_LOOTING PASS" not in s and "V176_B717_REAL_COMPANION_EXCLUSIVE PASS" not in s, ("V176_B717_DUPLICATE_TEST",str(p))
 def inject(old,new):
  global s
  assert s.count(old)==1,("V176_B717_GAMETEST_ANCHOR_DRIFT",s.count(old),old[:110])
