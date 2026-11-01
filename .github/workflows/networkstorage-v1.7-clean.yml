@@ -156,6 +156,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_looting_674.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_projectile_675.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_companion_676.py' -v
+          python3 -m pip install --user --quiet pillow
           python3 -m unittest discover -s tests -p 'test_v176_safety_visual_697.py' -v
           mkdir -p /tmp/v176-micromg-rules
           javac -d /tmp/v176-micromg-rules features/v176/java/V176MicroMgRules.java features/v176/java/V176MicroMgRulesTest.java
