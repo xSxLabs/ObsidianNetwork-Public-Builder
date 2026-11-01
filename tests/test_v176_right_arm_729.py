@@ -14,20 +14,20 @@ class RightArmOnlyTest(unittest.TestCase):
   self.assertIn('"model.leftArm" not in client',s)
   self.assertIn("HumanoidArm.RIGHT",s)
   self.assertIn("right.scale(0.34D)",s)
-  self.assertIn("tick%5L==0L||tick%5L==2L",s)
+  self.assertIn("tick%5L!=0L&&tick%5L!=2L",s)
   self.assertIn("if(player.tickCount%5==0)",s)
-  self.assertIn('bullets==8',rules)
-  self.assertIn("COOLDOWN_TICKS==2",rules)
+  self.assertIn('bullets==16',rules)
+  self.assertIn("COOLDOWN_TICKS==1",rules)
   self.assertNotIn("COOLDOWN_TICKS==5",rules)
-  self.assertIn("COOLDOWN_TICKS=2", (ROOT/"features/v176/java/V176MicroMgRules.java").read_text())
- def test_exact_8_shots_per_second_schedule(self):
+  self.assertIn("COOLDOWN_TICKS=1", (ROOT/"features/v176/java/V176MicroMgRules.java").read_text())
+ def test_exact_16_shots_per_second_schedule(self):
   def allowed(t,last):
-   return last < 0 or (t>=last and t-last>=2 and t%5 in (0,2))
+   return last < 0 or (t>=last and t-last>=1 and t%5!=4)
   for seconds in (1,2,5,10):
    last=-1; shots=[]
    for tick in range(seconds*20):
     if allowed(tick,last):
      shots.append(tick);last=tick
-   self.assertEqual(len(shots),seconds*8)
-   self.assertEqual(shots[:8],[0,2,5,7,10,12,15,17])
+   self.assertEqual(len(shots),seconds*16)
+   self.assertEqual(shots[:8],[0,1,2,3,5,6,7,8])
 if __name__=="__main__":unittest.main()
