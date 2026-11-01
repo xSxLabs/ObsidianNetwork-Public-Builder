@@ -8,7 +8,7 @@ package dev.obsidiannetwork.powerarmor;
 public final class V176MicroMgRules {
  private V176MicroMgRules(){}
  public static final long FE_PER_SHOT=3000L;
- public static final int COOLDOWN_TICKS=2; // 2/3-tick beat => exactly max 8 shots/sec at 20 TPS
+ public static final int COOLDOWN_TICKS=1; // 4 of 5 ticks => 16 shots/sec at 20 TPS
  public static final int AUTO_TARGET_RANGE_SQ=16*16;
  public static final int MANUAL_MAX_RANGE=24;
  public static final float DAMAGE_HP=2.0f;
