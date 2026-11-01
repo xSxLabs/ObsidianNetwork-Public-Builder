@@ -19,7 +19,7 @@ class ArmorGunsFinalTests(unittest.TestCase):
     Image.new("RGBA",(64,32),(45+tier*4%150,85+tier*3%100,100+tier*2%70,255)).save(dest)
    fixtures={
      "powerarmor/PowerArmorSuitWorld.java":
-       '   stand.setInvisible(false);\n   pose(stand,0,false);\n',
+       '  stand.setInvisible(false);\n  pose(stand,0,false);\n',
      "client/V176CompanionClient.java":
        '    new AABB(mc.player.blockPosition()).inflate(16.0D),s->{\n'
        '      int tier=PowerArmorRuntime.tier(s.getItemBySlot(EquipmentSlot.HEAD),0);\n',
