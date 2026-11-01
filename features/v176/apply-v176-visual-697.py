@@ -135,7 +135,7 @@ public final class V176MicroMgVisualClient {
   String raw=chest.get(ModDataComponents.POWER_ARMOR_UPGRADES.get());
   return raw!=null&&Arrays.asList(raw.split(",")).contains(key);
  }
- private static int tier(Entity entity){
+ private static int tier(LivingEntity entity){
   int tier=PowerArmorRuntime.tier(entity.getItemBySlot(EquipmentSlot.HEAD),0);
   if(tier<1||tier>24)return 0;
   for(int i=1;i<4;i++)
@@ -175,7 +175,7 @@ public final class V176MicroMgVisualClient {
   Minecraft mc=Minecraft.getInstance();
   if(mc.level==null)return;
   Entity entity=mc.level.getEntity(event.getRenderState().id);
-  if(!(entity instanceof Player))return;
+  if(!(entity instanceof Player player))return;
   int tier=tier(entity);
   if(tier==0)return;
   ItemStack chest=entity.getItemBySlot(EquipmentSlot.CHEST);
