@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """v1.7.6 B699: synchronized projectile trail and actual block/entity sparks.
 
-No hitscan, no fake arrows, no block destruction; particles follow real
-24-block server-owned bullet and expire with it.
+No hitscan, no fake arrows, no block destruction; particles follow the
+24-block server-owned bullet and expire with it. All clients get real entity sync.
 """
 import os
 from pathlib import Path
