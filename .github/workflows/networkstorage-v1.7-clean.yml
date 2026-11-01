@@ -172,8 +172,9 @@ jobs:
           javac -d /tmp/v176-micromg-rules features/v176/java/V176MicroMgRules.java features/v176/java/V176MicroMgRulesTest.java
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176MicroMgRulesTest
           echo 'B664_V176_MICRO_MG_RULES_PREFLIGHT PASS'
-          javac -d /tmp/v176-micromg-rules features/v176/java/V176BackpackRules.java features/v176/java/V176BackpackRulesTest.java features/v176/java/V176PowerMonitorRules.java features/v176/java/V176PowerMonitorRulesTest.java features/v176/java/V176PowerSleepRules.java features/v176/java/V176PowerSleepRulesTest.java
+          javac -d /tmp/v176-micromg-rules features/v176/java/V176BackpackRules.java features/v176/java/V176BackpackRulesTest.java features/v176/java/V176BackpackCodec.java features/v176/java/V176BackpackCodecTest.java features/v176/java/V176PowerMonitorRules.java features/v176/java/V176PowerMonitorRulesTest.java features/v176/java/V176PowerSleepRules.java features/v176/java/V176PowerSleepRulesTest.java
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.backpack.V176BackpackRulesTest
+          java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.backpack.V176BackpackCodecTest
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.power.V176PowerMonitorRulesTest
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176PowerSleepRulesTest
           python3 -m py_compile features/v176/generate-v176-backpack-24-models.py features/v176/apply-v176-powerarmor-sleep.py features/v176/install-v176-feature-rules.py
