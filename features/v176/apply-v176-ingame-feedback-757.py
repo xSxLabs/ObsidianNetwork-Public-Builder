@@ -55,7 +55,7 @@ edit("powerarmor/V176MicroMgProjectile.java",
    // Respect base server permissions and world border; no container damage.
    if((glass||ice)&&getOwner() instanceof ServerPlayer shooter
       &&server.getWorldBorder().isWithinBounds(position)
-      &&server.mayInteract(shooter,position))
+      &&shooter.mayInteract(server,position))
     server.destroyBlock(position,false,shooter);
    server.sendParticles(ParticleTypes.CRIT,hit.getLocation().x,
       hit.getLocation().y,hit.getLocation().z,2,0.025,0.025,0.025,0.015);
