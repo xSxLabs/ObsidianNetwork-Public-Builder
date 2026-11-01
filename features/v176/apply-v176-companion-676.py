@@ -157,7 +157,7 @@ public final class V176CompanionMode {
   if(suit==null||suit.isInvisible())return;
   boolean turret=suit.entityTags().contains(TURRET);
   if(!turret&&!suit.entityTags().contains(FOLLOW))return;
-  ServerLevel world=player.level();
+  ServerLevel world=(ServerLevel)player.level();
   double dist=suit.distanceToSqr(player);
   if(dist>14D*14D){
    Vec3 look=player.getLookAngle();
