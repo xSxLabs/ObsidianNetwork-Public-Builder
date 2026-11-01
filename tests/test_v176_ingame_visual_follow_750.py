@@ -10,7 +10,7 @@ class InGameFeedback750(unittest.TestCase):
   calls=[x.value for x in tree.body if isinstance(x,ast.Expr) and
          isinstance(x.value,ast.Call) and isinstance(x.value.func,ast.Name)
          and x.value.func.id=="edit"]
-  self.assertEqual(len(calls),9)
+  self.assertEqual(len(calls),10)
   per={}
   for x in calls:
    rel,old=[ast.literal_eval(z) for z in x.args[:2]]
