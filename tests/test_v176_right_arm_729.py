@@ -19,6 +19,7 @@ class RightArmOnlyTest(unittest.TestCase):
   self.assertIn('bullets==8',rules)
   self.assertIn("COOLDOWN_TICKS==2",rules)
   self.assertNotIn("COOLDOWN_TICKS==5",rules)
+  self.assertIn("COOLDOWN_TICKS=2", (ROOT/"features/v176/java/V176MicroMgRules.java").read_text())
  def test_exact_8_shots_per_second_schedule(self):
   def allowed(t,last):
    return last < 0 or (t>=last and t-last>=2 and t%5 in (0,2))
