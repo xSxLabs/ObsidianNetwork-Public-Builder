@@ -4003,6 +4003,9 @@ jobs:
             python3 features/v176/install-v176-feature-rules.py
             python3 features/v176/apply-v176-powerarmor-sleep.py
             python3 features/v176/generate-v176-backpack-24-models.py
+            python3 features/v176/apply-v176-backpack-registry.py
+            python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
+            python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             echo 'B757_16_RPS_FIRST_PERSON_ARM_TURRET_GLASS_ICE_FOLLOW_ICON PASS'
             echo 'B750_VISIBLE_GUN_RAISED_ARM_AND_FOLLOW_ANIMATIONS PASS'
             echo 'B745_TRUE_UPPER_RIGHT_ARM_STAGED_DEPLOYMENT PASS'
