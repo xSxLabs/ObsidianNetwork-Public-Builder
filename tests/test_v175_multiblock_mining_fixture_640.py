@@ -39,7 +39,7 @@ class Mineable640(unittest.TestCase):
    old_src=os.environ.get("V1_SOURCE_ROOT")
    old_res=os.environ.get("V1_RESOURCE_ROOT")
    try:
-    os.environ["V1_SOURCE_ROOT"]=str(java)
+    os.environ["V1_SOURCE_ROOT"]=str(root/"java")
     os.environ["V1_RESOURCE_ROOT"]=str(res)
     runpy.run_path(str(PATCH),run_name="__main__")
    finally:
