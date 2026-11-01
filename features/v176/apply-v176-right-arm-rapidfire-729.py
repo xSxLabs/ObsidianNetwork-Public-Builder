@@ -71,11 +71,11 @@ edit("powerarmor/V176CompanionMode.java",
   double dist=suit.distanceToSqr(player);
   if(dist>14D*14D){''')
 edit("powerarmor/V176CompanionMode.java",
- '''  if(!turret||!hasModule(suit))return;
-  ItemStack chest=suit.getItemBySlot(EquipmentSlot.CHEST);''',
+ '''  if(turret&&!hasModule(suit)){
+   suit.removeTag(TURRET);''',
  '''  }
-  if(!turret||!hasModule(suit))return;
-  ItemStack chest=suit.getItemBySlot(EquipmentSlot.CHEST);''')
+  if(turret&&!hasModule(suit)){
+   suit.removeTag(TURRET);''')
 edit("powerarmor/V176CompanionMode.java",
  '''   double barrelSide=((now/5L)&1L)==0L?0.27D:-0.27D;
    Vec3 muzzle=start.add(right.scale(barrelSide)).add(0,-0.20D,0);''',
