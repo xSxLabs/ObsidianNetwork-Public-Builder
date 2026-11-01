@@ -34,6 +34,10 @@ class LiveWeaponTestWiring(unittest.TestCase):
    source=(J/"build103/Build103GameTests.java").read_text()
    self.assertIn("V176_B717_REAL_BULLET_FE_LOOTING PASS",source)
    self.assertIn("V176_B717_REAL_COMPANION_EXCLUSIVE PASS",source)
+   # B755: the weapon toggle replaces the equipped chest stack for client sync;
+   # all GameTest FE checks must read the current server equipment slot.
+   self.assertEqual(source.count("chest=player.getItemBySlot(slots[1]);"),3)
+   self.assertIn("B755 disabling Attack changed remaining FE",source)
    for snippet in ("V176MicroMgFire.fire(player)==1","EnergyTool.energy(chest)==before-3000L",
                    "V176LootingSupport.restore(","V176CompanionMode.toggle(player,true)==1"):
     self.assertIn(snippet,source)
