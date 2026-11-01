@@ -36,10 +36,12 @@ for mk in range(1,25):
   assert rot[0]["vector"]==rot[-1]["vector"]==[0,0,0]
   assert all(float(t)<=4 for trk in tr.values() for frames in trk.values() for t in frames),mk
  approach=clips["animation.power_armor.recall_approach"]
- assert approach["animation_length"]==1.0,(mk,"approach timing")
+ assert approach["animation_length"]==.55,(mk,"approach timing")
  assert len(approach["bones"])>=16,(mk,"no original 17-part separation")
  assert approach["bones"]["root"]["rotation"]["0.0"]["vector"]==[90,0,0]
- assert approach["bones"]["root"]["rotation"]["1.0"]["vector"]==[90,0,0]
+ assert approach["bones"]["root"]["rotation"]["0.55"]["vector"]==[90,0,0]
+ assert all(0<=float(t)<=.55 for tracks in approach["bones"].values() for keys in tracks.values() for t in keys), (mk,"Recall approach keys outlive clip")
+ assert (14.0-6.0)/.72 >= .55*20,(mk,"Recall 14->6 interval too short for full disassembly")
  assert all(v["vector"][0]==90 for v in clips["animation.power_armor.recall_flight"]["bones"]["root"]["rotation"].values())
  for c in ("recall_brake","recall_dock"):
   f=clips["animation.power_armor."+c]["bones"]["faceplate"]
@@ -65,7 +67,7 @@ assert "float spread=0F;" in world
 assert "tickCount>83" in visual
 assert "entityData.set(V175_PHASE,next)" in visual
 assert 'case 5 -> "animation.power_armor.recall_approach";' in visual
-assert "visual.beginPhase(5);" in rec and "distance>6.0D&&distance<=14.0D" in rec
+assert "visual.beginPhase(5);" in rec and "distance>6.0D&&distance<=24.0D" in rec
 assert "player.level().addFreshEntity(visual)" in rec,( "not server-spawned, multi-player regression")
 assert "PowerArmorSuitWorld.recallEquip(stand,player)" in rec
 assert "if(progress<52)" in rec and "DOCKING" in rec
@@ -82,4 +84,4 @@ assert "player.getAbilities().flying" in jets
 assert "level.sendParticles(ParticleTypes.END_ROD" in jets
 assert "for(int nozzle=0;nozzle<4;nozzle++)" in jets
 assert "getPlayerList()" not in jets and "getAllEntities()" not in jets
-print("V175_B642_ALL_24_MK_MULTIPLAYER_GATE_PASS: 80-tick natural opening; 4s 36 bones; no X limbs; crown-rotation mask; early synced 14-block original-part Recall; server-wide flight jets; no duplicated particles, real equipment backup untouched")
+print("V175_B642_ALL_24_MK_MULTIPLAYER_GATE_PASS: 80-tick natural opening; 4s 36 bones; no X limbs; crown-rotation mask; early synced 24-block original-part Recall; server-wide flight jets; no duplicated particles, real equipment backup untouched")

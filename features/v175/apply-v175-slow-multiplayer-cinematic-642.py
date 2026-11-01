@@ -100,15 +100,15 @@ for mk in range(1,25):
   assert min(f["vector"][0] for f in tr["faceplate"]["rotation"].values())<-82
   assert max(f["vector"][2] for f in tr["faceplate"]["position"].values())<.6
  # Intermediate approach clip: the 17 ORIGINAL recall pieces unfasten
- # on the horizontal flight while still 14 blocks from the wearer.
+ # on the horizontal flight while still 24 blocks from the wearer.
  # The actual four items remain at the source until the existing
  # 52-tick docking transaction is fully complete.
  brake=data["animation.power_armor.recall_brake"]
  flight=data["animation.power_armor.recall_flight"]
  assert brake["animation_length"]==.6
  original_brake=json.loads(json.dumps(brake))
- approach={"animation_length":1.0,"loop":"hold_on_last_frame","bones":{
-   "root":{"rotation":{"0.0":pose([90,0,0]),"1.0":pose([90,0,0])}}
+ approach={"animation_length":.55,"loop":"hold_on_last_frame","bones":{
+   "root":{"rotation":{"0.0":pose([90,0,0]),"0.55":pose([90,0,0])}}
  }}
  for bone,channels in brake["bones"].items():
   if bone in ("root","faceplate"):continue
@@ -118,7 +118,7 @@ for mk in range(1,25):
    keys=list(fr)
    total=max(float(k) for k in keys)
    assert total>0,(mk,bone,ch)
-   result[ch]={str(round(float(k)/total,4)):val for k,val in fr.items()}
+   result[ch]={str(round(float(k)/total*.55,4)):val for k,val in fr.items()}
   if result:approach["bones"][bone]=result
  assert len(approach["bones"])>=16,(mk,"staggered original piece movement lost")
  data["animation.power_armor.recall_approach"]=approach
@@ -194,9 +194,9 @@ s=rec.read_text(encoding="utf-8")
 # The B637/641 game gate already proved this branch exists.
 anchor="if(distance<=6.0D || DOCKING.containsKey(player.getUUID())){"
 assert s.count(anchor)==1,("B644_RECALL_DOCK_CONDITION",s.count(anchor))
-s=s.replace(anchor,'''// V175_B644_EARLY_RECALL_PIECES: server-synced 14-block approach;
+s=s.replace(anchor,'''// V175_B645_EARLY_RECALL_PIECES: server-synced 24-block approach;
   // begin breaking into ORIGINAL armor parts before docking starts.
-  if(distance>6.0D&&distance<=14.0D&&!DOCKING.containsKey(player.getUUID()))
+  if(distance>6.0D&&distance<=24.0D&&!DOCKING.containsKey(player.getUUID()))
    visual.beginPhase(5);
   '''+anchor,1)
 assert "if(progress<52)" in s and "PowerArmorSuitWorld.recallEquip(stand,player)" in s
@@ -263,4 +263,4 @@ public final class PowerArmorCreativeFlightJets {
 }
 ''',encoding="utf-8")
 assert {str(p):sha(p) for p in protected}==before,"B642 altered suit/FE/inventory code"
-print(TAG+": 24 MK skins unchanged; 80-tick 4s normal, no X legs/arms, sliding+rotating mask on crown, 14-block early synced Recall fragments, 80-tick real roundtrip, server-to-all creative jets")
+print(TAG+": 24 MK skins unchanged; 80-tick 4s normal, no X legs/arms, sliding+rotating mask on crown, 24-block early synced Recall fragments, 80-tick real roundtrip, server-to-all creative jets")
