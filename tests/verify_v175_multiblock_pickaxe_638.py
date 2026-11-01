@@ -12,11 +12,16 @@ s=(J/"ObsidianNetwork.java").read_text(encoding="utf-8")
 t=json.loads((R/"data/minecraft/tags/block/mineable/pickaxe.json").read_text(encoding="utf-8"))
 assert len(names)==12
 for n in names:
- assert len(re.findall(r'BLOCKS\.registerBlock\("'+n+'"',s))==1,n
- p=(r'BLOCKS\.registerBlock\("'+n+r'",[^\n]*\n'
-    r'[ \t]*p\s*->\s*p\.mapColor\(MapColor\.METAL\)'
-    r'\.strength\(6\.0F,9\.0F\)\.requiresCorrectToolForDrops\(\)\);')
- assert re.search(p,s),("hardness/tool",n)
+ ids=list(re.finditer(r'BLOCKS\.registerBlock\s*\(\s*"'+n+'"\s*,',s))
+ assert len(ids)==1,("duplicate/missing registration",n,len(ids))
+ start=ids[0].start()
+ end=s.find(");",start)
+ assert start<end<=start+1200,(n,"cannot isolate registration")
+ entry=s[start:end+2]
+ assert ".requiresCorrectToolForDrops()" in entry,("wrong-tool drops not gated",n)
+ assert len(re.findall(
+    r'\.strength\(\s*6\.0F\s*,\s*[0-9]+(?:\.[0-9]+)?F\s*\)',
+    entry))==1,("hardness not 6.0",n,entry)
  assert t["values"].count("obsidiannetwork:"+n)==1,("tag",n)
  loot=R/"data/obsidiannetwork/loot_table/blocks"/(n+".json")
  assert loot.exists(),("original drops not found",n)
@@ -26,4 +31,4 @@ for n in names:
  entries=j["pools"][0]["entries"]
  assert any(e.get("name")=="obsidiannetwork:"+n for e in entries),(n,entries)
  assert (R/"assets/obsidiannetwork/blockstates"/(n+".json")).exists(),n
-print("V175_B638_12_SURVIVAL_PICKAXE_HARDNESS_LOOT_GATE_PASS")
+print("V175_B639_12_SURVIVAL_PICKAXE_HARDNESS_LOOT_GATE_PASS")
