@@ -20,7 +20,7 @@ class UpperArmDeploy745(unittest.TestCase):
   edits=[node.value for node in tree.body
    if isinstance(node,ast.Expr) and isinstance(node.value,ast.Call)
    and isinstance(node.value.func,ast.Name) and node.value.func.id=="edit"]
-  self.assertEqual(len(edits),11,"Unexpected changed B745 patch contracts")
+  self.assertEqual(len(edits),10,"Unexpected changed B745 patch contracts")
   olds=[ast.literal_eval(node.args[0]) for node in edits]
   self.assertEqual(len(olds),len(set(olds)),"Overlapping anchor strings")
   with tempfile.TemporaryDirectory() as td:
