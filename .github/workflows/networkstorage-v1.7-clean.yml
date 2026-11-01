@@ -161,6 +161,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_muzzle_698.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_projectile_effects_699.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_real_gametest_717.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_wheel_nearest_718.py' -v
           mkdir -p /tmp/v176-micromg-rules
           javac -d /tmp/v176-micromg-rules features/v176/java/V176MicroMgRules.java features/v176/java/V176MicroMgRulesTest.java
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176MicroMgRulesTest
@@ -3977,6 +3978,8 @@ jobs:
             python3 features/v176/apply-v176-projectile-effects-699.py
             python3 features/v176/apply-v176-test-feedback-717.py
             python3 features/v176/inject-v176-real-gametest-717.py
+            python3 features/v176/apply-v176-wheel-nearest-718.py
+            echo 'B718_NEAREST_OWNED_SUIT_ACTION_WHEEL PASS'
             echo 'B717_REAL_MK1_GAME_TEST_FE_BULLET_LOOTING_MODES_INJECTED PASS'
             echo 'B699_PHYSICAL_TRACER_AND_IMPACT_PARTICLES PASS'
             echo 'B698_ALTERNATING_TURRET_MUZZLE_AND_TRANSFER_GUARD PASS'
