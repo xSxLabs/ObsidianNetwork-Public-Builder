@@ -24,10 +24,20 @@ patch(menu,''' private static final class Storage extends SimpleContainer {
   private String query="";
   private boolean countSort=false;
   private int page=0;
+  private ItemStack cacheSource=ItemStack.EMPTY;
+  private long cacheTick=Long.MIN_VALUE;
+  private String cacheQuery="";
+  private boolean cacheSort=false;
+  private java.util.List<V176BackpackCells.Entry> cacheEntries=java.util.List.of();
   Storage(Source source){super(54);this.source=source;}
   private java.util.List<V176BackpackCells.Entry> resultEntries(){
    if(!source.valid())return java.util.List.of();
-   var result=new java.util.ArrayList<>(V176BackpackCells.entries(source.current()));
+   ItemStack live=source.current();
+   long tick=(source instanceof ItemSource item?item.player:
+       ((BlockSource)source).player).level().getGameTime();
+   if(cacheTick==tick&&cacheSource==live
+        &&cacheQuery.equals(query)&&cacheSort==countSort)return cacheEntries;
+   var result=new java.util.ArrayList<>(V176BackpackCells.entries(live));
    result.removeIf(e->{
     var id=e.descriptor().key().itemId().toString().toLowerCase(java.util.Locale.ROOT);
     return !id.contains(query);
@@ -38,7 +48,12 @@ patch(menu,''' private static final class Storage extends SimpleContainer {
    // The default is a stable item-identity sort, not unordered HashMap order.
    else result.sort(java.util.Comparator.comparing(
       e->e.descriptor().key().itemId().toString()));
-   return result;
+   cacheTick=tick;
+   cacheSource=live;
+   cacheQuery=query;
+   cacheSort=countSort;
+   cacheEntries=java.util.List.copyOf(result);
+   return cacheEntries;
   }
   private V176BackpackCells.Entry viewed(int slot){
    if(slot<4||slot>=49)return null;
