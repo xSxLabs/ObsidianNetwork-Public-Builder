@@ -332,6 +332,22 @@ patch(screen,'''     if(stack.getItem() instanceof dev.obsidiannetwork.item.Stor
       xsxMeterUsed+=eq.readStore(stack).used();
       xsxMeterCapacity+=dev.obsidiannetwork.core.EquipmentCellStore.CAPACITY;
      }''')
+# Exact visible amounts for the hovered stored item. Compact per-slot values
+# remain readable, while this line shows the full 64-bit integer from the
+# authoritative server's preview metadata, without 1k rounding loss.
+patch(screen,'''  g.text(font,"INVENTORY",8,127,0xffa3bbcc);''',
+'''  if(hoveredSlot!=null && hoveredSlot.getContainerSlot()>=4
+       &&hoveredSlot.getContainerSlot()<49 &&!filterEditor){
+   var hovered=hoveredSlot.getItem();
+   var data=hovered.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+        net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+   long exact=data.getLongOr("xsx_v176_preview_total",0L);
+   if(exact>0L){
+    g.text(font,"ITEM COUNT: "+String.format(java.util.Locale.ROOT,"%,d",exact),
+      8,127,0xffdff6ff);
+   }else g.text(font,"INVENTORY",8,127,0xffa3bbcc);
+  }else g.text(font,"INVENTORY",8,127,0xffa3bbcc);''')
+
 # Keep the registered item IDs and recipe data untouched; only change item
 # model geometry. 16x16 full cube with the number applied on every side face.
 digits={
