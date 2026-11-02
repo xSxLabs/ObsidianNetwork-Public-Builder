@@ -33,7 +33,7 @@ public final class V176BackpackScreen extends ContainerScreen {
   // Center the 176px main GUI AND its separate right-hand 88px module panel.
   leftPos=(width-(imageWidth+95))/2;
  }
- @Override protected void extractBackground(GuiGraphicsExtractor g,int mx,int my,float partial){
+ @Override public void extractBackground(GuiGraphicsExtractor g,int mx,int my,float partial){
   int x=getLeftPos(),y=getTopPos(),h=getImageHeight();
   // Main GUI remains visually independent of all four upgrade/cell slots.
   g.fill(x-3,y-3,x+179,y+h+3,0xff477c96);
