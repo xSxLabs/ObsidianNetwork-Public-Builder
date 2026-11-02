@@ -161,7 +161,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_backpack_meter_819.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_backpack_worn_820.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_free_terminal_xp_836.py' -v
-          python3 -m py_compile features/v176/apply-v176-neoforge261-api-839.py features/v176/apply-v176-attack-arm-843.py features/v176/apply-v176-obsidian-star-icons-843.py features/v176/apply-v176-b847-ingame-fixes.py features/v176/apply-v176-b857-backpack-equipment-gui-3d.py features/v176/apply-v176-b858-player-renderstate-arm-layer.py features/v176/apply-v176-b862-worn-micro-mg-render-gate.py
+          python3 -m py_compile features/v176/apply-v176-neoforge261-api-839.py features/v176/apply-v176-attack-arm-843.py features/v176/apply-v176-obsidian-star-icons-843.py features/v176/apply-v176-b847-ingame-fixes.py features/v176/apply-v176-b857-backpack-equipment-gui-3d.py features/v176/apply-v176-b858-player-renderstate-arm-layer.py features/v176/apply-v176-b862-worn-micro-mg-render-gate.py features/v176/apply-v176-b863-micro-mg-upgrade-icon.py
           python3 -m unittest discover -s tests -p 'test_v176_b862_backpack_weapon_staging.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b847_ingame_fixes.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_attack_wheel_anchor_670.py' -v
@@ -4047,6 +4047,7 @@ jobs:
             python3 features/v176/apply-v176-b857-backpack-equipment-gui-3d.py
             python3 features/v176/apply-v176-b858-player-renderstate-arm-layer.py
             python3 features/v176/apply-v176-b862-worn-micro-mg-render-gate.py
+            python3 features/v176/apply-v176-b863-micro-mg-upgrade-icon.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             python3 features/v176/verify-v176-cobble-obsidian-818.py
