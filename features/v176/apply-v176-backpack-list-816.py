@@ -92,7 +92,7 @@ patch(menu,'''   if(slot<0||slot>=4||!source.valid())return ItemStack.EMPTY;
    preview.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
       net.minecraft.world.item.component.CustomData.of(tag));
    return preview;''');
-/* fix placed-item viewing - need world access in source independent of type */
+# Placed backpacks must use the same world-backed codec as worn backpacks.
 patch(menu,'''   if(entry==null||!(source instanceof ItemSource item))return ItemStack.EMPTY;
    var world=item.player.level();''',
 '''   if(entry==null)return ItemStack.EMPTY;
