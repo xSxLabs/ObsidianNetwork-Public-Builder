@@ -107,7 +107,8 @@ injection="""public final class V176BackpackScreen extends ContainerScreen {
      net.minecraft.world.item.ItemStack stack,
      net.minecraft.world.inventory.Slot slot,
      String countText){
-  if(slot.index>=4 && slot.index<49){
+  int menuIndex=this.menu.slots.indexOf(slot);
+  if(menuIndex>=4 && menuIndex<49){
    // Scale only the 45 virtual listing slots around their center.
    // Vanilla inventory/modules do not shrink.
    float cx=slot.x+8.0F,cy=slot.y+8.0F;
