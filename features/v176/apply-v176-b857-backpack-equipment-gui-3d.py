@@ -317,7 +317,7 @@ patch(screen,
     var game=net.minecraft.client.Minecraft.getInstance();
     if(game.player!=null&&game.gameMode!=null
        &&(!menu.getSlot(4+entry).getItem().isEmpty()||!menu.getCarried().isEmpty())){
-     boolean shifting=net.minecraft.client.gui.screens.Screen.hasShiftDown();
+     boolean shifting=event.hasShiftDown();
      game.gameMode.handleContainerInput(menu.containerId,4+entry,button,
        shifting?net.minecraft.world.inventory.ContainerInput.QUICK_MOVE:
                 net.minecraft.world.inventory.ContainerInput.PICKUP,game.player);
