@@ -46,13 +46,10 @@ public final class V176CreativeFlightParticles {
     enabled?"Creative Flight-Partikel AN":"Creative Flight-Partikel AUS"),true);
   }
  }
- @EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT,
-                    bus=EventBusSubscriber.Bus.MOD)
- public static final class KeyRegistration {
-  private KeyRegistration(){}
-  @SubscribeEvent public static void register(RegisterKeyMappingsEvent event){
-   event.register(TOGGLE);
-  }
+ // NeoForge 26.1 automatically routes this event to the MOD bus;
+ // the removed Bus.MOD annotation attribute would fail compilation.
+ @SubscribeEvent public static void register(RegisterKeyMappingsEvent event){
+  event.register(TOGGLE);
  }
 }
 ''',encoding="utf-8")
