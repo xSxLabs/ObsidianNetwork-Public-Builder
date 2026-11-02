@@ -83,10 +83,9 @@ patch(menu,'''   if(entry==null||!(source instanceof ItemSource item))return Ite
 '''   if(entry==null)return ItemStack.EMPTY;
    var world=source instanceof ItemSource item?item.player.level()
         :((BlockSource)source).player.level();''');
-patch(menu,'''   for(int i=0;i<54;i++){
-    final int slot=i;
-    // Four real slots are in a separate right-side module OUTSIDE the main GUI.
-    // The other 50 placeholder slots must be completely inaccessible.
+patch(menu,'''  for(int i=0;i<54;i++){
+   final int slot=i;
+   // The other 50 placeholder slots must be completely inaccessible.
    slots.set(i,new Slot(storage,i,i<4?195:-100,i<4?20+i*24:-100){''',
 '''   for(int i=0;i<54;i++){
     final int slot=i;
