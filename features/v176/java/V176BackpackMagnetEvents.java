@@ -53,7 +53,12 @@ public final class V176BackpackMagnetEvents {
    if(remainder.isEmpty())entity.discard();
    else entity.setItem(remainder);
    items+=accepted;
-   backpack=updated;
+   // Each persist replaces the owned stack. Reacquire it before the next
+   // nearby entity so a stale bag snapshot is never written back.
+   try{location=V176BackpackEquipped.active(player);}
+   catch(RuntimeException changed){break;}
+   if(location==null||!V176BackpackCells.magnetEnabled(location.stack()))break;
+   backpack=location.stack();
   }
  }
 }

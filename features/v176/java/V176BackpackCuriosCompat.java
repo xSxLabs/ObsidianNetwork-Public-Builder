@@ -23,7 +23,7 @@ public final class V176BackpackCuriosCompat {
   }
   return null;
  }
- public static void save(ServerPlayer player,int index,ItemStack bag){
+ public static void save(ServerPlayer player,int index,ItemStack expected,ItemStack bag){
   if(!(bag.getItem() instanceof NetworkBackpackItem))
    throw new IllegalArgumentException("not a Network Backpack");
   var opt=CuriosApi.getCuriosInventory(player);
@@ -31,8 +31,8 @@ public final class V176BackpackCuriosCompat {
   var handler=opt.get().getStacksHandler("back");
   if(handler.isEmpty()||index<0||index>=handler.get().getStacks().getSlots())
    throw new IllegalStateException("Curios back slot unavailable");
-  if(!(handler.get().getStacks().getStackInSlot(index).getItem() instanceof NetworkBackpackItem))
-   throw new IllegalStateException("back slot moved");
+  if(!ItemStack.matches(handler.get().getStacks().getStackInSlot(index),expected))
+   throw new IllegalStateException("Curios back backpack changed during transaction");
   opt.get().setEquippedCurio("back",index,bag.copy());
  }
 }

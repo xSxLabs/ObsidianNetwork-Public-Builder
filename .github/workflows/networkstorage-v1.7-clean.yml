@@ -152,6 +152,7 @@ jobs:
           set -euo pipefail
           python3 -m py_compile features/v176/*.py tests/test_v176_micro_mg_module.py
           python3 -m unittest discover -s tests -p 'test_v176_micro_mg_module.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_backpack_pipeline_809.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_attack_wheel_anchor_670.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_looting_674.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_projectile_675.py' -v
@@ -4007,6 +4008,8 @@ jobs:
             python3 features/v176/generate-v176-backpack-24-models.py
             python3 features/v176/apply-v176-backpack-registry.py
             python3 features/v176/apply-v176-backpack-world-placement.py
+            # Apply real extract-only Item Cable capability after world BE exists.
+            python3 features/v176/apply-v176-backpack-cables.py
             python3 features/v176/apply-v176-reactor-powerbank-control.py
             python3 features/v176/apply-v176-network-power-ports.py
             python3 features/v176/apply-v176-power-monitor.py

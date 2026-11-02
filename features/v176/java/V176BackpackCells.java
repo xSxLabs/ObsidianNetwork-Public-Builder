@@ -164,7 +164,13 @@ public final class V176BackpackCells {
       Math.addExact(entry.getValue(),previous==null?0L:previous.count())));
    }
   }
-  return List.copyOf(data.values());
+  // Cable slots need a deterministic item identity order between mutations.
+  var sorted=new ArrayList<>(data.values());
+  sorted.sort(java.util.Comparator
+    .comparing((Entry e)->e.descriptor().key().itemId().toString())
+    .thenComparing((a,b)->java.util.Arrays.compareUnsigned(
+      a.descriptor().canonicalPayload(),b.descriptor().canonicalPayload())));
+  return List.copyOf(sorted);
  }
 
  public static long count(ItemStack bag,ItemKey key){

@@ -22,21 +22,29 @@ public final class V176BackpackEquipped {
     throw new IllegalArgumentException("not a Backpack");
    switch(where){
     case CHEST->{
-     if(!(player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof NetworkBackpackItem))
-      throw new IllegalStateException("chest item changed during operation");
+     if(!ItemStack.matches(player.getItemBySlot(EquipmentSlot.CHEST),stack))
+      throw new IllegalStateException("chest backpack changed during transaction");
      player.setItemSlot(EquipmentSlot.CHEST,updated);
     }
     case CURIOS_BACK->{
      try{
       Class<?> cls=Class.forName("dev.obsidiannetwork.backpack.V176BackpackCuriosCompat");
-      cls.getMethod("save",ServerPlayer.class,int.class,ItemStack.class)
-          .invoke(null,player,index,updated);
+      cls.getMethod("save",ServerPlayer.class,int.class,ItemStack.class,ItemStack.class)
+          .invoke(null,player,index,stack,updated);
      }catch(ReflectiveOperationException e){
       throw new IllegalStateException("Curios back write unavailable",e);
      }
     }
-    case MAIN_HAND->player.setItemInHand(InteractionHand.MAIN_HAND,updated);
-    case OFF_HAND->player.setItemInHand(InteractionHand.OFF_HAND,updated);
+    case MAIN_HAND->{
+     if(!ItemStack.matches(player.getItemInHand(InteractionHand.MAIN_HAND),stack))
+      throw new IllegalStateException("main-hand backpack changed during transaction");
+     player.setItemInHand(InteractionHand.MAIN_HAND,updated);
+    }
+    case OFF_HAND->{
+     if(!ItemStack.matches(player.getItemInHand(InteractionHand.OFF_HAND),stack))
+      throw new IllegalStateException("off-hand backpack changed during transaction");
+     player.setItemInHand(InteractionHand.OFF_HAND,updated);
+    }
    }
   }
  }
