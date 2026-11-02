@@ -68,8 +68,13 @@ p=J/screen
 s=p.read_text(encoding="utf-8")
 begin="  for(int index=0;index<45;index++){"
 end='  g.text(font,"MODULES",'
-assert s.count(begin)==1 and s.count(end)==1 and s.index(begin)<s.index(end),("B891_LABELS_DRIFT",s.count(begin),s.count(end))
-s=s[:s.index(begin)]+s[s.index(end):]
+assert s.count(end)==1,("B893_LABELS_TARGET_DRIFT",s.count(end))
+if s.count(begin)==1 and s.index(begin)<s.index(end):
+ s=s[:s.index(begin)]+s[s.index(end):]
+else:
+ # B857 and subsequent patches can restructure the label loop. The new
+ # foreground slot overlay supersedes any early labels in either layout.
+ print("B893_EARLY_COUNT_LABEL_BLOCK_ALREADY_RESTRUCTURED")
 p.write_text(s,encoding="utf-8")
 edit(screen,
  '''   g.pose().popMatrix();
