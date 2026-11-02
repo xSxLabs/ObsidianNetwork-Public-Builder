@@ -55,7 +55,11 @@ public abstract class V176AttackPlayerModelMixin extends HumanoidModel<AvatarRen
   this.rightArm.xRot=-1.535F;
   this.rightArm.yRot=0.0F;
   this.rightArm.zRot=0.0F;
-  ((PlayerModel)(Object)this).rightSleeve.copyFrom(this.rightArm);
+  // NeoForge 26.1 ModelPart has no copyFrom(); copy only the dynamic pose.
+  var sleeve=((PlayerModel)(Object)this).rightSleeve;
+  sleeve.xRot=this.rightArm.xRot;
+  sleeve.yRot=this.rightArm.yRot;
+  sleeve.zRot=this.rightArm.zRot;
  }
 }
 ''')
