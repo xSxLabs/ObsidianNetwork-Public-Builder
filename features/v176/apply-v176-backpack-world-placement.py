@@ -69,7 +69,12 @@ public final class NetworkBackpackItem extends BlockItem {
  }
  public int visualTier(){return visualTier;}
  @Override public InteractionResult useOn(UseOnContext context){
-  // Sneak placement only; otherwise route to the hand-open menu later.
+  // Picking up an already-placed bag takes precedence over placing another.
+  if(context.getPlayer()!=null&&context.getPlayer().isShiftKeyDown()
+      &&context.getLevel().getBlockState(context.getClickedPos()).getBlock()
+          instanceof NetworkBackpackBlock)
+   return NetworkBackpackBlock.interactAt(context.getLevel(),context.getClickedPos(),context.getPlayer());
+  // Sneak placement only; otherwise the carried GUI path handles opening.
   if(context.getPlayer()!=null&&!context.getPlayer().isShiftKeyDown())
    return InteractionResult.PASS;
   return super.useOn(context);
@@ -82,6 +87,9 @@ public final class NetworkBackpackItem extends BlockItem {
    if(context.getLevel().getBlockEntity(context.getClickedPos())
        instanceof NetworkBackpackBlockEntity worldBag)
     worldBag.setBackpack(original);
+   // Creative must transfer ownership as well; not leave an extra full bag.
+   if(context.getPlayer()!=null&&context.getPlayer().isCreative())
+    context.getItemInHand().shrink(1);
   }
   return result;
  }
@@ -131,7 +139,7 @@ public final class NetworkBackpackBlock extends BaseEntityBlock {
  @Nullable @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){
   return new NetworkBackpackBlockEntity(p,s);
  }
- private InteractionResult interact(Level world,BlockPos pos,Player player){
+ public static InteractionResult interactAt(Level world,BlockPos pos,Player player){
   if(!(player instanceof ServerPlayer server))return InteractionResult.SUCCESS;
   if(!(world.getBlockEntity(pos) instanceof NetworkBackpackBlockEntity bag))return InteractionResult.PASS;
   if(player.isShiftKeyDown()){
@@ -146,10 +154,10 @@ public final class NetworkBackpackBlock extends BaseEntityBlock {
   return InteractionResult.SUCCESS;
  }
  @Override protected InteractionResult useWithoutItem(BlockState s,Level w,BlockPos p,Player u,BlockHitResult hit){
-  return interact(w,p,u);
+  return interactAt(w,p,u);
  }
  @Override protected InteractionResult useItemOn(ItemStack item,BlockState state,Level w,BlockPos p,Player u,InteractionHand hand,BlockHitResult hit){
-  return hand==InteractionHand.MAIN_HAND?interact(w,p,u):InteractionResult.PASS;
+  return hand==InteractionHand.MAIN_HAND?interactAt(w,p,u):InteractionResult.PASS;
  }
 }
 ''')
