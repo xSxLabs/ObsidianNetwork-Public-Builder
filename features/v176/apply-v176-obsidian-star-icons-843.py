@@ -36,7 +36,7 @@ recipe("compressed_obsidian_1x",["OOO","OOO","OOO"],{"O":"minecraft:obsidian"},
        "obsidiannetwork:compressed_obsidian_1x")
 recipe("nether_star_from_compressed_obsidian",
        ["OOO","ODO","OOO"],
-       {"O":"obsidiannetwork:compressed_obsidian_1x","D":"minecraft:diamond"},
+       {"O":"obsidiannetwork:compressed_obsidian_1x","D":"minecraft:diamond_block"},
        "minecraft:nether_star")
 
 def badge(label):
@@ -88,4 +88,5 @@ for locale in ("de_de","en_us"):
  path.write_text(json.dumps(data,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
 # No crafting cycle or accidental overlap with the existing 729-cobble chain.
 assert (9*9*9)==729 and (9*729)==6561 and 8*6561==52488
+assert "minecraft:diamond_block" in (R/"data/obsidiannetwork/recipe/nether_star_from_compressed_obsidian.json").read_text()
 print("V176_B843_COBBLE_CORNER_BADGES_9_OBSIDIAN_COMPRESSED_NETHERSTAR PASS")
