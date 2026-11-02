@@ -83,12 +83,15 @@ p.write_text(s,encoding="utf-8")
 # button regex deliberately did not match them. Remove both by semantic
 # anchor and leave the 45-slot item view scrollable.
 p,s=read("client/V176BackpackScreen.java")
-for label,cmd in (("<","previous"),(">","next")):
- pattern=(r'(?s)\s*addRenderableWidget\(net\.minecraft\.client\.gui\.components\.Button\.builder\(\s*'
-          +re.escape('Component.literal("'+label+'"),b->{')
-          +r'.*?\.bounds\(leftPos\+\d+,topPos\+127,22,13\)\.build\(\);')
- s,num=re.subn(pattern,"\n",s,count=1)
- assert num==1,("B902_ARROW_NOT_REMOVED",label,num)
+for label in ("<",">"):
+ token='Component.literal("'+label+'")'
+ hits=[m.start() for m in re.finditer(re.escape(token),s)]
+ assert len(hits)<=1,("B902_MULTIPLE_ARROW_LABELS",label,len(hits))
+ if not hits:continue
+ a=s.rfind("  addRenderableWidget(",0,hits[0])
+ b=s.find(".build());",hits[0])
+ assert a>=0 and b>hits[0] and b-a<900,("B902_ARROW_BLOCK_DRIFT",label,a,b)
+ s=s[:a]+s[b+len(".build());"):]
 assert 'Component.literal("<")' not in s and 'Component.literal(">")' not in s
 assert 'private int filterPage=0;' in s
 s=s.replace(' private int filterPage=0;', ' private int filterPage=0;\n private int scrollRow=0;',1)
