@@ -66,7 +66,23 @@ model = {
         # Two visible rear shoulder straps, and a side buckle.
         element([4.4, 2, 10.5], [5.5, 13, 11.6], "#dark", [0, 8, 8, 12]),
         element([10.5, 2, 10.5], [11.6, 13, 11.6], "#dark", [0, 8, 8, 12]),
-        element([12.4, 7.1, 7.0], [13.0, 9.1, 10.3], "#glow", [8, 8, 12, 12])
+        element([12.4, 7.1, 7.0], [13.0, 9.1, 10.3], "#glow", [8, 8, 12, 12]),
+        # Original rounded-looking pack: front pocket, flap, side pouches, handles.
+        element([4.6,3,4.75], [11.4,11.6,5.4], "#body", [0, 0, 8, 12]),
+        element([4.8,12,5.2], [11.2,13.9,10.4], "#accent", [0, 0, 8, 12]),
+        element([5.2,13.6,6], [10.8,15.1,10], "#body", [0, 0, 8, 12]),
+        element([4.8,10.6,4.55], [11.2,12.4,5.15], "#accent", [0, 0, 8, 12]),
+        element([5.1,10.3,4.45], [10.9,10.7,5.25], "#dark", [0, 0, 8, 12]),
+        element([7.2,10,4.1], [8.8,11.7,4.55], "#glow", [0, 0, 8, 12]),
+        element([5,3.7,4.1], [11,7.2,5], "#body", [0, 0, 8, 12]),
+        element([5.5,3.2,4.4], [10.5,4,5.1], "#dark", [0, 0, 8, 12]),
+        element([5.2,6.5,3.8], [10.8,7.4,4.7], "#accent", [0, 0, 8, 12]),
+        element([2.7,4,6], [4.2,9.7,10], "#body", [0, 0, 8, 12]),
+        element([11.8,4,6], [13.3,9.7,10], "#body", [0, 0, 8, 12]),
+        element([2.5,8.9,6], [4.3,10,10], "#accent", [0, 0, 8, 12]),
+        element([11.7,8.9,6], [13.5,10,10], "#accent", [0, 0, 8, 12]),
+        element([5.1,13.7,9.8], [6.3,15.7,11.1], "#dark", [0, 0, 8, 12]),
+        element([9.7,13.7,9.8], [10.9,15.7,11.1], "#dark", [0, 0, 8, 12])
     ],
     "display": {
         "gui": {"rotation": [22, 35, 0], "translation": [0, -0.5, 0], "scale": [0.9, 0.9, 0.9]},
@@ -75,7 +91,7 @@ model = {
         "firstperson_righthand": {"rotation": [0, -35, 0], "scale": [0.7, 0.7, 0.7]}
     }
 }
-assert len(model["elements"]) == 10
+assert len(model["elements"]) == 25
 for tier in range(1, 25):
     slug = "network_backpack_mk" + str(tier)
     suit = TEX / "entity" / ("power_armor_visual_mk" + str(tier) + ".png")
