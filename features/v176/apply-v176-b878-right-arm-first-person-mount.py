@@ -47,8 +47,14 @@ public final class V176AttackPoseContext {
   Minecraft mc=Minecraft.getInstance();
   if(mc.level!=null){
    var entity=mc.level.getEntity(state.id);
-   if(entity instanceof Player player)
+   if(entity instanceof Player player){
+    int tier=V176MicroMgVisualClient.tier(player);
     armed=V176MicroMgVisualClient.armedForAttack(player);
+    // Repair the snapshot also when another renderer or lifecycle hook
+    // did not run the early avatar modifier; both model and gun use it.
+    state.setRenderData(V176AttackRenderState.TIER,tier);
+    state.setRenderData(V176AttackRenderState.ACTIVE,armed);
+   }
   }
   PLAYER_RENDER_ARMED.set(armed);
   if(armed){
