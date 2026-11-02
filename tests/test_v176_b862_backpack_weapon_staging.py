@@ -42,6 +42,8 @@ class V176StagedFixContracts(unittest.TestCase):
   self.assertIn('"parent":"minecraft:block/cube_all"',bag)
   self.assertIn("ITEM COUNT:",bag)
   self.assertIn("handleContainerInput(",bag)
+  self.assertIn("boolean shifting=event.hasShiftDown();",bag)
+  self.assertNotIn("Screen.hasShiftDown()",bag)
   self.assertIn("ContainerInput.QUICK_MOVE",bag)
   self.assertIn("return stack.getItem() instanceof StorageCellItem",bag)
   self.assertIn("||stack.getItem() instanceof EquipmentCellItem",bag)
