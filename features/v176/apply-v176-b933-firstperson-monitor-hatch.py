@@ -71,7 +71,20 @@ edit(gun,
  "  if(progress<=0.001F)return;")
 edit(gun,
  "  pose.translate(0.58F,-0.30F,-0.53F);",
- "  pose.translate(0.33F,-0.30F,-0.53F);")
+ "  pose.translate(0.21F,-0.30F,-0.53F);")
+# Existing 1P arm pose is still down/right according to B931 ingame images.
+# Raise the genuine arm further and move it left. 3P model setup is untouched.
+edit(gun,
+ "  pose.translate(-0.25F,0.10F,-0.18F);",
+ "  pose.translate(-0.43F,0.14F,-0.27F);")
+edit(gun,
+ "  pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-50.0F));",
+ "  pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-78.0F));")
+# The mount cap is a 4.2-model-pixel black rectangle beside the helmet.
+# Keep the slim barrel, reduce only the cap to a tiny attachment on upper arm.
+edit(gun,
+ "      .texOffs(0,15).addBox(-1.12F,3.5F,-3.05F,2.24F,4.2F,0.65F)",
+ "      .texOffs(0,15).addBox(-0.35F,5.0F,-3.05F,0.70F,1.10F,0.24F)")
 p=J/gun
 s=p.read_text(encoding="utf-8")
 start=" @SubscribeEvent public static void xsxlabs$aimVisibleFirstPersonArm(RenderArmEvent event){"
@@ -122,7 +135,10 @@ assert "for(int slot=0;slot<54;slot++)" in menu
 assert "for(int i=0;i<36;i++)" in screen_src
 assert "if(d.type()!=V176PowerMonitorRules.DeviceType.REACTOR)return true;" in screen_src
 assert "if(progress<=0.001F||event.getItemStack().isEmpty())return;" not in gun_src
-assert "pose.translate(0.33F,-0.30F,-0.53F);" in gun_src
+assert "pose.translate(0.21F,-0.30F,-0.53F);" in gun_src
+assert "pose.translate(-0.43F,0.14F,-0.27F);" in gun_src
+assert "rotationDegrees(-78.0F)" in gun_src
+assert ".texOffs(0,15).addBox(-0.35F,5.0F,-3.05F,0.70F,1.10F,0.24F)" in gun_src
 assert gun_src.count("firstPersonWithItem(RenderHandEvent event)")==0
 assert gun_src.count("firstPerson(RenderHandEvent event)")==1
 assert gun_src.count("firstPersonArm(RenderArmEvent event)")==0 or "xsxlabs$aimVisibleFirstPersonArm(RenderArmEvent event)" in gun_src
