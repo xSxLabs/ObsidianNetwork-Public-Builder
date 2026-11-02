@@ -25,7 +25,7 @@ class IngameRenderAndIconContracts(unittest.TestCase):
   self.assertIn("PLAYER_RENDER_ARMED.get()",s)
   # The old muzzle geometry occurs intentionally as an exact search anchor.
   # Verify the replacement is present; don't reject the patch's old-side text.
-  self.assertIn("No big square muzzle cap",s)
+  self.assertIn("No square black muzzle block or giant end cap.",s)
   # The replacement is constrained to createBarrel, not brittle B745 lines.
   self.assertIn('s.index(" private static ModelPart createBarrel(){")',s)
   self.assertIn('old_builder.count(".addBox(")>=2',s)
