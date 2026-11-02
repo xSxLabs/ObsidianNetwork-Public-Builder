@@ -74,7 +74,8 @@ edit(graph,
 model=A/"models/block/power_terminal.json"
 m=json.loads(model.read_text(encoding="utf-8"))
 assert m["textures"]["north"]=="obsidiannetwork:block/power_terminal_computer_front"
-assert m["textures"]["south"]=="obsidiannetwork:block/power_terminal_computer_back_white"
+# The preceding monitor patch may already set SOUTH to the TOP casing.
+# This operation is deliberately idempotent; only the NORTH front is fixed.
 assert "up" in m["textures"] and m["textures"]["up"]
 m["textures"]["south"]=m["textures"]["up"]
 model.write_text(json.dumps(m,indent=2)+"\n",encoding="utf-8")
