@@ -14,7 +14,7 @@ class Worn820(unittest.TestCase):
   s=(ROOT/"features/v176/apply-v176-backpack-worn-render-820.py").read_text("utf-8")
   self.assertIn("EquipmentSlot.CHEST",s)
   self.assertIn("ModList.get().isLoaded",s)
-  self.assertIn("getStacksHandler(\\"back\\")",s)
+  self.assertIn('getStacksHandler("back")',s)
   self.assertIn("NetworkBackpackItem",s)
  def test_build_stage(self):
   w=(ROOT/".github/workflows/networkstorage-v1.7-clean.yml").read_text("utf-8")
