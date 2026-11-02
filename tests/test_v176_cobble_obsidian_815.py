@@ -17,6 +17,13 @@ class Cobble815(unittest.TestCase):
         self.assertIn('"count":1',src)
         self.assertIn('"CCC","CCC","CCC"',src)
         self.assertEqual(9**3,729)
+    def test_nether_star_requires_diamond_block(self):
+        src=(ROOT/"features/v176/apply-v176-obsidian-star-icons-843.py").read_text("utf-8")
+        self.assertIn('recipe("nether_star_from_compressed_obsidian",',src)
+        self.assertIn('["OOO","ODO","OOO"]',src)
+        self.assertIn('{"O":"obsidiannetwork:compressed_obsidian_1x","D":"minecraft:diamond_block"}',src)
+        self.assertNotIn('"D":"minecraft:diamond"',src)
+        self.assertIn('"minecraft:nether_star")',src)
     def test_pipeline_orders_recipe_after_item_registration_and_audits(self):
         workflow=(ROOT/".github/workflows/networkstorage-v1.7-clean.yml").read_text("utf-8")
         register=workflow.index("python3 features/v176/apply-v176-backpack-registry.py")
