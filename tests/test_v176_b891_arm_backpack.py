@@ -1,6 +1,6 @@
 """B891 preflight contract: every user-reported issue has a fail-closed code path."""
 from pathlib import Path
-import ast, unittest
+import ast, unittest, re
 R=Path(__file__).resolve().parents[1]
 class B891ArmBackpack(unittest.TestCase):
  def test_all_fixes_staged(self):
@@ -27,6 +27,9 @@ class B891ArmBackpack(unittest.TestCase):
   a="python3 features/v176/apply-v176-b879-vanilla-block-icons-card-backpack-gui.py"
   b="python3 features/v176/apply-v176-b891-arm-backpack-ingame.py"
   self.assertLess(w.index(a),w.index(b))
-  self.assertEqual(w.count("B898_EXPLICIT_BUILD_20261102"),4)
-  self.assertIn("xsxlabs-network-storage-v1.7.6-b898-ingame-test",w)
+  marker=re.search(r"run-name:.*?'(B[0-9]+_EXPLICIT_BUILD_20261102)'",w)
+  self.assertIsNotNone(marker)
+  self.assertEqual(w.count(marker.group(1)),4)
+  version=marker.group(1).split("_")[0].lower()
+  self.assertIn("xsxlabs-network-storage-v1.7.6-"+version+"-ingame-test",w)
 if __name__=="__main__":unittest.main()
