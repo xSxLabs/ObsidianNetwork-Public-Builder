@@ -150,13 +150,13 @@ part=s[a:b]
 # The old B933 regex assumed one particular spelling of if(hatchOpen>0.001F).
 # Actual B932 output differs. Gate the real hatch model submission (if any)
 # directly, and only inside drawArm; do not touch BARREL or third-person pose.
-hatch_calls=len(re.findall(r'nodes\\.submitModelPart\\(\\s*HATCH\\s*,',part))
+hatch_calls=len(re.findall(r'nodes\.submitModelPart\(\s*HATCH\s*,',part))
 assert hatch_calls in (0,1),("B953_HATCH_SUBMIT_DRIFT",hatch_calls)
 if hatch_calls:
- assert re.search(r'float\\s+hatchOpen\\s*=',part), "B953_HATCH_PHASE_MISSING"
+ assert re.search(r'float\s+hatchOpen\s*=',part), "B953_HATCH_PHASE_MISSING"
  part,count=re.subn(
-    r'(?m)^([ \\t]*)(nodes\\.submitModelPart\\(\\s*HATCH\\s*,)',
-    lambda m: m.group(1)+"if(hatchOpen>0.001F&&hatchOpen<0.999F)\\n"+m.group(1)+m.group(2),
+    r'(?m)^([ \t]*)(nodes\.submitModelPart\(\s*HATCH\s*,)',
+    lambda m: m.group(1)+"if(hatchOpen>0.001F&&hatchOpen<0.999F)\n"+m.group(1)+m.group(2),
     part)
  assert count==1,("B953_HATCH_GUARD_DRIFT",count)
 # If there is no HATCH submission in drawArm, the already-correct geometry
@@ -187,7 +187,7 @@ assert gun_src.count("firstPersonArm(RenderArmEvent event)")==0 or "xsxlabs$aimV
 if hatch_calls:
  assert "if(hatchOpen>0.001F&&hatchOpen<0.999F)" in gun_src
 else:
- assert not re.search(r'nodes\\.submitModelPart\\(\\s*HATCH\\s*,',gun_src[gun_src.index(part_begin):gun_src.index(part_end)])
+ assert not re.search(r'nodes\.submitModelPart\(\s*HATCH\s*,',gun_src[gun_src.index(part_begin):gun_src.index(part_end)])
 assert m["textures"]["north"]=="obsidiannetwork:block/power_terminal_computer_front"
 assert m["textures"]["south"]==m["textures"]["up"]
 assert all((A/"models/block"/f"network_backpack_mk{i}.json").is_file() for i in range(1,25))
