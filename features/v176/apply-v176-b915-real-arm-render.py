@@ -64,10 +64,10 @@ public abstract class V176FinalArmBufferMixin {
 ''')
 edit("mixin/V176AttackPlayerModelMixin.java",
  " private void xsxlabs$aimRightArmLast(AvatarRenderState state,CallbackInfo callback){",
- " private void xsxlabs$aimRightArmLast(AvatarRenderState state,CallbackInfo callback){\n  dev.obsidiannetwork.client.V176FinalArmPose.track((Model<?>)(Object)this,state);")
+ " private void xsxlabs$aimRightArmLast(AvatarRenderState state,CallbackInfo callback){\n  dev.obsidiannetwork.client.V176FinalArmPose.track((net.minecraft.client.model.Model<?>)(Object)this,state);")
 edit("mixin/V176AttackRightArmMixin.java",
  " private void xsxlabs$forwardArmedRightArm(HumanoidRenderState state,CallbackInfo callback){",
- " private void xsxlabs$forwardArmedRightArm(HumanoidRenderState state,CallbackInfo callback){\n  dev.obsidiannetwork.client.V176FinalArmPose.track((Model<?>)(Object)this,state);")
+ " private void xsxlabs$forwardArmedRightArm(HumanoidRenderState state,CallbackInfo callback){\n  dev.obsidiannetwork.client.V176FinalArmPose.track((net.minecraft.client.model.Model<?>)(Object)this,state);")
 mx=R/"obsidiannetwork.mixins.json"
 data=json.loads(mx.read_text())
 assert "V176FinalArmBufferMixin" not in data["client"]
