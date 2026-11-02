@@ -140,16 +140,20 @@ edit("backpack/V176BackpackMenu.java",
       ||stack.getItem() instanceof NetworkBackpackItem)return false;''',
  '''if(slot<0||slot>=4||stack.isEmpty()
       ||stack.getItem() instanceof NetworkBackpackItem)return false;''')
-edit("backpack/V176BackpackMenu.java",
- '''     @Override public boolean mayPickup(Player player){
-      return slot<4&&storage.removable(slot);
-     }''',
- '''     @Override public boolean mayPickup(Player player){
-      return slot<4&&storage.removable(slot);
-     }
-     @Override public int getMaxStackSize(ItemStack stack){
-      return slot<4?1:super.getMaxStackSize(stack);
-     }''')
+# Match the complete original method irrespective of B810/B816 indentation.
+p=J/"backpack/V176BackpackMenu.java"
+txt=p.read_text(encoding="utf-8")
+import re
+pat=r'(@Override public boolean mayPickup\(Player player\)\{\s*return slot<4&&storage\.removable\(slot\);\s*\})'
+matches=list(re.finditer(pat,txt))
+assert len(matches)==1,("B848_SERVER_SLOT_ANCHOR",len(matches))
+m=matches[0]
+txt=txt[:m.end()]+"""
+    @Override public int getMaxStackSize(ItemStack stack){
+     return slot<4?1:super.getMaxStackSize(stack);
+    }"""+txt[m.end():]
+p.write_text(txt,encoding="utf-8")
+
 edit("backpack/V176BackpackMenu.java",
  '''  ItemStack updated=storage.source.current().copy();
   V176BackpackCells.Transfer result=V176BackpackCells.insert(''',
@@ -176,14 +180,18 @@ edit("backpack/V176BackpackMenu.java",
   V176BackpackCells.Transfer result=V176BackpackCells.insert(''')
 # Client displays a ChestMenu rather than server-specific V176BackpackMenu;
 # this wrapper needs identical limits for click/drag transaction predictions.
-edit("client/V176BackpackScreen.java",
- '''     @Override public boolean mayPickup(net.minecraft.world.entity.player.Player player){return slotIndex<4;}
-   });''',
- '''     @Override public boolean mayPickup(net.minecraft.world.entity.player.Player player){return slotIndex<4;}
+# The client ChestMenu has separate Slot instances; enforce the same bound.
+p=J/"client/V176BackpackScreen.java"
+txt=p.read_text(encoding="utf-8")
+pat=r'(@Override public boolean mayPickup\(net\.minecraft\.world\.entity\.player\.Player player\)\{return slotIndex<4;\})'
+matches=list(re.finditer(pat,txt))
+assert len(matches)==1,("B848_CLIENT_SLOT_ANCHOR",len(matches))
+m=matches[0]
+txt=txt[:m.end()]+"""
      @Override public int getMaxStackSize(net.minecraft.world.item.ItemStack stack){
       return slotIndex<4?1:super.getMaxStackSize(stack);
-     }
-   });''')
+     }"""+txt[m.end():]
+p.write_text(txt,encoding="utf-8")
 
 # Fixed asset paths: never use dynamically generated item texture layer refs
 # to the vanilla BLOCK atlas for an item. Provide real RGBA item PNGs in mod.
