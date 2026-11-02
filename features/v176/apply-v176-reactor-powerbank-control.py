@@ -111,10 +111,16 @@ change(p,
   if(xsxNetworkEnabled!=on){xsxNetworkEnabled=on;setChanged();}
  }
  public PowerbankBlockEntity(BlockPos p,BlockState s)''')
-# Same callback-preserving approach for current powerbank journaling.
-inject_commit(p,"journal","amount",
- """if(level!=null)xsxRates.committed(level.getGameTime(),
-      Math.max(0L,amount-before),Math.max(0L,before-amount));""")
+# v1.7.4 B579 switched Powerbank's journal to SnapshotJournal<long[]>
+# and already calls xsxCommittedTransfer(in,out) ONLY after a committed
+# transaction. Extend that existing callback: no duplicate rate snapshots,
+# no bogus Long onRootCommit signature and no simulation side effects.
+change(p,
+''' private void xsxCommittedTransfer(long in,long out){
+  if(level==null)return;''',
+''' private void xsxCommittedTransfer(long in,long out){
+  if(level==null)return;
+  xsxRates.committed(level.getGameTime(),Math.max(0L,in),Math.max(0L,out));''')
 change(p,
 '''     if(b==null||!b.formed)return 0;''',
 '''     if(b==null||!b.formed||!b.xsxNetworkEnabled)return 0;''',2)
