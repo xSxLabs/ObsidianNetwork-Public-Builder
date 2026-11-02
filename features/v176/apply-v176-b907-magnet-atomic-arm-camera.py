@@ -44,10 +44,15 @@ s=s[:s.index(begin)]+''' /**
    if(dropped.isEmpty()
        ||!V176BackpackCells.magnetAccepts(player.level(),updated,dropped))continue;
    try{
+    // Stage each individual drop on its own copy; a rejected insertion can
+    // never leave unaccounted partial data in the batch being committed.
+    ItemStack candidate=updated.copy();
     var transfer=V176BackpackCells.insert(
-        player.level(),updated,dropped,dropped.getCount());
-    if(transfer.accepted()>0)
+        player.level(),candidate,dropped,dropped.getCount());
+    if(transfer.accepted()>0){
+     updated=candidate;
      collected.add(new Collected(entity,(int)transfer.accepted()));
+    }
    }catch(RuntimeException rejected){
     // One malformed/unfit stack does not block other nearby dropped items.
    }
