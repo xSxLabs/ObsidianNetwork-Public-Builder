@@ -158,6 +158,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_backpack_list_816.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_backpack_magnet_gui_817.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_backpack_safety_818.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_backpack_meter_819.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_attack_wheel_anchor_670.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_looting_674.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_projectile_675.py' -v
@@ -4027,6 +4028,7 @@ jobs:
             python3 features/v176/apply-v176-backpack-list-816.py
             python3 features/v176/apply-v176-backpack-magnet-gui-817.py
             python3 features/v176/apply-v176-backpack-transfer-safety-818.py
+            python3 features/v176/apply-v176-backpack-meter-819.py
             python3 features/v176/apply-v176-cobble-obsidian-815.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
