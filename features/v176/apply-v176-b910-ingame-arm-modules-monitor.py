@@ -120,7 +120,6 @@ change(screen,
     var game=net.minecraft.client.Minecraft.getInstance();
     if(game.player!=null&&game.gameMode!=null)
      game.gameMode.handleContainerInput(menu.containerId,selected,button,
-         event.hasShiftDown()?net.minecraft.world.inventory.ContainerInput.QUICK_MOVE:
          net.minecraft.world.inventory.ContainerInput.PICKUP,game.player);
    }
    return true;
