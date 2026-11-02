@@ -201,13 +201,14 @@ patch(screen,'''  leftPos=(width-(imageWidth+95))/2;
  }''',
 '''  leftPos=(width-(imageWidth+95))/2;
   for(int i=0;i<54;i++){
+   final int slotIndex=i;
    var original=this.menu.getSlot(i);
    int sx=i<4?195:i<49?8+((i-4)%9)*18:-100;
    int sy=i<4?20+i*24:i<49?38+((i-4)/9)*18:-100;
    this.menu.slots.set(i,new net.minecraft.world.inventory.Slot(
       original.container,original.getContainerSlot(),sx,sy){
-     @Override public boolean mayPlace(net.minecraft.world.item.ItemStack stack){return false;}
-     @Override public boolean mayPickup(net.minecraft.world.entity.player.Player player){return false;}
+     @Override public boolean mayPlace(net.minecraft.world.item.ItemStack stack){return slotIndex<4;}
+     @Override public boolean mayPickup(net.minecraft.world.entity.player.Player player){return slotIndex<4;}
    });
   }
   searchBox=new net.minecraft.client.gui.components.EditBox(
