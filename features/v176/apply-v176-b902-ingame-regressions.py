@@ -27,6 +27,18 @@ def bounded(rel,begin,end,new):
 exact("backpack/V176BackpackMenu.java",
  "return player.isAlive()&&ItemStack.matches(live(),location.stack())\n       &&live().getItem() instanceof NetworkBackpackItem;",
  "return player.isAlive()&&live().getItem()==location.stack().getItem()\n       &&live().getCount()==1&&live().getItem() instanceof NetworkBackpackItem;")
+# Refresh only the expected snapshot for a SAME-LOCATION bag when the
+# magnet has updated its CONTAINER component since menu open. The source
+# location/slot remains fixed and the server revalidates it on every save.
+exact("backpack/V176BackpackMenu.java",
+ """   location.persist(player,next);
+   location=new V176BackpackEquipped.Located(location.where(),
+       location.index(),next.copy());""",
+ """   var latest=new V176BackpackEquipped.Located(location.where(),
+       location.index(),live().copy());
+   latest.persist(player,next);
+   location=new V176BackpackEquipped.Located(location.where(),
+       location.index(),next.copy());""")
 # A filled Cell is portable. The CELL_CONTENTS component travels with it.
 # Do not copy its stored contents into loose player inventory or empty it.
 bounded("backpack/V176BackpackMenu.java",
