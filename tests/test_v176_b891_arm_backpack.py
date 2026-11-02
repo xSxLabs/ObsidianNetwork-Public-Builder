@@ -21,7 +21,7 @@ class B891ArmBackpack(unittest.TestCase):
     'setTooltipForNextFrame(font,lines,mx,my)',
     'g.pose().popMatrix();'):
    self.assertIn(token,text)
-  self.assertIn('Component.literal("<"),b->command',text)
+  self.assertIn('B898_ARROW_PARTIAL_REMOVAL',text)
  def test_order_and_explicit_build(self):
   w=(R/".github/workflows/networkstorage-v1.7-clean.yml").read_text()
   a="python3 features/v176/apply-v176-b879-vanilla-block-icons-card-backpack-gui.py"
