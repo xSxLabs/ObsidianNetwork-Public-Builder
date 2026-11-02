@@ -253,7 +253,7 @@ public final class V176BackpackMenu extends ChestMenu {
   for(int i=0;i<54;i++){
    final int slot=i;
    // The other 50 placeholder slots must be completely inaccessible.
-   slots.set(i,new Slot(storage,i,i<4?8+i*18:-100,i<4?18:-100){
+   slots.set(i,new Slot(storage,i,i<4?195:-100,i<4?20+i*24:-100){
     @Override public boolean mayPlace(ItemStack stack){
      return slot<4&&storage.canPlaceItem(slot,stack)
           &&storage.getItem(slot).isEmpty();
