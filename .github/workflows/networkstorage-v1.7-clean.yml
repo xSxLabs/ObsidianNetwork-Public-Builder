@@ -4048,6 +4048,9 @@ jobs:
             python3 features/v176/apply-v176-b858-player-renderstate-arm-layer.py
             python3 features/v176/apply-v176-b862-worn-micro-mg-render-gate.py
             python3 features/v176/apply-v176-b863-micro-mg-upgrade-icon.py
+            # B878/B879: player+armor arm pose, camera hand, vanilla 3D cube badges, framed card.
+            python3 features/v176/apply-v176-b878-right-arm-first-person-mount.py
+            python3 features/v176/apply-v176-b879-vanilla-block-icons-card-backpack-gui.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             python3 features/v176/verify-v176-cobble-obsidian-818.py
@@ -4404,13 +4407,14 @@ jobs:
            for required_class in required: assert required_class in names,required_class
            assert 'assets/obsidiannetwork/textures/item/power_card_micro_mg.png' in names, 'B728_MISSING_MICRO_MG_INVENTORY_TEXTURE'
            model=json.loads(z.read('assets/obsidiannetwork/models/item/power_card_micro_mg.json'))
-           assert model['textures']=={'layer0':'minecraft:item/nether_star','layer1':'obsidiannetwork:item/power_card_micro_mg'}, 'B877_WRONG_SHARED_MICRO_MG_UPGRADE_CARD_STYLE'
+           assert model['textures']=={'layer0':'obsidiannetwork:item/power_card_micro_mg'}, 'B879_WRONG_FRAMED_MICRO_MG_UPGRADE_CARD'
            for tier in range(1,25):
             texture=f'assets/obsidiannetwork/textures/entity/micro_mg_mk{tier}.png'
             assert texture in names,texture
            assert 'dev/obsidiannetwork/mixin/V176AttackRightArmMixin.class' in names, 'B846_MISSING_FINAL_ARM_MIXIN'
            assert 'dev/obsidiannetwork/mixin/V176AttackPlayerModelMixin.class' in names, 'B847_MISSING_PLAYER_POSE_MIXIN'
            assert 'dev/obsidiannetwork/client/V176MicroMgLayer.class' in names, 'B847_MISSING_ARM_ATTACHED_RENDER_LAYER'
+           assert 'dev/obsidiannetwork/client/V176AttackPoseContext.class' in names, 'B878_MISSING_ARMOR_POSE_CONTEXT'
            assert 'dev/obsidiannetwork/client/V176MicroMgLayer$Register.class' in names, 'B847_MISSING_LAYER_REGISTRATION'
            mixin=json.loads(z.read('obsidiannetwork.mixins.json'))
            assert 'V176AttackRightArmMixin' in mixin.get('client',[]), 'B846_MIXIN_NOT_REGISTERED'
@@ -4428,7 +4432,10 @@ jobs:
             assert f'assets/obsidiannetwork/textures/item/{item}_base.png' in names, item
             obj=json.loads(z.read(f'assets/obsidiannetwork/models/item/{item}.json'))
             assert obj['parent']=='minecraft:block/cube_all', 'B877_FLAT_COMPRESSED_ITEM_'+item
-            assert obj['textures']=={'all':'obsidiannetwork:item/'+item+'_base'}, 'B877_WRONG_CUBE_TEXTURE_'+item
+            assert obj['textures']=={'all':('minecraft:block/obsidian' if item=='compressed_obsidian_1x' else 'minecraft:block/cobblestone')}, 'B879_NOT_VANILLA_BLOCK_TEXTURE_'+item
+            client=json.loads(z.read(f'assets/obsidiannetwork/items/{item}.json'))
+            assert client['model']['type']=='minecraft:composite', 'B879_MISSING_BADGE_COMPOSITE_'+item
+            assert f'assets/obsidiannetwork/textures/item/{item}_badge_small.png' in names, 'B879_MISSING_CORNER_BADGE_'+item
            obj=json.loads(z.read('assets/obsidiannetwork/models/item/network_backpack_magnet_upgrade.json'))
            assert obj['textures']['layer0']=='obsidiannetwork:item/network_backpack_magnet_upgrade'
            assert 'assets/obsidiannetwork/textures/item/network_backpack_magnet_upgrade.png' in names
