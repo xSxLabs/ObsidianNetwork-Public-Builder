@@ -94,9 +94,12 @@ edit(screen,
 
 # Replace page-by-45 jumping with a 9-slot/row offset, preserving 45 preview
 # slots and server validation. The mouse wheel scrolls a single row at a time.
-edit("backpack/V176BackpackMenu.java",
- "   int position=page*45+slot-4;",
- "   int position=page*9+slot-4;")
+# Both the preview access and transaction cursor index must scroll together.
+p=J/"backpack/V176BackpackMenu.java"
+source=p.read_text(encoding="utf-8")
+old_position="   int position=page*45+slot-4;"
+assert source.count(old_position)==2,("B894_ROW_INDEX_DRIFT",source.count(old_position))
+p.write_text(source.replace(old_position,"   int position=page*9+slot-4;"),encoding="utf-8")
 edit("backpack/V176BackpackMenu.java",
  "   int last=Math.max(0,(resultEntries().size()-1)/45);",
  "   int last=Math.max(0,(resultEntries().size()-45+8)/9);")
