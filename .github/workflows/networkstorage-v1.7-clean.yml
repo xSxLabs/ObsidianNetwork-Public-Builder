@@ -156,6 +156,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_backpack_sidepanel_811.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_cobble_obsidian_815.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_backpack_list_816.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_backpack_magnet_gui_817.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_attack_wheel_anchor_670.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_looting_674.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_projectile_675.py' -v
@@ -4023,6 +4024,7 @@ jobs:
             python3 features/v176/apply-v176-backpack-sidepanel-811.py
             # No-crafting Bag: live 3-cell listing + Search/Autofocus + Sort + withdrawal.
             python3 features/v176/apply-v176-backpack-list-816.py
+            python3 features/v176/apply-v176-backpack-magnet-gui-817.py
             python3 features/v176/apply-v176-cobble-obsidian-815.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources

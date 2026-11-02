@@ -124,6 +124,7 @@ patch(screen,'''  if(autoFocus)setFocused(searchBox);
   addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
       Component.literal("EDIT FILTERS"),b->{
        filterEditor=!filterEditor;
+       searchBox.setEditable(!filterEditor);
        filterPage=0;
        selectedFilter=-1;
        command("networkbackpack filters");
@@ -180,4 +181,14 @@ patch(screen,'''Component.literal(">"),b->command("networkbackpack next"))''',
        command("networkbackpack next");
        if(filterEditor)filterPage=Math.min(1,filterPage+1);
       })''')
+patch(screen,'''  g.fill(sx-2,sy-2,sx+SIDE_W,sy+116,0xff4b829d);
+  g.fill(sx,sy,sx+SIDE_W-2,sy+114,0xff142d3e);''',
+'''  g.fill(sx-2,sy-2,sx+SIDE_W,sy+194,0xff4b829d);
+  g.fill(sx,sy,sx+SIDE_W-2,sy+192,0xff142d3e);''')
+patch(screen,'''       countSort=!countSort;
+       command("networkbackpack sort");''',
+'''       if(!filterEditor){
+        countSort=!countSort;
+        command("networkbackpack sort");
+       }''')
 print("V176_B817_MAGNET_POWER_WHITE_BLACK_AND_54_FILTER_GHOSTS_STAGED")
