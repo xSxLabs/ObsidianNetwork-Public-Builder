@@ -110,20 +110,35 @@ visual="client/V176MicroMgVisualClient.java"
 # The worn gun was drawn along local -Z, although the right arm extends along
 # POSITIVE local Y. When raised, positive Y points forward; -Z points UP.
 # This is the physical reason the barrel appears behind/above the shoulder.
-change(visual,
-'''       .texOffs(0,0).addBox(-0.55F,3.3F,-3.40F,1.10F,4.6F,1.00F)
-       .texOffs(0,9).addBox(-0.75F,7.25F,-3.65F,1.50F,0.85F,1.50F)
-       .texOffs(0,15).addBox(-0.95F,3.1F,-3.30F,1.90F,1.70F,1.00F),''',
-'''      // Slim barrel runs ALONG the local arm from shoulder to muzzle.
-      // No big square muzzle cap or black block on the front.
+# Match the barrel builder by METHOD scope, never its spacing or inherited
+# dimensions (B729/B739/B745 have already rewritten the old three boxes).
+p=J/visual
+s=p.read_text(encoding="utf-8")
+start=s.index(" private static ModelPart createBarrel(){")
+end=s.index('  return LayerDefinition.create(mesh,32,32).bakeRoot().getChild("barrel");',start)
+body=s[start:end]
+builder="    CubeListBuilder.create()"
+finish="    PartPose.ZERO);"
+assert body.count(builder)==1 and body.count(finish)==1,("B889_BARREL_STRUCTURE_DRIFT",body[-1200:])
+a=body.index(builder)
+b=body.index(finish,a)
+old_builder=body[a:b]
+assert old_builder.count(".addBox(")>=2,("B889_BARREL_BOXES_MISSING",old_builder)
+new_builder="""    CubeListBuilder.create()
+      // Slim barrel along local positive Y; raised arm points this forward.
+      // No square black muzzle block or giant end cap.
       .texOffs(0,0).addBox(-0.9F,5.0F,-3.5F,1.8F,13.0F,1.8F)
-      // Small upper-arm mounting rail, ending before the elbow.
-      .texOffs(0,15).addBox(-1.6F,2.5F,-3.25F,3.2F,6.0F,0.8F),''')
+      // Small right-upper-arm mounting rail.
+      .texOffs(0,15).addBox(-1.6F,2.5F,-3.25F,3.2F,6.0F,0.8F),
+"""
+s=s[:start]+body[:a]+new_builder+body[b:]+s[end:]
+p.write_text(s,encoding="utf-8")
+
 # To follow the extending upper arm the deployment offset MUST be in its local
 # Y direction (along the barrel), not in the model's unrotated Z axis.
-change(visual,
-'''    pose.translate(0.0F,-(1.0F-gunOut)*0.32F,0.0F);''',
-'''    pose.translate(0.0F,-(1.0F-gunOut)*0.30F,0.0F);''')
+# B745 already slides the mounted gun along the local Y axis.
+# Preserve its 12-tick hatch/barrel choreography instead of replacing stale text.
+assert "gunOut" in p.read_text(encoding="utf-8"),"B889_STAGED_DEPLOYMENT_MISSING"
 change(visual,
 '''import net.neoforged.neoforge.client.event.RenderArmEvent;''',
 '''import net.neoforged.neoforge.client.event.RenderHandEvent;
