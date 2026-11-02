@@ -37,6 +37,7 @@ import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEve
 @EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
 public final class V176AttackRenderState {
  private V176AttackRenderState(){}
+ private static Boolean previousLocalActive=null;
  public static final ContextKey<Boolean> ACTIVE=new ContextKey<>(
     Identifier.fromNamespaceAndPath("obsidiannetwork","micro_mg_attack_active"));
  public static final ContextKey<Integer> TIER=new ContextKey<>(
@@ -47,8 +48,16 @@ public final class V176AttackRenderState {
    @Override public <T extends Avatar & ClientAvatarEntity> void accept(T avatar,AvatarRenderState state){
     if(avatar instanceof Player player){
      int tier=V176MicroMgVisualClient.tier(player);
+     boolean active=tier>0&&V176MicroMgVisualClient.armedForAttack(player);
      state.setRenderData(TIER,tier);
-     state.setRenderData(ACTIVE,tier>0&&V176MicroMgVisualClient.armedForAttack(player));
+     state.setRenderData(ACTIVE,active);
+     // Only log transitions for the LOCAL player: this proves that the
+     // armed server-sync reaches the avatar model and barrel render path.
+     if(player==net.minecraft.client.Minecraft.getInstance().player
+         &&(previousLocalActive==null||previousLocalActive!=active)){
+      previousLocalActive=active;
+      System.out.println("XSXLABS_B858_ATTACK_RENDER_SIGNAL tier="+tier+" armed="+active);
+     }
     }else{
      state.setRenderData(TIER,0);
      state.setRenderData(ACTIVE,false);
