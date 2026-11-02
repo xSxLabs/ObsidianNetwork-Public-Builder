@@ -312,8 +312,11 @@ patch(screen,
      command("networkbackpack take "+entry+" "+(button==1?1:64));
      return true;
     }''',
-'''    var game=net.minecraft.client.Minecraft.getInstance();
-    if(game.player!=null&&game.gameMode!=null){
+'''    // Always swallow clicks in the 45-slot item list, including empty cells.
+    // Never let an empty-list click fall through to vanilla module slot 0.
+    var game=net.minecraft.client.Minecraft.getInstance();
+    if(game.player!=null&&game.gameMode!=null
+       &&(!menu.getSlot(4+entry).getItem().isEmpty()||!menu.getCarried().isEmpty())){
      boolean shifting=net.minecraft.client.gui.screens.Screen.hasShiftDown();
      game.gameMode.handleContainerInput(menu.containerId,4+entry,button,
        shifting?net.minecraft.world.inventory.ContainerInput.QUICK_MOVE:
