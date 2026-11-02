@@ -179,7 +179,7 @@ jobs:
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.power.V176PowerRateMeterTest
           java -cp /tmp/v176-micromg-rules dev.obsidiannetwork.powerarmor.V176PowerSleepRulesTest
           python3 -m py_compile features/v176/generate-v176-backpack-24-models.py features/v176/apply-v176-powerarmor-sleep.py features/v176/install-v176-feature-rules.py
-          python3 -m py_compile features/v176/apply-v176-backpack-registry.py features/v176/apply-v176-reactor-powerbank-control.py features/v176/apply-v176-network-power-ports.py features/v176/apply-v176-backpack-world-placement.py
+          python3 -m py_compile features/v176/apply-v176-backpack-registry.py features/v176/apply-v176-reactor-powerbank-control.py features/v176/apply-v176-network-power-ports.py features/v176/apply-v176-backpack-world-placement.py features/v176/apply-v176-power-monitor.py features/v176/apply-v176-power-monitor-screen.py
           echo 'B767_V176_BACKPACK_POWER_MONITOR_SLEEP_RULES_PREFLIGHT PASS'
       # B640: fast regression for the real zero-hardness registrations that
       # made B639 red. Validate BEFORE private checkout and reconstruction.
@@ -4009,6 +4009,8 @@ jobs:
             python3 features/v176/apply-v176-backpack-world-placement.py
             python3 features/v176/apply-v176-reactor-powerbank-control.py
             python3 features/v176/apply-v176-network-power-ports.py
+            python3 features/v176/apply-v176-power-monitor.py
+            python3 features/v176/apply-v176-power-monitor-screen.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             echo 'B757_16_RPS_FIRST_PERSON_ARM_TURRET_GLASS_ICE_FOLLOW_ICON PASS'
