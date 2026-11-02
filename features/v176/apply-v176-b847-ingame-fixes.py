@@ -119,7 +119,7 @@ public final class V176MicroMgLayer extends RenderLayer<AvatarRenderState,Player
   V176MicroMgVisualClient.drawArm(pose,nodes,light,
       getParentModel().rightArm,tier,deployment);
  }
- @EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
+ @EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
  public static final class Register {
   private Register(){}
   @SubscribeEvent public static void layers(EntityRenderersEvent.AddLayers event){
@@ -261,7 +261,9 @@ palettes=[
  ((211,114,159),(52,145,120)),((69,166,112),(247,99,47))]
 assert len(palettes)==24 and len(set(palettes))==24
 def faces(tex,uv):return {k:{"texture":tex,"uv":uv} for k in ("north","south","east","west","up","down")}
-def el(f,t,tex,uv=[0,0,8,8]):return {"from":f,"to":t,"faces":faces(tex,uv)}
+def el(f,t,tex,uv=None):
+ if uv is None:uv={"#body":[0,0,8,8],"#accent":[8,0,16,8],"#dark":[0,8,8,16],"#glow":[8,8,16,16]}[tex]
+ return {"from":f,"to":t,"faces":faces(tex,uv)}
 # Distinct rounded-looking STEP silhouette in Minecraft cubes: tapered crown,
 # side pockets, lid, two exposed shoulder straps, front cargo pocket & handle.
 shape=[
