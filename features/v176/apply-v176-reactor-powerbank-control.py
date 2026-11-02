@@ -90,8 +90,7 @@ change(r,
 
 p="powerbank/PowerbankBlockEntity.java"
 change(p,
-''' private boolean formed=false;
- public PowerbankBlockEntity(BlockPos p,BlockState s)''',
+''' private boolean formed=false;''',
 ''' private boolean formed=false;
  private boolean xsxNetworkEnabled=true;
  private final dev.obsidiannetwork.power.V176PowerRateMeter xsxRates=
@@ -110,7 +109,7 @@ change(p,
   if(mode()!=PowerbankBlock.Mode.CONTROLLER)return;
   if(xsxNetworkEnabled!=on){xsxNetworkEnabled=on;setChanged();}
  }
- public PowerbankBlockEntity(BlockPos p,BlockState s)''')
+''')
 # v1.7.4 B579 switched Powerbank's journal to SnapshotJournal<long[]>
 # and already calls xsxCommittedTransfer(in,out) ONLY after a committed
 # transaction. Extend that existing callback: no duplicate rate snapshots,
