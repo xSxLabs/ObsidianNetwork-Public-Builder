@@ -13,6 +13,7 @@ rules={
  "V176BackpackRules.java":"backpack",
  "V176BackpackCodec.java":"backpack",
  "V176BackpackItemState.java":"backpack",
+ "V176BackpackCells.java":"backpack",
  "V176PowerMonitorRules.java":"power",
  "V176PowerRateMeter.java":"power",
  "V176PowerSleepRules.java":"powerarmor",
