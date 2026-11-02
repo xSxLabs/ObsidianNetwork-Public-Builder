@@ -169,7 +169,7 @@ p.write_text(s,encoding="utf-8")
 # and has an existing controller display face.
 for name,reference in (
  ("reactor_network_port","reactor_power_port"),
- ("powerbank_network_port","powerbank_input"),
+ ("powerbank_network_port","powerbank_input_port"),
  ("power_terminal","powerbank_controller")
 ):
  src=R/"models/block"/(reference+".json")
