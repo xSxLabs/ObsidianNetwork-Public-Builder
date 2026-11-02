@@ -176,7 +176,7 @@ replace_between(cells,
 # The GUI accepts Equipment Cell exactly where ordinary cells are accepted.
 menu="backpack/V176BackpackMenu.java"
 patch(menu,"import dev.obsidiannetwork.item.StorageCellItem;",
-          "import dev.obsidiannetwork.item.StorageCellItem;\nimport dev.obsidiannetwork.item.EquipmentCellItem;\nimport net.minecraft.world.inventory.ClickType;")
+          "import dev.obsidiannetwork.item.StorageCellItem;\nimport dev.obsidiannetwork.item.EquipmentCellItem;\nimport net.minecraft.world.inventory.ContainerInput;")
 patch(menu,"return stack.getItem() instanceof StorageCellItem;\n  }",
           "return stack.getItem() instanceof StorageCellItem\n        ||stack.getItem() instanceof EquipmentCellItem;\n  }")
 patch(menu,"return stack.getItem() instanceof StorageCellItem cell\n        &&cell.readStore(stack).used()==0;",
@@ -264,12 +264,12 @@ replace_between(menu,
  /** Server-authoritative terminal-style list clicks. No direct interaction
   * with magnet slot 0 occurs from clicking a blank/listing cell.
   */
- @Override public void clicked(int slotId,int button,ClickType type,Player player){
+ @Override public void clicked(int slotId,int button,ContainerInput type,Player player){
   if(slotId>=4&&slotId<49){
    if(!(player instanceof ServerPlayer server)||storage.filterEditor
        ||!storage.source.valid())return;
-   if(type==ClickType.QUICK_MOVE){shiftWithdraw(server,slotId);return;}
-   if(type!=ClickType.PICKUP||(button!=0&&button!=1))return;
+   if(type==ContainerInput.QUICK_MOVE){shiftWithdraw(server,slotId);return;}
+   if(type!=ContainerInput.PICKUP||(button!=0&&button!=1))return;
    ItemStack carried=getCarried();
    if(!carried.isEmpty()){
     if(carried.getItem() instanceof NetworkBackpackItem
@@ -315,9 +315,9 @@ patch(screen,
 '''    var game=net.minecraft.client.Minecraft.getInstance();
     if(game.player!=null&&game.gameMode!=null){
      boolean shifting=net.minecraft.client.gui.screens.Screen.hasShiftDown();
-     game.gameMode.handleInventoryMouseClick(menu.containerId,4+entry,button,
-       shifting?net.minecraft.world.inventory.ClickType.QUICK_MOVE:
-                net.minecraft.world.inventory.ClickType.PICKUP,game.player);
+     game.gameMode.handleContainerInput(menu.containerId,4+entry,button,
+       shifting?net.minecraft.world.inventory.ContainerInput.QUICK_MOVE:
+                net.minecraft.world.inventory.ContainerInput.PICKUP,game.player);
     }
     return true;''')
 # Exact capacity of mixed cells in the existing status bar.
