@@ -27,6 +27,6 @@ class B891ArmBackpack(unittest.TestCase):
   a="python3 features/v176/apply-v176-b879-vanilla-block-icons-card-backpack-gui.py"
   b="python3 features/v176/apply-v176-b891-arm-backpack-ingame.py"
   self.assertLess(w.index(a),w.index(b))
-  self.assertEqual(w.count("B895_EXPLICIT_BUILD_20261102"),4)
-  self.assertIn("xsxlabs-network-storage-v1.7.6-b895-ingame-test",w)
+  self.assertEqual(w.count("B896_EXPLICIT_BUILD_20261102"),4)
+  self.assertIn("xsxlabs-network-storage-v1.7.6-b896-ingame-test",w)
 if __name__=="__main__":unittest.main()

@@ -108,7 +108,12 @@ source=p.read_text(encoding="utf-8")
 page_method=re.search(r'(?s)(private boolean page\(int delta\)\{)(.*?)(\n\s*\})',source)
 assert page_method is not None,("B895_PAGE_METHOD_MISSING",source.count("private boolean page"))
 page_body=page_method.group(2)
-new_body,n=re.subn(r'(?m)^\s*int last\s*=.*?;\s*
+lines=page_body.splitlines(keepends=True)
+hits=[i for i,line in enumerate(lines) if "int last" in line]
+assert len(hits)==1 and "page=Math.max" in page_body,("B896_PAGE_BOUNDS_DRIFT",page_body)
+lines[hits[0]]="   int last=Math.max(0,(resultEntries().size()-45+8)/9);"+chr(10)
+source=source[:page_method.start(2)]+"".join(lines)+source[page_method.end(2):]
+p.write_text(source,encoding="utf-8")
 
 # Delete only the two paging arrows, preserve all controls/search/sort.
 edit(screen,
