@@ -6,6 +6,7 @@ before the full v1.7.6 Java compile. This is a source integration patch,
 not a replacement of the existing multiblock or existing energy ports.
 """
 import os
+import re
 from pathlib import Path
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 
@@ -14,6 +15,32 @@ def change(rel, old, new, expected=1):
  s=p.read_text(encoding="utf-8")
  assert s.count(old)==expected,("V176_POWER_CONTROL_SOURCE_DRIFT",rel,s.count(old),expected,old[:140])
  p.write_text(s.replace(old,new,expected),encoding="utf-8")
+
+
+def inject_commit(rel, journal_name, quantity, code):
+ """Patch a reconstructed energy SnapshotJournal without changing its original
+ commit/rollback body; new v1.7.4 patches can legally grow the callback."""
+ file=J/rel
+ source=file.read_text(encoding="utf-8")
+ journal=source.find(journal_name)
+ assert journal>=0,("V176_JOURNAL_NOT_FOUND",rel,journal_name)
+ m=re.search(r"(?:@Override\s+)?protected\s+void\s+onRootCommit\s*\(\s*Long\s+(\w+)\s*\)\s*\{",
+             source[journal:journal+2500])
+ assert m is not None,("V176_ENERGY_COMMIT_NOT_FOUND",rel,journal_name)
+ start=journal+m.end()
+ depth=1
+ end=start
+ while end<len(source) and depth:
+  if source[end]=="{":depth+=1
+  elif source[end]=="}":depth-=1
+  end+=1
+ assert depth==0 and quantity in source[start:end],(
+     "V176_ENERGY_COMMIT_SOURCE_CHANGED",rel,quantity)
+ name=m.group(1)
+ replacement=code.replace("before",name)
+ assert "xsxRates.committed" not in source[start:end],("V176_DUPLICATE_ENERGY_METER",rel)
+ source=source[:start]+"\n    "+replacement+"\n"+source[start:]
+ file.write_text(source,encoding="utf-8")
 
 r="reactor/ReactorControllerBlockEntity.java"
 change(r,
@@ -37,15 +64,11 @@ change(r,
   }
  }
  private String status="UNFORMED";''')
-change(r,
-'''   @Override protected void onRootCommit(Long before){if(before!=storedFe)setChanged();}''',
-'''   @Override protected void onRootCommit(Long before){
-    if(before!=storedFe){
-     if(level!=null&&before>storedFe)
-      xsxRates.committed(level.getGameTime(),0L,before-storedFe);
-     setChanged();
-    }
-   }''')
+# Existing v1.7.4 patches may expand the energy journal callback. Inject
+# telemetry without replacing or dropping any previous transaction semantics.
+inject_commit(r,"energyJournal","storedFe",
+ """if(level!=null&&before>storedFe)
+      xsxRates.committed(level.getGameTime(),0L,before-storedFe);""")
 change(r,
 '''    if(demand<=0||!formed)return 0;''',
 '''    if(demand<=0||!formed||!xsxNetworkEnabled)return 0;''')
@@ -87,15 +110,10 @@ change(p,
   if(xsxNetworkEnabled!=on){xsxNetworkEnabled=on;setChanged();}
  }
  public PowerbankBlockEntity(BlockPos p,BlockState s)''')
-change(p,
-'''    @Override protected void onRootCommit(Long before){if(amount!=before)setChanged();}''',
-'''    @Override protected void onRootCommit(Long before){
-     if(amount!=before){
-      if(level!=null)xsxRates.committed(level.getGameTime(),
-        Math.max(0L,amount-before),Math.max(0L,before-amount));
-      setChanged();
-     }
-    }''')
+# Same callback-preserving approach for current powerbank journaling.
+inject_commit(p,"journal","amount",
+ """if(level!=null)xsxRates.committed(level.getGameTime(),
+      Math.max(0L,amount-before),Math.max(0L,before-amount));""")
 change(p,
 '''     if(b==null||!b.formed)return 0;''',
 '''     if(b==null||!b.formed||!b.xsxNetworkEnabled)return 0;''',2)
