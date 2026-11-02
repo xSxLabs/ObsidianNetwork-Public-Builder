@@ -115,16 +115,17 @@ lines[hits[0]]="   int last=Math.max(0,(resultEntries().size()-45+8)/9);"+chr(10
 source=source[:page_method.start(2)]+"".join(lines)+source[page_method.end(2):]
 p.write_text(source,encoding="utf-8")
 
-# Delete only the two paging arrows, preserve all controls/search/sort.
-edit(screen,
- '''  addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
-      Component.literal("<"),b->command("networkbackpack previous"))
-       .bounds(leftPos+123,topPos+127,22,13).build());
-  addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
-      Component.literal(">"),b->command("networkbackpack next"))
-       .bounds(leftPos+147,topPos+127,22,13).build());
-''',
- "")
+# B857 may already have rearranged or removed the page buttons.
+# Remove exact command buttons by behavior, independent of whitespace.
+p=J/screen
+src=p.read_text(encoding="utf-8")
+arrow=re.compile(r'(?m)^\s*addRenderableWidget\(net\.minecraft\.client\.gui\.components\.Button\.builder\(\s*\n\s*Component\.literal\("[<>]"\),b->command\("networkbackpack (?:previous|next)"\)\)\s*\n\s*\.bounds\([^\n]*\)\.build\(\);\s*\n')
+src,count=arrow.subn(chr(10),src)
+assert count in (0,2),("B898_ARROW_PARTIAL_REMOVAL",count)
+assert 'b->command("networkbackpack previous")' not in src
+assert 'b->command("networkbackpack next")' not in src
+p.write_text(src,encoding="utf-8")
+
 
 edit(screen,
  '''  int x=(int)mx-getLeftPos(),y=(int)my-getTopPos();
