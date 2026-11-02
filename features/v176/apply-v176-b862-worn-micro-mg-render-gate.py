@@ -93,7 +93,7 @@ change(layer,
 # The Mixin body pose and render-layers share the SAME attack predicate.
 player_mixin=J/"mixin/V176AttackPlayerModelMixin.java"
 src=player_mixin.read_text(encoding="utf-8")
-assert "V176MicroMgVisualClient.armedForAttack(player)" in src
+assert "V176AttackRenderState.ACTIVE" in src, "B862 player mixin must consume the shared B858 render-state gate"
 # The real model final animation hook is where arm must be raised. B862
 # must not silently substitute model-only geometry for the whole arm.
 assert 'this.rightArm.xRot=-1.535F;' in src
