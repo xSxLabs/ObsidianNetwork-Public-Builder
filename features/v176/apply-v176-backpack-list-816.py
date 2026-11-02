@@ -168,7 +168,7 @@ patch(menu,''' public boolean magnetEnabled(){return storage.source.valid()''',
   return true;
  }
  public boolean magnetEnabled(){return storage.source.valid()''');
-const commands="backpack/V176BackpackCommands.java";
+commands="backpack/V176BackpackCommands.java"
 patch(commands,'''import net.minecraft.commands.Commands;''',
 '''import net.minecraft.commands.Commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
