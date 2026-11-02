@@ -41,9 +41,9 @@ public final class V176CreativeFlightParticles {
  @SubscribeEvent public static void clientTick(ClientTickEvent.Post event){
   while(TOGGLE.consumeClick()){
    enabled=!enabled;
-   var p=Minecraft.getInstance().player;
-   if(p!=null)p.displayClientMessage(Component.literal(
-    enabled?"Creative Flight-Partikel AN":"Creative Flight-Partikel AUS"),true);
+   Minecraft mc=Minecraft.getInstance();
+   if(mc.player!=null)mc.gui.setOverlayMessage(Component.literal(
+    enabled?"Creative Flight-Partikel AN":"Creative Flight-Partikel AUS"),false);
   }
  }
  // NeoForge 26.1 automatically routes this event to the MOD bus;
