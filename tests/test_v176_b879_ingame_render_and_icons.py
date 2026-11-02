@@ -23,7 +23,9 @@ class IngameRenderAndIconContracts(unittest.TestCase):
   self.assertIn("state.setRenderData(V176AttackRenderState.ACTIVE,armed)",s)
   self.assertIn("state.setRenderData(V176AttackRenderState.TIER,tier)",s)
   self.assertIn("PLAYER_RENDER_ARMED.get()",s)
-  self.assertNotIn(".texOffs(0,10).addBox(-1.25F,5.25F,-9.5F",s)
+  # The old muzzle geometry occurs intentionally as an exact search anchor.
+  # Verify the replacement is present; don't reject the patch's old-side text.
+  self.assertIn("No big square muzzle cap",s)
 
  def test_card_and_vanilla_model_targets(self):
   s=self.script("apply-v176-b879-vanilla-block-icons-card-backpack-gui.py")
