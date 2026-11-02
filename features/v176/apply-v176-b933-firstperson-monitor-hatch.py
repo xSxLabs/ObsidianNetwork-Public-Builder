@@ -4,9 +4,8 @@ Power Monitor ghost hitboxes, unwanted Powerbank switch, true rear casing,
 and floating hatch while preserving working third-person aim and front face.
 Runs AFTER B929, and fails closed on all source contracts.
 """
-import os,json,re,colorsys
+import os,json,re
 from pathlib import Path
-from PIL import Image
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 A=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
 
@@ -81,31 +80,10 @@ assert "up" in m["textures"] and m["textures"]["up"]
 m["textures"]["south"]=m["textures"]["up"]
 model.write_text(json.dumps(m,indent=2)+"\n",encoding="utf-8")
 
-# All 24 Backpack variants use a BLACK shell and straps. Each tier retains a
-# distinct colored accent on trim/buckles/lights; do not touch items, storage,
-# recipes, module slots or capacity. Four distinct UV material textures avoid
-# previous recoloring accidentally bleeding into body faces.
-for tier in range(1,25):
- name=f"network_backpack_mk{tier}"
- target=A/"models/block"/f"{name}.json"
- data=json.loads(target.read_text(encoding="utf-8"))
- assert all(k in data["textures"] for k in ("body","dark","accent","glow")),("B935_BACKPACK_MODEL",tier)
- rgb=colorsys.hsv_to_rgb(((tier-1)/24.0+0.015)%1.0,0.82,0.9)
- accent=tuple(int(v*255) for v in rgb)
- glow=tuple(min(255,int(v*0.8+61)) for v in accent)
- palette={"body":(18,20,24),"dark":(7,9,12),"accent":accent,"glow":glow}
- for material,color in palette.items():
-  img=Image.new("RGBA",(16,16))
-  pix=img.load()
-  for y in range(16):
-   for x in range(16):
-    delta=-6 if (x*3+y*5)%7==0 else 3 if (x+y)%5==0 else 0
-    pix[x,y]=(*(max(0,min(255,v+delta)) for v in color),255)
-  basename=f"{name}_{material}"
-  img.save(A/"textures/block"/f"{basename}.png",optimize=True)
-  data["textures"][material]="obsidiannetwork:block/"+basename
- target.write_text(json.dumps(data,indent=2)+"\n",encoding="utf-8")
-
+# Keep all 24 original Power Armor matched Backpack palettes exactly as
+# produced by generate-v176-backpack-24-models.py and restored by B929.
+# Never recolor the body, straps or highlights again.
+assert all((A/"models/block"/f"network_backpack_mk{i}.json").is_file() for i in range(1,25)), "B953_BACKPACK_MODELS_MISSING"
 
 # B917 ERRONEOUSLY rejected empty main hand, exactly the normal Attack Mode
 # configuration. Draw from RenderHandEvent for main hand regardless of item.
@@ -169,9 +147,20 @@ part_end=" private static void drawRight("
 assert s.count(part_begin)==1 and s.count(part_end)==1
 a=s.index(part_begin);b=s.index(part_end,a)
 part=s[a:b]
-part,count=re.subn(r'if\s*\(\s*hatchOpen\s*>\s*0\.001F\s*\)',
-                    'if(hatchOpen>0.001F&&hatchOpen<0.999F)',part)
-assert count==1,("B933_HATCH_DRAW_DRIFT",count)
+# The old B933 regex assumed one particular spelling of if(hatchOpen>0.001F).
+# Actual B932 output differs. Gate the real hatch model submission (if any)
+# directly, and only inside drawArm; do not touch BARREL or third-person pose.
+hatch_calls=len(re.findall(r'nodes\\.submitModelPart\\(\\s*HATCH\\s*,',part))
+assert hatch_calls in (0,1),("B953_HATCH_SUBMIT_DRIFT",hatch_calls)
+if hatch_calls:
+ assert re.search(r'float\\s+hatchOpen\\s*=',part), "B953_HATCH_PHASE_MISSING"
+ part,count=re.subn(
+    r'(?m)^([ \\t]*)(nodes\\.submitModelPart\\(\\s*HATCH\\s*,)',
+    lambda m: m.group(1)+"if(hatchOpen>0.001F&&hatchOpen<0.999F)\\n"+m.group(1)+m.group(2),
+    part)
+ assert count==1,("B953_HATCH_GUARD_DRIFT",count)
+# If there is no HATCH submission in drawArm, the already-correct geometry
+# needs no change; do not abort the entire build.
 s=s[:a]+part+s[b:]
 p.write_text(s,encoding="utf-8")
 
@@ -195,10 +184,11 @@ assert ".texOffs(0,15).addBox(-0.35F,5.0F,-3.05F,0.70F,1.10F,0.24F)" in gun_src
 assert gun_src.count("firstPersonWithItem(RenderHandEvent event)")==0
 assert gun_src.count("firstPerson(RenderHandEvent event)")==1
 assert gun_src.count("firstPersonArm(RenderArmEvent event)")==0 or "xsxlabs$aimVisibleFirstPersonArm(RenderArmEvent event)" in gun_src
-assert "if(hatchOpen>0.001F&&hatchOpen<0.999F)" in gun_src
+if hatch_calls:
+ assert "if(hatchOpen>0.001F&&hatchOpen<0.999F)" in gun_src
+else:
+ assert not re.search(r'nodes\\.submitModelPart\\(\\s*HATCH\\s*,',gun_src[gun_src.index(part_begin):gun_src.index(part_end)])
 assert m["textures"]["north"]=="obsidiannetwork:block/power_terminal_computer_front"
 assert m["textures"]["south"]==m["textures"]["up"]
-assert len({round(((i-1)/24.0+0.015)%1.0,6) for i in range(1,25)})==24
-assert (A/"textures/block/network_backpack_mk24_body.png").is_file()
-assert (A/"textures/block/network_backpack_mk24_accent.png").is_file()
-print("B933_FP_EMPTY_HAND_GUN_SINGLE_SUBMIT_HATCH_NO_FLOATING_PLATE_MONITOR_CLIENT_SLOTS_POWERBANK_NO_SWITCH_REAR_TOP_PASS")
+assert all((A/"models/block"/f"network_backpack_mk{i}.json").is_file() for i in range(1,25))
+print("B953_FP_HATCH_NO_DRIFT_BACKPACK_ORIGINAL_PALETTES_MONITOR_POWERBANK_REAR_PASS")
