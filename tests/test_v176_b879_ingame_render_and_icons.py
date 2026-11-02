@@ -34,7 +34,9 @@ class IngameRenderAndIconContracts(unittest.TestCase):
   self.assertIn('"minecraft:composite"',s)
   self.assertIn('_badge_small.png',s)
   self.assertIn('scale(0.72F,0.72F)',s)
-  self.assertIn('slot.index>=4 && slot.index<49',s)
+  self.assertIn('this.menu.slots.indexOf(slot)',s)
+  self.assertIn('menuIndex>=4 && menuIndex<49',s)
+  self.assertNotIn('slot.index>=4 && slot.index<49',s)
 
  def test_workflow_order_and_buildlock(self):
   w=(ROOT/".github/workflows/networkstorage-v1.7-clean.yml").read_text()
