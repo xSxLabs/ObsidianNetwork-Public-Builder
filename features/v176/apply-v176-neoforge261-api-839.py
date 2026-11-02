@@ -37,7 +37,7 @@ change("powerarmor/V176PowerSleepServer.java",
        "Math.floorMod(w.getOverworldClockTime(),24000L)")
 change("powerarmor/V176PowerSleepServer.java",
        "!p.isInWaterOrBubble()",
-       "!p.isInWater()&&!p.isInBubbleColumn()")
+       "!p.isInWater()&&!p.level().getBlockState(p.blockPosition()).is(net.minecraft.world.level.block.Blocks.BUBBLE_COLUMN)")
 change("powerarmor/V176PowerSleepServer.java",
        '''long day=world.getDayTime();
   world.setDayTime(Math.multiplyExact(Math.addExact(Math.floorDiv(day,24000L),1L),24000L));''',
