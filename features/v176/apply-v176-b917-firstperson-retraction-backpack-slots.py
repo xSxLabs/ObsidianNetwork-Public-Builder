@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """B917: fix first-person right-arm/barrel axis, OFF sequencing, black hatch,
-and invisible Backpack inventory hit targets. Runs AFTER B915.
+and Power Monitor ghost inventory removal. Runs AFTER B915.
 The active third-person pose and left-arm code are deliberately untouched.
 """
 import os
@@ -96,8 +96,8 @@ bounded(gun,
 # Keep the short opening/closing phase, but never draw it as a free-standing
 # black panel in steady Attack Mode. The original barrel stays unchanged.
 modify(gun,
- "  if(hatchOpen>0.001F){",
- "  if(hatchOpen>0.001F&&hatchOpen<0.999F){")
+ "      .texOffs(12,0).addBox(-0.70F,3.30F,-2.95F,1.40F,1.55F,0.28F)",
+ "      .texOffs(12,0).addBox(-0.10F,3.50F,-2.75F,0.20F,0.25F,0.05F)")
 
 # B915 already produces the correct fully-active third-person arm. Preserve
 # EXACTLY the pose, but keep it raised as the gun retracts and hatch closes.
@@ -147,34 +147,46 @@ bounded(pose,
   }
  }""")
 
-# The ChestMenu carries 36 real player slots even when the backpack only
-# displays storage search/list and four modules. Move all 36 client targets
-# away from the GUI and make them unclickable; server rejects their IDs too.
-screen="client/V176BackpackScreen.java"
-modify(screen,
- "   searchBox=new net.minecraft.client.gui.components.EditBox(",
- """   for(int i=54;i<this.menu.slots.size();i++){
-    var original=this.menu.getSlot(i);
-    this.menu.slots.set(i,new net.minecraft.world.inventory.Slot(
-        original.container,original.getContainerSlot(),-10000,-10000){
-     @Override public boolean mayPlace(net.minecraft.world.item.ItemStack stack){return false;}
-     @Override public boolean mayPickup(net.minecraft.world.entity.player.Player player){return false;}
-     @Override public boolean isActive(){return false;}
-    });
-   }
-   searchBox=new net.minecraft.client.gui.components.EditBox(""")
+# The reported invisible slots are in the POWER MONITOR, NOT the Backpack.
+# Preserve every Backpack menu/screen action and shift-click path unchanged.
+# ChestMenu contributes 54 placeholder slots plus 36 real player slots.
+# Both sets must be inert and invisible, in the CLIENT and on the SERVER.
+terminal="power/V176PowerTerminalMenu.java"
+modify(terminal,
+ "  for(int slot=0;slot<54;slot++){",
+ "  for(int slot=0;slot<slots.size();slot++){")
+modify(terminal,
+ "   slots.set(slot,new Slot(slots.get(slot).container,index,-100,-100){",
+ "   slots.set(slot,new Slot(slots.get(slot).container,slots.get(slot).getContainerSlot(),-10000,-10000){")
+modify(terminal,
+ "    @Override public boolean mayPickup(Player player){return false;}",
+ """    @Override public boolean mayPickup(Player player){return false;}
+    @Override public boolean isActive(){return false;}""")
+modify(terminal,
+ " @Override public ItemStack quickMoveStack(Player player,int slot){",
+ """ @Override public void clicked(int slotId,int button,
+        net.minecraft.world.inventory.ContainerInput input,Player player){
+  // Monitor contains no inventory: block PICKUP, QUICK_MOVE, SWAP, THROW,
+  // CLONE, PICKUP_ALL and drag actions. Never mutate the carried item.
+  return;
+ }
+ @Override public ItemStack quickMoveStack(Player player,int slot){""")
 
-menu="backpack/V176BackpackMenu.java"
-modify(menu,
- " @Override public void clicked(int slotId,int button,ContainerInput type,Player player){",
- """ @Override public void clicked(int slotId,int button,ContainerInput type,Player player){
-  // The 36 inherited ChestMenu player slots are NOT part of the Backpack UI.
-  // Block regular clicks, shift-click, swap, throw and clone authoritatively.
-  if(slotId>=54&&slotId<this.slots.size())return;""")
-modify(menu,
- " @Override public ItemStack quickMoveStack(Player p,int index){",
- """ @Override public ItemStack quickMoveStack(Player p,int index){
-  if(index>=54)return ItemStack.EMPTY;""")
+screen="client/V176PowerMonitorScreen.java"
+modify(screen,
+ "  super(menu,inv,title);",
+ """  super(menu,inv,title);
+  // Compact status/control panel: NO player inventory section.
+  this.imageHeight=124;""")
+modify(screen,
+ """  // Real vanilla inventory slots retain the same positions as 9x6 ChestMenu.
+  for(int i=0;i<36;i++){
+   int sx=x+8+(i%9)*18;
+   int sy=y+(i<27?139+(i/9)*18:197);
+   g.fill(sx-1,sy-1,sx+18,sy+18,0xff345869);
+   g.fill(sx,sy,sx+17,sy+17,0xff203746);
+  }""",
+ """  // No player-inventory raster. All 90 slots are inert and invisible.""")
 
 # Fail closed: a later edit may never silently restore ghost inventory slots
 # or alter the working third-person active arm pose.
@@ -183,10 +195,15 @@ c=(J/pose).read_text(encoding="utf-8")
 m=(J/menu).read_text(encoding="utf-8")
 scr=(J/screen).read_text(encoding="utf-8")
 assert "pose.translate(-5.0F/16.0F,2.0F/16.0F,0.0F)" in v
-assert "if(hatchOpen>0.001F&&hatchOpen<0.999F)" in v
+assert ".texOffs(12,0).addBox(-0.10F,3.50F,-2.75F,0.20F,0.25F,0.05F)" in v
 assert "baseline*(1.0F-raised)-1.5707964F*raised" in c
-assert "if(slotId>=54&&slotId<this.slots.size())return;" in m
-assert "if(index>=54)return ItemStack.EMPTY;" in m
-assert "original.getContainerSlot(),-10000,-10000" in scr
+monitor_menu=(J/terminal).read_text(encoding="utf-8")
+monitor_screen=(J/screen).read_text(encoding="utf-8")
+assert "for(int slot=0;slot<slots.size();slot++)" in monitor_menu
+assert "isActive(){return false;}" in monitor_menu
+assert "void clicked(int slotId,int button" in monitor_menu
+assert "this.imageHeight=124;" in monitor_screen
+assert "Real vanilla inventory slots retain" not in monitor_screen
+assert "V176BackpackMenu" not in monitor_menu
 assert "V176MicroMgLayer" not in c
-print("B917_FIRSTPERSON_SHARED_ARM_GUN_AXIS_OFF_SEQUENCE_NO_BLACK_PANEL_NO_GHOST_INVENTORY_PASS")
+print("B917_FIRSTPERSON_OFF_SEQUENCE_HATCH_AND_POWER_MONITOR_NO_GHOST_SLOTS_PASS")
