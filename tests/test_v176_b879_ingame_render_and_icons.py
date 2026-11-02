@@ -26,6 +26,10 @@ class IngameRenderAndIconContracts(unittest.TestCase):
   # The old muzzle geometry occurs intentionally as an exact search anchor.
   # Verify the replacement is present; don't reject the patch's old-side text.
   self.assertIn("No big square muzzle cap",s)
+  # Build 745 already replaced the original Build 697 geometry.
+  self.assertIn("addBox(-0.55F,3.3F,-3.40F,1.10F,4.6F,1.00F)",s)
+  self.assertIn("pose.translate(0.0F,-(1.0F-gunOut)*0.32F,0.0F)",s)
+  self.assertNotIn("addBox(-1.0F,5.5F,-9.0F,2.0F,2.0F,7.0F)",s)
 
  def test_card_and_vanilla_model_targets(self):
   s=self.script("apply-v176-b879-vanilla-block-icons-card-backpack-gui.py")

@@ -111,9 +111,9 @@ visual="client/V176MicroMgVisualClient.java"
 # POSITIVE local Y. When raised, positive Y points forward; -Z points UP.
 # This is the physical reason the barrel appears behind/above the shoulder.
 change(visual,
-'''      .texOffs(0,0).addBox(-1.0F,5.5F,-9.0F,2.0F,2.0F,7.0F)
-      .texOffs(0,10).addBox(-1.25F,5.25F,-9.5F,2.5F,2.5F,1.5F)
-      .texOffs(0,16).addBox(-1.5F,5.0F,-4.0F,3.0F,3.0F,3.0F),''',
+'''       .texOffs(0,0).addBox(-0.55F,3.3F,-3.40F,1.10F,4.6F,1.00F)
+       .texOffs(0,9).addBox(-0.75F,7.25F,-3.65F,1.50F,0.85F,1.50F)
+       .texOffs(0,15).addBox(-0.95F,3.1F,-3.30F,1.90F,1.70F,1.00F),''',
 '''      // Slim barrel runs ALONG the local arm from shoulder to muzzle.
       // No big square muzzle cap or black block on the front.
       .texOffs(0,0).addBox(-0.9F,5.0F,-3.5F,1.8F,13.0F,1.8F)
@@ -122,8 +122,8 @@ change(visual,
 # To follow the extending upper arm the deployment offset MUST be in its local
 # Y direction (along the barrel), not in the model's unrotated Z axis.
 change(visual,
-'''  pose.translate(0.0F,0.0F,(1.0F-extension)*0.40F);''',
-'''  pose.translate(0.0F,-(1.0F-extension)*0.30F,0.0F);''')
+'''    pose.translate(0.0F,-(1.0F-gunOut)*0.32F,0.0F);''',
+'''    pose.translate(0.0F,-(1.0F-gunOut)*0.30F,0.0F);''')
 change(visual,
 '''import net.neoforged.neoforge.client.event.RenderArmEvent;''',
 '''import net.neoforged.neoforge.client.event.RenderHandEvent;
