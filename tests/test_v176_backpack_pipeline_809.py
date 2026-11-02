@@ -42,7 +42,7 @@ class BackpackPipeline809(unittest.TestCase):
     def test_magnet_refreshes_source_after_each_write(self):
         magnet = self.source("java/V176BackpackMagnetEvents.java")
         self.assertLess(magnet.index("location.persist(player,updated);"),
-                        magnet.index("location=V176BackpackEquipped.active(player);"))
+                        magnet.rindex("location=V176BackpackEquipped.active(player);"))
 
 if __name__ == "__main__":
     unittest.main()
