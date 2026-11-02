@@ -173,11 +173,11 @@ modify(terminal,
  @Override public ItemStack quickMoveStack(Player player,int slot){""")
 
 screen="client/V176PowerMonitorScreen.java"
+# ContainerScreen.imageHeight is final in Minecraft / NeoForge 26.1.
+# Do not assign to it. Draw a compact monitor-only panel via local h instead.
 modify(screen,
- "  super(menu,inv,title);",
- """  super(menu,inv,title);
-  // Compact status/control panel: NO player inventory section.
-  this.imageHeight=124;""")
+ "  int x=getLeftPos(),y=getTopPos(),h=getImageHeight();",
+ "  int x=getLeftPos(),y=getTopPos(),h=124;")
 modify(screen,
  """  // Real vanilla inventory slots retain the same positions as 9x6 ChestMenu.
   for(int i=0;i<36;i++){
@@ -200,7 +200,8 @@ monitor_screen=(J/screen).read_text(encoding="utf-8")
 assert "for(int slot=0;slot<slots.size();slot++)" in monitor_menu
 assert "isActive(){return false;}" in monitor_menu
 assert "void clicked(int slotId,int button" in monitor_menu
-assert "this.imageHeight=124;" in monitor_screen
+assert "int x=getLeftPos(),y=getTopPos(),h=124;" in monitor_screen
+assert "this.imageHeight=124;" not in monitor_screen
 assert "Real vanilla inventory slots retain" not in monitor_screen
 assert "V176BackpackMenu" not in monitor_menu
 assert "V176MicroMgLayer" not in c
