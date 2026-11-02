@@ -192,8 +192,6 @@ modify(screen,
 # or alter the working third-person active arm pose.
 v=(J/gun).read_text(encoding="utf-8")
 c=(J/pose).read_text(encoding="utf-8")
-m=(J/menu).read_text(encoding="utf-8")
-scr=(J/screen).read_text(encoding="utf-8")
 assert "pose.translate(-5.0F/16.0F,2.0F/16.0F,0.0F)" in v
 assert ".texOffs(12,0).addBox(-0.10F,3.50F,-2.75F,0.20F,0.25F,0.05F)" in v
 assert "baseline*(1.0F-raised)-1.5707964F*raised" in c
