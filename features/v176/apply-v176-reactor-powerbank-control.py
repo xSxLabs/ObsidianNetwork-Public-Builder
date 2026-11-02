@@ -72,12 +72,13 @@ inject_commit(r,"energyJournal","storedFe",
 change(r,
 '''    if(demand<=0||!formed)return 0;''',
 '''    if(demand<=0||!formed||!xsxNetworkEnabled)return 0;''')
+# B489/B577 changed coolant/rod input behavior. Insert only after the
+# authoritative "not formed" guard; leave the rest of the reactor tick intact.
 change(r,
-'''  if(!be.formed)return;
-  if(be.waterMb<=WATER_CAPACITY-1000''',
-'''  if(!be.formed)return;
+'''\n  if(!be.formed)return;\n''',
+'''\n  if(!be.formed)return;
   if(!be.xsxNetworkEnabled){be.status="NETWORK OFF";return;}
-  if(be.waterMb<=WATER_CAPACITY-1000''')
+''')
 change(r,
 '''  out.putBoolean("reactorFormed",formed);''',
 '''  out.putBoolean("reactorFormed",formed);
