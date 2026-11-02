@@ -54,12 +54,13 @@ change(visual,
  @SubscribeEvent public static void wornFallback(RenderPlayerEvent.Post<?> event){
   Minecraft mc=Minecraft.getInstance();
   if(mc.level==null)return;
-  var entity=mc.level.getEntity(event.getRenderState().id);
-  if(!(entity instanceof Player player)||!armedForAttack(player))return;
-  int id=player.getId();
+  var state=event.getRenderState();
+  if(!Boolean.TRUE.equals(state.getRenderData(V176AttackRenderState.ACTIVE)))return;
+  Integer tierFromState=state.getRenderData(V176AttackRenderState.TIER);
+  if(tierFromState==null||tierFromState<1||tierFromState>24)return;
+  int id=state.id,variant=tierFromState;
   long tick=mc.level.getGameTime();
   if(LAYER_SUBMITTED.getOrDefault(id,Long.MIN_VALUE)==tick)return;
-  int variant=tier(player);
   float progress=extension(id,true);
   if(progress<=0.001F)return;
   PoseStack pose=event.getPoseStack();
@@ -87,7 +88,7 @@ change(layer,
   // Guard against another layer resetting arm poses after setupAnim.
   var arm=getParentModel().rightArm;
   arm.xRot=-1.535F;arm.yRot=0F;arm.zRot=0F;
-  V176MicroMgVisualClient.markLayerSubmitted(e.getId());
+  V176MicroMgVisualClient.markLayerSubmitted(state.id);
   // PoseStack is already in the player model coordinate frame.''')
 # The Mixin body pose and render-layers share the SAME attack predicate.
 player_mixin=J/"mixin/V176AttackPlayerModelMixin.java"
