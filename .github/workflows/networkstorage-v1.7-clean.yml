@@ -153,6 +153,7 @@ jobs:
           python3 -m py_compile features/v176/*.py tests/test_v176_micro_mg_module.py
           python3 -m unittest discover -s tests -p 'test_v176_micro_mg_module.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_backpack_pipeline_809.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_backpack_sidepanel_811.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_attack_wheel_anchor_670.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_looting_674.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_projectile_675.py' -v
@@ -4014,6 +4015,10 @@ jobs:
             python3 features/v176/apply-v176-network-power-ports.py
             python3 features/v176/apply-v176-power-monitor.py
             python3 features/v176/apply-v176-power-monitor-screen.py
+            # Detached right-side Backpack module: one magnet + three real Cells.
+            # Explicit build lock remains; no release JAR from source-only commits.
+            python3 features/v176/apply-v176-backpack-menu-810.py
+            python3 features/v176/apply-v176-backpack-sidepanel-811.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             echo 'B757_16_RPS_FIRST_PERSON_ARM_TURRET_GLASS_ICE_FOLLOW_ICON PASS'
