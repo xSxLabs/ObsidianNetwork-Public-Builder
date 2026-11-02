@@ -1,3 +1,4 @@
+# B937: rebindable, default-unbound Creative Flight particle toggle via 26.1 automatic event bus; no Elytra or FE change.
 # B934 explicit rebuilt after merging first-person, monitor and restored backpack fixes; previous run was cancelled.
 # Build 522: fail-closed Hologram FE tick injection matches actual hologram call
 # Build 520: use actual extractBackground HologramConfigScreen draw method, keep HUD FE regression gate
