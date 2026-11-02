@@ -18,7 +18,7 @@ class B891ArmBackpack(unittest.TestCase):
     'int position=page*9+slot-4;',
     'String.format(java.util.Locale.GERMANY,"%,d",amount)',
     'g.nextStratum();',
-    'setTooltipForNextFrame(font,lines,mx,my)',
+    'setComponentTooltipForNextFrame(font,lines,mx,my)',
     'g.pose().popMatrix();'):
    self.assertIn(token,text)
   self.assertIn('B898_ARROW_PARTIAL_REMOVAL',text)

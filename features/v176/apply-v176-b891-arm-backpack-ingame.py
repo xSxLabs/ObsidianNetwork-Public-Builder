@@ -127,24 +127,22 @@ assert 'b->command("networkbackpack next")' not in src
 p.write_text(src,encoding="utf-8")
 
 
+# Do not rely on B847/B857's evolving click-body geometry: all GUI
+# click handlers on 26.1 expose the same event parameters at method entry.
 edit(screen,
- '''  int x=(int)mx-getLeftPos(),y=(int)my-getTopPos();
-  if((button==0||button==1)&&x>=8&&x<170&&y>=38&&y<128){''',
- '''  int x=(int)mx-getLeftPos(),y=(int)my-getTopPos();
+ '''  double mx=event.x(),my=event.y(); int button=event.button();''',
+ '''  double mx=event.x(),my=event.y(); int button=event.button();
   boolean onSearch=searchBox!=null&&searchBox.isMouseOver(mx,my);
-  // Right-click the SEARCH field to clear, without disturbing modules/items.
   if(onSearch&&button==1){
    searchBox.setValue("");
    setFocused(searchBox);
    return true;
   }
-  // Any click outside search relinquishes the keyboard focus. AutoFocus
-  // still works on screen opening or when toggled back on.
   if(!onSearch&&searchBox!=null){
    searchBox.setFocused(false);
    if(getFocused()==searchBox)setFocused(null);
-  }
-  if((button==0||button==1)&&x>=8&&x<170&&y>=38&&y<128){''')
+  }''')
+
 
 edit(screen,
  '''  return super.mouseClicked(event,doubleClick);
@@ -179,11 +177,11 @@ edit(screen,
   var lines=new java.util.ArrayList<>(getTooltipFromContainerItem(stack));
   lines.add(Component.literal("Menge: "+
       String.format(java.util.Locale.GERMANY,"%,d",amount)));
-  g.setTooltipForNextFrame(font,lines,mx,my);
+  g.setComponentTooltipForNextFrame(font,lines,mx,my);
  }''')
 # A fresh click outside search must stay unfocused, not snap back.
 assert 'if(getFocused()==searchBox)setFocused(null)' in (J/screen).read_text()
 assert 'mouseScrolled(double mx,double my,double scrollX,double scrollY)' in (J/screen).read_text()
 assert 'g.nextStratum()' in (J/screen).read_text()
-assert 'setTooltipForNextFrame(font,lines,mx,my)' in (J/screen).read_text()
+assert 'setComponentTooltipForNextFrame(font,lines,mx,my)' in (J/screen).read_text()
 print("B891_THIRDPERSON_COMPACT_ARM_FIRSTPERSON_ALIGNED_BACKPACK_SCROLL_HOVER_COUNTS_FOCUS_READY")
