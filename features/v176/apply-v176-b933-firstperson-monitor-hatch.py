@@ -4,8 +4,9 @@ Power Monitor ghost hitboxes, unwanted Powerbank switch, true rear casing,
 and floating hatch while preserving working third-person aim and front face.
 Runs AFTER B929, and fails closed on all source contracts.
 """
-import os,json,re
+import os,json,re,colorsys
 from pathlib import Path
+from PIL import Image
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 A=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
 
@@ -79,6 +80,32 @@ assert m["textures"]["north"]=="obsidiannetwork:block/power_terminal_computer_fr
 assert "up" in m["textures"] and m["textures"]["up"]
 m["textures"]["south"]=m["textures"]["up"]
 model.write_text(json.dumps(m,indent=2)+"\n",encoding="utf-8")
+
+# All 24 Backpack variants use a BLACK shell and straps. Each tier retains a
+# distinct colored accent on trim/buckles/lights; do not touch items, storage,
+# recipes, module slots or capacity. Four distinct UV material textures avoid
+# previous recoloring accidentally bleeding into body faces.
+for tier in range(1,25):
+ name=f"network_backpack_mk{tier}"
+ target=A/"models/block"/f"{name}.json"
+ data=json.loads(target.read_text(encoding="utf-8"))
+ assert all(k in data["textures"] for k in ("body","dark","accent","glow")),("B935_BACKPACK_MODEL",tier)
+ rgb=colorsys.hsv_to_rgb(((tier-1)/24.0+0.015)%1.0,0.82,0.9)
+ accent=tuple(int(v*255) for v in rgb)
+ glow=tuple(min(255,int(v*0.8+61)) for v in accent)
+ palette={"body":(18,20,24),"dark":(7,9,12),"accent":accent,"glow":glow}
+ for material,color in palette.items():
+  img=Image.new("RGBA",(16,16))
+  pix=img.load()
+  for y in range(16):
+   for x in range(16):
+    delta=-6 if (x*3+y*5)%7==0 else 3 if (x+y)%5==0 else 0
+    pix[x,y]=(*(max(0,min(255,v+delta)) for v in color),255)
+  basename=f"{name}_{material}"
+  img.save(A/"textures/block"/f"{basename}.png",optimize=True)
+  data["textures"][material]="obsidiannetwork:block/"+basename
+ target.write_text(json.dumps(data,indent=2)+"\n",encoding="utf-8")
+
 
 # B917 ERRONEOUSLY rejected empty main hand, exactly the normal Attack Mode
 # configuration. Draw from RenderHandEvent for main hand regardless of item.
@@ -170,4 +197,7 @@ assert gun_src.count("firstPersonArm(RenderArmEvent event)")==0 or "xsxlabs$aimV
 assert "if(hatchOpen>0.001F&&hatchOpen<0.999F)" in gun_src
 assert m["textures"]["north"]=="obsidiannetwork:block/power_terminal_computer_front"
 assert m["textures"]["south"]==m["textures"]["up"]
+assert len({round(((i-1)/24.0+0.015)%1.0,6) for i in range(1,25)})==24
+assert (A/"textures/block/network_backpack_mk24_body.png").is_file()
+assert (A/"textures/block/network_backpack_mk24_accent.png").is_file()
 print("B933_FP_EMPTY_HAND_GUN_SINGLE_SUBMIT_HATCH_NO_FLOATING_PLATE_MONITOR_CLIENT_SLOTS_POWERBANK_NO_SWITCH_REAR_TOP_PASS")
