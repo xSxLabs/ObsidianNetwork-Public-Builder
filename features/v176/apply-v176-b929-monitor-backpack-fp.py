@@ -64,7 +64,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Block;""")
@@ -72,7 +72,7 @@ edit(block,
  """ private static final MapCodec<V176PowerTerminalBlock> CODEC=simpleCodec(V176PowerTerminalBlock::new);
  public V176PowerTerminalBlock(Properties props){super(props);}""",
  """ private static final MapCodec<V176PowerTerminalBlock> CODEC=simpleCodec(V176PowerTerminalBlock::new);
- public static final DirectionProperty FACING=BlockStateProperties.HORIZONTAL_FACING;
+ public static final EnumProperty<Direction> FACING=BlockStateProperties.HORIZONTAL_FACING;
  public V176PowerTerminalBlock(Properties props){
   super(props);
   registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH));
