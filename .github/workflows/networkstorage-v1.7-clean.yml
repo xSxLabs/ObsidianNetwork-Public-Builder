@@ -157,6 +157,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_cobble_obsidian_815.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_backpack_list_816.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_backpack_magnet_gui_817.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_backpack_safety_818.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_attack_wheel_anchor_670.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_looting_674.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_projectile_675.py' -v
@@ -4025,9 +4026,11 @@ jobs:
             # No-crafting Bag: live 3-cell listing + Search/Autofocus + Sort + withdrawal.
             python3 features/v176/apply-v176-backpack-list-816.py
             python3 features/v176/apply-v176-backpack-magnet-gui-817.py
+            python3 features/v176/apply-v176-backpack-transfer-safety-818.py
             python3 features/v176/apply-v176-cobble-obsidian-815.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
+            python3 features/v176/verify-v176-cobble-obsidian-818.py
             echo 'B757_16_RPS_FIRST_PERSON_ARM_TURRET_GLASS_ICE_FOLLOW_ICON PASS'
             echo 'B750_VISIBLE_GUN_RAISED_ARM_AND_FOLLOW_ANIMATIONS PASS'
             echo 'B745_TRUE_UPPER_RIGHT_ARM_STAGED_DEPLOYMENT PASS'
