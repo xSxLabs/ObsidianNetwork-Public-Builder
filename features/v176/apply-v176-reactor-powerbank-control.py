@@ -17,10 +17,8 @@ def change(rel, old, new, expected=1):
 
 r="reactor/ReactorControllerBlockEntity.java"
 change(r,
-''' private boolean formed=false;
- private String status="UNFORMED";''',
-''' private boolean formed=false;
- private boolean xsxNetworkEnabled=true;
+''' private String status="UNFORMED";''',
+''' private boolean xsxNetworkEnabled=true;
  private final dev.obsidiannetwork.power.V176PowerRateMeter xsxRates=
      new dev.obsidiannetwork.power.V176PowerRateMeter();
  public boolean xsxNetworkEnabled(){return xsxNetworkEnabled;}
