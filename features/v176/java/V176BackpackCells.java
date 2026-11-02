@@ -230,7 +230,7 @@ public final class V176BackpackCells {
   MinecraftItemStackCodec codec=new MinecraftItemStackCodec(world.registryAccess());
   ItemKey k=codec.describe(incoming).key();
   boolean listed=false;
-  for(int i=0;i<FILTER_SLOTS;i++){
+  for(int i=0;i<Math.min(FILTER_SLOTS,templates.getSlots());i++){
    ItemStack sample=templates.getStackInSlot(i);
    if(!sample.isEmpty()&&codec.describe(sample).key().equals(k)){listed=true;break;}
   }
