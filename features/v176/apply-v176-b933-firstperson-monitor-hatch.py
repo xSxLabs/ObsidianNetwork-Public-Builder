@@ -156,10 +156,11 @@ s=s[:a]+chunk+s[b:]
 # a second, stale gun. Its behavior is subsumed by main firstPerson handler.
 start=" @SubscribeEvent public static void firstPersonWithItem(RenderHandEvent event){"
 end=" @SubscribeEvent public static void worldSuit("
-assert s.count(start)==1 and s.count(end)==1,("B933_OLD_HAND_HANDLER_DRIFT",s.count(start),s.count(end))
-a=s.index(start);b=s.index(end,a)
-assert a<b
-s=s[:a]+s[b:]
+assert s.count(start) in (0,1) and s.count(end)==1,("B933_OLD_HAND_HANDLER_DRIFT",s.count(start),s.count(end))
+if s.count(start)==1:
+ a=s.index(start);b=s.index(end,a)
+ assert a<b
+ s=s[:a]+s[b:]
 # The black freestanding plate in steady Attack Mode is not an acceptable
 # hatch: show hinged hatch ONLY during its actual opening/closing phase.
 # Retain the original arm/barrel model and third-person aim unchanged.
