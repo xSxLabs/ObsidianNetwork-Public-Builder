@@ -40,9 +40,28 @@ change(gun,
   // Camera-relative RIGHT upper arm only; vanilla right hand remains shown.""")
 # Hook the actual vanilla arm pass, not RenderHandEvent's parent pose.
 # Keep the displacement small enough that hand and sleeve remain on screen.
-change(gun,
-"import net.neoforged.neoforge.client.event.RenderHandEvent;",
-"import net.neoforged.neoforge.client.event.RenderHandEvent;\nimport net.neoforged.neoforge.client.event.RenderArmEvent;")
+# Earlier patches can leave duplicate RenderHandEvent imports in the
+# reconstructed class. Deduplicate by whole import LINES and append the
+# genuine vanilla-arm event import only when it is absent.
+p=J/gun
+s=p.read_text(encoding="utf-8")
+hand="import net.neoforged.neoforge.client.event.RenderHandEvent;"
+arm="import net.neoforged.neoforge.client.event.RenderArmEvent;"
+assert s.count(hand)>=1,("B913_MISSING_HAND_EVENT",s.count(hand))
+lines=s.splitlines(keepends=True)
+dedup=set()
+result=[]
+for line in lines:
+ stripped=line.strip()
+ if stripped in (hand,arm):
+  if stripped in dedup:continue
+  dedup.add(stripped)
+ result.append(line)
+s="".join(result)
+if arm not in dedup:
+ s=s.replace(hand,hand+"\n"+arm,1)
+assert s.count(hand)==1 and s.count(arm)==1,("B913_IMPORT_SANITY",s.count(hand),s.count(arm))
+p.write_text(s,encoding="utf-8")
 change(gun,
 " @SubscribeEvent public static void worldSuit(",
 """ @SubscribeEvent public static void xsxlabs$aimVisibleFirstPersonArm(RenderArmEvent event){
