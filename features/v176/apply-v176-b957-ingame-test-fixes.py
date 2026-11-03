@@ -122,8 +122,13 @@ edit(fire,
    shot.shoot(corrected.x,corrected.y,corrected.z,3.0F,0.0F);''')
 # Do not add random turret spread.
 turret="powerarmor/V176CompanionMode.java"
-edit(turret,'  shot.shoot(dir.x,dir.y,dir.z,3.0F,0.7F);',
-            '   shot.shoot(dir.x,dir.y,dir.z,3.0F,0.0F);')
+p=J/turret
+src=p.read_text(encoding="utf-8")
+src,count=re.subn(
+ r'(?m)^([ \t]*)shot\.shoot\(dir\.x,dir\.y,dir\.z,3\.0F,0\.7F\);',
+ lambda m:m.group(1)+"shot.shoot(dir.x,dir.y,dir.z,3.0F,0.0F);",src)
+assert count==1,("B957_TURRET_SPREAD_DRIFT",count)
+p.write_text(src,encoding="utf-8")
 
 # Stable 200-tick black surface impact marks, synced to nearby players.
 # Cap per dimension and throttle particle refresh to limit the server cost.
