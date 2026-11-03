@@ -15,7 +15,8 @@ class CellTerminalContracts(unittest.TestCase):
   s=self.source
   self.assertIn('change("menu/DriveMenu.java"',s)
   self.assertIn("return new DriveContainer(drive);",s)
-  self.assertIn("for(int i=0;i<16;i++)",s)
+  self.assertIn("if (index>=16) break;",s)
+  self.assertIn("if (shell.isEmpty()) return index;",s)
   self.assertIn("new V176CellTerminalMenu(id,inv,terminal)",s)
   self.assertIn("backing.setItem(targetSlot,one);",s)
   self.assertIn("public int xsxCellTerminalFirstEmptySlot()",s)
