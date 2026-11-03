@@ -178,6 +178,40 @@ test=r'''
                       "B1040 multi-Drive distribution changed/lost a real Cell");
                   }
                   System.out.println("XSXLABS_B1040_EIGHT_DISTINCT_DRIVES_AUTODISTRIBUTION_PASS count=8");
+                  // B1044: The user's Cells often are NEW CRAFTED items. The
+                  // previous GameTests recycled already-installed Cells and
+                  // could miss a fresh/empty storage Cell not being accepted.
+                  // Exercise pristine 1K Storage and 64K Equipment Cells
+                  // through the actual GUI -> persistent buffer -> real Drive.
+                  var xsx1040FreshBacking=dev.obsidiannetwork.menu.DriveMenu.xsxCellTerminalBacking(
+                      xsx1040Scan.drives().get(0));
+                  var xsx1040RestoreCell=xsx1040FreshBacking.getItem(0).copy();
+                  if(!dev.obsidiannetwork.cellterminal.V176CellTerminalBlockEntity.isCell(xsx1040RestoreCell))
+                   throw new IllegalStateException("B1044 missing real original Cell for restoration");
+                  for(var xsx1040FreshType:new net.minecraft.world.item.Item[]{
+                       ObsidianNetwork.STORAGE_CELL_1K.get(),ObsidianNetwork.EQUIPMENT_CELL_64K.get()}){
+                   xsx1040FreshBacking.setItem(0,net.minecraft.world.item.ItemStack.EMPTY);
+                   var xsx1040FreshCell=new net.minecraft.world.item.ItemStack(xsx1040FreshType);
+                   xsx1040Menu.setCarried(xsx1040FreshCell.copy());
+                   xsx1040Menu.clicked(0,0,net.minecraft.world.inventory.ContainerInput.PICKUP,xsxBurstPlayer);
+                   if(!xsx1040Menu.getCarried().isEmpty()
+                     ||!net.minecraft.world.item.ItemStack.matches(xsx1040Be.getItem(0),xsx1040FreshCell))
+                    throw new IllegalStateException("B1044 pristine Cell not accepted by real Cell Terminal");
+                   int xsx1040FreshMoved=xsx1040Be.xsxAutoTransfer(level);
+                   if(xsx1040FreshMoved!=1||xsx1040Be.bufferedCells()!=0
+                     ||!net.minecraft.world.item.ItemStack.matches(
+                       xsx1040FreshBacking.getItem(0),xsx1040FreshCell))
+                    throw new IllegalStateException("B1044 new uninstalled Cell rejected by connected Drive"+
+                        " type="+xsx1040FreshType);
+                  }
+                  // Restore all original Drive Cells before returning to the
+                  // remainder of the full-controller stress test.
+                  xsx1040FreshBacking.setItem(0,net.minecraft.world.item.ItemStack.EMPTY);
+                  xsx1040FreshBacking.setItem(0,xsx1040RestoreCell);
+                  if(!net.minecraft.world.item.ItemStack.matches(
+                       xsx1040FreshBacking.getItem(0),xsx1040RestoreCell))
+                   throw new IllegalStateException("B1044 original Drive Cell restoration failed");
+                  System.out.println("XSXLABS_B1044_PRISTINE_STORAGE_AND_EQUIPMENT_CELL_AUTO_MOVE_PASS");
                   // Restore fixture: no generated Cells, no lost original Cells.
                   xsx1040Be.clearContent();
                   if(!xsx1040Be.isEmpty())throw new IllegalStateException("B1040 clear failed");
@@ -185,7 +219,8 @@ test=r'''
                     " drives=50 input_slots=8 actual_click=true real_buffer_nbt=true"+
                     " full_drive_queues=true drive_readback=true shift_queues_first=true"+
                     " disconnected_hold=true reconnect_auto_delivers=true"+
-                    " eight_distinct_drive_cells=true eight_player_shift_clicks=true");
+                    " eight_distinct_drive_cells=true eight_player_shift_clicks=true"+
+                    " fresh_storage=true fresh_equipment=true");
 '''
 s=s.replace(anchor,anchor+"\n"+test,1)
 assert s.count(marker)==1
