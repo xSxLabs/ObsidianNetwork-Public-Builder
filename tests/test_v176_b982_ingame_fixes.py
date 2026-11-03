@@ -59,6 +59,31 @@ class B982PatchContracts(unittest.TestCase):
   self.assertIn('      (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F);',previous)
   self.assertIn('      (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F);',self.code)
 
+ def test_exact_generated_renderer_and_sound_anchors(self):
+  source_paths={
+   "b980":ROOT/"features/v176/apply-v176-b980-turret-and-cell-terminal-ingame.py",
+   "b675":ROOT/"features/v176/apply-v176-projectile-675.py",
+   "b676":ROOT/"features/v176/apply-v176-companion-676.py",
+  }
+  prior={key:path.read_text(encoding="utf-8") for key,path in source_paths.items()}
+  snippets={
+   "b980":(
+     "       .addBox(-0.62F,5.0F,-3.15F,1.24F,8.5F,1.25F),PartPose.ZERO);",
+     "  pose.translate(0.0F,0.0F,-0.075F);"
+   ),
+   "b675":(
+     "  world.playSound(null,p.blockPosition(),SoundEvents.CROSSBOW_SHOOT,\\n     SoundSource.PLAYERS,0.45F,1.75F);",
+   ),
+   "b676":(
+     "   world.playSound(null,suit.blockPosition(),SoundEvents.CROSSBOW_SHOOT,\\n     SoundSource.PLAYERS,0.45F,1.7F);",
+   )
+  }
+  for key,needles in snippets.items():
+   for needle in needles:
+    with self.subTest(source=key,needle=needle):
+     self.assertIn(needle,prior[key])
+     self.assertIn(needle,self.code)
+
  def test_increased_rate_and_server_origin_sounds(self):
   self.assertIn('20 server-authorized rounds',self.code)
   self.assertIn('tick%5L!=4L',self.code)
