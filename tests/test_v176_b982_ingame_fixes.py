@@ -54,6 +54,11 @@ class B982PatchContracts(unittest.TestCase):
    self.assertIn(x,self.code)
   self.assertIn('B982: no floating plate',self.code)
 
+ def test_turret_activation_anchor_matches_existing_b757_source(self):
+  previous=(ROOT/"features/v176/apply-v176-ingame-feedback-757.py").read_text(encoding="utf-8")
+  self.assertIn('      (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F);',previous)
+  self.assertIn('      (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F);',self.code)
+
  def test_increased_rate_and_server_origin_sounds(self):
   self.assertIn('20 server-authorized rounds',self.code)
   self.assertIn('tick%5L!=4L',self.code)
