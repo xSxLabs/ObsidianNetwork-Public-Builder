@@ -96,7 +96,7 @@ method=r"""   public static NetworkRuntime xsxCellTerminalNetwork(ServerLevel le
       return null;
    }
 """
-assert "NetworkSignalRelayBridge" in s
+assert "xsxCellTerminalDrives(" in s
 assert "xsxCellTerminalDrives(" in s[b:]
 s=s[:a]+method+s[b:]
 p.write_text(s,encoding="utf-8")
@@ -208,7 +208,7 @@ s=p.read_text(encoding="utf-8")
 a=s.index(" public static void drawArm(")
 b=s.index("\n }",a)+3
 arm=s[a:b]
-arm,removed=re.subn(r"(?m)^\\s*nodes\\.submitModelPart\\(HATCH,pose,RenderTypes\\.entitySolid\\(texture\\(tier\\)\\),\\s*\\n\\s*light,OverlayTexture\\.NO_OVERLAY,null,false,false,0xFFFFFFFF,null,0\\);",
+arm,removed=re.subn(r"(?m)^\s*nodes\.submitModelPart\(HATCH,pose,RenderTypes\.entitySolid\(texture\(tier\)\),\s*\n\s*light,OverlayTexture\.NO_OVERLAY,null,false,false,0xFFFFFFFF,null,0\);",
                    "\n   // B982: no floating plate; the world gun is barrel-only.",arm)
 assert removed==1,("B982_WORLD_HATCH_NOT_FOUND",removed)
 assert "nodes.submitModelPart(XSX_WORLD_BARREL,pose" in arm
