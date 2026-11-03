@@ -36,6 +36,8 @@ class CellTerminalContracts(unittest.TestCase):
   self.assertIn("private static final int MAX_CABLES=16_384;",s)
   self.assertIn("private static final int MAX_DRIVES=2048;",s)
   self.assertIn("world.hasChunkAt(at)",s)
+  self.assertIn("NetworkSignalRelayBridge.networkWire(world,at)",s)
+  self.assertIn("NETWORK-only predicate",s)
   self.assertIn("WorldTopologyBridge.runtimeForAccessory(world,node)!=identity",s)
   self.assertIn("world.getBlockEntity(next) instanceof StorageDriveBlockEntity",s)
   self.assertIn("network!=null&&network.powered()",s)
