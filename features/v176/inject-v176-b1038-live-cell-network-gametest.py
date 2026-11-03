@@ -20,9 +20,21 @@ injected=r'''
                   // by a REAL NETWORK CABLE. The original B1037 test never
                   // covered this path; only this path matches a remote build.
                   BlockPos xsxCablePos=xsxCellPos;
-                  BlockPos xsxRemotePos=xsxCablePos.above();
-                  if(!level.isEmptyBlock(xsxRemotePos))
-                   throw new IllegalStateException("B1038 remote test space is occupied");
+                  // The stock 50-drive fixture has a roof above y=3.
+                  // Choose a genuinely empty HORIZONTAL neighbor instead of
+                  // assuming a free block above the existing Cell Terminal.
+                  BlockPos xsxRemotePos=null;
+                  for(net.minecraft.core.Direction dir:new net.minecraft.core.Direction[]{
+                    net.minecraft.core.Direction.NORTH,net.minecraft.core.Direction.SOUTH,
+                    net.minecraft.core.Direction.EAST,net.minecraft.core.Direction.WEST}){
+                   BlockPos candidate=xsxCablePos.relative(dir);
+                   if(level.hasChunkAt(candidate)&&level.isEmptyBlock(candidate)){
+                    xsxRemotePos=candidate;
+                    break;
+                   }
+                  }
+                  if(xsxRemotePos==null)
+                   throw new IllegalStateException("B1038 fixture has no free lateral Cell Terminal location");
                   level.setBlock(xsxCablePos,ObsidianNetwork.NETWORK_CABLE.get().defaultBlockState(),3);
                   level.setBlock(xsxRemotePos,ObsidianNetwork.V176_CELL_TERMINAL.get().defaultBlockState(),3);
                   if(!dev.obsidiannetwork.network.NetworkSignalRelayBridge.networkWire(level,xsxCablePos))
