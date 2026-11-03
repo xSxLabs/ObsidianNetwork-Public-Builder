@@ -150,7 +150,7 @@ newhand=r''' @SubscribeEvent public static void firstPerson(RenderHandEvent even
   float bend=Math.min(1.0F,progress/(4.0F/12.0F));
   org.joml.Vector3f elbowToCrosshair=new org.joml.Vector3f(
       shoulderX+5.0F/16.0F,
-      -shoulderY+6.0F/16.0F,
+      shoulderY-6.0F/16.0F,
       -2.60F-shoulderZ).normalize();
   org.joml.Quaternionf aim=new org.joml.Quaternionf().rotationTo(
       new org.joml.Vector3f(0.0F,1.0F,0.0F),elbowToCrosshair);
