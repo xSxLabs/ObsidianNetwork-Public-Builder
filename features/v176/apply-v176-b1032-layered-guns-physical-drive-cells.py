@@ -84,7 +84,12 @@ stand.write_text(r'''package dev.obsidiannetwork.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.obsidiannetwork.powerarmor.PowerArmorRuntime;
 import dev.obsidiannetwork.registry.ModDataComponents;
-import net.minecraft.client.model.ArmorStandModel;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.ArmorStandRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -98,15 +103,22 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import java.util.Arrays;
 
-/** The same rotating 3D armor stand's right arm that vanilla armor uses.
- * The stand may have an invisible wood/body and visible equipped suit:
- * render-state equipment and arm pose still exist.
+/** Follows ArmorStandRenderer's rotated pose and replicated right-arm angles.
+ * A baked pivot at the vanilla shoulder avoids concrete model classes
+ * that have changed in NeoForge 26.1.
  */
 public final class V176MicroMgStandLayer
-    extends RenderLayer<ArmorStandRenderState,ArmorStandModel> {
- public V176MicroMgStandLayer(
-       RenderLayerParent<ArmorStandRenderState,ArmorStandModel> parent){
-  super(parent);
+    extends RenderLayer<ArmorStandRenderState,EntityModel<ArmorStandRenderState>> {
+ private static final ModelPart RIGHT_ARM_PIVOT=createRightArmPivot();
+ @SuppressWarnings({"rawtypes","unchecked"})
+ public V176MicroMgStandLayer(ArmorStandRenderer parent){
+  super((RenderLayerParent)parent);
+ }
+ private static ModelPart createRightArmPivot(){
+  MeshDefinition mesh=new MeshDefinition();
+  mesh.getRoot().addOrReplaceChild("rightArm",
+     CubeListBuilder.create(),PartPose.offset(-5.0F,2.0F,0.0F));
+  return LayerDefinition.create(mesh,16,16).bakeRoot().getChild("rightArm");
  }
  private static boolean has(ItemStack piece,String token){
   if(piece.isEmpty())return false;
@@ -137,8 +149,11 @@ public final class V176MicroMgStandLayer
   // No world-space pose guesses, no entity id, no dependence on EXTENSION.
   PoseStack gunPose=new PoseStack();
   gunPose.mulPose(new org.joml.Matrix4f(pose.last().pose()));
+  RIGHT_ARM_PIVOT.xRot=(float)Math.toRadians(state.rightArmPose.x());
+  RIGHT_ARM_PIVOT.yRot=(float)Math.toRadians(state.rightArmPose.y());
+  RIGHT_ARM_PIVOT.zRot=(float)Math.toRadians(state.rightArmPose.z());
   V176MicroMgVisualClient.drawArm(gunPose,nodes,light,
-      getParentModel().rightArm,variant,1.0F);
+      RIGHT_ARM_PIVOT,variant,1.0F);
  }
  @EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
  public static final class Register {
@@ -146,7 +161,7 @@ public final class V176MicroMgStandLayer
   @SubscribeEvent public static void layers(EntityRenderersEvent.AddLayers event){
    var renderer=event.getRenderer(EntityType.ARMOR_STAND);
    if(renderer instanceof ArmorStandRenderer standRenderer){
-    standRenderer.addLayer(new V176MicroMgStandLayer(standRenderer));
+    standRenderer.addLayer((RenderLayer)new V176MicroMgStandLayer(standRenderer));
     System.out.println("XSXLABS_B1032_TURRET_LAYER_REGISTERED");
    }else{
     System.err.println("XSXLABS_B1032_TURRET_LAYER_MISSING");
@@ -238,7 +253,7 @@ v=load(weapon)
 l=load(layer)
 t=load(top)
 assert "submitModelPart(XSX_WORLD_BARREL,pose" in v
-assert "drawArm(gunPose,nodes,light" in stand.read_text(encoding="utf-8")
+assert "RIGHT_ARM_PIVOT,variant,1.0F" in stand.read_text(encoding="utf-8")
 assert "V176MicroMgVisualClient.drawArm(xsxWeaponPose" in l
 assert "V176MicroMgVisualClient.markLayerSubmitted(state.id)" not in l
 assert "XSXLABS_B1032_CELL_INPUT" in load(menu)

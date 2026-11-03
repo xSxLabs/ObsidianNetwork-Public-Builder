@@ -15,7 +15,8 @@ class B1032(unittest.TestCase):
   for marker in ("V176MicroMgStandLayer.java",
      "RenderLayer<ArmorStandRenderState,ArmorStandModel>",
      "state.chestEquipment","state.headEquipment","state.rightArmPose.x()",
-     "getParentModel().rightArm,variant,1.0F",
+     "RIGHT_ARM_PIVOT,variant,1.0F",
+     "PartPose.offset(-5.0F,2.0F,0.0F)",
      "getRenderer(EntityType.ARMOR_STAND)",
      "XSXLABS_B1032_TURRET_LAYER_REGISTERED"):
    self.assertIn(marker,SRC)
