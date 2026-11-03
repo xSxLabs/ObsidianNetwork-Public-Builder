@@ -57,10 +57,10 @@ replace(p,
 # set micro_mg_turret_on in the armor ItemStack. Capture this exact server-synced
 # tag while the renderer extracts the entity state.
 replace(p,
-""" public final class V176MicroMgStandLayer
+"""public final class V176MicroMgStandLayer
     extends RenderLayer<ArmorStandRenderState,EntityModel<ArmorStandRenderState>> {
  private static final ModelPart RIGHT_ARM_PIVOT""",
-""" public final class V176MicroMgStandLayer
+"""public final class V176MicroMgStandLayer
     extends RenderLayer<ArmorStandRenderState,EntityModel<ArmorStandRenderState>> {
  private static final net.minecraft.util.context.ContextKey<Boolean> TURRET_ACTIVE=
     new net.minecraft.util.context.ContextKey<>(
