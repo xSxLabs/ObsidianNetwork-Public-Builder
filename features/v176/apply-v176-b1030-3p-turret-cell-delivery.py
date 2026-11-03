@@ -34,6 +34,13 @@ def replace_method(path,needle,new,guards):
  a,b,old=balanced(s,needle)
  for guard in guards:assert guard in old,("B1030_SOURCE_DRIFT",path,guard)
  write(path,s[:a]+new+s[b:])
+def replace_or_insert_method(path,needle,new,guards,insert_before):
+ s=read(path)
+ if needle not in s:
+  assert s.count(insert_before)==1,("B1031_MISSING_INSERT_ANCHOR",path)
+  write(path,s.replace(insert_before,new+"\n"+insert_before,1))
+ else:
+  replace_method(path,needle,new,guards)
 
 weapon="client/V176MicroMgVisualClient.java"
 layer="client/V176MicroMgLayer.java"
@@ -56,7 +63,7 @@ write(layer,layerSrc[:a]+new+layerSrc[b:])
 # The POST event always owns the actual 3P gun while armed, using the local
 # player's or a tracked remote player's synchronized chest upgrade and full suit.
 # It does not require V176AttackRenderState or the untrusted 'layer submitted' map.
-replace_method(weapon,
+replace_or_insert_method(weapon,
  " @SubscribeEvent public static void wornFallback(",
 ''' @SubscribeEvent public static void wornFallback(RenderPlayerEvent.Post<?> event){
   Minecraft mc=Minecraft.getInstance();
@@ -89,7 +96,7 @@ replace_method(weapon,
    arm.xRot=x;arm.yRot=y;arm.zRot=z;
   }
  }
-''',["LAYER_SUBMITTED","V176AttackRenderState.ACTIVE","drawArm("])
+''',["drawArm("]," public static void drawArm(")
 # Turret exact entity modifier can be missing under custom renderers.
 # Fall back to the nearest synchronised live world stand matching the CURRENT
 # renderer state position and authoritative Micro-MG/mode pose. Do not require
@@ -187,13 +194,13 @@ new=r''' private static NetworkRuntime attached(ServerLevel level,BlockPos pos){
    if(!level.hasChunkAt(current)||!seen.add(current.asLong()))continue;
    if(!current.equals(terminal)){
     NetworkRuntime currentNet=attached(level,current);
-    if(currentNet!=identity)continue;
+    if(currentNet!=identity && !(currentNet==null&&cable(level,current)))continue;
    }
    for(Direction face:Direction.values()){
     BlockPos next=current.relative(face);
     if(!level.hasChunkAt(next))continue;
     NetworkRuntime nextNet=attached(level,next);
-    if(nextNet!=identity)continue;
+    if(nextNet!=identity && !(nextNet==null&&cable(level,next)))continue;
     if(level.getBlockEntity(next) instanceof StorageDriveBlockEntity drive){
      if(!drive.isRemoved())found.putIfAbsent(next.asLong(),drive);
     }
@@ -231,7 +238,10 @@ assert 'carried.shrink(1);' in m
 a,b,clicked=balanced(m," @Override public void clicked(")
 assert '    carried.shrink(1);' in clicked
 assert '    broadcastFullState();' in clicked
-clicked=clicked.replace(
+# The only success notification follows the committed drive write/cursor shrink.
+charge=clicked.index("    carried.shrink(1);")
+success=clicked.index("    broadcastFullState();",charge)
+clicked=clicked[:success]+clicked[success:].replace(
  '''    broadcastFullState();
     return;''',
  '''    broadcastFullState();
