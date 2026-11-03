@@ -208,9 +208,18 @@ s=p.read_text(encoding="utf-8")
 a=s.index(" public static void drawArm(")
 b=s.index("\n }",a)+3
 arm=s[a:b]
-arm,removed=re.subn(r"(?m)^\s*nodes\.submitModelPart\(HATCH,pose,RenderTypes\.entitySolid\(texture\(tier\)\),\s*\n\s*light,OverlayTexture\.NO_OVERLAY,null,false,false,0xFFFFFFFF,null,0\);",
-                   "\n   // B982: no floating plate; the world gun is barrel-only.",arm)
-assert removed==1,("B982_WORLD_HATCH_NOT_FOUND",removed)
+# B933/B953 may have already removed this hatch. Do not fail when absent.
+# If any world hatch call still exists, remove its entire model submission,
+# irrespective of the RenderType/palette chosen by prior stages.
+hatch_calls=len(re.findall(r'nodes\\.submitModelPart\\(\\s*HATCH\\s*,',arm))
+assert hatch_calls<=1,("B982_WORLD_HATCH_DUPLICATE",hatch_calls)
+if hatch_calls:
+ arm,removed=re.subn(
+  r'(?m)^[ \\t]*nodes\\.submitModelPart\\(\\s*HATCH\\s*,[\\s\\S]*?;',
+  "   // B982: world hatch submission removed; barrel only.",
+  arm,count=1)
+ assert removed==1,("B982_WORLD_HATCH_REMOVAL_FAILED",removed)
+assert not re.search(r'nodes\\.submitModelPart\\(\\s*HATCH\\s*,',arm)
 assert "nodes.submitModelPart(XSX_WORLD_BARREL,pose" in arm
 s=s[:a]+arm+s[b:]
 # ArmorStand muzzle is active on the authoritative turret tag, or the
