@@ -33,7 +33,7 @@ class TestB1019(unittest.TestCase):
   self.assertIn("nodes.submitModelPart(BARREL,pose",self.p)
 
  def test_turret_by_synchronized_entity_id_not_box(self):
-  for marker in ("mc.level.getEntity(state.id)","stand.getRightArmPose().x()<-40.0F",
+  for marker in ("mc.level.getEntity(xsxId)","XSX_STAND_RENDER_ID","RegisterRenderStateModifiersEvent","stand.getRightArmPose().x()<-40.0F",
                  "has(chest,\"micro_mg_turret_on\")",
                  'xsxLogTurretPose(stand.getId(),suitTier,amount,"ENTER")'):
    self.assertIn(marker,self.s)
