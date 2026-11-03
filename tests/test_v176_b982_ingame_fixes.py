@@ -54,6 +54,9 @@ class B982PatchContracts(unittest.TestCase):
    self.assertIn(x,self.code)
   self.assertIn('B982: world hatch submission removed; barrel only.',self.code)
   self.assertIn('hatch_calls<=1',self.code)
+  self.assertIn('hatch_calls=arm.count(hatch_call)',self.code)
+  self.assertIn('end=arm.index(";",begin)',self.code)
+  self.assertNotIn('re.findall(',self.code)
   self.assertIn('B982_WORLD_HATCH_DUPLICATE',self.code)
 
  def test_turret_activation_anchor_matches_existing_b757_source(self):
