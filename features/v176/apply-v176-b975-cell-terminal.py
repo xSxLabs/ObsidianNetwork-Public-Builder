@@ -72,6 +72,7 @@ import dev.obsidiannetwork.ObsidianNetwork;
 import dev.obsidiannetwork.blockentity.StorageDriveBlockEntity;
 import dev.obsidiannetwork.core.NetworkRuntime;
 import dev.obsidiannetwork.network.WorldTopologyBridge;
+import dev.obsidiannetwork.network.NetworkSignalRelayBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -89,7 +90,9 @@ public final class V176CellTerminalTopology {
  public record Scan(boolean online, List<StorageDriveBlockEntity> drives,
                     int freeSlots,boolean truncated){}
  private static boolean cable(ServerLevel world,BlockPos at){
-  return world.hasChunkAt(at)&&world.getBlockState(at).is(ObsidianNetwork.NETWORK_CABLE.get());
+  // Reuse the storage system's authoritative NETWORK-only predicate.
+  // Includes Network Cable and bundle NETWORK layer; never FE-only bundles.
+  return world.hasChunkAt(at)&&NetworkSignalRelayBridge.networkWire(world,at);
  }
  public static Scan scan(ServerLevel world,BlockPos terminal){
   if(!world.hasChunkAt(terminal)||
@@ -551,4 +554,5 @@ assert '"cullface"' not in (A/"models/block/cell_terminal.json").read_text()
 assert "backing.setItem(targetSlot,one)" in (J/"cellterminal/V176CellTerminalMenu.java").read_text()
 assert "if(!ItemStack.matches(inserted,one))" in (J/"cellterminal/V176CellTerminalMenu.java").read_text()
 assert "runtimeForAccessory(world,node)!=identity" in (J/"cellterminal/V176CellTerminalTopology.java").read_text()
+assert "NetworkSignalRelayBridge.networkWire(world,at)" in (J/"cellterminal/V176CellTerminalTopology.java").read_text()
 print("B975_CELL_TERMINAL_DRIVE16_BALANCED_SHIFT_SERVER_ATOMIC_NO_OCCLUSION_TEXTURES_READY")
