@@ -198,10 +198,10 @@ replace(screen,
 # First-person BARREL and elbow/crosshair quaternion are NOT touched.
 visual="client/V176MicroMgVisualClient.java"
 replace(visual,
- '''        .addBox(-0.62F,5.0F,-3.15F,1.24F,8.5F,1.25F),PartPose.ZERO);''',
+ '''       .addBox(-0.62F,5.0F,-3.15F,1.24F,8.5F,1.25F),PartPose.ZERO);''',
  '''        .addBox(-0.52F,3.8F,-2.95F,1.04F,9.5F,1.05F),PartPose.ZERO);''')
 replace(visual,
- '''   pose.translate(0.0F,0.0F,-0.075F);''',
+ '''  pose.translate(0.0F,0.0F,-0.075F);''',
  '''   pose.translate(0.0F,0.0F,0.04F);''')
 p=J/visual
 s=p.read_text(encoding="utf-8")
@@ -237,16 +237,16 @@ replace(rules,
 # 6. More percussive positional burst: short blast transient + mechanical click;
 # no synthetic noise played on clients independent of real server shots.
 replace("powerarmor/V176MicroMgFire.java",
-'''   world.playSound(null,p.blockPosition(),SoundEvents.CROSSBOW_SHOOT,
-      SoundSource.PLAYERS,0.45F,1.75F);''',
+'''  world.playSound(null,p.blockPosition(),SoundEvents.CROSSBOW_SHOOT,
+     SoundSource.PLAYERS,0.45F,1.75F);''',
 '''   float pitch=1.20F+0.04F*(now%3L);
    world.playSound(null,p.blockPosition(),SoundEvents.FIREWORK_ROCKET_BLAST,
       SoundSource.PLAYERS,0.32F,pitch);
    world.playSound(null,p.blockPosition(),SoundEvents.CROSSBOW_SHOOT,
       SoundSource.PLAYERS,0.16F,1.95F);''')
 replace("powerarmor/V176CompanionMode.java",
-'''    world.playSound(null,suit.blockPosition(),SoundEvents.CROSSBOW_SHOOT,
-      SoundSource.PLAYERS,0.45F,1.7F);''',
+'''   world.playSound(null,suit.blockPosition(),SoundEvents.CROSSBOW_SHOOT,
+     SoundSource.PLAYERS,0.45F,1.7F);''',
 '''    float pitch=1.20F+0.04F*(now%3L);
     world.playSound(null,suit.blockPosition(),SoundEvents.FIREWORK_ROCKET_BLAST,
       SoundSource.PLAYERS,0.32F,pitch);
