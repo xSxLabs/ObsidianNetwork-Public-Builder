@@ -130,13 +130,52 @@ test=r'''
                     throw new IllegalStateException("B1040 non-input slot stored a phantom cell "+i);
                   if(!xsx1040Be.getUpdateTag(level.registryAccess()).contains("Items"))
                    throw new IllegalStateException("B1040 eight buffered items missing from save");
+                  // MULTI-DRIVE distribution regression: eight different,
+                  // already-installed physical Cells are removed from eight
+                  // different Drive BEs. Queue these exact NBT Items in the
+                  // real Cell Terminal. One automatic server transfer must
+                  // spread all 8 to the freed Drive slots, not just the first.
+                  var xsx1040EightOriginal=new java.util.ArrayList<net.minecraft.world.item.ItemStack>();
+                  var xsx1040EightBackings=new java.util.ArrayList<net.minecraft.world.Container>();
+                  for(int i=0;i<8;i++){
+                   var drive=xsx1040Scan.drives().get(i);
+                   var backing=dev.obsidiannetwork.menu.DriveMenu.xsxCellTerminalBacking(drive);
+                   var cell=backing.getItem(0).copy();
+                   if(!dev.obsidiannetwork.cellterminal.V176CellTerminalBlockEntity.isCell(cell))
+                    throw new IllegalStateException("B1040 multibuffer fixture source missing "+i);
+                   xsx1040EightOriginal.add(cell);
+                   xsx1040EightBackings.add(backing);
+                   backing.setItem(0,net.minecraft.world.item.ItemStack.EMPTY);
+                   xsx1040Be.setItem(i,cell.copy());
+                  }
+                  int xsx1040BatchMoved=xsx1040Be.xsxAutoTransfer(level);
+                  if(xsx1040BatchMoved!=8||xsx1040Be.bufferedCells()!=0)
+                   throw new IllegalStateException("B1040 multibuffer batch not completely delivered"+
+                      " moved="+xsx1040BatchMoved+" remaining="+xsx1040Be.bufferedCells());
+                  boolean[] xsx1040Matched=new boolean[8];
+                  for(var backing:xsx1040EightBackings){
+                   var delivered=backing.getItem(0);
+                   boolean match=false;
+                   for(int i=0;i<8;i++){
+                    if(!xsx1040Matched[i]&&net.minecraft.world.item.ItemStack.matches(
+                        xsx1040EightOriginal.get(i),delivered)){
+                     xsx1040Matched[i]=true;
+                     match=true;
+                     break;
+                    }
+                   }
+                   if(!match)throw new IllegalStateException(
+                      "B1040 multi-Drive distribution changed/lost a real Cell");
+                  }
+                  System.out.println("XSXLABS_B1040_EIGHT_DISTINCT_DRIVES_AUTODISTRIBUTION_PASS count=8");
                   // Restore fixture: no generated Cells, no lost original Cells.
                   xsx1040Be.clearContent();
                   if(!xsx1040Be.isEmpty())throw new IllegalStateException("B1040 clear failed");
                   System.out.println("V176_B1040_REAL_BUFFER_AUTOTICK_CABLE_DRIVE_PASS"+
                     " drives=50 input_slots=8 actual_click=true real_buffer_nbt=true"+
                     " full_drive_queues=true drive_readback=true shift_queues_first=true"+
-                    " disconnected_hold=true reconnect_auto_delivers=true");
+                    " disconnected_hold=true reconnect_auto_delivers=true"+
+                    " eight_distinct_drive_cells=true");
 '''
 s=s.replace(anchor,anchor+"\n"+test,1)
 assert s.count(marker)==1
