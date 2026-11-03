@@ -59,10 +59,12 @@ class B982PatchContracts(unittest.TestCase):
   self.assertNotIn('re.findall(',self.code)
   self.assertIn('B982_WORLD_HATCH_DUPLICATE',self.code)
 
- def test_turret_activation_anchor_matches_existing_b757_source(self):
-  previous=(ROOT/"features/v176/apply-v176-ingame-feedback-757.py").read_text(encoding="utf-8")
-  self.assertIn('      (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F);',previous)
-  self.assertIn('      (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F);',self.code)
+ def test_preserves_b957_authoritative_turret_entity_tag(self):
+  existing=(ROOT/"features/v176/apply-v176-b957-ingame-test-fixes.py").read_text(encoding="utf-8")
+  self.assertIn('suffix=suffix.replace(old,\'stand.entityTags().contains("xsxlabs_v176_turret")\',1)',existing)
+  self.assertIn('B982_EXISTING_TURRET_TAG_MISSING',self.code)
+  self.assertIn('B982_ARM_POSE_FALLBACK_MISSING',self.code)
+  self.assertNotIn('B982_STAND_ARMED_DRIFT',self.code)
 
  def test_exact_generated_renderer_and_sound_anchors(self):
   source_paths={
