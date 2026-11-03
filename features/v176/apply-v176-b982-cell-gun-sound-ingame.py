@@ -221,15 +221,11 @@ if hatch_calls:
 assert hatch_call not in arm
 assert "nodes.submitModelPart(XSX_WORLD_BARREL,pose" in arm
 s=s[:a]+arm+s[b:]
-# ArmorStand muzzle is active on the authoritative turret tag, or the
-# already-synced arm pose as before; no arbitrary free armor-stand guns.
-old='''   boolean armed=has(chest,"micro_mg")&&
-      (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F);'''
-assert s.count(old)==1,("B982_STAND_ARMED_DRIFT",s.count(old))
-new='''   boolean armed=stand.entityTags().contains("xsxlabs_v176_turret")||
-       (has(chest,"micro_mg")&&
-        (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F));'''
-s=s.replace(old,new,1)
+# B957 already replaced the legacy CHEST turret flag with the true
+# entity-tag gate. Do not patch it a second time or alter the worn suit.
+world_handler=s[s.index(" @SubscribeEvent public static void worldSuit("):]
+assert 'stand.entityTags().contains("xsxlabs_v176_turret")' in world_handler,("B982_EXISTING_TURRET_TAG_MISSING")
+assert 'stand.getRightArmPose().x()<-45F' in world_handler,("B982_ARM_POSE_FALLBACK_MISSING")
 assert "drawRight(xsxTurretPose,event.getSubmitNodeCollector()," in s
 assert 'xsxLogTurretPose(stand.getId(),tier,amount,"EXIT")' in s
 p.write_text(s,encoding="utf-8")
