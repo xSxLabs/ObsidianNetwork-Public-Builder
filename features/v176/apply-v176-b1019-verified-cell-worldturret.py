@@ -132,7 +132,7 @@ new=''' @SubscribeEvent public static void worldSuit(RenderLivingEvent.Post<?,?,
  }'''
 s=s[:a]+new+s[b:]
 assert "getEntitiesOfClass(ArmorStand.class,box)" not in s
-assert "mc.level.getEntity(state.id)" in s
+assert "mc.level.getEntity(xsxId)" in s
 assert "if(event.getRenderState().entityType!=EntityType.ARMOR_STAND)" not in s
 # The 1P method, helpers, and BARREL part must be EXACTLY preserved.
 assert s.count(" public static void firstPerson(RenderHandEvent event){")==1
