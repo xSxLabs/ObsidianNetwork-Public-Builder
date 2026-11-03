@@ -72,10 +72,10 @@ class B982PatchContracts(unittest.TestCase):
      "  pose.translate(0.0F,0.0F,-0.075F);"
    ),
    "b675":(
-     "  world.playSound(null,p.blockPosition(),SoundEvents.CROSSBOW_SHOOT,\\n     SoundSource.PLAYERS,0.45F,1.75F);",
+     "  world.playSound(null,p.blockPosition(),SoundEvents.CROSSBOW_SHOOT,\n     SoundSource.PLAYERS,0.45F,1.75F);",
    ),
    "b676":(
-     "   world.playSound(null,suit.blockPosition(),SoundEvents.CROSSBOW_SHOOT,\\n     SoundSource.PLAYERS,0.45F,1.7F);",
+     "   world.playSound(null,suit.blockPosition(),SoundEvents.CROSSBOW_SHOOT,\n     SoundSource.PLAYERS,0.45F,1.7F);",
    )
   }
   for key,needles in snippets.items():
