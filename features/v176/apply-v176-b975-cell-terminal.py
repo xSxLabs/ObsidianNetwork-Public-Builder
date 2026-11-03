@@ -537,13 +537,17 @@ original=A/"textures/block/power_terminal_computer_front.png"
 assert original.exists(),("B975_MONITOR_FRONT_NOT_FOUND",original)
 with Image.open(original) as picture:
     img=picture.convert("RGBA")
-assert img.size==(16,16),("B975_MONITOR_TEXTURE_SIZE",img.size)
+# Preserve the existing 32x32 monitor texture resolution (or 16x16 if
+# legacy resource packs use it). Scale pixel geometry, not the original art.
+assert img.width==img.height and img.width in (16,32),("B975_MONITOR_TEXTURE_SIZE",img.size)
+scale=img.width//16
+def xy(*coords):return tuple(round(n*scale) for n in coords)
 draw=ImageDraw.Draw(img)
-draw.rectangle((3,4,12,11),fill=(9,30,44,255),outline=(37,128,157,255))
+draw.rectangle(xy(3,4,12,11),fill=(9,30,44,255),outline=(37,128,157,255),width=scale)
 for a in (4,7,10):
-    draw.rectangle((a,6,a+1,9),fill=(62,220,242,255))
-    draw.point((a,5),fill=(161,245,247,255))
-draw.line((4,12,11,12),fill=(23,134,166,255))
+    draw.rectangle(xy(a,6,a+1,9),fill=(62,220,242,255))
+    draw.rectangle(xy(a,5,a,5),fill=(161,245,247,255))
+draw.line(xy(4,12,11,12),fill=(23,134,166,255),width=scale)
 output=A/"textures/block/cell_terminal_front.png"
 assert not output.exists()
 img.save(output)
