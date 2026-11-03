@@ -81,6 +81,21 @@ if " private static ModelPart createHatch(){" in s:
 assert "createHatch()" not in s
 # The world turret renderer used proximity to an interpolated render-state
 # x/z. On a moving ArmorStand it matched poorly; actual state.id is exact.
+# Official NeoForge 26.1 render-state modifier captures the exact
+# ArmorStand ID during extraction. LivingEntityRenderState has NO .id field.
+anchor=" private V176MicroMgVisualClient(){}"
+assert s.count(anchor)==1, "B1019_RENDER_STATE_KEY_ANCHOR"
+s=s.replace(anchor,anchor+'''
+ // Render-state attachment: exact stand identity, no tick-vs-frame AABB.
+ private static final net.neoforged.neoforge.client.renderstate.ContextKey<Integer>
+     XSX_STAND_RENDER_ID=new net.neoforged.neoforge.client.renderstate.ContextKey<>(
+       Identifier.fromNamespaceAndPath("obsidiannetwork","v176_turret_stand_id"));
+ @SubscribeEvent public static void xsxCaptureTurretStandId(
+      net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent event){
+  event.registerEntityModifier(net.minecraft.client.renderer.entity.ArmorStandRenderer.class,
+       (stand,state)->state.setRenderData(XSX_STAND_RENDER_ID,stand.getId()));
+ }
+''',1)
 a,b,old=balanced(s," @SubscribeEvent public static void worldSuit(")
 assert "getEntitiesOfClass(ArmorStand.class,box)" in old, "B1019_OLD_AABB_GUARD"
 assert 'xsxLogTurretPose(' in old, "B1019_DIAG_GUARD"
@@ -91,7 +106,9 @@ new=''' @SubscribeEvent public static void worldSuit(RenderLivingEvent.Post<?,?,
   var state=event.getRenderState();
   // This is the very same tracked entity currently being rendered. Do not
   // compare interpolated x/z to a separate tick-position AABB.
-  Entity entity=mc.level.getEntity(state.id);
+  Integer xsxId=state.getRenderData(XSX_STAND_RENDER_ID);
+  if(xsxId==null)return;
+  Entity entity=mc.level.getEntity(xsxId);
   if(!(entity instanceof ArmorStand stand)||!stand.isAlive()||stand.isInvisible())return;
   int suitTier=tier(stand);
   if(suitTier<1)return;
@@ -162,9 +179,11 @@ assert "setCarried(carried)" in clicked
 # Client message tells why an apparently connected network rejected a cell.
 clicked=clicked.replace('''   if(!scan.online()||scan.freeSlots()<1)return;''',
 '''   if(!scan.online()||scan.freeSlots()<1){
-    server.displayClientMessage(net.minecraft.network.chat.Component.literal(
+    server.connection.send(
+      new net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket(
+       net.minecraft.network.chat.Component.literal(
         !scan.online()?"Cell Terminal: Netzwerk OFFLINE":
-        "Cell Terminal: Keine freien Drive-Slots"),true);
+        "Cell Terminal: Keine freien Drive-Slots")));
     broadcastFullState();
     return;
    }''')
@@ -178,8 +197,10 @@ needle='''   }
   // All other 46 virtual preview slots remain disabled.'''
 assert needle in clicked,("B1019_CLICKED_TAIL_DRIFT",clicked[-350:])
 clicked=clicked.replace(needle,'''   }
-   server.displayClientMessage(net.minecraft.network.chat.Component.literal(
-       "Cell Terminal: Kein passender freier Drive-Slot gefunden"),true);
+   server.connection.send(
+     new net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket(
+      net.minecraft.network.chat.Component.literal(
+       "Cell Terminal: Kein passender freier Drive-Slot gefunden")));
    broadcastFullState();
    return;
   }
@@ -257,7 +278,7 @@ assert "float hatchOpen=" not in v[v.index(" public static void drawArm("):v.ind
 assert v.count("nodes.submitModelPart(XSX_WORLD_BARREL,pose")==1
 assert "try{" in v[v.index(" public static void drawArm("):v.index(" private static void drawRight(")]
 assert "finally{" in v[v.index(" public static void drawArm("):v.index(" private static void drawRight(")]
-assert "mc.level.getEntity(state.id)" in v
+assert "mc.level.getEntity(xsxId)" in v
 assert "stand.getRightArmPose().x()<-40.0F" in v
 m=load(menu)
 assert "if(slotId>=0&&slotId<8)" in m
