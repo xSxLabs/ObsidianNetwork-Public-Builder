@@ -111,9 +111,12 @@ m=m.replace("server.connection.send(","if(server.connection!=null)server.connect
 # Equipment Cell is also supported by the real drive backing, including
 # Shift-click from the player's inventory (not just cursor pad).
 old="if(carried.isEmpty()||!(carried.getItem() instanceof StorageCellItem))"
-assert m.count(old)==1,("B1037_SHIFT_CELL_TYPE_DRIFT",m.count(old))
-m=m.replace(old,"""if(carried.isEmpty()||!(carried.getItem() instanceof StorageCellItem
+if m.count(old)==1:
+ m=m.replace(old,"""if(carried.isEmpty()||!(carried.getItem() instanceof StorageCellItem
      ||carried.getItem() instanceof dev.obsidiannetwork.item.EquipmentCellItem))""",1)
+else:
+ # B1019 already expanded the same predicate in both transfer routes.
+ assert m.count("carried.getItem() instanceof dev.obsidiannetwork.item.EquipmentCellItem")>=2,("B1037_SHIFT_CELL_TYPE_DRIFT",m.count(old))
 for guard in ("backing.setItem(target,one);","carried.shrink(1);",
               "if(slotId>=0&&slotId<8)","DriveMenu.xsxCellTerminalBacking"):
  assert guard in m,("B1037_CELL_SERVER_TRANSFER_MISSING",guard)
