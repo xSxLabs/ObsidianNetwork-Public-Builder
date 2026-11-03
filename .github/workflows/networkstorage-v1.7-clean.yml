@@ -1,3 +1,4 @@
+# B957 automatic source regression repair: retain original 3-space turret shot anchor via scoped regex.
 # B957 repair: match actual v1.7.6 Java shoot call source, full test JAR cycle.
 # B937: rebindable, default-unbound Creative Flight particle toggle via 26.1 automatic event bus; no Elytra or FE change.
 # B934 explicit rebuilt after merging first-person, monitor and restored backpack fixes; previous run was cancelled.
