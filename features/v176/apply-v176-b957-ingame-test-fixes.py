@@ -19,6 +19,17 @@ def add(path,code):
  p.parent.mkdir(parents=True,exist_ok=True)
  p.write_text(code,encoding="utf-8")
 
+# Reuse the established Network Storage identifier, instead of the old
+# Power Armor-specific category. All other Power Armor, Recall and Backpack
+# bindings already reference PowerArmorExitKeyClient.CATEGORY.
+power_keys=J/"powerarmor/PowerArmorExitKeyClient.java"
+power_src=power_keys.read_text(encoding="utf-8")
+power_src,count=re.subn(
+ r'Identifier\.fromNamespaceAndPath\(\s*"obsidiannetwork"\s*,\s*"xsxlabs"\s*\)',
+ 'Identifier.fromNamespaceAndPath("obsidiannetwork","network_storage")',
+ power_src)
+assert count==1,("B957_CATEGORY_ANCHOR_DRIFT",count)
+power_keys.write_text(power_src,encoding="utf-8")
 # One shared category, already used by Power Armor and Network Backpack.
 keys="client/V176CreativeFlightParticles.java"
 edit(keys,"  KeyMapping.Category.MISC);",
