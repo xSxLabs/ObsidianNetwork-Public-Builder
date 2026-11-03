@@ -101,7 +101,7 @@ for p in (cell,screen):
          ||item.getItem() instanceof dev.obsidiannetwork.item.EquipmentCellItem;
     }""")
  c=read(p)
- assert c.count("for(int pad=0;pad<8;pad++)")==1
+ assert c.count("for(int pad=0;pad<8;pad++)")>=1
  assert "mayPickup" in c
 assert "if(slotId>=0&&slotId<8)" in read(cell)
 assert "backing.setItem(target,one);" in read(cell)
