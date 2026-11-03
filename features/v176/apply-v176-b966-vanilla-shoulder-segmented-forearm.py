@@ -91,14 +91,14 @@ replacement=r''' // A vanilla arm is one solid cuboid; a PoseStack rotation of t
   if(sleeve)
    nodes.submitModelPart(upperSleeve,pose,skin,light,OverlayTexture.NO_OVERLAY,
        null,false,false,0xFFFFFFFF,null,0);
-  // Pivot at right elbow, not at the camera or shoulder. Only forearm and
+  // Pivot at right elbow (-5,6,0 vanilla arm model pixels), not camera/shoulder. Only forearm and
   // upper-arm-mounted barrel inherit these two rotations.
   float bend=Math.min(1.0F,progress/(4.0F/12.0F));
   pose.pushPose();
-  pose.translate(-6.0F/16.0F,6.0F/16.0F,0.0F);
+  pose.translate(-5.0F/16.0F,6.0F/16.0F,0.0F);
   pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-78.0F*bend));
   pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(32.0F*bend));
-  pose.translate(6.0F/16.0F,-6.0F/16.0F,0.0F);
+  pose.translate(5.0F/16.0F,-6.0F/16.0F,0.0F);
   nodes.submitModelPart(lower,pose,skin,light,OverlayTexture.NO_OVERLAY,
       null,false,false,0xFFFFFFFF,null,0);
   if(sleeve)
