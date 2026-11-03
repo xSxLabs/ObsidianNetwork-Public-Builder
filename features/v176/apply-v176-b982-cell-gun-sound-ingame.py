@@ -208,18 +208,17 @@ s=p.read_text(encoding="utf-8")
 a=s.index(" public static void drawArm(")
 b=s.index("\n }",a)+3
 arm=s[a:b]
-# B933/B953 may have already removed this hatch. Do not fail when absent.
-# If any world hatch call still exists, remove its entire model submission,
-# irrespective of the RenderType/palette chosen by prior stages.
-hatch_calls=len(re.findall(r'nodes\\.submitModelPart\\(\\s*HATCH\\s*,',arm))
+# B933/B953 may have already removed this hatch. Accept the absent
+# submission, but eliminate the remaining world hatch if still present.
+# Use literal Java statement boundaries, not a fragile regex.
+hatch_call="nodes.submitModelPart(HATCH,pose"
+hatch_calls=arm.count(hatch_call)
 assert hatch_calls<=1,("B982_WORLD_HATCH_DUPLICATE",hatch_calls)
 if hatch_calls:
- arm,removed=re.subn(
-  r'(?m)^[ \\t]*nodes\\.submitModelPart\\(\\s*HATCH\\s*,[\\s\\S]*?;',
-  "   // B982: world hatch submission removed; barrel only.",
-  arm,count=1)
- assert removed==1,("B982_WORLD_HATCH_REMOVAL_FAILED",removed)
-assert not re.search(r'nodes\\.submitModelPart\\(\\s*HATCH\\s*,',arm)
+ begin=arm.index(hatch_call)
+ end=arm.index(";",begin)
+ arm=arm[:begin]+"/* B982: world hatch submission removed; barrel only. */"+arm[end+1:]
+assert hatch_call not in arm
 assert "nodes.submitModelPart(XSX_WORLD_BARREL,pose" in arm
 s=s[:a]+arm+s[b:]
 # ArmorStand muzzle is active on the authoritative turret tag, or the
