@@ -11,7 +11,7 @@ public final class V176MicroMgRules {
  public static final int COOLDOWN_TICKS=1; // 4 of 5 ticks => 16 shots/sec at 20 TPS
  public static final int AUTO_TARGET_RANGE_SQ=16*16;
  public static final int MANUAL_MAX_RANGE=24;
- public static final float DAMAGE_HP=2.0f;
+ public static final float DAMAGE_HP=4.0f;
 
  /** NONE is an internal disabled state, not a third Actionswheel option. */
  public enum CompanionMode { NONE, FOLLOW, TURRET }

@@ -15,7 +15,7 @@ class SkinVisibility(unittest.TestCase):
   ast.parse(self.src,str(PATCH))
   self.assertIn('data["client"].append("V176WornSkinRenderTypeMixin")',self.src)
   self.assertIn('@Mixin(LivingEntityRenderer.class)',self.src)
-  self.assertIn('instanceof AvatarRenderer<?>',self.src)
+  self.assertIn('state instanceof AvatarRenderState avatar',self.src)
  def test_skin_pass_only_and_auto_restore(self):
   for marker in ('V176AttackRenderState.TIER','tier!=null&&tier>=1&&tier<=24',
      'cir.setReturnValue(null)', 'state.setRenderData(TIER,0);',

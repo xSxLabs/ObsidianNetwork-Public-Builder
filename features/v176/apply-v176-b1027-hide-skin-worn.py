@@ -25,8 +25,7 @@ mixin.parent.mkdir(parents=True,exist_ok=True)
 mixin.write_text(r'''package dev.obsidiannetwork.mixin;
 
 import dev.obsidiannetwork.client.V176AttackRenderState;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.AvatarRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -46,7 +45,6 @@ public abstract class V176WornSkinRenderTypeMixin {
  private void xsxlabs$hideWornVanillaSkin(LivingEntityRenderState state,
      boolean bodyVisible, boolean transparent, boolean glowing,
      CallbackInfoReturnable<RenderType> cir) {
-  if(!((Object)this instanceof AvatarRenderer<?>))return;
   if(!(state instanceof AvatarRenderState avatar))return;
   Integer tier=avatar.getRenderData(V176AttackRenderState.TIER);
   if(tier!=null&&tier>=1&&tier<=24)

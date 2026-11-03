@@ -7,6 +7,7 @@ public final class V176MicroMgRulesTest {
  public static void main(String[] args){
   var r=V176MicroMgRules.class;
   okay(V176MicroMgRules.FE_PER_SHOT==3000L,"FE cost");
+  okay(V176MicroMgRules.DAMAGE_HP==4.0f,"double micro MG hit damage");
   okay(V176MicroMgRules.COOLDOWN_TICKS==1,"minimum 1 tick, 16 shots/sec every 4 of 5");
   okay(!V176MicroMgRules.shouldShowAttackAction(true,false),"module-gated wheel");
   okay(!V176MicroMgRules.shouldShowAttackAction(false,true),"worn-only wheel");
