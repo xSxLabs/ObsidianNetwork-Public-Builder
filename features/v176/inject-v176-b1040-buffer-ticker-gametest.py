@@ -198,11 +198,19 @@ test=r'''
                      ||!net.minecraft.world.item.ItemStack.matches(xsx1040Be.getItem(0),xsx1040FreshCell))
                     throw new IllegalStateException("B1044 pristine Cell not accepted by real Cell Terminal");
                    int xsx1040FreshMoved=xsx1040Be.xsxAutoTransfer(level);
+                   var xsx1040FreshInstalled=xsx1040FreshBacking.getItem(0);
+                   System.out.println("XSXLABS_B1045_FRESH_CELL_READBACK type="+xsx1040FreshType+
+                       " count="+xsx1040FreshMoved+" buffered="+xsx1040Be.bufferedCells()+
+                       " drive="+xsx1040FreshInstalled.getItem()+
+                       " raw_exact="+net.minecraft.world.item.ItemStack.matches(
+                          xsx1040FreshInstalled,xsx1040FreshCell));
                    if(xsx1040FreshMoved!=1||xsx1040Be.bufferedCells()!=0
-                     ||!net.minecraft.world.item.ItemStack.matches(
-                       xsx1040FreshBacking.getItem(0),xsx1040FreshCell))
-                    throw new IllegalStateException("B1044 new uninstalled Cell rejected by connected Drive"+
-                        " type="+xsx1040FreshType);
+                     ||!dev.obsidiannetwork.cellterminal.V176CellTerminalBlockEntity
+                           .xsxCanonicalSameCell(xsx1040FreshCell,xsx1040FreshInstalled))
+                    throw new IllegalStateException("B1045 fresh Storage/Equipment Cell was NOT installed into real Drive"+
+                        " type="+xsx1040FreshType+" moved="+xsx1040FreshMoved+
+                        " buffered="+xsx1040Be.bufferedCells()+
+                        " drive="+xsx1040FreshInstalled.getItem());
                   }
                   // Restore all original Drive Cells before returning to the
                   // remainder of the full-controller stress test.
@@ -211,7 +219,7 @@ test=r'''
                   if(!net.minecraft.world.item.ItemStack.matches(
                        xsx1040FreshBacking.getItem(0),xsx1040RestoreCell))
                    throw new IllegalStateException("B1044 original Drive Cell restoration failed");
-                  System.out.println("XSXLABS_B1044_PRISTINE_STORAGE_AND_EQUIPMENT_CELL_AUTO_MOVE_PASS");
+                  System.out.println("XSXLABS_B1045_PRISTINE_STORAGE_AND_EQUIPMENT_CELL_CANONICAL_AUTO_MOVE_PASS");
                   // Restore fixture: no generated Cells, no lost original Cells.
                   xsx1040Be.clearContent();
                   if(!xsx1040Be.isEmpty())throw new IllegalStateException("B1040 clear failed");
