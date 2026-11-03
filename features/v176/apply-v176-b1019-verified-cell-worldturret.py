@@ -205,8 +205,14 @@ s=s.replace(needle,'''  // Prefer authoritative graph; supplement it with verifi
   var all=new java.util.LinkedHashMap<Long,StorageDriveBlockEntity>();
   for(var drive:WorldTopologyBridge.xsxCellTerminalDrives(world,network))
    all.put(drive.getBlockPos().asLong(),drive);
-  for(var drive:xsxCableDrives(world,terminal,network))
-   all.putIfAbsent(drive.getBlockPos().asLong(),drive);
+  // Cable discovery is a fallback, not a per-tick full-network scan.
+  boolean graphHasFree=false;
+  for(var drive:all.values())
+   if(drive.xsxCellTerminalFirstEmptySlot()>=0){graphHasFree=true;break;}
+  if(!graphHasFree){
+   for(var drive:xsxCableDrives(world,terminal,network))
+    all.putIfAbsent(drive.getBlockPos().asLong(),drive);
+  }
   List<StorageDriveBlockEntity> drives=new java.util.ArrayList<>(all.values());''',1)
 idx=s.index(" public static Scan scan(")
 helper=''' // At most 16k loaded wire positions. Never load another chunk and never
