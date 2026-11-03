@@ -34,7 +34,7 @@ class B1014Checks(unittest.TestCase):
    self.assertIn(x,self.s)
 
  def test_eight_live_slots_backed_by_actual_drives(self):
-  for x in ('range(8)','pad%4','pad/4','if(slotId>=0&&slotId<8)',
+  for x in ('pad<8','pad%4','pad/4','if(slotId>=0&&slotId<8)',
             'if(slotId>=8&&slotId<54)',
             'xsxRefresh(world)','xsxRefresh(ServerLevel server)',
             '8 LIVE CELL INPUTS'):
