@@ -31,6 +31,13 @@ for s in ("public void clicked","ChestMenu.clicked",
  assert s in menu,("B1040_MENU_NOT_REAL_BUFFER",s)
 server_tick=be[be.index("public static void serverTick("):be.index("public int xsxAutoTransfer(")]
 assert "xsxAutoTransfer:" in server_tick, "B1040_BUFFER_NOT_AUTOMATICALLY_TICKED"
+# B1045: first install may canonicalize the previously absent CELL_CONTENTS.
+# Real Drive readback must be content-equal while keeping any other components.
+for token in ("public static boolean xsxCanonicalSameCell(", "StorageCellItem.readStore",
+              "StorageCellItem.writeStore","EquipmentCellItem.readStore",
+              "EquipmentCellItem.writeStore","ItemStack.matches",
+              "xsxCanonicalSameCell:"):
+ assert token in be,("B1045_CANONICAL_READBACK_GATE_MISSING",token)
 assert "V176CellTerminalTopology.scan" not in menu, "B1040_OLD_DIRECT_DRIVE_MENU_ROUTE"
 assert "DriveMenu.xsxCellTerminalBacking" not in menu,"B1040_OLD_FAKE_CLICK_ACTION"
 screen=javap("dev.obsidiannetwork.client.V176CellTerminalScreen")
