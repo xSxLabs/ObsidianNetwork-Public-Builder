@@ -262,6 +262,11 @@ method=method.replace("drawPair(xsxTurretPose,event.getSubmitNodeCollector(),",
  "drawArm(xsxTurretPose,event.getSubmitNodeCollector(),",1)
 assert "state.lightCoords,model,tier,amount" in method
 method=method.replace("state.lightCoords,model,tier,amount","state.lightCoords,model.rightArm,tier,amount",1)
+# The original visual hook has a single-line if. Scope BOTH trace calls and
+# the draw into its body or the pattern variable 'model' would go out of scope.
+scope="if(amount>0F && event.getRenderer().getModel() instanceof HumanoidModel<?> model)"
+assert method.count(scope)==1,"B980_WORLDSUIT_IF_SCOPE_DRIFT"
+method=method.replace(scope,scope+"{",1)
 # Emit a low-frequency stage marker only while a deployed world turret is
 # visible. The trace survives in latest.log if another mod leaks a stack.
 needle="    drawArm(xsxTurretPose,event.getSubmitNodeCollector(),"
@@ -273,7 +278,8 @@ method=method.replace(needle,'''    xsxLogTurretPose(stand.getId(),tier,amount,"
 needle="state.lightCoords,model.rightArm,tier,amount);"
 assert needle in method
 method=method.replace(needle,needle+'''
-   xsxLogTurretPose(stand.getId(),tier,amount,"EXIT");''',1)
+   xsxLogTurretPose(stand.getId(),tier,amount,"EXIT");
+   }''',1)
 s=s[:start]+method+s[stop:]
 # Instrument only every 100th call per armor stand; do not spam each frame.
 diag=r'''
