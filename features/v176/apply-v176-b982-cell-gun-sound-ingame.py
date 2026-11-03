@@ -216,7 +216,7 @@ s=s[:a]+arm+s[b:]
 # ArmorStand muzzle is active on the authoritative turret tag, or the
 # already-synced arm pose as before; no arbitrary free armor-stand guns.
 old='''   boolean armed=has(chest,"micro_mg")&&
-       (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F);'''
+      (has(chest,"micro_mg_turret_on")||stand.getRightArmPose().x()<-45F);'''
 assert s.count(old)==1,("B982_STAND_ARMED_DRIFT",s.count(old))
 new='''   boolean armed=stand.entityTags().contains("xsxlabs_v176_turret")||
        (has(chest,"micro_mg")&&
