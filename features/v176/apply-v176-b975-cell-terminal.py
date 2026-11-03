@@ -305,7 +305,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -336,7 +336,7 @@ public final class V176CellTerminalMenu extends ChestMenu {
   return world!=null&&world.getBlockEntity(pos)==terminal
       &&player.distanceToSqr(pos.getX()+.5D,pos.getY()+.5D,pos.getZ()+.5D)<=64D;
  }
- @Override public void clicked(int slotId,int button,ClickType action,Player player){
+ @Override public void clicked(int slotId,int button,ContainerInput action,Player player){
   // No spoofed slot insertion into a non-existent cell holding inventory.
   if(slotId>=0&&slotId<54)return;
   super.clicked(slotId,button,action,player);
