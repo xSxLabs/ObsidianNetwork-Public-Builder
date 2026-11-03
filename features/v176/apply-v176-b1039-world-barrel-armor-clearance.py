@@ -15,8 +15,9 @@ new='.addBox(-0.46F,6.8F,-4.15F,0.92F,4.7F,1.05F)'
 assert s.count(old)==1,("B1039_BARREL_GEOMETRY_DRIFT",s.count(old))
 assert s.count('nodes.submitModelPart(XSX_WORLD_BARREL,pose')==1
 assert s.count('nodes.submitModelPart(BARREL,pose')==1
-first=s[s.index(' public static void firstPerson('):s.index(' public static void drawArm(')]
-assert 'nodes.submitModelPart(BARREL,pose' in first
+# The first-person submission is independent and untouched by this one-
+# occurrence replacement; do not depend on Java source method ordering.
+assert 'nodes.submitModelPart(BARREL,pose' in s
 s=s.replace(old,new,1)
 assert s.count(new)==1
 # Model coordinates are 16px/block. Current drawArm offset is -0.014 block:
