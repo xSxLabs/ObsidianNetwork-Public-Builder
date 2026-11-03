@@ -13,7 +13,7 @@ class B1032(unittest.TestCase):
    self.assertIn(marker,SRC)
  def test_turret_uses_native_equipment_and_rotation(self):
   for marker in ("V176MicroMgStandLayer.java",
-     "RenderLayer<ArmorStandRenderState,ArmorStandModel>",
+     "RenderLayer<ArmorStandRenderState,EntityModel<ArmorStandRenderState>>",
      "state.chestEquipment","state.headEquipment","state.rightArmPose.x()",
      "RIGHT_ARM_PIVOT,variant,1.0F",
      "PartPose.offset(-5.0F,2.0F,0.0F)",
