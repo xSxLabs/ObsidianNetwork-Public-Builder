@@ -80,7 +80,7 @@ replacement=r''' // A vanilla arm is one solid cuboid; a PoseStack rotation of t
   boolean slim="SLIM".equals(player.getSkin().model().name());
   boolean sleeve=player.isModelPartShown(
       net.minecraft.world.entity.player.PlayerModelPart.RIGHT_SLEEVE);
-  var skin=RenderTypes.entitySolid(player.getSkin().texture());
+  var skin=RenderTypes.entitySolid(player.getSkin().body().texturePath());
   ModelPart upper=slim?XSX_UPPER_SLIM:XSX_UPPER;
   ModelPart lower=slim?XSX_LOWER_SLIM:XSX_LOWER;
   ModelPart upperSleeve=slim?XSX_SLEEVE_UPPER_SLIM:XSX_SLEEVE_UPPER;
