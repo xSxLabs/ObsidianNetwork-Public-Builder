@@ -52,7 +52,9 @@ class B982PatchContracts(unittest.TestCase):
             'drawRight(xsxTurretPose,event.getSubmitNodeCollector(),',
             'nodes.submitModelPart(BARREL,pose'):
    self.assertIn(x,self.code)
-  self.assertIn('B982: no floating plate',self.code)
+  self.assertIn('B982: world hatch submission removed; barrel only.',self.code)
+  self.assertIn('hatch_calls<=1',self.code)
+  self.assertIn('B982_WORLD_HATCH_DUPLICATE',self.code)
 
  def test_turret_activation_anchor_matches_existing_b757_source(self):
   previous=(ROOT/"features/v176/apply-v176-ingame-feedback-757.py").read_text(encoding="utf-8")
