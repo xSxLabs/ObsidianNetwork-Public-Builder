@@ -248,7 +248,7 @@ for i in range(brace,len(s)):
    break
 assert stop is not None,"B980_WORLDSUIT_METHOD_UNCLOSED"
 method=s[start:stop]
-assert "event.getPoseStack()" in method and "drawPair(" in method,"B980_WORLD_ARM_SOURCE_DRIFT"
+assert "event.getPoseStack()" in method and "drawRight(" in method,"B981_WORLD_RIGHT_ARM_SOURCE_DRIFT"
 method=method.replace("event.getPoseStack()","xsxTurretPose")
 method=method.replace("{\n",'''{
   // TEMP DIAGNOSTICS B980: remove after user verifies that both 3P and
@@ -257,11 +257,10 @@ method=method.replace("{\n",'''{
   xsxTurretPose.mulPose(new org.joml.Matrix4f(event.getPoseStack().last().pose()));
 ''',1)
 # All world-suit 3P gun geometry on right arm, never mirrored left.
-assert "drawPair(xsxTurretPose,event.getSubmitNodeCollector()," in method
-method=method.replace("drawPair(xsxTurretPose,event.getSubmitNodeCollector(),",
- "drawArm(xsxTurretPose,event.getSubmitNodeCollector(),",1)
-assert "state.lightCoords,model,tier,amount" in method
-method=method.replace("state.lightCoords,model,tier,amount","state.lightCoords,model.rightArm,tier,amount",1)
+# Already right-arm only since B729/B745. Preserve drawRight(...model,...,
+# true) because it owns the actual ArmorStand right-arm aiming animation.
+assert "drawRight(xsxTurretPose,event.getSubmitNodeCollector()," in method
+assert "state.lightCoords,model,tier,amount,true" in method
 # The original visual hook has a single-line if. Scope BOTH trace calls and
 # the draw into its body or the pattern variable 'model' would go out of scope.
 scope="if(amount>0F && event.getRenderer().getModel() instanceof HumanoidModel<?> model)"
@@ -269,13 +268,13 @@ assert method.count(scope)==1,"B980_WORLDSUIT_IF_SCOPE_DRIFT"
 method=method.replace(scope,scope+"{",1)
 # Emit a low-frequency stage marker only while a deployed world turret is
 # visible. The trace survives in latest.log if another mod leaks a stack.
-needle="    drawArm(xsxTurretPose,event.getSubmitNodeCollector(),"
+needle="    drawRight(xsxTurretPose,event.getSubmitNodeCollector(),"
 # expression likely at 4-column indent
-if needle not in method:needle="drawArm(xsxTurretPose,event.getSubmitNodeCollector(),"
+if needle not in method:needle="drawRight(xsxTurretPose,event.getSubmitNodeCollector(),"
 assert needle in method,"B980_WORLD_DRAW_DIAG_ANCHOR"
 method=method.replace(needle,'''    xsxLogTurretPose(stand.getId(),tier,amount,"ENTER");
-    drawArm(xsxTurretPose,event.getSubmitNodeCollector(),''',1)
-needle="state.lightCoords,model.rightArm,tier,amount);"
+    drawRight(xsxTurretPose,event.getSubmitNodeCollector(),''',1)
+needle="state.lightCoords,model,tier,amount,true);"
 assert needle in method
 method=method.replace(needle,needle+'''
    xsxLogTurretPose(stand.getId(),tier,amount,"EXIT");
