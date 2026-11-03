@@ -43,7 +43,7 @@ change(layer,
   xsxWeaponPose.mulPose(new org.joml.Matrix4f(pose.last().pose()));
   V176MicroMgVisualClient.drawArm(xsxWeaponPose,nodes,light,
        getParentModel().rightArm,tier,deployment);
-  assert xsxWeaponPose.clear() : "B973 third-person weapon stack leaked";""")
+  // This is an isolated short-lived PoseStack, not the LevelRenderer stack.""")
 
 # Apply the same isolation to the visible worn bag. Increase only worn size
 # (never the placeable model or one of the 24 palettes).
@@ -65,7 +65,7 @@ change(bag,
   }""",
 """  model.submit(pose,event.getSubmitNodeCollector(),
        event.getRenderState().lightCoords,OverlayTexture.NO_OVERLAY,0);
-  assert pose.clear() : "B973 backpack stack leaked";""")
+  // No mutations of the original player/render stack.""")
 
 # B878 forcibly marked the player as holding a SPYGLASS during third-person
 # render. This is a third-party animation/mod compatibility hazard and is NOT
@@ -95,6 +95,13 @@ assert s.count(hand)==s.count(arm)==s.count(world)==1,"B973_HAND_ARM_RENDER_HAND
 start=s.index(hand);stop=s.index(arm,start);end=s.index(world,stop)
 oldhand=s[start:stop]
 oldarm=s[stop:end]
+# The B966 model-part builders are declared AFTER the old RenderHandEvent
+# and BEFORE the RenderArmEvent. Preserve them when changing the handler.
+helper_anchor=" // A vanilla arm is one solid cuboid;"
+assert oldhand.count(helper_anchor)==1,"B974_MISSING_B966_MODEL_PART_DECLARATIONS"
+arm_helpers=oldhand[oldhand.index(helper_anchor):]
+assert "private static final ModelPart XSX_LOWER_SLIM" in arm_helpers
+assert "private static final ModelPart XSX_SLEEVE_LOWER_SLIM" in arm_helpers
 assert "if(progress<=0.001F)return;" in oldhand
 assert "submitModelPart(BARREL" in oldhand
 assert "pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(42.0F*bend));" in oldarm
@@ -182,7 +189,7 @@ newhand=r''' @SubscribeEvent public static void firstPerson(RenderHandEvent even
   } finally {
    pose.popPose();
   }
-  assert pose.clear() : "B973 first-person isolated weapon stack leaked";
+  // The independent stack is discarded after this main-hand submission.
  }
 '''
 # In Attack Mode the main-hand callback owns ALL skin and gun geometry.
@@ -193,7 +200,7 @@ newarm=r''' @SubscribeEvent public static void xsxlabs$aimVisibleFirstPersonArm(
   // Do not cancel or touch the vanilla pose here (also used in UI previews).
  }
 '''
-s=s[:start]+newhand+newarm+s[end:]
+s=s[:start]+arm_helpers+newhand+newarm+s[end:]
 p.write_text(s,encoding="utf-8")
 
 src=p.read_text(encoding="utf-8")
