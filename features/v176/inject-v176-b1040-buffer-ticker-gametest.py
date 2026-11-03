@@ -135,6 +135,10 @@ test=r'''
                   // different Drive BEs. Queue these exact NBT Items in the
                   // real Cell Terminal. One automatic server transfer must
                   // spread all 8 to the freed Drive slots, not just the first.
+                  // First empty the eight temporary full-network probe
+                  // cells; next use EIGHT genuine player shift-click packets'
+                  // server menu handlers, not direct BE setters.
+                  xsx1040Be.clearContent();
                   var xsx1040EightOriginal=new java.util.ArrayList<net.minecraft.world.item.ItemStack>();
                   var xsx1040EightBackings=new java.util.ArrayList<net.minecraft.world.Container>();
                   for(int i=0;i<8;i++){
@@ -146,8 +150,14 @@ test=r'''
                    xsx1040EightOriginal.add(cell);
                    xsx1040EightBackings.add(backing);
                    backing.setItem(0,net.minecraft.world.item.ItemStack.EMPTY);
-                   xsx1040Be.setItem(i,cell.copy());
+                   xsxPlayerInv.setItem(i,cell.copy());
+                   var movedShift=xsx1040Menu.quickMoveStack(xsxBurstPlayer,81+i);
+                   if(movedShift.isEmpty()||!xsxPlayerInv.getItem(i).isEmpty()||
+                       !net.minecraft.world.item.ItemStack.matches(xsx1040Be.getItem(i),cell))
+                    throw new IllegalStateException("B1040 live eighth terminal SHIFT-CLICK failed "+i);
                   }
+                  if(xsx1040Be.bufferedCells()!=8)
+                   throw new IllegalStateException("B1040 8 shift-clicked Cells not in actual Terminal input buffer");
                   int xsx1040BatchMoved=xsx1040Be.xsxAutoTransfer(level);
                   if(xsx1040BatchMoved!=8||xsx1040Be.bufferedCells()!=0)
                    throw new IllegalStateException("B1040 multibuffer batch not completely delivered"+
@@ -175,7 +185,7 @@ test=r'''
                     " drives=50 input_slots=8 actual_click=true real_buffer_nbt=true"+
                     " full_drive_queues=true drive_readback=true shift_queues_first=true"+
                     " disconnected_hold=true reconnect_auto_delivers=true"+
-                    " eight_distinct_drive_cells=true");
+                    " eight_distinct_drive_cells=true eight_player_shift_clicks=true");
 '''
 s=s.replace(anchor,anchor+"\n"+test,1)
 assert s.count(marker)==1
