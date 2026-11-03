@@ -57,6 +57,22 @@ change("registry/ModBlockEntities.java",
 # DriveMenu is authoritative for how a Drive writes a live storage cell,
 # including the 16 real slots, dirty marking and the cell-storage runtime.
 # Grant access to its EXISTING inner Container; do not reimplement NBT.
+# Avoid repeatedly materializing full 64k-cell NBT just to count empty slots.
+# The existing drive's optimized occupiedSlots() already uses its item shells.
+change("blockentity/StorageDriveBlockEntity.java",
+    "   public int occupiedSlots() {",
+    """   // Cell Terminal discovers empty slots from item shells, not serialized cell NBT.
+   public int xsxCellTerminalFirstEmptySlot() {
+      int index=0;
+      for (ItemStack shell : this.cellInventory.copyToList()) {
+         if (index>=16) break;
+         if (shell.isEmpty()) return index;
+         index++;
+      }
+      return index<16 ? index : -1;
+   }
+   public int occupiedSlots() {""")
+
 change("menu/DriveMenu.java",
     "   private static final class DriveContainer implements Container {",
     """   // B975: identical storage mutation path for the Cell Terminal.
@@ -137,8 +153,8 @@ public final class V176CellTerminalTopology {
   drives.sort(Comparator.comparingLong(e->e.getBlockPos().asLong()));
   int free=0;
   for(StorageDriveBlockEntity drive:drives){
-   for(int slot=0;slot<16;slot++)
-    if(drive.cellStack(slot).isEmpty())free++;
+   // occupiedSlots() uses lightweight live inventory shells (no full-cell NBT).
+   free+=Math.max(0,16-drive.occupiedSlots());
   }
   return new Scan(true,List.copyOf(drives),free,truncated);
  }
@@ -366,10 +382,8 @@ public final class V176CellTerminalMenu extends ChestMenu {
    for(StorageDriveBlockEntity drive:drives){
     if(drive.isRemoved()||drive.getLevel()!=world
         ||!world.hasChunkAt(drive.getBlockPos()))continue;
-    for(int i=0;i<16;i++){
-     if(drive.cellStack(i).isEmpty()){destination=drive;targetSlot=i;break;}
-    }
-    if(destination!=null)break;
+    int empty=drive.xsxCellTerminalFirstEmptySlot();
+    if(empty>=0){destination=drive;targetSlot=empty;break;}
    }
    if(destination==null)break;
    // DriveMenu's own BE-backed Container performs the exact real install
@@ -554,6 +568,8 @@ img.save(output)
 
 assert "noOcclusion()" in (J/"ObsidianNetwork.java").read_text()
 assert "xsxCellTerminalBacking" in (J/"menu/DriveMenu.java").read_text()
+assert "xsxCellTerminalFirstEmptySlot()" in (J/"blockentity/StorageDriveBlockEntity.java").read_text()
+assert "drive.xsxCellTerminalFirstEmptySlot()" in (J/"cellterminal/V176CellTerminalMenu.java").read_text()
 assert '"cullface"' not in (A/"models/block/cell_terminal.json").read_text()
 assert "backing.setItem(targetSlot,one)" in (J/"cellterminal/V176CellTerminalMenu.java").read_text()
 assert "if(!ItemStack.matches(inserted,one))" in (J/"cellterminal/V176CellTerminalMenu.java").read_text()
