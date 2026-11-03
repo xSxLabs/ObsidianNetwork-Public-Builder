@@ -66,6 +66,10 @@ replace(p,
     new net.minecraft.util.context.ContextKey<>(
       net.minecraft.resources.Identifier.fromNamespaceAndPath(
        "obsidiannetwork","v176_turret_tag_active"));
+ private static final net.minecraft.util.context.ContextKey<Integer> TURRET_STAND_ID=
+    new net.minecraft.util.context.ContextKey<>(
+      net.minecraft.resources.Identifier.fromNamespaceAndPath(
+       "obsidiannetwork","v176_turret_stand_render_id"));
  private static final java.util.Set<Integer> LOGGED_STANDS=
     java.util.concurrent.ConcurrentHashMap.newKeySet();
  private static final ModelPart RIGHT_ARM_PIVOT""")
@@ -78,16 +82,20 @@ replace(p,
        ||has(state.chestEquipment,"micro_mg_turret_on")
        ||state.rightArmPose.x()<-35.0F;
   if(!active)return;
-  if(LOGGED_STANDS.add(state.id))
-   System.out.println("XSXLABS_B1037_STAND_MG_SUBMIT id="+state.id+
+  Integer xsxId=state.getRenderData(TURRET_STAND_ID);
+  if(xsxId!=null&&LOGGED_STANDS.add(xsxId))
+   System.out.println("XSXLABS_B1037_STAND_MG_SUBMIT id="+xsxId+
        " tier="+variant+" arm="+state.rightArmPose.x());""")
 replace(p,
 """  @SubscribeEvent public static void layers(EntityRenderersEvent.AddLayers event){""",
 """  @SubscribeEvent public static void captureTurretTag(
       net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent event){
    event.registerEntityModifier(ArmorStandRenderer.class,
-       (stand,state)->state.setRenderData(TURRET_ACTIVE,
-          stand.entityTags().contains("xsxlabs_v176_turret")));
+       (stand,state)->{
+        state.setRenderData(TURRET_ACTIVE,
+          stand.entityTags().contains("xsxlabs_v176_turret"));
+        state.setRenderData(TURRET_STAND_ID,stand.getId());
+       });
    System.out.println("XSXLABS_B1037_STAND_TURRET_STATE_REGISTERED");
   }
   @SubscribeEvent public static void layers(EntityRenderersEvent.AddLayers event){""")
