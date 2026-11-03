@@ -109,7 +109,7 @@ p.write_text(s,encoding="utf-8")
 # muzzle, is NOT hitscan, and is NOT guided after launch. Zero random spread.
 fire="powerarmor/V176MicroMgFire.java"
 edit(fire,
- '   shot.shoot(dir.x,dir.y,dir.z,3.0F,0.8F);',
+ '  shot.shoot(dir.x,dir.y,dir.z,3.0F,0.8F);',
  '''   Vec3 eye=p.getEyePosition();
    Vec3 far=eye.add(dir.scale(128.0D));
    var hit=world.clip(new net.minecraft.world.level.ClipContext(eye,far,
@@ -122,7 +122,7 @@ edit(fire,
    shot.shoot(corrected.x,corrected.y,corrected.z,3.0F,0.0F);''')
 # Do not add random turret spread.
 turret="powerarmor/V176CompanionMode.java"
-edit(turret,'   shot.shoot(dir.x,dir.y,dir.z,3.0F,0.7F);',
+edit(turret,'  shot.shoot(dir.x,dir.y,dir.z,3.0F,0.7F);',
             '   shot.shoot(dir.x,dir.y,dir.z,3.0F,0.0F);')
 
 # Stable 200-tick black surface impact marks, synced to nearby players.
