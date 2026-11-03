@@ -29,6 +29,8 @@ for s in ("public void clicked","ChestMenu.clicked",
           "V176CellTerminalBlockEntity.setItem",
           "V176CellTerminalBlockEntity.getItem","public net.minecraft.world.item.ItemStack quickMoveStack"):
  assert s in menu,("B1040_MENU_NOT_REAL_BUFFER",s)
+server_tick=be[be.index("public static void serverTick("):be.index("public int xsxAutoTransfer(")]
+assert "xsxAutoTransfer:" in server_tick, "B1040_BUFFER_NOT_AUTOMATICALLY_TICKED"
 assert "V176CellTerminalTopology.scan" not in menu, "B1040_OLD_DIRECT_DRIVE_MENU_ROUTE"
 assert "DriveMenu.xsxCellTerminalBacking" not in menu,"B1040_OLD_FAKE_CLICK_ACTION"
 screen=javap("dev.obsidiannetwork.client.V176CellTerminalScreen")
