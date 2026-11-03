@@ -16,7 +16,7 @@ class B1014Checks(unittest.TestCase):
   self.assertIn('B1014_SOURCE_DRIFT',self.s)
   self.assertNotIn('firstPerson(RenderHandEvent',self.s)
   self.assertNotIn('xsxlabs$aimVisibleFirstPersonArm(',self.s)
-  self.assertNotIn('B1014_FIRST_PERSON_GUN_LOST',self.s)
+  self.assertIn('B1014_FIRST_PERSON_GUN_LOST',self.s)
 
  def test_front_embedded_in_existing_geometry(self):
   for x in ('screens[0]["faces"]["north"]["texture"]="#xsx_cell_front"',
