@@ -4093,6 +4093,7 @@ jobs:
             python3 features/v176/apply-v176-b1030-3p-turret-cell-delivery.py
             python3 features/v176/apply-v176-b1032-layered-guns-physical-drive-cells.py
             python3 features/v176/apply-v176-b1035-visible-armbarrels-connected-cells.py
+            # B1037: accept the already-expanded B1019 supported CellItem types.
             python3 features/v176/apply-v176-b1037-turret-tag-render-and-cell-action.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
