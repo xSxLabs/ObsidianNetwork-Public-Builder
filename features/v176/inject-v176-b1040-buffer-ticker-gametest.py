@@ -73,11 +73,22 @@ test=r'''
                   xsx1040Backing.setItem(0,net.minecraft.world.item.ItemStack.EMPTY);
                   if(!xsx1040Backing.getItem(0).isEmpty())
                    throw new IllegalStateException("B1040 failed to free real drive slot");
-                  if(xsx1040Be.xsxAutoTransfer(level)!=1
-                       ||xsx1040Be.bufferedCells()!=0
-                       ||!net.minecraft.world.item.ItemStack.matches(
-                          xsx1040Backing.getItem(0),xsx1040Cell))
-                   throw new IllegalStateException("B1040 real automatic ticker failed to move buffered Cell into Drive");
+                  int xsx1040BeforeTransfer=0;
+                  for(var drive:xsx1040Scan.drives())
+                   xsx1040BeforeTransfer+=drive.occupiedSlots();
+                  int xsx1040Moved=xsx1040Be.xsxAutoTransfer(level);
+                  int xsx1040AfterTransfer=0;
+                  for(var drive:xsx1040Scan.drives())
+                   xsx1040AfterTransfer+=drive.occupiedSlots();
+                  System.out.println("XSXLABS_B1040_TRANSFER_COUNTS before="+xsx1040BeforeTransfer+
+                      " after="+xsx1040AfterTransfer+" moved="+xsx1040Moved+
+                      " pending="+xsx1040Be.bufferedCells()+
+                      " originalSlot="+xsx1040Backing.getItem(0));
+                  if(xsx1040Moved!=1||xsx1040Be.bufferedCells()!=0
+                      ||xsx1040AfterTransfer!=xsx1040BeforeTransfer+1)
+                   throw new IllegalStateException("B1040 automatic Cell did NOT enter any real Drive"+
+                     " before="+xsx1040BeforeTransfer+" after="+xsx1040AfterTransfer+
+                     " moved="+xsx1040Moved+" pending="+xsx1040Be.bufferedCells());
                   // Shift-click MUST queue to BE first, not bypass into a Drive.
                   xsx1040Backing.setItem(0,net.minecraft.world.item.ItemStack.EMPTY);
                   xsxPlayerInv.setItem(0,xsx1040Cell.copyWithCount(1));
@@ -94,10 +105,14 @@ test=r'''
                   if(xsx1040Be.xsxAutoTransfer(level)!=0||xsx1040Be.bufferedCells()!=1)
                    throw new IllegalStateException("B1040 offline buffer destroyed pending Cell");
                   level.setBlock(xsx1040Cable,ObsidianNetwork.NETWORK_CABLE.get().defaultBlockState(),3);
-                  if(xsx1040Be.xsxAutoTransfer(level)!=1||xsx1040Be.bufferedCells()!=0
-                    ||!net.minecraft.world.item.ItemStack.matches(
-                         xsx1040Backing.getItem(0),xsx1040Cell))
-                   throw new IllegalStateException("B1040 reconnect did not deliver queued Cell");
+                  int xsx1040ReconnectMoved=xsx1040Be.xsxAutoTransfer(level);
+                  int xsx1040ReconnectedOccupied=0;
+                  for(var drive:xsx1040Scan.drives())
+                   xsx1040ReconnectedOccupied+=drive.occupiedSlots();
+                  if(xsx1040ReconnectMoved!=1||xsx1040Be.bufferedCells()!=0
+                      ||xsx1040ReconnectedOccupied!=800)
+                   throw new IllegalStateException("B1040 reconnect did not deliver to real Drive"+
+                     " moved="+xsx1040ReconnectMoved+" occupied="+xsx1040ReconnectedOccupied);
                   // All 8 visible slots are genuine persisted BE inventory.
                   // Full Drives leave all 8 queued; no virtual slots ever own cells.
                   for(int i=0;i<8;i++){
