@@ -87,8 +87,8 @@ anchor=" private V176MicroMgVisualClient(){}"
 assert s.count(anchor)==1, "B1019_RENDER_STATE_KEY_ANCHOR"
 s=s.replace(anchor,anchor+'''
  // Render-state attachment: exact stand identity, no tick-vs-frame AABB.
- private static final net.neoforged.neoforge.client.renderstate.ContextKey<Integer>
-     XSX_STAND_RENDER_ID=new net.neoforged.neoforge.client.renderstate.ContextKey<>(
+ private static final net.minecraft.util.context.ContextKey<Integer>
+     XSX_STAND_RENDER_ID=new net.minecraft.util.context.ContextKey<>(
        Identifier.fromNamespaceAndPath("obsidiannetwork","v176_turret_stand_id"));
  @SubscribeEvent public static void xsxCaptureTurretStandId(
       net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent event){
