@@ -4070,6 +4070,7 @@ jobs:
             python3 features/v176/apply-v176-b937-creative-flight-particles-key.py
             python3 features/v176/apply-v176-b957-ingame-test-fixes.py
             python3 features/v176/apply-v176-b964-keybind-startup-hotfix.py
+            python3 features/v176/apply-v176-b966-vanilla-shoulder-segmented-forearm.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             python3 features/v176/verify-v176-cobble-obsidian-818.py
