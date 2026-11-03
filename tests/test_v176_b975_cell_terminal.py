@@ -18,6 +18,13 @@ class CellTerminalContracts(unittest.TestCase):
   self.assertIn("for(int i=0;i<16;i++)",s)
   self.assertIn("new V176CellTerminalMenu(id,inv,terminal)",s)
   self.assertIn("backing.setItem(targetSlot,one);",s)
+  self.assertIn("public int xsxCellTerminalFirstEmptySlot()",s)
+  self.assertIn("drive.xsxCellTerminalFirstEmptySlot()",s)
+  self.assertIn("16-drive.occupiedSlots()",s)
+  self.assertIn("import net.minecraft.world.inventory.ContainerInput;",s)
+  self.assertIn("ContainerInput action,Player player",s)
+  self.assertNotIn("import net.minecraft.world.inventory.ClickType;",s)
+  self.assertNotIn("drive.cellStack(i).isEmpty()",s)
   self.assertNotIn("new StorageCellStore(",s)
 
  def test_item_conservation_and_full_network(self):
