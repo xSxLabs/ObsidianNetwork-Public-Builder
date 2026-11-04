@@ -56,10 +56,20 @@ def fix_player(old):
     assert "drawArm(pose,event.getSubmitNodeCollector()" in old
     anchor="  try{\n   pose.translate(0.0F,1.5F,0.0F);"
     assert old.count(anchor)==1,("B1075_PLAYER_POST_ROOT",old[:300])
-    return old.replace(anchor,
+    with_yaw=old.replace(anchor,
        "  try{\n   // Post is the unrotated entity root; supply body yaw before arm pivot.\n"
        "   pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F-player.yBodyRot));\n"
        "   pose.translate(0.0F,1.5F,0.0F);",1)
+    # B1079: keep the shoulder parent while matching the camera's head yaw and
+    # pitch. A fixed -1.535F/0F arm only tracked the entity body, not aiming.
+    arm="    renderedArm.xRot=-1.535F;renderedArm.yRot=0.0F;renderedArm.zRot=0.0F;"
+    assert with_yaw.count(arm)==1,("B1079_WORN_ARM_AIM_ANCHOR",with_yaw.count(arm))
+    return with_yaw.replace(arm,
+       "    // Aim the actual right-arm pivot, not a world-space weapon copy.\n"
+       "    renderedArm.xRot=-1.535F+(float)Math.toRadians(player.getXRot());\n"
+       "    renderedArm.yRot=(float)Math.toRadians(net.minecraft.util.Mth.wrapDegrees(\n"
+       "        player.getYHeadRot()-player.yBodyRot));\n"
+       "    renderedArm.zRot=0.0F;",1)
 patch_method("client/V176MicroMgVisualClient.java",
              " @SubscribeEvent public static void wornFallback(",fix_player)
 
@@ -430,5 +440,7 @@ assert "teleportToGroundNear(player,suit)" in s
 assert "V176CompanionLongRange.request(player,turret)" in s
 assert "pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F-player.yBodyRot))" in read("client/V176MicroMgVisualClient.java")
 assert "xsxStand.getYRot()" in read("client/V176MicroMgStandLayer.java")
+assert "player.getYHeadRot()-player.yBodyRot" in read("client/V176MicroMgVisualClient.java")
+assert "Math.toRadians(player.getXRot())" in read("client/V176MicroMgVisualClient.java")
 assert {str(p):sha256(p.read_bytes()).hexdigest() for p in _CELL_ROOT.rglob("*.java")}==_CELL_BEFORE,"B1075_CELL_TERMINAL_REGRESSION"
 print("B1075_ARMPARENT_BODY_YAW_TURRET_FOLLOW_REMOTE_OWNED_GROUND_ONLY_NO_CELL_MODS_PASS")
