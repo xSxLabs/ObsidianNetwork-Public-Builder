@@ -4116,6 +4116,9 @@ jobs:
             python3 features/v176/apply-v176-b1096-3p-forearm-mount.py
             # B1096: recover ORIGINAL world suit and wearer after any failed entry.
             python3 features/v176/apply-v176-b1096-entry-visibility-recovery.py
+            # B1102 P0: original world suit survives rejected walk-in.
+            python3 features/v176/apply-v176-b1102-critical-entry.py
+            python3 tests/test_v176_b1102_critical_entry.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             # Glass ingredient change LAST, after all recipes are assembled.
