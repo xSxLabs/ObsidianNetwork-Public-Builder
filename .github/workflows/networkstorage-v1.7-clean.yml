@@ -166,6 +166,7 @@ jobs:
             python3 -m unittest discover -s tests -p 'test_v176_b1030_3p_turret_cell_delivery.py' -v
             python3 -m unittest discover -s tests -p 'test_v176_b1032_render_layer_and_cells.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1075_arm_turret_follow.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_normal_glass_crafting_recipes.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_micro_mg_module.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_backpack_pipeline_809.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_backpack_sidepanel_811.py' -v
@@ -4106,6 +4107,11 @@ jobs:
             python3 features/v176/apply-v176-b1075-arm-turret-long-range.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
+            # Glass ingredient change LAST, after all recipes are assembled.
+            python3 features/v176/replace-tinted-glass-crafting-recipes.py work/src/main/resources --apply
+            python3 features/v176/replace-tinted-glass-crafting-recipes.py work/src/main/resources
+            # Never allow the substitution to create conflicting recipes.
+            python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             python3 features/v176/verify-v176-cobble-obsidian-818.py
             echo 'B757_16_RPS_FIRST_PERSON_ARM_TURRET_GLASS_ICE_FOLLOW_ICON PASS'
             echo 'B750_VISIBLE_GUN_RAISED_ARM_AND_FOLLOW_ANIMATIONS PASS'
@@ -4471,6 +4477,26 @@ jobs:
           ]
           with ZipFile(jar) as z:
            names=set(z.namelist())
+           def xsx_tinted_ingredient(value):
+            if isinstance(value,str):return value in ('minecraft:tinted_glass','tinted_glass')
+            if isinstance(value,list):return any(xsx_tinted_ingredient(x) for x in value)
+            if isinstance(value,dict):
+             return any(xsx_tinted_ingredient(v) for k,v in value.items()
+                        if k not in ('result','output'))
+            return False
+           glass_recipes=sorted(n for n in names if n.endswith('.json')
+              and (n.startswith('data/obsidiannetwork/recipe/')
+                   or n.startswith('data/obsidiannetwork/recipes/')))
+           assert glass_recipes,'No mod recipes packaged in JAR'
+           glass_crafting=0
+           for recipe_path in glass_recipes:
+            recipe_data=json.loads(z.read(recipe_path))
+            if 'crafting' not in str(recipe_data.get('type','')).rsplit(':',1)[-1]:
+             continue
+            glass_crafting+=1
+            assert not xsx_tinted_ingredient(recipe_data), ('B1076_TINTED_GLASS_REMAINS',recipe_path)
+           assert glass_crafting>0,'No mod crafting recipes packaged in JAR'
+           print('XSXLABS_ALL_CRAFTING_RECIPES_NORMAL_GLASS_BINARY_PASS count='+str(glass_crafting))
            for required_class in required: assert required_class in names,required_class
            assert 'assets/obsidiannetwork/textures/item/power_card_micro_mg.png' in names, 'B728_MISSING_MICRO_MG_INVENTORY_TEXTURE'
            model=json.loads(z.read('assets/obsidiannetwork/models/item/power_card_micro_mg.json'))
