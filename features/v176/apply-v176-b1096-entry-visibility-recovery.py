@@ -23,13 +23,10 @@ helper=""" // B1096_ENTRY_ROLLBACK_VISIBILITY: a failed transfer must never leav
   stand.removeTag(OPEN_TAG);
   stand.removeTag(HIDE_TAG);
   stand.setInvisible(false);
-  stand.noPhysics=false;
-  stand.setChangedForViewer1096();
+  // B657 restored the original noPhysics state before the transaction.
  }
 """
-# ArmorStand has no setChangedForViewer1096; vanilla entity flags/tag changes
-# are synchronized by setInvisible and the existing EquipmentSlot data tracker.
-helper=helper.replace("  stand.setChangedForViewer1096();\n","")
+# Vanilla invisibility and tags synchronize on the same owned ArmorStand.
 assert s.count(anchor)==1,("B1096_INSIDE_ANCHOR",s.count(anchor))
 assert s.count("private static void restoreFailedSuit1096")==0
 s=s.replace(anchor,helper+anchor,1)
