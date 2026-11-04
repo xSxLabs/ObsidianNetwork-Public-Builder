@@ -75,5 +75,42 @@ class NormalGlassRecipes(unittest.TestCase):
   with self.assertRaises(json.JSONDecodeError):
    MOD.process(self.root,apply=True)
 
+class StainedGlassCollisionTests(unittest.TestCase):
+ def setUp(self):
+  self.tmp=tempfile.TemporaryDirectory()
+  self.addCleanup(self.tmp.cleanup)
+  self.root=Path(self.tmp.name)
+  self.recipes=self.root/"data/obsidiannetwork/recipe"
+  self.recipes.mkdir(parents=True)
+  other=Path(__file__).resolve().parents[1]/"features/v176/resolve-normal-glass-recipe-conflicts.py"
+  self.assertTrue(other.is_file())
+  spec=importlib.util.spec_from_file_location("xsx_stained_conflicts",other)
+  self.mod=importlib.util.module_from_spec(spec)
+  spec.loader.exec_module(self.mod)
+  self.auditor=Path(__file__).resolve().parents[1]/"features/v175/apply-v175-recipe-collisions-659.py"
+ def recipe(self,name,glass,result):
+  p=self.recipes/(name+".json")
+  p.write_text(json.dumps({"type":"minecraft:crafting_shapeless",
+     "ingredients":[glass,"minecraft:amethyst_shard"],
+     "result":{"id":result,"count":1}})+"\n",encoding="utf-8")
+  return p
+ def test_uses_stained_glass_only_for_real_conflicts(self):
+  a=self.recipe("machine_a","minecraft:glass","obsidiannetwork:machine_a")
+  b=self.recipe("machine_b","minecraft:glass","obsidiannetwork:machine_b")
+  with self.assertRaises(AssertionError):
+   self.mod.resolve(self.root,self.auditor,apply=False)
+  self.assertEqual(self.mod.resolve(self.root,self.auditor,apply=True),1)
+  self.assertEqual(self.mod.resolve(self.root,self.auditor,apply=False),0)
+  docs=[json.loads(p.read_text()) for p in (a,b)]
+  glass=[d["ingredients"][0] for d in docs]
+  self.assertIn("minecraft:glass",glass)
+  self.assertIn("minecraft:blue_stained_glass",glass)
+  self.assertNotIn("minecraft:tinted_glass",glass)
+  self.assertEqual({d["result"]["id"] for d in docs},
+                   {"obsidiannetwork:machine_a","obsidiannetwork:machine_b"})
+ def test_does_not_change_nonconflicting_glass(self):
+  self.recipe("only","minecraft:glass","obsidiannetwork:only")
+  self.assertEqual(self.mod.resolve(self.root,self.auditor,apply=True),0)
+
 if __name__=="__main__":
  unittest.main()
