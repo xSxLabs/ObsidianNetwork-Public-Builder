@@ -34,6 +34,12 @@ class B1107ManualEntry(unittest.TestCase):
     "restoreVisibility662(p);",
     "B1107_MANUAL_ENTRY_FAILED",
     "B1107_MANUAL_ENTRY_EXCEPTION",
+    "B1109_ORPHANED_WORLD_SUIT_RESTORED",
+    "!OPEN.containsKey(id)&&!CLOSING.containsKey(id)",
+    "lost.noPhysics=false",
+    "owned(suit,p)",
+    "NeoForge.EVENT_BUS.post(",
+    "B1108_REAL_EVENTBUS_FIXTURE_DRIFT",
     "B1107_REAL_SERVER_ENTRY_ANIMATION_STARTED",
     "B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING",
     "p.isInvisible() && v.isClosingFor659(p.getUUID())"
