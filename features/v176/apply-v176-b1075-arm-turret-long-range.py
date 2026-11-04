@@ -8,9 +8,16 @@ Fail closed on all source anchor drift.
 import os
 from pathlib import Path
 from PIL import Image, ImageDraw
+from hashlib import sha256
 
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 A=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
+# B1075 safety proof: preserve every pre-existing Cell Terminal Java class
+# byte-for-byte even though the generator runs after the working B1045 patch.
+_CELL_ROOT=J/"cellterminal"
+_CELL_BEFORE={str(p):sha256(p.read_bytes()).hexdigest()
+              for p in _CELL_ROOT.rglob("*.java")}
+assert _CELL_BEFORE,"B1075_CELL_TERMINAL_SNAPSHOT_MISSING"
 
 def read(rel):
     return (J/rel).read_text(encoding="utf-8")
@@ -172,7 +179,7 @@ public final class V176CompanionLongRange {
   if(p.connection!=null)p.sendSystemMessage(Component.literal("Power Armor: "+message));
  }
  private static boolean owned(ArmorStand suit,UUID owner){
-  return suit!=null&&!suit.isRemoved()&&suit.isAlive()
+  return suit!=null&&!suit.isRemoved()&&suit.isAlive()&&!suit.isInvisible()
       &&suit.entityTags().contains(STAND)
       &&suit.entityTags().contains(OWNER+owner)
       &&PowerArmorSuitWorld.full(suit);
@@ -403,4 +410,5 @@ assert "teleportToGroundNear(player,suit)" in s
 assert "V176CompanionLongRange.request(player,turret)" in s
 assert "pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F-player.yBodyRot))" in read("client/V176MicroMgVisualClient.java")
 assert "xsxStand.getYRot()" in read("client/V176MicroMgStandLayer.java")
+assert {str(p):sha256(p.read_bytes()).hexdigest() for p in _CELL_ROOT.rglob("*.java")}==_CELL_BEFORE,"B1075_CELL_TERMINAL_REGRESSION"
 print("B1075_ARMPARENT_BODY_YAW_TURRET_FOLLOW_REMOTE_OWNED_GROUND_ONLY_NO_CELL_MODS_PASS")
