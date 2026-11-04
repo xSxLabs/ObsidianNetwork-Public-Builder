@@ -21,6 +21,20 @@ class B1075CompanionAndWorldGun(unittest.TestCase):
         self.assertIn("drawArm(post,nodes,light,",SRC)
         self.assertIn("TURRET_STAND_ID",SRC)
         self.assertIn("if(!(xsxEntity instanceof ArmorStand xsxStand)",SRC)
+    def test_b1041_generated_stand_pose_anchor_matches_real_source(self):
+        # CI B1075 previously failed because a comment separates try{ and
+        # post.translate(...). Guard the real generated source, not a guess.
+        b1041=(Path(__file__).resolve().parents[1]/
+               "features/v176/apply-v176-b1041-player-stand-post-renderer.py").read_text()
+        generated=b1041[b1041.index(" public static void submitFromPost("):]
+        enter="  post.pushPose();\n  try{"
+        shift="   post.translate(0.0F,1.5F,0.0F);"
+        self.assertEqual(generated.count(enter),1)
+        self.assertEqual(generated.count(shift),1)
+        self.assertIn("// Post is in ArmorStand root-world pose",generated)
+        self.assertIn('enter="  post.pushPose();\\n  try{"',SRC)
+        self.assertIn("B1078_STAND_POST_RENDER_ANCHOR",SRC)
+        self.assertNotIn("B1075_STAND_POST_ROOT",SRC)
     def test_remote_authorization_and_chunk_tickets(self):
         for word in ("PowerArmorRecallIndex.get(", "PowerArmorRecallTickets.ticket(",
                      "PowerArmorRecallPreference.get(", "owned(suit,owner)",
