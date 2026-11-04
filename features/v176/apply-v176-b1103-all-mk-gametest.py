@@ -30,8 +30,8 @@ replacement="""                  // B1103 96 real registered MK1..MK24 items; ne
                          "Wrong item tier for MK"+(tier+1)+" slot "+slot);
 """
 s=s[:a]+replacement+s[b:]
-assert 'B1102_REAL_TRANSFER_NOT_STARTED' in s
-assert 'B1102_REAL_SUIT_MUST_REMAIN_VISIBLE' in s
+assert 'B662_HIDE_ON_STEP_IN_BEFORE_REAL_EQUIP' in s
+assert 'B662_REVEAL_ONLY_AFTER_EQUIP_COMPLETE' in s
 assert 'check(stand.isRemoved(),"entered world suit still exists, tier "+tier);' in s
 assert 'protection5_roundtrip=true' in s
 assert s.count('POWER_ARMOR_REAL_ROUNDTRIP_V69')==2

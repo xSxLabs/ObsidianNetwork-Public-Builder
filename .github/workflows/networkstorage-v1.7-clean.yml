@@ -4004,6 +4004,12 @@ jobs:
           python3 features/v175/apply-v175-entry-invisibility-662.py
           python3 features/v175/inject-v175-entry-invisibility-gametest-662.py
           python3 tests/verify_v175_b662.py
+          # B1104 P0: snapshot exact working freeze/v1.7.5-build662 server/client entry.
+          mkdir -p /tmp/xsxlabs-v175-entry-freeze
+          for cls in powerarmor/PowerArmorEntrySequence655.java powerarmor/PowerArmorSuitWorld.java powerarmor/PowerArmorExitSequence650.java client/PowerArmorExitRender659.java; do
+            cp "$V1_SOURCE_ROOT/dev/obsidiannetwork/$cls" "/tmp/xsxlabs-v175-entry-freeze/$(basename "$cls")"
+          done
+          echo 'B1104_FROZEN_V175_MANUAL_ENTRY_SNAPSHOTTED'
           # B663: first v1.7.6 integration step, on the new branch ONLY.
           # Register the craftable Micro-MG via existing ArmorStation card storage.
           # Record REAL reconstructed APIs for future Attack/Follow/Turret,
@@ -4114,14 +4120,15 @@ jobs:
             python3 features/v176/apply-v176-b1093-world-gun-arm-contact.py
             # B1096: world turret already sits correctly; move worn player's barrel only.
             python3 features/v176/apply-v176-b1096-3p-forearm-mount.py
-            # B1096: recover ORIGINAL world suit and wearer after any failed entry.
-            python3 features/v176/apply-v176-b1096-entry-visibility-recovery.py
-            # B1102 P0: original world suit survives rejected walk-in.
-            python3 features/v176/apply-v176-b1102-critical-entry.py
-            python3 tests/test_v176_b1102_critical_entry.py
+            # B1104 P0: freeze/v1.7.5-build662 manual entry is authoritative.
+            # Do not apply B1096/B1102 changes to real entry transaction.
+            # B1104 below verifies these four original runtime classes byte-for-byte.
             # B1103 CI-only all MK1 through MK24 owned ArmorStand roundtrip.
             python3 features/v176/apply-v176-b1103-all-mk-gametest.py
             python3 tests/test_v176_b1103_all_mk.py
+            # B1104: enforce exact frozen 1.7.5 owner transfer and entry code.
+            python3 tests/test_v176_b1104_freeze_entry.py
+            python3 tests/test_v176_b1104_source_policy.py
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources --apply
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             # Glass ingredient change LAST, after all recipes are assembled.
