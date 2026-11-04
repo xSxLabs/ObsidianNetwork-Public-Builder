@@ -406,16 +406,30 @@ change(mode,
 '''  if(!(event.getEntity() instanceof ServerPlayer player))return;''',
 '''  if(!(event.getEntity() instanceof ServerPlayer player))return;
   if(player.tickCount%5==0)V176CompanionLongRange.tick(player);''')
-change(mode,"   double dist=suit.distanceToSqr(player);",
-'''   // Horizontal follow only; never chase a flying owner into mid-air.
-   double dist=V176CompanionLongRange.horizontalSq(suit,player);''')
+# B1089: B757 and later sources may format/move this declaration.
+# Resolve the declaration only inside the actual five-tick follow block,
+# never by global text replacement, and retain the same authorized suit.
+s=read(mode)
+move_tick=s.index("if(player.tickCount%5==0){")
+move_gate=s.index("if(dist>14D*14D){",move_tick)
+prefix=s[move_tick:move_gate]
+import re
+dist_matches=list(re.finditer(
+    r"(?m)^(\\s*)double\\s+dist\\s*=\\s*suit\\.distanceToSqr\\(\\s*player\\s*\\)\\s*;",
+    prefix))
+assert len(dist_matches)==1,("B1089_FOLLOW_DISTANCE_DECLARATION_DRIFT",
+                             len(dist_matches),
+                             len(re.findall(r"\\bdist\\b",prefix)))
+m=dist_matches[0]
+new_decl=(m.group(1)+"// Horizontal follow only, do not chase airborne owner.\\n"
+          +m.group(1)+"double dist=V176CompanionLongRange.horizontalSq(suit,player);")
+s=s[:move_tick+m.start()]+new_decl+s[move_tick+m.end():]
 # Keep original safe short-distance horizontal movement, but the >14 block
 # correction MUST also land on solid ground instead of player's flight Y.
-s=read(mode)
-start=s.index("  if(dist>14D*14D){")
-end=s.index("  }else if(dist>3.5D*3.5D){",start)
+start=s.index("if(dist>14D*14D){",move_tick)
+end=s.index("}else if(dist>3.5D*3.5D){",start)
 assert "suit.setPos(spot.x,spot.y,spot.z);" in s[start:end],"B1075_OLD_FLOATING_RECALL_DRIFT"
-s=s[:start]+'''  if(dist>14D*14D){
+s=s[:start]+'''if(dist>14D*14D){
    V176CompanionLongRange.teleportToGroundNear(player,suit);
 '''+s[end:]
 put(mode,s)
