@@ -52,6 +52,14 @@ def entry_patch(s):
  }
 """
     s=replace_once(s,anchor,helper+anchor,"entry.helper")
+    # Single INFO breadcrumb at each transition boundary. This distinguishes
+    # failure to receive right click, failure to receive tick, rejected
+    # equip, and successful real transfer in latest.log.
+    click='  OPEN.put(id,new Open(stand,view,originalMarker));'
+    s=replace_once(s,click,click+"""
+  org.slf4j.LoggerFactory.getLogger("xSxLabs/PowerArmorEntry")
+      .info("B1107_MANUAL_ENTRY_OPEN player={} suitId={} mk={} openHold=true",
+         p.getName().getString(),stand.getId(),tier);""","entry.open-log")
     old="""   if(PowerArmorRuntime.full(p) || p.tickCount>=c.expiry() ||
         !p.isAlive() || c.suit().isRemoved()){
     CLOSING.remove(id);
@@ -67,6 +75,9 @@ def entry_patch(s):
         !p.isAlive() || c.suit().isRemoved()){
     CLOSING.remove(id);
     restoreVisibility662(p);
+    if(equipped)org.slf4j.LoggerFactory.getLogger("xSxLabs/PowerArmorEntry")
+        .info("B1107_MANUAL_ENTRY_EQUIPPED player={} originalSuitId={}",
+            p.getName().getString(),c.suit().getId());
     if(!equipped && !c.suit().isRemoved()){
      recover1107(p,c.suit());
      fault1107(p,c.suit(),!active?"server transition stopped":
@@ -93,6 +104,11 @@ def entry_patch(s):
   }
   OPEN.remove(id);"""
     s=replace_once(s,old,new,"entry.precheck")
+    step='  OPEN.remove(id);\n  if(!opened.visual().isRemoved())opened.visual().discard();'
+    s=replace_once(s,step,
+      '  org.slf4j.LoggerFactory.getLogger("xSxLabs/PowerArmorEntry")\n'
+      '     .info("B1107_MANUAL_ENTRY_STEP player={} suitId={} passedThreshold=true",\n'
+      '         p.getName().getString(),stand.getId());\n'+step,"entry.step-log")
     old="""  stand.noPhysics=opened.marker();
   stand.removeTag(OPEN_TAG);
   stand.setInvisible(true);"""
@@ -129,6 +145,9 @@ def entry_patch(s):
    return;
   }
   recover1107(p,stand);
+  org.slf4j.LoggerFactory.getLogger("xSxLabs/PowerArmorEntry")
+      .info("B1107_MANUAL_ENTRY_STARTED player={} suitId={} serverTransition=true",
+           p.getName().getString(),stand.getId());
   CLOSING.put(id,new Closing(stand,center,p.tickCount+88));"""
     s=replace_once(s,old,new,"entry.transaction")
     old="""   reset(p);CLOSING.remove(p.getUUID());COMMITTING.remove(p.getUUID());
