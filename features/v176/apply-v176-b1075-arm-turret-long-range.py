@@ -67,17 +67,22 @@ patch_method("client/V176MicroMgVisualClient.java",
 # existing B1037 registered render-state modifier, not proximity guesses.
 def fix_stand(old):
     assert "RIGHT_ARM_PIVOT" in old and "drawArm(post,nodes,light," in old
-    anchor="  post.pushPose();\n  try{\n   post.translate(0.0F,1.5F,0.0F);"
-    assert old.count(anchor)==1,("B1075_STAND_POST_ROOT",old[:300])
-    return old.replace(anchor,
+    # B1041 has a comment between try{ and the model-space translation.
+    # Match independent code statements, never comment adjacency.
+    enter="  post.pushPose();\n  try{"
+    shift="   post.translate(0.0F,1.5F,0.0F);"
+    assert old.count(enter)==1 and old.count(shift)==1,(
+        "B1078_STAND_POST_RENDER_ANCHOR",old[:650])
+    new=old.replace(enter,
        "  Integer xsxRenderId=state.getRenderData(TURRET_STAND_ID);\n"
        "  Minecraft mc=Minecraft.getInstance();\n"
        "  if(xsxRenderId==null||mc.level==null)return;\n"
        "  Entity xsxEntity=mc.level.getEntity(xsxRenderId);\n"
        "  if(!(xsxEntity instanceof ArmorStand xsxStand)||!xsxStand.isAlive())return;\n"
-       "  post.pushPose();\n  try{\n"
+       +enter,1)
+    return new.replace(shift,
        "   post.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F-xsxStand.getYRot()));\n"
-       "   post.translate(0.0F,1.5F,0.0F);",1)
+       +shift,1)
 patch_method("client/V176MicroMgStandLayer.java",
              " public static void submitFromPost(",fix_stand)
 # Imports for the stand render are independent of the current model class.
