@@ -165,7 +165,16 @@ def test_patch(s):
                   check(!stand.isInvisible(),"B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING");
                   check(dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.entryStarted1107(player,stand),
                      "B1107_REAL_SERVER_ENTRY_ANIMATION_STARTED");'''
-    return replace_once(s,old,new,"gametest.visible-player")
+    s=replace_once(s,old,new,"gametest.visible-player")
+    # B1108: the original 24-tier test used to invoke the subscriber directly.
+    # That can pass even if the real NeoForge event bus never registered it.
+    # Post the actual PlayerTickEvent in the game test to verify registration.
+    needle="dev.obsidiannetwork.powerarmor.PowerArmorEntrySequence655.tick("
+    count=s.count(needle)
+    assert count==3,("B1108_REAL_EVENTBUS_FIXTURE_DRIFT",count)
+    s=s.replace(needle,"net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(",3)
+    assert s.count("net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(")==3
+    return s
 
 def apply():
     root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
