@@ -157,6 +157,17 @@ public final class V176CompanionLongRange {
  private record Pending(PowerArmorRecallIndex.Location loc,Boolean turret,int ticks){}
  private static final Map<UUID,Pending> WAITING=new HashMap<>();
  private static final Set<UUID> ACTIVE=new HashSet<>();
+ private static void syncVisibleTurret(ArmorStand suit){
+  var chest=suit.getItemBySlot(EquipmentSlot.CHEST);
+  String current=chest.get(ModDataComponents.POWER_ARMOR_UPGRADES.get());
+  if(current==null)return;
+  var all=new ArrayList<String>(Arrays.asList(current.split(",")));
+  all.removeIf("micro_mg_turret_on"::equals);
+  if(suit.entityTags().contains(TURRET)&&all.contains("micro_mg"))
+   all.add("micro_mg_turret_on");
+  chest.set(ModDataComponents.POWER_ARMOR_UPGRADES.get(),String.join(",",all));
+  suit.setItemSlot(EquipmentSlot.CHEST,chest.copy());
+ }
  private static void notice(ServerPlayer p,String message){
   if(p.connection!=null)p.sendSystemMessage(Component.literal("Power Armor: "+message));
  }
@@ -325,10 +336,12 @@ public final class V176CompanionLongRange {
    boolean already=suit.entityTags().contains(desired);
    suit.removeTag(FOLLOW);suit.removeTag(TURRET);
    if(already){
+    syncVisibleTurret(suit);
     ACTIVE.remove(owner); release(p,pending);
     notice(p,(wantTurret?"Turret":"Follow")+" Mode OFF");return;
    }
    suit.addTag(desired);
+   syncVisibleTurret(suit);
    ACTIVE.add(owner);
   }else if(!suit.entityTags().contains(FOLLOW)&&!suit.entityTags().contains(TURRET)){
    ACTIVE.remove(owner);release(p,pending);return;
@@ -381,6 +394,8 @@ s=read(mode)
 assert "V176MicroMgRules.canTurretFire" in s
 assert "suit.setYBodyRot(xsxYaw)" in s
 assert "V176CompanionLongRange.tick(player)" in s
+assert 'if(player.tickCount%5==0)V176CompanionLongRange.tick(player);' in s
+assert 'syncVisibleTurret(suit);' in helper.read_text(encoding='utf-8')
 assert "PowerArmorRecallTickets.ticket" in helper.read_text(encoding="utf-8")
 assert "PowerArmorRecallIndex.get(" in helper.read_text(encoding="utf-8")
 assert "setNoGravity(false)" in helper.read_text(encoding="utf-8")
