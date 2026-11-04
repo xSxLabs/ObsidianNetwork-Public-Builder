@@ -17,6 +17,9 @@ class B1075CompanionAndWorldGun(unittest.TestCase):
     def test_body_yaw_applied_before_arm_parent_pivot(self):
         self.assertIn("180.0F-player.yBodyRot",SRC)
         self.assertIn("180.0F-xsxStand.getYRot()",SRC)
+        self.assertIn("player.getYHeadRot()-player.yBodyRot",SRC)
+        self.assertIn("Math.toRadians(player.getXRot())",SRC)
+        self.assertIn("B1079_WORN_ARM_AIM_ANCHOR",SRC)
         self.assertIn("drawArm(pose,event.getSubmitNodeCollector()",SRC)
         self.assertIn("drawArm(post,nodes,light,",SRC)
         self.assertIn("TURRET_STAND_ID",SRC)
