@@ -148,6 +148,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m py_compile features/v176/*.py tests/test_v176_micro_mg_module.py
+          python3 -m unittest discover -s tests -p 'test_v176_reactor_unlimited_output.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b973_attack_pose_stability.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b975_cell_terminal.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b980_ingame_fixes.py' -v
@@ -215,6 +216,9 @@ jobs:
           echo 'B640_MULTIBLOCK_MINEABLE_FIXTURE_PASS'
       # B473: cheap checks BEFORE private checkout, decompilation and Gradle.
       - name: Fast v1.7.4 patch preflight (before Minecraft rebuild)
+        # v1.7.6 has its own focused preflight and keeps the full Java/GameTest gates.
+        # Avoid redundant legacy Python suites and repeat Pillow installation.
+        if: github.ref != 'refs/heads/v1.7.6'
         run: |
           set -euo pipefail
           python3 -m py_compile features/v174/*.py tests/test_v174_network_vision_xray_469.py
@@ -336,7 +340,8 @@ jobs:
           EOF
           cat > work/gradle.properties <<'EOF'
           org.gradle.jvmargs=-Xmx3G
-          org.gradle.daemon=false
+          org.gradle.daemon=true
+          org.gradle.caching=true
           minecraft_version=26.1.2
           neo_version=26.1.2.106
           mod_id=obsidiannetwork
@@ -818,7 +823,7 @@ jobs:
           sed -n '1,220p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderer.java
           sed -n '1,160p' work/src/main/java/dev/obsidiannetwork/client/render/CableFacadeRenderState.java
           echo '===== V1.1.1 CONDUIT BUNDLE COMPILE PROBE ====='
-          (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
+          (cd work && gradle --daemon --no-configuration-cache compileJava --stacktrace)
           echo '===== V1.1.1 CONDUIT BUNDLE COMPILE PASS ====='
           echo '===== V1.1.1 CONDUIT BUNDLE RUNTIME/RESOURCE SMOKE ====='
           python3 - <<'PY'
@@ -884,7 +889,7 @@ jobs:
           print('V1.1.1 MULTICABLE RUNTIME/RESOURCE SMOKE PASS')
           PY
           echo '===== V1.1.1 MULTICABLE FULL BUILD ====='
-          (cd work && gradle --no-daemon --no-configuration-cache build --stacktrace)
+          (cd work && gradle --daemon --no-configuration-cache build --stacktrace)
           echo '===== V1.1.1 MULTICABLE FULL BUILD PASS ====='
           # Final resource normalization after every private patch, immediately before packaging.
           python3 - <<'PY'
@@ -969,7 +974,7 @@ jobs:
           print('BUILD101 JSON RESOURCE PASS',len(files))
           PY
           echo '===== BUILD 101 JUNIT GATE ====='
-          (cd work && gradle --no-daemon --no-configuration-cache test --stacktrace)
+          (cd work && gradle --daemon --no-configuration-cache test --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
           grep -R 'tests="' work/build/test-results/test/*.xml
           echo '===== BUILD 101 JUNIT PASS ====='
@@ -979,7 +984,7 @@ jobs:
           # Allow asset warm-up, but preserve the mandatory real server-start evidence below.
           # B482: end this gate promptly after the dedicated server reports READY.
           # Preserve the full 600s cold-download allowance, but never idle for 10m on a healthy boot.
-          timeout --signal=TERM --kill-after=15s 600s bash -c 'cd work && gradle --no-daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1 &
+          timeout --signal=TERM --kill-after=15s 600s bash -c 'cd work && gradle --daemon --no-configuration-cache runServer --stacktrace' > /tmp/build101-server.log 2>&1 &
           SERVER_PID=$!
           SERVER_READY=0
           for _ in $(seq 1 300); do
@@ -1981,9 +1986,9 @@ jobs:
           print('EQUIPMENT_ATTACH_PHASE_PROFILING_V1 PASS')
           PY
           # Compile the test-only registration first so API drift fails clearly.
-          (cd work && gradle --no-daemon --no-configuration-cache compileJava --stacktrace)
+          (cd work && gradle --daemon --no-configuration-cache compileJava --stacktrace)
           set +e
-          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-gametest.log 2>&1
+          (cd work && gradle --daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-gametest.log 2>&1
           GT_RC=$?
           set -e
           cat /tmp/build103-gametest.log
@@ -4034,6 +4039,8 @@ jobs:
             python3 features/v176/apply-v176-backpack-cables.py
             python3 features/v176/apply-v176-reactor-powerbank-control.py
             python3 features/v176/apply-v176-network-power-ports.py
+            # B1079: remove the B497 artificial 262144-FE/5-tick reactor port push.
+            python3 features/v176/apply-v176-reactor-unlimited-output.py
             python3 features/v176/apply-v176-power-monitor.py
             python3 features/v176/apply-v176-power-monitor-screen.py
             # Detached right-side Backpack module: one magnet + three real Cells.
@@ -4230,7 +4237,7 @@ jobs:
           # Separate the second GameTest server from the first CI-only test universe.
           rm -rf work/run/gametestserver
           set +e
-          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-postpatch-gametest.log 2>&1
+          (cd work && gradle --daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-postpatch-gametest.log 2>&1
           POST_GT_RC=$?
           set -e
           cat /tmp/build103-postpatch-gametest.log
@@ -4281,7 +4288,7 @@ jobs:
           WIRELESS_CURIOS_GRADLE
           rm -rf work/run/gametestserver
           set +e
-          (cd work && gradle --no-daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-curios-installed-gametest.log 2>&1
+          (cd work && gradle --daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/build103-curios-installed-gametest.log 2>&1
           CURIOS_GT_RC=$?
           set -e
           cp /tmp/wireless-curios-original.gradle work/build.gradle
@@ -4450,7 +4457,7 @@ jobs:
           print('ITEM_CONDUIT_RESTART_DIAGNOSTIC_GATE PASS')
           PY
           echo '===== BUILD 101 FINAL BUILD ====='
-          (cd work && gradle --no-daemon --no-configuration-cache build --stacktrace)
+          (cd work && gradle --daemon --no-configuration-cache build --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
           echo '===== BUILD 101 ALL AUTOMATABLE GATES PASS ====='
 
