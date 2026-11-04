@@ -150,11 +150,16 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import dev.obsidiannetwork.registry.ModDataComponents;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 /** B1075: one real owner-tagged ArmorStand, no cloned equipment and no flight.
  * Reuses v1.7.2 persisted recall index + temporary source chunk tickets.
  * Never touches the existing transactional armor equip/recall sequence.
  */
+@EventBusSubscriber(modid="obsidiannetwork")
 public final class V176CompanionLongRange {
  private V176CompanionLongRange(){}
  private static final String OWNER="xsxlabs_power_armor_owner_";
@@ -164,6 +169,9 @@ public final class V176CompanionLongRange {
  private record Pending(PowerArmorRecallIndex.Location loc,Boolean turret,int ticks){}
  private static final Map<UUID,Pending> WAITING=new HashMap<>();
  private static final Set<UUID> ACTIVE=new HashSet<>();
+ @SubscribeEvent public static void restart(ServerStartedEvent event){
+  WAITING.clear(); ACTIVE.clear();
+ }
  private static void syncVisibleTurret(ArmorStand suit){
   var chest=suit.getItemBySlot(EquipmentSlot.CHEST);
   String current=chest.get(ModDataComponents.POWER_ARMOR_UPGRADES.get());
@@ -212,6 +220,13 @@ public final class V176CompanionLongRange {
        at.getX()>>4,at.getZ()>>4,false);
   }
   WAITING.remove(p.getUUID());
+ }
+ @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event){
+  if(event.getEntity() instanceof ServerPlayer player){
+   Pending pending=WAITING.get(player.getUUID());
+   if(pending!=null)release(player,pending);
+   ACTIVE.remove(player.getUUID());
+  }
  }
  private static boolean begin(ServerPlayer p,Boolean turret){
   if(WAITING.containsKey(p.getUUID()))return true;
