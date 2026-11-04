@@ -126,7 +126,7 @@ def resolve(root,auditor,apply=False):
 if __name__=="__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument("resources",type=Path)
-    parser.add_argument("--auditor",type=Path,default=Path(__file__).resolve().parents[2]/
+    parser.add_argument("--auditor",type=Path,default=Path(__file__).resolve().parents[1]/
                         "v175/apply-v175-recipe-collisions-659.py")
     parser.add_argument("--apply",action="store_true")
     args=parser.parse_args()
