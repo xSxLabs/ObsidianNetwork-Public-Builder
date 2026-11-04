@@ -10,8 +10,9 @@ ast.parse(t)
 assert "python3 features/v176/apply-v176-b1096-entry-visibility-recovery.py" not in wf
 assert "python3 features/v176/apply-v176-b1102-critical-entry.py" not in wf
 assert wf.index("python3 tests/verify_v175_b662.py")<wf.index("B1104_FROZEN_V175_MANUAL_ENTRY_SNAPSHOTTED")<wf.index("python3 tests/test_v176_b1104_freeze_entry.py")
-assert "B1104_FREEZE175_MANUAL_ENTRY_AND_EXIT_EXACT_SOURCE_PASS" in t
+assert "B1106_FREEZE175_MANUAL_ENTRY_METHODS_AND_176_WORLD_FEATURES_PASS" in t
 assert "if(!inside(p,stand))return;" in t
+assert "B1106_MANUAL_ENTRY_SOURCE_DRIFT" in t
 assert 'B662_HIDE_ON_STEP_IN_BEFORE_REAL_EQUIP' in gen
 assert 'B662_REVEAL_ONLY_AFTER_EQUIP_COMPLETE' in gen
 assert 'for(int tier=0;tier<24;tier++)' in gen
