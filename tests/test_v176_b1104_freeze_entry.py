@@ -8,10 +8,11 @@ generated class bytes from immediately after unchanged B662 overlay with
 all final v1.7.6 generated runtime classes. Anything touching these
 four classes must be reviewed before it can ship. V1.7.6's rest is untouched.
 """
-import hashlib,os
+import hashlib,os,runpy
 from pathlib import Path
 root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 baseline=Path("/tmp/xsxlabs-v175-entry-freeze")
+guard=runpy.run_path(str(Path(__file__).resolve().parents[1]/"features/v176/apply-v176-b1107-manual-entry-guard.py"))
 classes={
  "powerarmor/PowerArmorEntrySequence655.java",
  "powerarmor/PowerArmorExitSequence650.java",
@@ -24,7 +25,11 @@ for rel in sorted(classes):
  assert final.is_file(),("B1104_RUNTIME_MISSING",rel)
  a=original.read_bytes()
  b=final.read_bytes()
- assert a==b,("B1104_FREEZE_175_SOURCE_DRIFT",rel,
+ expected=(guard["entry_patch"](a.decode("utf-8")).encode("utf-8")
+     if rel=="powerarmor/PowerArmorEntrySequence655.java" else
+     guard["render_patch"](a.decode("utf-8")).encode("utf-8")
+     if rel=="client/PowerArmorExitRender659.java" else a)
+ assert expected==b,("B1107_FREEZE175_PLUS_EXACT_SAFETY_OVERLAY_DRIFT",rel,
    hashlib.sha256(a).hexdigest(),hashlib.sha256(b).hexdigest())
  print("B1104_FREEZE_175_MATCH",rel,hashlib.sha256(b).hexdigest())
 
@@ -58,6 +63,11 @@ assert "if(!inside(p,stand))return;" in e
 assert "stand.setInvisible(true);" in e
 assert "B1096_ENTRY_ROLLBACK_VISIBILITY" not in e
 assert "isEnteringOriginal1102" not in w
+assert "entryStarted1107(ServerPlayer player,ArmorStand suit)" in w
+assert "B1107_MANUAL_ENTRY_FAILED" in e
+assert "recover1107(p,c.suit())" in e
+assert "B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING" in (root/"build103/Build103GameTests.java").read_text()
 assert "v.isClosingFor659(p.getUUID())" in render
 assert "v.isExitOpening659(p.getUUID())" in render
 print("B1106_FREEZE175_MANUAL_ENTRY_METHODS_AND_176_WORLD_FEATURES_PASS")
+print("B1107_SERVER_ENTRY_GUARD_AND_FREEZE175_EXIT_PRESERVATION_PASS")
