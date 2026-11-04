@@ -8,7 +8,7 @@ class B1085TurretLiveAim(unittest.TestCase):
  def test_syntax(self): ast.parse(P.read_text("utf-8"))
  def test_server_aim_and_firing_gates(self):
   s=P.read_text("utf-8")
-  for token in ("B1085_TURRET_TARGET_TRACKS_DURING_COOLDOWN",
+  for token in ("B1091_TURRET_LIVE_POSE_BEFORE_COOLDOWN_AND_SHOT_GATES_PASS",
       "suit.setYRot(xsxYaw);","suit.setYBodyRot(xsxYaw);",
       "suit.setYHeadRot(xsxYaw);","suit.setRightArmPose(",
       "ClipContext.Block.COLLIDER","V176MicroMgRules.canTurretFire(",
