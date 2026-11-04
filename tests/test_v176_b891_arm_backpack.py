@@ -33,4 +33,5 @@ class B891ArmBackpack(unittest.TestCase):
   self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')",w)
   self.assertIn("xsxlabs-network-storage-v1.7.6-test-jar",w)
   self.assertIn("if-no-files-found: error",w)
+  self.assertIn('cancel-in-progress: false',w)
 if __name__=="__main__":unittest.main()
