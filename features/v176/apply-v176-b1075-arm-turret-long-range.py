@@ -415,13 +415,13 @@ move_gate=s.index("if(dist>14D*14D){",move_tick)
 prefix=s[move_tick:move_gate]
 import re
 dist_matches=list(re.finditer(
-    r"(?m)^(\\s*)double\\s+dist\\s*=\\s*suit\\.distanceToSqr\\(\\s*player\\s*\\)\\s*;",
+    r"(?m)^(\s*)double\s+dist\s*=\s*suit\.distanceToSqr\(\s*player\s*\)\s*;",
     prefix))
 assert len(dist_matches)==1,("B1089_FOLLOW_DISTANCE_DECLARATION_DRIFT",
                              len(dist_matches),
-                             len(re.findall(r"\\bdist\\b",prefix)))
+                             len(re.findall(r"\bdist\b",prefix)))
 m=dist_matches[0]
-new_decl=(m.group(1)+"// Horizontal follow only, do not chase airborne owner.\\n"
+new_decl=(m.group(1)+"// Horizontal follow only, do not chase airborne owner.\n"
           +m.group(1)+"double dist=V176CompanionLongRange.horizontalSq(suit,player);")
 s=s[:move_tick+m.start()]+new_decl+s[move_tick+m.end():]
 # Keep original safe short-distance horizontal movement, but the >14 block
