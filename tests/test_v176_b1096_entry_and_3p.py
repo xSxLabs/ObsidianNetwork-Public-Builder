@@ -33,9 +33,12 @@ class B1096FailedEntryAndPlayerMount(unittest.TestCase):
     "p.isInvisible() && v.isClosingFor659(p.getUUID())"
   ):
    self.assertIn(token,ENTRY,token)
+  # Inspect only the Java code injected into the existing stand; the
+  # generator itself intentionally contains a negative safety assertion.
+  recovery=ENTRY.split('helper="""',1)[1].split('"""',1)[0]
   for forbidden in ("new ArmorStand(", "new ItemStack(", "stand.discard()",
                     "PlayerInventory.add", "stand.noPhysics=false"):
-   self.assertNotIn(forbidden,ENTRY)
+   self.assertNotIn(forbidden,recovery)
  def test_thirdperson_only_no_turret_or_first_person_changes(self):
   self.assertIn("B1096_PLAYER_ONLY_FOREARM_CONTACT",GUN)
   self.assertIn("pose.translate(0.0F,-0.135F,0.0F);",GUN)
