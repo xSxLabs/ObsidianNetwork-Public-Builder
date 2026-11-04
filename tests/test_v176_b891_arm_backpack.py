@@ -27,9 +27,10 @@ class B891ArmBackpack(unittest.TestCase):
   a="python3 features/v176/apply-v176-b879-vanilla-block-icons-card-backpack-gui.py"
   b="python3 features/v176/apply-v176-b891-arm-backpack-ingame.py"
   self.assertLess(w.index(a),w.index(b))
-  marker=re.search(r"run-name:.*?'(B[0-9]+_EXPLICIT_BUILD_20261102)'",w)
-  self.assertIsNotNone(marker)
-  self.assertEqual(w.count(marker.group(1)),4)
-  version=marker.group(1).split("_")[0].lower()
-  self.assertIn("xsxlabs-network-storage-v1.7.6-"+version+"-ingame-test",w)
+  # B1077 intentionally replaced the fragile 100+ hard-coded build IDs
+  # with one explicit HEAD commit marker; preserve the buildlock contract.
+  self.assertIn("github.event_name == 'workflow_dispatch'",w)
+  self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')",w)
+  self.assertIn("xsxlabs-network-storage-v1.7.6-test-jar",w)
+  self.assertIn("if-no-files-found: error",w)
 if __name__=="__main__":unittest.main()
