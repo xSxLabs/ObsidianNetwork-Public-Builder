@@ -35,6 +35,10 @@ class B1075CompanionAndWorldGun(unittest.TestCase):
                      "player.getDeltaMovement().lengthSqr()>0.0025D",
                      "if(player.tickCount%5==0)V176CompanionLongRange.tick(player);"):
             self.assertIn(word,SRC)
+    def test_clean_logout_and_no_cell_mutation(self):
+        self.assertIn("@SubscribeEvent public static void logout",SRC)
+        self.assertIn("PowerArmorRecallTickets.ticket",SRC)
+        self.assertIn("B1075_CELL_TERMINAL_REGRESSION",SRC)
     def test_no_duplicate_entity_or_itemstacks(self):
         for forbidden in ("new ArmorStand(", "new ItemStack(", "suit.discard()",
                           "stand.discard()", "PowerArmorSuitWorld.recallEquip("):
