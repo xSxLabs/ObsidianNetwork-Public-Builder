@@ -4109,8 +4109,12 @@ jobs:
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             # Glass ingredient change LAST, after all recipes are assembled.
             python3 features/v176/replace-tinted-glass-crafting-recipes.py work/src/main/resources --apply
+            # On recipe overlap, change ONE glass input to stained glass,
+            # never back to tinted, never to an unrelated crafting material.
+            python3 features/v176/resolve-normal-glass-recipe-conflicts.py work/src/main/resources --apply
             python3 features/v176/replace-tinted-glass-crafting-recipes.py work/src/main/resources
-            # Never allow the substitution to create conflicting recipes.
+            python3 features/v176/resolve-normal-glass-recipe-conflicts.py work/src/main/resources
+            # Existing exhaustive recipe overlap gate must remain green.
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             python3 features/v176/verify-v176-cobble-obsidian-818.py
             echo 'B757_16_RPS_FIRST_PERSON_ARM_TURRET_GLASS_ICE_FOLLOW_ICON PASS'
