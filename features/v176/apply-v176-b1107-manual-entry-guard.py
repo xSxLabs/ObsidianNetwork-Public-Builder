@@ -161,7 +161,10 @@ def render_patch(s):
 
 def test_patch(s):
     old='check(player.isInvisible(),"B662_HIDE_ON_STEP_IN_BEFORE_REAL_EQUIP");'
-    new='check(!player.isInvisible(),"B1107_PHYSICAL_ENTRY_PLAYER_VISIBLE");'
+    new='''check(!player.isInvisible(),"B1107_PHYSICAL_ENTRY_PLAYER_VISIBLE");
+                  check(!stand.isInvisible(),"B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING");
+                  check(dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.entryStarted1107(player,stand),
+                     "B1107_REAL_SERVER_ENTRY_ANIMATION_STARTED");'''
     return replace_once(s,old,new,"gametest.visible-player")
 
 def apply():
