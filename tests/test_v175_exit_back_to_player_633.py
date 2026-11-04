@@ -29,9 +29,11 @@ class ExitBackToPlayer633(unittest.TestCase):
                         wf.index("apply-v175-uranium-enchant-veinminer.py"))
         push_branches = next(line for line in wf.splitlines() if "branches: [" in line)
         self.assertIn("v1.7.5", push_branches)
-        # Only the user-requested B633 launch marker may execute the full job.
-        self.assertIn("github.ref != 'refs/heads/v1.7.5'", wf)
-        self.assertIn("B633_EXPLICIT_BUILD_20261101", wf)
+        # The B1077 pipeline consolidated individual historical build markers:
+        # retained explicit dispatch OR a user-authorized HEAD commit marker.
+        self.assertIn("github.event_name == 'workflow_dispatch'", wf)
+        self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')", wf)
+        self.assertIn("cancel-in-progress: false", wf)
         self.assertIn("workflow_dispatch:", wf)
     def test_patch_only_yaw_and_keeps_front_placement(self):
         # Minimal generated Java fixture: match B117 source, and include
