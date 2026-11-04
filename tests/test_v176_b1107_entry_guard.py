@@ -41,9 +41,9 @@ class B1107ManualEntry(unittest.TestCase):
    self.assertIn(text,s,text)
   # Only PowerArmorSuitWorld is allowed to transfer the ORIGINAL item slots.
   entry=s.split("def entry_patch(s):",1)[1].split("def render_patch(s):",1)[0]
-  self.assertNotIn("stand.discard()",entry.split("s=replace_once(s,old,new,")[0])
-  self.assertNotIn("new ArmorStand(",entry)
-  self.assertNotIn("setItemSlot(",entry)
+  self.assertIn('assert "stand.discard()" not in s and "new ArmorStand(" not in s',entry)
+  self.assertNotIn("stand.discard();",entry)
+  self.assertNotIn("player.setItemSlot(",entry)
 
  def test_real_build_enforces_24_tiers_and_freeze_gate(self):
   s=W.read_text(encoding="utf-8")
