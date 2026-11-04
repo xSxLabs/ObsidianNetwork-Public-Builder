@@ -35,5 +35,7 @@ class TestB847(unittest.TestCase):
   self.assertNotIn('"D":"minecraft:diamond"',recipe)
   workflow=(ROOT/".github/workflows/networkstorage-v1.7-clean.yml").read_text("utf-8")
   self.assertIn("python3 features/v176/apply-v176-b847-ingame-fixes.py",workflow)
-  self.assertIn("B847_EXPLICIT_BUILD_20261102",workflow)
+  # B1077 consolidated old one-off IDs into the explicit HEAD commit gate.
+  self.assertIn("github.event_name == 'workflow_dispatch'",workflow)
+  self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')",workflow)
 if __name__=="__main__":unittest.main()
