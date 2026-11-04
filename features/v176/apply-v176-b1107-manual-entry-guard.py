@@ -60,6 +60,28 @@ def entry_patch(s):
   org.slf4j.LoggerFactory.getLogger("xSxLabs/PowerArmorEntry")
       .info("B1107_MANUAL_ENTRY_OPEN player={} suitId={} mk={} openHold=true",
          p.getName().getString(),stand.getId(),tier);""","entry.open-log")
+    # B1109: when a player reloads a world saved during the 1106 invisible
+    # open state, OPEN/CLOSING maps are empty but the original ArmorStand and
+    # HIDE_TAG may still be persistent. Restore THAT entity, never respawn.
+    tick="  UUID id=p.getUUID();\n  Closing c=CLOSING.get(id);"
+    orphan="""  UUID id=p.getUUID();
+  if(p.tickCount%40==0&&!OPEN.containsKey(id)&&!CLOSING.containsKey(id)){
+   for(ArmorStand lost:p.level().getEntitiesOfClass(ArmorStand.class,
+       p.getBoundingBox().inflate(32.0D),
+       suit->suit.isInvisible()&&suit.entityTags().contains(HIDE_TAG)
+            &&owned(suit,p))){
+    recover1107(p,lost);
+    lost.noPhysics=false; // interrupted entry must be interactable again
+    org.slf4j.LoggerFactory.getLogger("xSxLabs/PowerArmorEntry")
+        .warn("B1109_ORPHANED_WORLD_SUIT_RESTORED player={} suitId={} itemsPreserved=true",
+              p.getName().getString(),lost.getId());
+    p.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+        "Recovered your hidden Power Armor at this location."));
+   }
+  }
+  Closing c=CLOSING.get(id);"""
+    s=replace_once(s,tick,orphan,"entry.orphaned-after-reload")
+
     old="""   if(PowerArmorRuntime.full(p) || p.tickCount>=c.expiry() ||
         !p.isAlive() || c.suit().isRemoved()){
     CLOSING.remove(id);
