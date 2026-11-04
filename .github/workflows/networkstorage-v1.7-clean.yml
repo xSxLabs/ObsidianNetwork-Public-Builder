@@ -4605,6 +4605,42 @@ jobs:
             dist/item-conduit-restart*.json
           if-no-files-found: warn
           retention-days: 7
+      - name: Verify B1075 companion/gun binaries and distributable JAR
+        if: github.ref == 'refs/heads/v1.7.6' && contains(github.event.head_commit.message, 'B1075_EXPLICIT_BUILD_20261104')
+        run: |
+          set -euo pipefail
+          python3 - <<'PY_B1075_JAR'
+          from pathlib import Path
+          from zipfile import ZipFile
+          root=Path('work/src/main/java/dev/obsidiannetwork')
+          mode=(root/'powerarmor/V176CompanionMode.java').read_text()
+          remote=(root/'powerarmor/V176CompanionLongRange.java').read_text()
+          player=(root/'client/V176MicroMgVisualClient.java').read_text()
+          stand=(root/'client/V176MicroMgStandLayer.java').read_text()
+          for name,good in {
+            '3P model arm yaw':'180.0F-player.yBodyRot' in player,
+            'turret arm yaw':'180.0F-xsxStand.getYRot()' in stand,
+            'recall index':'PowerArmorRecallIndex.get(' in remote,
+            'source chunk ticket':'PowerArmorRecallTickets.ticket(' in remote,
+            'grounded teleports':'setNoGravity(false)' in remote and 'Heightmap.Types.MOTION_BLOCKING_NO_LEAVES' in remote,
+            'follow priority':'player.getDeltaMovement().lengthSqr()>0.0025D' in mode,
+          }.items():
+            assert good, 'B1075 generated source missing '+name
+          jars=sorted(Path('dist').glob('*.jar'))
+          assert len(jars)==1, 'B1075 expected exactly one test JAR'
+          assert jars[0].stat().st_size>100_000, 'B1075 suspiciously small JAR'
+          required={
+            'dev/obsidiannetwork/powerarmor/V176CompanionLongRange.class',
+            'dev/obsidiannetwork/powerarmor/V176CompanionMode.class',
+            'dev/obsidiannetwork/client/V176MicroMgVisualClient.class',
+            'dev/obsidiannetwork/client/V176MicroMgStandLayer.class',
+          }
+          with ZipFile(jars[0]) as z:
+            members=set(z.namelist())
+            assert required <= members, f'B1075 missing compiled classes: {required-members}'
+            assert z.testzip() is None, 'B1075 corrupt JAR ZIP'
+          print('B1075_RENDER_FOLLOW_JAR_BINARY_PASS',jars[0],jars[0].stat().st_size)
+          PY_B1075_JAR
       - name: Verify B1074 distributable JAR exists
         if: github.ref == 'refs/heads/v1.7.6' && contains(github.event.head_commit.message, 'B1074_EXPLICIT_BUILD_20261104')
         run: |
@@ -4641,6 +4677,15 @@ jobs:
           set -euo pipefail
           test -n "$JAR_ARTIFACT_ID"
           echo "B1074_DOWNLOADABLE_JAR_ARTIFACT_CREATED id=$JAR_ARTIFACT_ID"
+
+      - name: Verify B1075 artifact was uploaded
+        if: github.ref == 'refs/heads/v1.7.6' && contains(github.event.head_commit.message, 'B1075_EXPLICIT_BUILD_20261104')
+        env:
+          JAR_ARTIFACT_ID: ${{ steps.v176_test_jar_upload.outputs.artifact-id }}
+        run: |
+          set -euo pipefail
+          test -n "$JAR_ARTIFACT_ID"
+          echo "B1075_TEST_JAR_ARTIFACT_ID=$JAR_ARTIFACT_ID"
 
       - name: Publish run identity and diagnostic counters
         if: always()
