@@ -10,6 +10,9 @@ ast.parse(t)
 assert "python3 features/v176/apply-v176-b1096-entry-visibility-recovery.py" not in wf
 assert "python3 features/v176/apply-v176-b1102-critical-entry.py" not in wf
 assert wf.index("python3 tests/verify_v175_b662.py")<wf.index("B1104_FROZEN_V175_MANUAL_ENTRY_SNAPSHOTTED")<wf.index("python3 tests/test_v176_b1104_freeze_entry.py")
+assert wf.index("python3 features/v176/apply-v176-b1103-all-mk-gametest.py") < wf.index("python3 features/v176/apply-v176-b1107-manual-entry-guard.py") < wf.index("python3 tests/test_v176_b1104_freeze_entry.py")
+assert "guard[\"entry_patch\"]" in t and "guard[\"render_patch\"]" in t
+assert "entryStarted1107" in t and "B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING" in t
 assert "B1106_FREEZE175_MANUAL_ENTRY_METHODS_AND_176_WORLD_FEATURES_PASS" in t
 assert "if(!inside(p,stand))return;" in t
 assert "B1106_MANUAL_ENTRY_SOURCE_DRIFT" in t
