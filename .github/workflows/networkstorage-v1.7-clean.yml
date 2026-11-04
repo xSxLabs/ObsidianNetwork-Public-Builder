@@ -4126,6 +4126,7 @@ jobs:
             # B1104 below verifies these four original runtime classes byte-for-byte.
             # B1103 CI-only all MK1 through MK24 owned ArmorStand roundtrip.
             python3 features/v176/apply-v176-b1103-all-mk-gametest.py
+            # B1108 P0: 24-MK entry via real NeoForge EVENT_BUS, full diagnostic lifecycle.
             # B1107 P0: require real world transition, never conceal untransferred suit.
             python3 features/v176/apply-v176-b1107-manual-entry-guard.py
             python3 tests/test_v176_b1107_entry_guard.py
