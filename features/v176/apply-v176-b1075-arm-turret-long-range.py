@@ -353,9 +353,9 @@ change(mode,"  if(!was)suit.addTag(requested);",
    V176CompanionLongRange.onModeEnabled(player,suit);
   }else V176CompanionLongRange.onModeDisabled(player);''')
 change(mode,
-'''  if(!(event.getEntity() instanceof ServerPlayer player)||player.tickCount%5!=0)return;''',
-'''  if(!(event.getEntity() instanceof ServerPlayer player)||player.tickCount%5!=0)return;
-  V176CompanionLongRange.tick(player);''')
+'''  if(!(event.getEntity() instanceof ServerPlayer player))return;''',
+'''  if(!(event.getEntity() instanceof ServerPlayer player))return;
+  if(player.tickCount%5==0)V176CompanionLongRange.tick(player);''')
 change(mode,"   double dist=suit.distanceToSqr(player);",
 '''   // Horizontal follow only; never chase a flying owner into mid-air.
    double dist=V176CompanionLongRange.horizontalSq(suit,player);''')
@@ -370,11 +370,13 @@ s=s[:start]+'''  if(dist>14D*14D){
 '''+s[end:]
 put(mode,s)
 change(mode,
-'''  if(!turret||!hasModule(suit))return;''',
-'''  if(!turret||!hasModule(suit))return;
+'''  if(!turret)return;
+  ItemStack chest=suit.getItemBySlot(EquipmentSlot.CHEST);''',
+'''  if(!turret)return;
   // FOLLOW has priority while the owner is moving or the suit is catching up.
   if(player.getDeltaMovement().lengthSqr()>0.0025D
-     ||V176CompanionLongRange.horizontalSq(suit,player)>3.5D*3.5D)return;''')
+     ||V176CompanionLongRange.horizontalSq(suit,player)>3.5D*3.5D)return;
+  ItemStack chest=suit.getItemBySlot(EquipmentSlot.CHEST);''')
 s=read(mode)
 assert "V176MicroMgRules.canTurretFire" in s
 assert "suit.setYBodyRot(xsxYaw)" in s
