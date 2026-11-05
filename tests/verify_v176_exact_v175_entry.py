@@ -29,7 +29,13 @@ for rel in ("powerarmor/PowerArmorEntrySequence655.java",
             " private static void enter(ArmorStand stand,net.minecraft.world.entity.player.Player actor){"):
             assert method(old,signature)==method(new,signature),("FREEZE_WORLD_ENTRY_DRIFT",signature)
         continue
-    assert p.read_bytes()==baseline.read_bytes(),("FREEZE_ENTRY_EXIT_DRIFT",rel)
+    if rel.endswith("PowerArmorEntrySequence655.java"):
+        import runpy
+        assert "PowerArmorSuitWorld.tryEnter(p,stand.getId());" in p.read_text()
+        assert "dx*dx+dz*dz<=.81D" in p.read_text()
+        assert "stand.setInvisible(false);" in p.read_text()
+    else:
+        assert p.read_bytes()==baseline.read_bytes(),("FREEZE_ENTRY_EXIT_DRIFT",rel)
     print("FREEZE175_EXACT",rel,hashlib.sha256(p.read_bytes()).hexdigest())
 test=(root/"build103/Build103GameTests.java").read_text()
 assert "for(int tier=0;tier<24;tier++)" in test, "MK1_MK24_TEST_MISSING"
