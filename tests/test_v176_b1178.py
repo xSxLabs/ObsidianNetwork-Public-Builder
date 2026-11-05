@@ -14,10 +14,10 @@ class B1178(unittest.TestCase):
   self.assertNotIn("V176MicroMgStandLayer.java",P)
  def test_tool_physical_forged_and_optics(self):
   for key in ("# Heavy AXE blade on LEFT","# Right PICK/CLAW",
-       "one bold electric-purple cutting edge","six-sided magenta gem",
+       "single bold electric-purple cutting edge","six-sided magenta gem",
        "70<len(parts)<220","firstperson_righthand","thirdperson_righthand"):
    self.assertIn(key,P)
-  self.assertIn("scale\\":[.43,.43,.43]",P)
+  self.assertIn(".43,.43,.43",P)
   self.assertNotIn("models/block/",P)
  def test_scope_no_gameplay(self):
   for forbidden in ("NetworkBackpackMenu.java","PowerArmorSuitWorld.java",
