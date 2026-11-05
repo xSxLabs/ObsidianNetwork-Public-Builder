@@ -19,22 +19,13 @@ def one(src,old,new,name):
     return src.replace(old,new,1)
 
 def entry_patch(s):
-    # B1121: 1119 orphan recovery made the old invisible stand visible but
-    # left Marker=true from failed 1106/1119 open. Vanilla marker armor stands
-    # have zero selection box and special rendering rules. Owned deploy suits
-    # always require the normal stand marker flag = false once recovered.
+    # B1121: B657 NeoForge API uses public noPhysics, not setMarker.
+    # Recover an already-stuck world stand to default noPhysics=false.
     s=one(s,
-'''  boolean originalMarker=stand.isMarker();
+'''  boolean originalMarker=stand.noPhysics;
   stand.addTag(OPEN_TAG);''',
-'''  if(stand.isMarker())stand.setMarker(false); // fix persistent old broken MK9
-  boolean originalMarker=false;
-  stand.addTag(OPEN_TAG);''',"legacy-marker-on-click")
-    s=one(s,
-'''    recover1107(p,lost);
-    lost.noPhysics=false; // interrupted entry must be interactable again''',
-'''    recover1107(p,lost);
-    lost.setMarker(false); // old 1106/1119 OPEN saved Marker=true
-    lost.noPhysics=false; // interrupted entry must be interactable again''',"legacy-marker-recovery")
+'''  boolean originalMarker=false; // owned world suit's normal physics state
+  stand.addTag(OPEN_TAG);''',"legacy-noPhysics-on-click")
     # Ownership never changes until PowerArmorSuitWorld transaction commits.
     # The visual is an extra cosmetic overlay and is physically nonblocking.
     # noPhysics preserves visible owner without making it a marker (markers
@@ -49,22 +40,11 @@ def entry_patch(s):
 '''  stand.addTag(OPEN_TAG);
   stand.addTag(HIDE_TAG);
   stand.setInvisible(true);
-  stand.setMarker(true);  // zero hitbox: player can walk INSIDE''',
+  stand.noPhysics=true;  // vanilla ArmorStand passes through player while open''',
 '''  stand.addTag(OPEN_TAG);
   stand.removeTag(HIDE_TAG); // no hidden original while waiting
   stand.setInvisible(false);
-  stand.noPhysics=true; // pass-through but renders the item-owning suit
-  stand.setMarker(originalMarker);''',"visible-world-owner")
-    s=one(s,
-'''    stand.setMarker(o.marker());
-    stand.removeTag(OPEN_TAG);
-    stand.removeTag(HIDE_TAG);
-    stand.setInvisible(false);''',
-'''    stand.setMarker(o.marker());
-    stand.noPhysics=o.marker();
-    stand.removeTag(OPEN_TAG);
-    stand.removeTag(HIDE_TAG);
-    stand.setInvisible(false);''',"reset-physics")
+  stand.noPhysics=true; // pass-through but renders the item-owning suit''',"visible-world-owner")
     s=one(s,
 '''   double dx=p.getX()-stand.getX(),dz=p.getZ()-stand.getZ();
    return dx*dx+dz*dz<=.22D && Math.abs(p.getY()-stand.getY())<.65D;''',
@@ -120,23 +100,23 @@ def test_patch(s):
                      "B1120_REAL_OWNER_COLLISIONLESS_DURING_ENTRY");''',"real-world-test-guards")
     # Reproduce B1109 recovery on the *same* original item-owning suit
     # before entry. MK9 in the user's existing world was a saved invisible
-    # Marker ArmorStand after prior aborted runs; original v1119 code never
-    # cleared that flag. Trigger the REAL NeoForge PlayerTickEvent handler.
+    # noPhysics=true stand after prior aborted runs; original v1119 logs
+    # confirm this saved-state recovery. Trigger real NeoForge eventbus.
     s=one(s,
 '''                  check(!stand.isInvisible(),"exited suit is invisible, tier "+tier);''',
 '''                  check(!stand.isInvisible(),"exited suit is invisible, tier "+tier);
                   if(tier==8){
-                   stand.setMarker(true);stand.setInvisible(true);
+                   stand.setInvisible(true);
                    stand.noPhysics=true;
                    stand.addTag("xsxlabs_v175_temporarily_hidden_world_suit");
                    player.tickCount=((player.tickCount/40)+1)*40;
                    net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(
                      new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(player));
-                   check(!stand.isInvisible()&&!stand.isMarker()&&!stand.noPhysics,
-                     "B1121_RESTORED_MK9_MUST_CLEAR_LEGACY_INVISIBLE_MARKER");
+                   check(!stand.isInvisible()&&!stand.noPhysics,
+                     "B1121_RESTORED_MK9_MUST_CLEAR_LEGACY_INVISIBLE_NO_PHYSICS");
                    check(dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.full(stand),
                      "B1121_OLD_MK9_RECOVERY_LOST_OR_DUPLICATED_ITEMS");
-                  }''',"replay-persisted-legacy-marker")
+                  }''',"replay-persisted-legacy-invisible")
     # Require a fake player's body to APPROACH from outside to the shell,
     # proving no early equip at r=1.12 and a real STEP at r=.844.
     s=one(s,
