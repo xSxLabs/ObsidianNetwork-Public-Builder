@@ -179,61 +179,78 @@ draw.ellipse((13,14,19,20),fill=dark,outline=violet)
 im.save(tex)
 model=A/"models/item/multitool.json";model.parent.mkdir(parents=True,exist_ok=True)
 model.write_text(json.dumps({"parent":"minecraft:item/handheld","textures":{"layer0":"obsidiannetwork:item/multitool"}},indent=2)+"\n")
-# B1162: real volumetric Minecraft item model, not a flat handheld sprite.
-# Palette texture: each 4x4 tile is a solid material, referenced on every cuboid face.
-palette=Image.new("RGBA",(16,16),(0,0,0,255))
-palette_colors=[(22,20,34,255),(54,51,69,255),(111,103,129,255),(174,57,246,255),
-                (91,26,151,255),(222,143,255,255),(38,34,51,255),(75,69,89,255),
-                (17,15,27,255),(129,52,189,255),(66,63,79,255),(194,187,211,255),
-                (39,26,60,255),(144,70,215,255),(29,27,43,255),(85,82,102,255)]
-for tile,c in enumerate(palette_colors):
- px=(tile%4)*4;py=(tile//4)*4
- for xx in range(px,px+4):
-  for yy in range(py,py+4):palette.putpixel((xx,yy),c)
+# B1166: sculpted Netherite weapon: asymmetric axe face, hooked rear pick,
+# recessed violet inlays, faceted handle and per-face metallic highlights.
+palette=Image.new("RGBA",(64,64),(0,0,0,255))
+colors=[(17,16,25),(34,32,43),(52,49,63),(73,70,84),
+ (106,101,119),(145,140,155),(187,181,194),(218,211,222),
+ (48,22,73),(90,32,139),(149,48,219),(205,103,255),
+ (33,29,47),(62,51,79),(102,65,135),(239,182,255)]
+for idx,color in enumerate(colors):
+ x=(idx%4)*16;y=(idx//4)*16
+ for yy in range(16):
+  for xx in range(16):
+   light=((xx*3+yy*5+idx*7)%9)-4
+   bevel=10 if xx==0 or yy==0 else (-10 if xx==15 or yy==15 else 0)
+   palette.putpixel((x+xx,y+yy),tuple(max(0,min(255,c+light+bevel)) for c in color)+(255,))
 palette.save(A/"textures/item/multitool_3d.png")
 parts=[]
-def cuboid(lo,hi,tile):
- uv=[(tile%4)*4,(tile//4)*4,(tile%4)*4+4,(tile//4)*4+4]
- parts.append({"from":lo,"to":hi,"faces":{face:{"uv":uv,"texture":"#palette"} for face in ("north","south","east","west","up","down")}})
-# Slender three-dimensional grip with a diagonal stair-stepped silhouette.
-cuboid([6.8,0.2,6.8],[9.2,3.2,9.2],0)
-cuboid([6.5,2.5,6.5],[9.5,5.8,9.5],1)
-cuboid([6.5,5.2,6.5],[9.5,8.5,9.5],1)
-cuboid([6.5,8.0,6.5],[9.5,11.5,9.5],1)
-cuboid([6.5,10.5,6.5],[9.5,13.3,9.5],2)
-# Violet grip bands and end cap.
-cuboid([6.35,1.1,6.35],[9.65,1.65,9.65],4)
-cuboid([6.35,3.6,6.35],[9.65,4.05,9.65],3)
-cuboid([6.35,6.0,6.35],[9.65,6.45,9.65],4)
-cuboid([6.35,8.6,6.35],[9.65,9.05,9.65],3)
-# Forged central hub: full thickness, dark netherite with glowing purple core.
-cuboid([5.4,11.0,5.1],[10.6,14.0,10.9],0)
-cuboid([6.4,11.5,4.8],[9.6,13.6,5.15],3)
-cuboid([6.4,11.5,10.85],[9.6,13.6,11.2],3)
-# Axe blade FRONT (+X): wide, tall, beveled stepped cutting edge.
-cuboid([10.1,10.5,5.8],[12.0,15.0,10.2],1)
-cuboid([11.7,9.2,6.2],[13.6,15.7,9.8],2)
-cuboid([13.3,8.5,6.7],[14.6,15.9,9.3],1)
-cuboid([14.4,9.3,7.0],[15.25,15.6,9.0],2)
-cuboid([14.95,10.3,7.35],[15.6,14.7,8.65],11) 
-# Decorative violet inlaid spine along the handle.
-cuboid([7.55,2.1,6.22],[8.45,10.8,6.5],4)
-cuboid([7.65,2.6,6.15],[8.35,10.1,6.24],3)
-# Blade inlays, visible from both broad faces.
-cuboid([11.8,13.7,5.55],[14.0,14.2,5.9],3)
-cuboid([11.8,13.7,10.1],[14.0,14.2,10.45],3)
-cuboid([12.7,10.1,5.85],[13.3,13.7,6.15],4)
-# Pickaxe BACK (-X): opposite head, hooked descending point.
-cuboid([3.6,12.1,6.2],[5.8,14.5,9.8],1)
-cuboid([1.9,12.9,6.7],[3.9,14.2,9.3],2)
-cuboid([0.6,13.1,7.0],[2.1,13.9,9.0],11)
-cuboid([2.4,10.8,7.0],[3.3,13.1,9.0],1)
-cuboid([3.0,9.1,7.35],[3.8,11.0,8.65],2)
-cuboid([3.4,8.1,7.65],[4.1,9.4,8.35],11)
-cuboid([1.8,13.0,6.4],[4.9,13.4,6.75],3)
-cuboid([1.8,13.0,9.25],[4.9,13.4,9.6],3)
-# The shovel function is integrated into the reinforced lower grip, not a third head.
-cuboid([6.25,0.0,6.25],[9.75,0.65,9.75],2)
+def cuboid(lo,hi,tile,edge=None):
+ def uv(t):return [(t%4)*16,(t//4)*16,(t%4+1)*16,(t//4+1)*16]
+ faces={}
+ for f in ("north","south","east","west","up","down"):
+  material=(edge if edge is not None and f in ("up","east") else tile)
+  faces[f]={"uv":uv(material),"texture":"#palette"}
+ parts.append({"from":lo,"to":hi,"faces":faces})
+# Octagonal-looking grip built from narrower inset longitudinal facets.
+cuboid([6.7,0.5,6.7],[9.3,11.9,9.3],1,3)
+cuboid([7.05,0.4,6.35],[8.95,11.5,6.75],2,4)
+cuboid([7.05,0.4,9.25],[8.95,11.5,9.65],0,2)
+cuboid([6.35,0.4,7.05],[6.75,11.5,8.95],0,2)
+cuboid([9.25,0.4,7.05],[9.65,11.5,8.95],2,4)
+# Wrapped leather rings, purple light channels, forged butt pommel.
+for y in (1.7,4.5,7.3,10.1):
+ cuboid([6.45,y,6.45],[9.55,y+0.36,9.55],8,10)
+ cuboid([7.1,y+0.1,6.2],[8.9,y+0.25,6.5],11)
+cuboid([6.2,0.0,6.2],[9.8,0.75,9.8],2,5)
+cuboid([6.7,0.0,6.05],[9.3,0.65,6.25],10,11)
+# Narrow violet vein running from pommel to weapon collar.
+cuboid([7.65,2.2,6.12],[8.35,10.6,6.38],9,11)
+# Forged core with stepped collar and inset gem.
+cuboid([5.1,11.0,5.75],[10.9,13.9,10.25],1,4)
+cuboid([5.65,11.45,5.45],[10.35,13.45,5.8],3,5)
+cuboid([5.65,11.45,10.2],[10.35,13.45,10.55],3,5)
+cuboid([7.0,11.75,5.16],[9.0,13.15,5.48],9,11)
+cuboid([7.0,11.75,10.52],[9.0,13.15,10.84],9,11)
+# AXE toward +X: curved silhouette from a series of offset beveled facets.
+# Upper and lower corners flare; the middle cuts back to a concave waist.
+cuboid([10.5,11.0,6.0],[12.1,14.6,10.0],2,4)
+cuboid([11.7,12.2,6.25],[13.2,15.2,9.75],3,5)
+cuboid([12.9,13.1,6.55],[14.35,15.8,9.45],4,6)
+cuboid([14.0,14.0,6.95],[15.0,15.9,9.05],5,7)
+cuboid([14.85,14.8,7.3],[15.65,15.95,8.7],6,7)
+cuboid([11.7,9.3,6.4],[13.3,12.1,9.6],2,4)
+cuboid([12.9,8.5,6.7],[14.25,10.4,9.3],3,5)
+cuboid([13.95,8.15,7.1],[14.95,9.4,8.9],5,6)
+cuboid([14.7,8.0,7.4],[15.45,8.8,8.6],6,7)
+# Thin, razor bright edge, deliberately recessed at the center.
+cuboid([14.3,12.2,7.25],[14.8,13.0,8.75],5,6)
+# Violet ornamental channels on BOTH broad axe surfaces.
+for z0,z1 in ((5.95,6.2),(9.8,10.05)):
+ cuboid([11.2,12.7,z0],[12.8,13.05,z1],9,11)
+ cuboid([12.15,13.35,z0],[13.6,13.65,z1],10,11)
+# PICK toward -X: rear spear tapers outward, with a hooked lower point.
+cuboid([3.8,12.0,6.3],[5.5,14.45,9.7],2,4)
+cuboid([2.4,12.7,6.6],[4.0,14.0,9.4],3,5)
+cuboid([1.1,13.1,6.95],[2.65,13.85,9.05],4,6)
+cuboid([0.2,13.4,7.4],[1.25,13.75,8.6],6,7)
+cuboid([2.65,11.1,7.0],[3.55,12.9,9.0],2,4)
+cuboid([3.05,9.8,7.2],[3.85,11.25,8.8],3,5)
+cuboid([3.45,8.5,7.5],[4.0,9.95,8.5],5,6)
+cuboid([3.65,7.75,7.75],[4.05,8.65,8.25],6,7)
+for z0,z1 in ((6.2,6.45),(9.55,9.8)):
+ cuboid([2.4,13.1,z0],[4.75,13.4,z1],9,11)
+# Dark faceted weapon body, never a flat item/handheld sprite.
 model.write_text(json.dumps({"textures":{"palette":"obsidiannetwork:item/multitool_3d","particle":"obsidiannetwork:item/multitool_3d"},"gui_light":"front","elements":parts,"display":{"thirdperson_righthand":{"rotation":[0,-90,55],"translation":[0,2,0],"scale":[0.7,0.7,0.7]},"thirdperson_lefthand":{"rotation":[0,90,-55],"translation":[0,2,0],"scale":[0.7,0.7,0.7]},"firstperson_righthand":{"rotation":[0,-90,55],"translation":[0.0,1.0,0.0],"scale":[0.55,0.55,0.55]},"firstperson_lefthand":{"rotation":[0,90,-55],"translation":[0.0,1.0,0.0],"scale":[0.55,0.55,0.55]},"gui":{"rotation":[30,225,0],"translation":[0,0,0],"scale":[0.82,0.82,0.82]},"ground":{"translation":[0,2,0],"scale":[0.55,0.55,0.55]},"fixed":{"rotation":[0,180,0],"scale":[0.85,0.85,0.85]}}},indent=2)+chr(10))
 definition=A/"items/multitool.json";definition.parent.mkdir(parents=True,exist_ok=True)
 definition.write_text(json.dumps({"model":{"type":"minecraft:model","model":"obsidiannetwork:item/multitool"}},indent=2)+"\n")
