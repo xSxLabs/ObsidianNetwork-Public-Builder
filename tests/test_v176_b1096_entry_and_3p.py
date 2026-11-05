@@ -41,7 +41,8 @@ class B1096FailedEntryAndPlayerMount(unittest.TestCase):
    self.assertNotIn(forbidden,recovery)
  def test_thirdperson_only_no_turret_or_first_person_changes(self):
   self.assertIn("B1096_PLAYER_ONLY_FOREARM_CONTACT",GUN)
-  self.assertIn("pose.translate(0.0F,-0.135F,0.0F);",GUN)
+  self.assertIn("pose.translate(0.0F,0.065F,0.0F);",GUN)
+  self.assertNotIn("pose.translate(0.0F,-0.135F,0.0F);",GUN)
   self.assertIn("wornFallback(",GUN)
   self.assertIn("drawArm(pose,event.getSubmitNodeCollector()",GUN)
   self.assertIn("B1093_WORLD_GUN_ARM_CONTACT",GUN)
