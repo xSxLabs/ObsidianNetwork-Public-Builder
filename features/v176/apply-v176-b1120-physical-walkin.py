@@ -96,8 +96,8 @@ def test_patch(s):
                   check(!stand.isInvisible(),"B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING");
                   check(Math.abs(player.getX()-stand.getX())>.70D,
                      "B1120_MUST_NOT_TEST_PERFECT_CENTER_TELEPORT");
-                  check(stand.noPhysics,
-                     "B1120_REAL_OWNER_COLLISIONLESS_DURING_ENTRY");''',"real-world-test-guards")
+                  check(!stand.noPhysics,
+                     "B1120_WORLD_OWNER_PHYSICS_RESTORED_AFTER_STEP");''',"real-world-test-guards")
     # Reproduce B1109 recovery on the *same* original item-owning suit
     # before entry. MK9 in the user's existing world was a saved invisible
     # noPhysics=true stand after prior aborted runs; original v1119 logs
