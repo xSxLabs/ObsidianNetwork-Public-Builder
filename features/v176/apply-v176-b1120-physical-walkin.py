@@ -11,12 +11,25 @@ Keep freeze 1.7.5 transaction, Recall and exit untouched. Untransferred
 original must remain rendered, safe, and owned until server confirms success.
 """
 import os
+import re
 from pathlib import Path
 
 def one(src,old,new,name):
     n=src.count(old)
     assert n==1,("B1120_SOURCE_DRIFT",name,n,old[:130])
     return src.replace(old,new,1)
+
+def visual_patch(s):
+    # All cosmetic armor visuals are constructed on BOTH server and client.
+    # Server-side view.noPhysics alone does not prevent client prediction from
+    # treating the open suit's visual as an obstructing ArmorStand entity.
+    pattern=r'(public\s+PowerArmorVisualEntity\s*\([^{}]*\)\s*\{\s*super\([^;{}]*\);)'
+    found=list(re.finditer(pattern,s))
+    assert len(found)==1,("B1123_VISUAL_CTOR_DRIFT",len(found))
+    m=found[0]
+    result=s[:m.end()]+"\n  this.noPhysics=true; // visual cannot obstruct physical walk-in"+s[m.end():]
+    assert result.count("this.noPhysics=true; // visual cannot obstruct physical walk-in")==1
+    return result
 
 def entry_patch(s):
     # B1121: B657 NeoForge API uses public noPhysics, not setMarker.
@@ -154,6 +167,7 @@ def test_patch(s):
 def apply():
     j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
     for rel,fn in (("powerarmor/PowerArmorEntrySequence655.java",entry_patch),
+                    ("powerarmor/PowerArmorVisualEntity.java",visual_patch),
                     ("build103/Build103GameTests.java",test_patch)):
         p=j/rel
         p.write_text(fn(p.read_text(encoding="utf-8")),encoding="utf-8")
