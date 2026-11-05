@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""B1096: player-only third-person world barrel seats above right forearm.
+"""B1096: player-only third-person world barrel seats on right forearm.
 
 The video from B1095 shows the silver barrel below the lifted right forearm.
 Turret is correct: preserve the entire shared drawArm() mesh, ArmorStand
@@ -17,8 +17,8 @@ worn=s[start:end]
 old="    drawArm(pose,event.getSubmitNodeCollector(),state.lightCoords,renderedArm,variant,1.0F);"
 new="""    // B1096_PLAYER_ONLY_FOREARM_CONTACT: restore the barrel to the raised
     // right forearm's dorsal face in POST model-space (not world/turret space).
-    // With the inherited -Y humanoid transform, negative Y is above the arm.
-    pose.translate(0.0F,-0.135F,0.0F);
+    // B1151: lower the player-only barrel by 0.20 model blocks from B1096.
+    pose.translate(0.0F,0.065F,0.0F);
     drawArm(pose,event.getSubmitNodeCollector(),state.lightCoords,renderedArm,variant,1.0F);"""
 assert worn.count(old)==1,("B1096_PLAYER_POST_DRAW_ANCHOR",worn.count(old))
 assert worn.count("pose.scale(-1.0F,-1.0F,1.0F);")==1
