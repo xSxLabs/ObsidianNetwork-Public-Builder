@@ -8,7 +8,7 @@ start=s.index(" @SubscribeEvent public static void wornFallback(")
 end=s.index(" public static void drawArm(",start)
 w=s[start:end]
 # Remove only player Post's hardcoded arm rotations; never touch stand/turret.
-pattern=r"renderedArm\\.xRot\\s*=\\s*-1\\.535F\\s*;\\s*renderedArm\\.yRot\\s*=\\s*0\\.0F\\s*;\\s*renderedArm\\.zRot\\s*=\\s*0\\.0F\\s*;"
+pattern=r"renderedArm\.xRot\s*=\s*-1\.535F\s*;\s*renderedArm\.yRot\s*=\s*0\.0F\s*;\s*renderedArm\.zRot\s*=\s*0\.0F\s*;"
 w,n=re.subn(pattern,"/* B1170: preserve rendered player arm rotation */",w)
 if n==0:
  print("B1170_DIAG_PLAYER_POST_ROTATION_ABSENT; snippets:",
