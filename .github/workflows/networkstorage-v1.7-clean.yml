@@ -153,6 +153,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1093_world_gun_arm_contact.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1096_entry_and_3p.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1107_entry_guard.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1120_walkin.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b973_attack_pose_stability.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b975_cell_terminal.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b980_ingame_fixes.py' -v
@@ -4126,10 +4127,14 @@ jobs:
             # B1104 below verifies these four original runtime classes byte-for-byte.
             # B1103 CI-only all MK1 through MK24 owned ArmorStand roundtrip.
             python3 features/v176/apply-v176-b1103-all-mk-gametest.py
+            # B1120: original stand stays visible; 24-MK realistic shell step is mandatory.
             # B1109 P0: also restore pre-existing 1106 orphaned hidden world suits without item copy.
             # B1108 P0: 24-MK entry via real NeoForge EVENT_BUS, full diagnostic lifecycle.
             # B1107 P0: require real world transition, never conceal untransferred suit.
             python3 features/v176/apply-v176-b1107-manual-entry-guard.py
+            # B1120 P0 real user B1119: center-only entry FAILED; verify noncenter shell movement.
+            python3 features/v176/apply-v176-b1120-physical-walkin.py
+            python3 tests/test_v176_b1120_walkin.py
             python3 tests/test_v176_b1107_entry_guard.py
             python3 tests/test_v176_b1103_all_mk.py
             # B1107: frozen 1.7.5 input/exit route plus explicit fail-safe overlay.
