@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""B1120: reproduce REAL USER B1119 failure and repair 1.7.6 manual walk-in.
+
+latest(5).log: B1107_MANUAL_ENTRY_OPEN MK9 suitId=311, no STEP/STARTED/EQUIPPED.
+Root cause: request hides ORIGINAL world stand; inside() requires <0.469 block
+center distance, smaller than practical player/model collision. Gameplay may
+never get player's center within that threshold. A fake-player test teleported
+to exactly (0,0), covering this regression up.
+
+Keep freeze 1.7.5 transaction, Recall and exit untouched. Untransferred
+original must remain rendered, safe, and owned until server confirms success.
+"""
+import os
+from pathlib import Path
+
+def one(src,old,new,name):
+    n=src.count(old)
+    assert n==1,("B1120_SOURCE_DRIFT",name,n,old[:130])
+    return src.replace(old,new,1)
+
+def entry_patch(s):
+    # Ownership never changes until PowerArmorSuitWorld transaction commits.
+    # The visual is an extra cosmetic overlay and is physically nonblocking.
+    # noPhysics preserves visible owner without making it a marker (markers
+    # have special rendering/picking semantics in Minecraft).
+    s=one(s,
+'''  view.addTag("xsxlabs_b655_entry_hold_visual");
+  view.begin(true);view.beginPhase(8);''',
+'''  view.addTag("xsxlabs_b655_entry_hold_visual");
+  view.noPhysics=true; // cosmetic shell can NEVER block actual walk-in
+  view.begin(true);view.beginPhase(8);''',"visual-nocollision")
+    s=one(s,
+'''  stand.addTag(OPEN_TAG);
+  stand.addTag(HIDE_TAG);
+  stand.setInvisible(true);
+  stand.setMarker(true);  // zero hitbox: player can walk INSIDE''',
+'''  stand.addTag(OPEN_TAG);
+  stand.removeTag(HIDE_TAG); // no hidden original while waiting
+  stand.setInvisible(false);
+  stand.noPhysics=true; // pass-through but renders the item-owning suit
+  stand.setMarker(originalMarker);''',"visible-world-owner")
+    s=one(s,
+'''    stand.setMarker(o.marker());
+    stand.removeTag(OPEN_TAG);
+    stand.removeTag(HIDE_TAG);
+    stand.setInvisible(false);''',
+'''    stand.setMarker(o.marker());
+    stand.noPhysics=o.marker();
+    stand.removeTag(OPEN_TAG);
+    stand.removeTag(HIDE_TAG);
+    stand.setInvisible(false);''',"reset-physics")
+    s=one(s,
+'''   double dx=p.getX()-stand.getX(),dz=p.getZ()-stand.getZ();
+   return dx*dx+dz*dz<=.22D && Math.abs(p.getY()-stand.getY())<.65D;''',
+'''   // The player is 0.6 blocks wide. A center-only radius of 0.469
+   // never detects an ordinary player who reaches the outer armor shell.
+   // Require a genuine step CLOSE to the stand (not merely click at 2m).
+   double dx=p.getX()-stand.getX(),dz=p.getZ()-stand.getZ();
+   double dy=p.getY()-stand.getY();
+   return dx*dx+dz*dz<=.81D && dy>=-.40D && dy<=1.30D;''',"human-sized-entry-zone")
+    # Keep the real owner visible while OPEN. The closing and rollback
+    # protections from B1107 remain authoritative.
+    s=one(s,
+'''  if(!inside(p,stand))return;
+  // Revalidate AT THE PHYSICAL STEP.''',
+'''  if(!inside(p,stand)){
+   if(p.tickCount%20==0)org.slf4j.LoggerFactory.getLogger("xSxLabs/PowerArmorEntry")
+      .info("B1120_MANUAL_ENTRY_WAIT player={} suitId={} dx={} dy={} dz={} realVisible={} visualAlive={}",
+       p.getName().getString(),stand.getId(),
+       String.format(java.util.Locale.ROOT,"%.2f",p.getX()-stand.getX()),
+       String.format(java.util.Locale.ROOT,"%.2f",p.getY()-stand.getY()),
+       String.format(java.util.Locale.ROOT,"%.2f",p.getZ()-stand.getZ()),
+       !stand.isInvisible(),!opened.visual().isRemoved());
+   return;
+  }
+  // Revalidate AT THE PHYSICAL STEP.''',"wait-coordinates")
+    assert "stand.setInvisible(true);" not in s, "B1120 real stand must never hide"
+    assert "stand.noPhysics=true;" in s
+    assert "PowerArmorSuitWorld.tryEnter(p,stand.getId());" in s
+    return s
+
+def test_patch(s):
+    # The old fake-player test was TELEPORT-TO-PERFECT CENTER. Make it FAIL
+    # against 1119, pass with B1120, and prove the player is entering by
+    # stepping from a realistic shoulder-width offset after opening.
+    s=one(s,
+'''                  player.setPos(stand.getX(),stand.getY(),stand.getZ());
+                  player.tickCount++;
+                  net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(''',
+'''                  // B1120 regression: human cannot walk into exact center
+                  // while visual shell is present. Reach model outer shell:
+                  // r=sqrt(.82^2+.20^2)=.844, far beyond old .469 trigger.
+                  player.setPos(stand.getX()+.82D,stand.getY()+.15D,stand.getZ()+.20D);
+                  player.tickCount++;
+                  net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(''',"realistic-step")
+    s=one(s,
+'''                  check(!player.isInvisible(),"B1107_PHYSICAL_ENTRY_PLAYER_VISIBLE");
+                  check(!stand.isInvisible(),"B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING");''',
+'''                  check(!player.isInvisible(),"B1107_PHYSICAL_ENTRY_PLAYER_VISIBLE");
+                  check(!stand.isInvisible(),"B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING");
+                  check(Math.abs(player.getX()-stand.getX())>.70D,
+                     "B1120_MUST_NOT_TEST_PERFECT_CENTER_TELEPORT");
+                  check(stand.noPhysics,
+                     "B1120_REAL_OWNER_COLLISIONLESS_DURING_ENTRY");''',"real-world-test-guards")
+    # Also assert no disappearance during the entire 96-tick opening hold.
+    s=one(s,
+'''                  check(dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.full(stand),
+                    "right click transferred real items before player stepped in");''',
+'''                  check(dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.full(stand),
+                    "right click transferred real items before player stepped in");
+                  check(!stand.isInvisible(),
+                    "B1120_ORIGINAL_SUIT_HIDDEN_WHILE_WAITING_FOR_WALK_IN");
+                  check(stand.noPhysics,
+                    "B1120_OPEN_SUIT_STILL_BLOCKS_PLAYER_MOVEMENT");''',"hold-suit-visible")
+    assert "POWER_ARMOR_REAL_ROUNDTRIP_V69" in s
+    assert "B1120_MUST_NOT_TEST_PERFECT_CENTER_TELEPORT" in s
+    return s
+
+def apply():
+    j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
+    for rel,fn in (("powerarmor/PowerArmorEntrySequence655.java",entry_patch),
+                    ("build103/Build103GameTests.java",test_patch)):
+        p=j/rel
+        p.write_text(fn(p.read_text(encoding="utf-8")),encoding="utf-8")
+    print("B1120_REAL_PLAYER_SHELL_ENTRY_MK1_MK24_VISIBLE_WORLD_OWNER_SAFE_PASS")
+
+if __name__=="__main__": apply()
