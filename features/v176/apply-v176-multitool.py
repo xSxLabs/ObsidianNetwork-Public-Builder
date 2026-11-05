@@ -15,7 +15,8 @@ s=s.replace(anchor,'''   public static final DeferredItem<dev.obsidiannetwork.mu
 '''+anchor,1)
 creative='            output.accept((ItemLike)POWER_CARD_MICRO_MG.get());'
 assert s.count(creative)==1
-s=s.replace(creative,creative+'\n            output.accept((ItemLike)MULTITOOL.get());',1)
+s=s.replace(creative,creative+'
+            output.accept((ItemLike)MULTITOOL.get());',1)
 main.write_text(s)
 p=J/"multitool/MultitoolItem.java"
 p.parent.mkdir(parents=True,exist_ok=True)
@@ -85,7 +86,13 @@ public final class MultitoolItem extends Item {
       &&world.getBlockState(pos.above()).isAir())
    target=Blocks.DIRT_PATH.defaultBlockState();
   else if(log(state)){
-   Block stripped=net.minecraft.world.level.block.Blocks.STRIPPED_OAK_LOG;\n   String name=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();\n   if(!name.startsWith("stripped_")&&(name.endsWith("_log")||name.endsWith("_wood")||name.endsWith("_stem")||name.endsWith("_hyphae"))){\n    var id=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());\n    stripped=net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.Identifier.fromNamespaceAndPath(id.getNamespace(),"stripped_"+name));\n   }else stripped=null;\n   if(stripped==Blocks.AIR)stripped=null;
+   Block stripped=net.minecraft.world.level.block.Blocks.STRIPPED_OAK_LOG;
+   String name=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
+   if(!name.startsWith("stripped_")&&(name.endsWith("_log")||name.endsWith("_wood")||name.endsWith("_stem")||name.endsWith("_hyphae"))){
+    var id=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());
+    stripped=net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.Identifier.fromNamespaceAndPath(id.getNamespace(),"stripped_"+name));
+   }else stripped=null;
+   if(stripped==Blocks.AIR)stripped=null;
    if(stripped!=null){
     target=stripped.defaultBlockState();
     if(state.hasProperty(RotatedPillarBlock.AXIS)&&target.hasProperty(RotatedPillarBlock.AXIS))
