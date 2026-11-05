@@ -13,6 +13,7 @@ from pathlib import Path
 root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 baseline=Path("/tmp/xsxlabs-v175-entry-freeze")
 guard=runpy.run_path(str(Path(__file__).resolve().parents[1]/"features/v176/apply-v176-b1107-manual-entry-guard.py"))
+physical=runpy.run_path(str(Path(__file__).resolve().parents[1]/"features/v176/apply-v176-b1120-physical-walkin.py"))
 classes={
  "powerarmor/PowerArmorEntrySequence655.java",
  "powerarmor/PowerArmorExitSequence650.java",
@@ -25,7 +26,7 @@ for rel in sorted(classes):
  assert final.is_file(),("B1104_RUNTIME_MISSING",rel)
  a=original.read_bytes()
  b=final.read_bytes()
- expected=(guard["entry_patch"](a.decode("utf-8")).encode("utf-8")
+ expected=(physical["entry_patch"](guard["entry_patch"](a.decode("utf-8"))).encode("utf-8")
      if rel=="powerarmor/PowerArmorEntrySequence655.java" else
      guard["render_patch"](a.decode("utf-8")).encode("utf-8")
      if rel=="client/PowerArmorExitRender659.java" else a)
@@ -59,15 +60,20 @@ w=(root/"powerarmor/PowerArmorSuitWorld.java").read_text()
 render=(root/"client/PowerArmorExitRender659.java").read_text()
 assert "PowerArmorSuitWorld.tryEnter(p,stand.getId());" in e
 assert "private static void restoreVisibility662(ServerPlayer p)" in e
-assert "if(!inside(p,stand))return;" in e
-assert "stand.setInvisible(true);" in e
+assert "if(!inside(p,stand)){" in e
+assert "stand.setInvisible(true);" not in e
+assert "B1120_MANUAL_ENTRY_WAIT" in e
+assert "stand.noPhysics=true; // pass-through" in e
 assert "B1096_ENTRY_ROLLBACK_VISIBILITY" not in e
 assert "isEnteringOriginal1102" not in w
 assert "entryStarted1107(ServerPlayer player,ArmorStand suit)" in w
 assert "B1107_MANUAL_ENTRY_FAILED" in e
 assert "recover1107(p,c.suit())" in e
 assert "B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING" in (root/"build103/Build103GameTests.java").read_text()
+assert "B1120_MUST_NOT_TEST_PERFECT_CENTER_TELEPORT" in (root/"build103/Build103GameTests.java").read_text()
+assert "B1120_ORIGINAL_SUIT_HIDDEN_WHILE_WAITING_FOR_WALK_IN" in (root/"build103/Build103GameTests.java").read_text()
 assert "v.isClosingFor659(p.getUUID())" in render
 assert "v.isExitOpening659(p.getUUID())" in render
 print("B1106_FREEZE175_MANUAL_ENTRY_METHODS_AND_176_WORLD_FEATURES_PASS")
 print("B1107_SERVER_ENTRY_GUARD_AND_FREEZE175_EXIT_PRESERVATION_PASS")
+print("B1120_WALKIN_SHELL_COVERAGE_AND_WORLD_VISIBILITY_PASS")
