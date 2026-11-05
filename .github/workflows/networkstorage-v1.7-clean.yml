@@ -4129,6 +4129,7 @@ jobs:
             # B1146: frozen 1.7.5 item transaction, reachable human walk-in and nonblocking shell.
             python3 features/v176/apply-v176-b1146-freeze-walkin.py
             python3 features/v176/apply-v176-b1149-gravity-modes.py
+            python3 features/v176/apply-v176-b1167-thirdperson-arm-pivot.py
             python3 features/v176/apply-v176-multitool.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
             # B1124: old inside() semantic guard, true Entity.move physical step, client GeoVisual noPhysics.
