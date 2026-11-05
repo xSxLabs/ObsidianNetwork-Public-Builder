@@ -153,6 +153,9 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1176.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1178.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1181.py' -v
+          # The real generated-mesh and PNG alpha tests use Pillow; install
+          # before fast preflight as well as before source reconstruction.
+          python3 -m pip install --user --quiet pillow
           python3 -m unittest discover -s tests -p 'test_v176_b1185.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_reactor_unlimited_output.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1085_turret_live_aim.py' -v
