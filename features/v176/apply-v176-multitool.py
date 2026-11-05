@@ -15,8 +15,7 @@ s=s.replace(anchor,'''   public static final DeferredItem<dev.obsidiannetwork.mu
 '''+anchor,1)
 creative='            output.accept((ItemLike)POWER_CARD_MICRO_MG.get());'
 assert s.count(creative)==1
-s=s.replace(creative,creative+'
-            output.accept((ItemLike)MULTITOOL.get());',1)
+s=s.replace(creative,creative+chr(10)+'            output.accept((ItemLike)MULTITOOL.get());',1)
 main.write_text(s)
 p=J/"multitool/MultitoolItem.java"
 p.parent.mkdir(parents=True,exist_ok=True)
