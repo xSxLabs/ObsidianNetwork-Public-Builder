@@ -179,6 +179,59 @@ draw.ellipse((13,14,19,20),fill=dark,outline=violet)
 im.save(tex)
 model=A/"models/item/multitool.json";model.parent.mkdir(parents=True,exist_ok=True)
 model.write_text(json.dumps({"parent":"minecraft:item/handheld","textures":{"layer0":"obsidiannetwork:item/multitool"}},indent=2)+"\n")
+# B1162: real volumetric Minecraft item model, not a flat handheld sprite.
+# Palette texture: each 4x4 tile is a solid material, referenced on every cuboid face.
+palette=Image.new("RGBA",(16,16),(0,0,0,255))
+palette_colors=[(22,20,34,255),(54,51,69,255),(111,103,129,255),(174,57,246,255),
+                (91,26,151,255),(222,143,255,255),(38,34,51,255),(75,69,89,255),
+                (17,15,27,255),(129,52,189,255),(66,63,79,255),(194,187,211,255),
+                (39,26,60,255),(144,70,215,255),(29,27,43,255),(85,82,102,255)]
+for tile,c in enumerate(palette_colors):
+ px=(tile%4)*4;py=(tile//4)*4
+ for xx in range(px,px+4):
+  for yy in range(py,py+4):palette.putpixel((xx,yy),c)
+palette.save(A/"textures/item/multitool_3d.png")
+parts=[]
+def cuboid(lo,hi,tile):
+ uv=[(tile%4)*4,(tile//4)*4,(tile%4)*4+4,(tile//4)*4+4]
+ parts.append({"from":lo,"to":hi,"faces":{face:{"uv":uv,"texture":"#palette"} for face in ("north","south","east","west","up","down")}})
+# Slender three-dimensional grip with a diagonal stair-stepped silhouette.
+cuboid([6.8,0.2,6.8],[9.2,3.2,9.2],0)
+cuboid([6.5,2.5,6.5],[9.5,5.8,9.5],1)
+cuboid([6.5,5.2,6.5],[9.5,8.5,9.5],1)
+cuboid([6.5,8.0,6.5],[9.5,11.5,9.5],1)
+cuboid([6.5,10.5,6.5],[9.5,13.3,9.5],2)
+# Violet grip bands and end cap.
+cuboid([6.35,1.1,6.35],[9.65,1.65,9.65],4)
+cuboid([6.35,3.6,6.35],[9.65,4.05,9.65],3)
+cuboid([6.35,6.0,6.35],[9.65,6.45,9.65],4)
+cuboid([6.35,8.6,6.35],[9.65,9.05,9.65],3)
+# Forged central hub: full thickness, dark netherite with glowing purple core.
+cuboid([5.4,11.0,5.1],[10.6,14.0,10.9],0)
+cuboid([6.4,11.5,4.8],[9.6,13.6,5.15],3)
+cuboid([6.4,11.5,10.85],[9.6,13.6,11.2],3)
+# Axe blade FRONT (+X): wide, tall, beveled stepped cutting edge.
+cuboid([10.1,10.5,5.8],[12.0,15.0,10.2],1)
+cuboid([11.7,9.2,6.2],[13.6,15.7,9.8],2)
+cuboid([13.3,8.5,6.7],[14.6,15.9,9.3],1)
+cuboid([14.4,9.3,7.0],[15.25,15.6,9.0],2)
+cuboid([14.95,10.3,7.35],[15.6,14.7,8.65],11)
+# Blade inlays, visible from both broad faces.
+cuboid([11.8,13.7,5.55],[14.0,14.2,5.9],3)
+cuboid([11.8,13.7,10.1],[14.0,14.2,10.45],3)
+cuboid([12.7,10.1,5.85],[13.3,13.7,6.15],4)
+# Pickaxe BACK (-X): opposite head, hooked descending point.
+cuboid([3.6,12.1,6.2],[5.8,14.5,9.8],1)
+cuboid([1.9,12.9,6.7],[3.9,14.2,9.3],2)
+cuboid([0.6,13.1,7.0],[2.1,13.9,9.0],11)
+cuboid([2.4,10.8,7.0],[3.3,13.1,9.0],1)
+cuboid([3.0,9.1,7.35],[3.8,11.0,8.65],2)
+cuboid([3.4,8.1,7.65],[4.1,9.4,8.35],11)
+cuboid([1.8,13.0,6.4],[4.9,13.4,6.75],3)
+cuboid([1.8,13.0,9.25],[4.9,13.4,9.6],3)
+# The shovel function is integrated into the reinforced lower grip, not a third head.
+cuboid([6.25,0.0,6.25],[9.75,0.65,9.75],2)
+model.write_text(json.dumps({"textures":{"palette":"obsidiannetwork:item/multitool_3d","particle":"obsidiannetwork:item/multitool_3d"},"gui_light":"front","elements":parts,"display":{"thirdperson_righthand":{"rotation":[0,-90,55],"translation":[0,3,1],"scale":[0.8,0.8,0.8]},"thirdperson_lefthand":{"rotation":[0,90,-55],"translation":[0,3,1],"scale":[0.8,0.8,0.8]},"firstperson_righthand":{"rotation":[0,-90,55],"translation":[1.1,3.2,1.1],"scale":[0.8,0.8,0.8]},"firstperson_lefthand":{"rotation":[0,90,-55],"translation":[1.1,3.2,1.1],"scale":[0.8,0.8,0.8]},"gui":{"rotation":[30,225,0],"translation":[0,0,0],"scale":[0.82,0.82,0.82]},"ground":{"translation":[0,2,0],"scale":[0.55,0.55,0.55]},"fixed":{"rotation":[0,180,0],"scale":[0.85,0.85,0.85]}}},indent=2)+"\\n")
 definition=A/"items/multitool.json";definition.parent.mkdir(parents=True,exist_ok=True)
 definition.write_text(json.dumps({"model":{"type":"minecraft:model","model":"obsidiannetwork:item/multitool"}},indent=2)+"\n")
 print("B1154_MULTITOOL_REGISTERED_RECIPE_TEXTURE_AND_CHAIN_MINING_PASS")
