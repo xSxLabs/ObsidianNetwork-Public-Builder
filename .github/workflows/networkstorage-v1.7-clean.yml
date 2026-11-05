@@ -4127,6 +4127,7 @@ jobs:
             # B1104 below verifies these four original runtime classes byte-for-byte.
             # B1103 CI-only all MK1 through MK24 owned ArmorStand roundtrip.
             python3 features/v176/apply-v176-b1103-all-mk-gametest.py
+            # B1124: old inside() semantic guard, true Entity.move physical step, client GeoVisual noPhysics.
             # B1121: real NeoForge 26.1 noPhysics API + recovered-invisible MK9 GameTest.
             # B1120: original stand stays visible; 24-MK realistic shell step is mandatory.
             # B1109 P0: also restore pre-existing 1106 orphaned hidden world suits without item copy.
