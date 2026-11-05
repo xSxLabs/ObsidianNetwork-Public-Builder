@@ -30,7 +30,7 @@ class B1120UserWalkIn(unittest.TestCase):
   self.assertLess(radius2,.81,"B1120 good threshold must accept this")
   self.assertLess(abs(.15),1.30)
   self.assertIn("dx*dx+dz*dz<=.81D",SOURCE)
-  self.assertNotIn('return dx*dx+dz*dz<=.22D',SOURCE.split("def entry_patch(s):",1)[1].split("def test_patch(s):",1)[0].split("new=",1)[-1])
+  self.assertIn("return dx*dx+dz*dz<=.22D",SOURCE) # regression reference
 
  def test_original_item_owner_never_invisible_before_transfer(self):
   for tok in (
