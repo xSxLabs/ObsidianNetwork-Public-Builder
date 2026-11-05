@@ -19,6 +19,22 @@ def one(src,old,new,name):
     return src.replace(old,new,1)
 
 def entry_patch(s):
+    # B1121: 1119 orphan recovery made the old invisible stand visible but
+    # left Marker=true from failed 1106/1119 open. Vanilla marker armor stands
+    # have zero selection box and special rendering rules. Owned deploy suits
+    # always require the normal stand marker flag = false once recovered.
+    s=one(s,
+'''  boolean originalMarker=stand.isMarker();
+  stand.addTag(OPEN_TAG);''',
+'''  if(stand.isMarker())stand.setMarker(false); // fix persistent old broken MK9
+  boolean originalMarker=false;
+  stand.addTag(OPEN_TAG);''',"legacy-marker-on-click")
+    s=one(s,
+'''    recover1107(p,lost);
+    lost.noPhysics=false; // interrupted entry must be interactable again''',
+'''    recover1107(p,lost);
+    lost.setMarker(false); // old 1106/1119 OPEN saved Marker=true
+    lost.noPhysics=false; // interrupted entry must be interactable again''',"legacy-marker-recovery")
     # Ownership never changes until PowerArmorSuitWorld transaction commits.
     # The visual is an extra cosmetic overlay and is physically nonblocking.
     # noPhysics preserves visible owner without making it a marker (markers
