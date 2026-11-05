@@ -57,7 +57,8 @@ class B1120UserWalkIn(unittest.TestCase):
 
  def test_real_player_event_path_in_24_tier_game_test(self):
   for tok in (
-    "player.setPos(stand.getX()+.82D,stand.getY()+.15D,stand.getZ()+.20D);",
+    "player.move(net.minecraft.world.entity.MoverType.SELF,",
+    "B1122_PHYSICAL_MOVE_BLOCKED_OR_OVERSHOT_BY_COLLISION",
     'B1120_MUST_NOT_TEST_PERFECT_CENTER_TELEPORT',
     'B1120_ORIGINAL_SUIT_HIDDEN_WHILE_WAITING_FOR_WALK_IN',
     'B1120_WORLD_OWNER_PHYSICS_RESTORED_AFTER_STEP',
