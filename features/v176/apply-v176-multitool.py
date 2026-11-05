@@ -52,10 +52,10 @@ public final class MultitoolItem extends Item {
  private static final int ORE_LIMIT=64, LOG_LIMIT=192, LEAF_LIMIT=256;
  private static final ThreadLocal<Boolean> CHAIN=ThreadLocal.withInitial(()->false);
  public MultitoolItem(Properties properties){
-  super(ToolMaterial.NETHERITE.applyToolProperties(properties,8.0F,-3.0F));
+  super(ToolMaterial.NETHERITE.applyToolProperties(properties,BlockTags.MINEABLE_WITH_PICKAXE,8.0F,-3.0F,0.0F));
  }
  private static boolean ore(BlockState s){
-  return s.is(net.minecraft.tags.BlockTags.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("c","ores")))
+  return s.is(net.minecraft.tags.BlockTags.create(net.minecraft.resources.Identifier.fromNamespaceAndPath("c","ores")))
     || s.is(net.minecraft.tags.BlockTags.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("forge","ores")))
     || net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath().endsWith("_ore")
     || net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath().equals("ancient_debris");
@@ -89,7 +89,7 @@ public final class MultitoolItem extends Item {
    String name=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
    if(!name.startsWith("stripped_")&&(name.endsWith("_log")||name.endsWith("_wood")||name.endsWith("_stem")||name.endsWith("_hyphae"))){
     var id=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());
-    stripped=net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.Identifier.fromNamespaceAndPath(id.getNamespace(),"stripped_"+name));
+    stripped=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.Identifier.fromNamespaceAndPath(id.getNamespace(),"stripped_"+name));
    }else stripped=null;
    if(stripped==Blocks.AIR)stripped=null;
    if(stripped!=null){
