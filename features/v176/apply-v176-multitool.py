@@ -39,7 +39,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.RotatedPillarBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.component.Tool;
@@ -52,7 +52,7 @@ public final class MultitoolItem extends Item {
  private static final int ORE_LIMIT=64, LOG_LIMIT=192, LEAF_LIMIT=256;
  private static final ThreadLocal<Boolean> CHAIN=ThreadLocal.withInitial(()->false);
  public MultitoolItem(Properties properties){
-  super(ToolMaterial.NETHERITE.applyToolProperties(properties,BlockTags.MINEABLE_WITH_PICKAXE,8.0F,-3.0F));
+  super(ToolMaterial.NETHERITE.applyToolProperties(properties,8.0F,-3.0F));
  }
  private static boolean ore(BlockState s){
   return s.is(net.minecraft.tags.BlockTags.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("c","ores")))
@@ -85,7 +85,7 @@ public final class MultitoolItem extends Item {
       &&world.getBlockState(pos.above()).isAir())
    target=Blocks.DIRT_PATH.defaultBlockState();
   else if(log(state)){
-   Block stripped=net.minecraft.world.level.block.RotatedPillarBlock.getStripped(state.getBlock());
+   Block stripped=net.minecraft.world.level.block.Blocks.STRIPPED_OAK_LOG;\n   String name=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();\n   if(!name.startsWith("stripped_")&&(name.endsWith("_log")||name.endsWith("_wood")||name.endsWith("_stem")||name.endsWith("_hyphae"))){\n    var id=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());\n    stripped=net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.Identifier.fromNamespaceAndPath(id.getNamespace(),"stripped_"+name));\n   }else stripped=null;\n   if(stripped==Blocks.AIR)stripped=null;
    if(stripped!=null){
     target=stripped.defaultBlockState();
     if(state.hasProperty(RotatedPillarBlock.AXIS)&&target.hasProperty(RotatedPillarBlock.AXIS))
