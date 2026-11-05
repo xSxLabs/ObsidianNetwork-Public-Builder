@@ -1,4 +1,5 @@
 """B1178 first-person duplicate and reference model safety contracts."""
+# B1179: fail-closed test syntax corrected before rebuilding the full JAR.
 import ast,unittest
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
