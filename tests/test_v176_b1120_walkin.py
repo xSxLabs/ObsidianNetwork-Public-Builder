@@ -21,6 +21,11 @@ class B1120UserWalkIn(unittest.TestCase):
   ast.parse(SOURCE)
   self.assertTrue(callable(runpy.run_path(str(PATCH))["entry_patch"]))
   self.assertTrue(callable(runpy.run_path(str(PATCH))["test_patch"]))
+  visual=runpy.run_path(str(PATCH))["visual_patch"]
+  sample="public PowerArmorVisualEntity(EntityType<? extends ArmorStand> type,Level level){\n super(type,level);\n setNoGravity(true);}"
+  result=visual(sample)
+  self.assertIn("this.noPhysics=true; // visual cannot obstruct physical walk-in",result)
+  with self.assertRaises(AssertionError): visual("no constructor here")
 
  def test_player_shell_reproduces_b1119_no_step(self):
   # The same offset used by the actual Java test. Old threshold 0.22
