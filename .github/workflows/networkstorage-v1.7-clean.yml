@@ -151,6 +151,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_multitool.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1172.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1176.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1178.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_reactor_unlimited_output.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1085_turret_live_aim.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1093_world_gun_arm_contact.py' -v
@@ -4139,6 +4140,8 @@ jobs:
             python3 features/v176/apply-v176-b1172-tool-and-backpack.py
             # B1176: lower worn MG, remove duplicate backpack amounts, rebuild model silhouette.
             python3 features/v176/apply-v176-b1176-screenshot-fixes.py
+            # B1178: only one first-person arm; clean forged violet/black multitool.
+            python3 features/v176/apply-v176-b1178-multitool-arm.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
             # B1124: old inside() semantic guard, true Entity.move physical step, client GeoVisual noPhysics.
             # B1121: real NeoForge 26.1 noPhysics API + recovered-invisible MK9 GameTest.
