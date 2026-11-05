@@ -56,7 +56,7 @@ class B1096FailedEntryAndPlayerMount(unittest.TestCase):
   self.assertNotIn("python3 features/v176/apply-v176-b1096-entry-visibility-recovery.py", W)
   self.assertNotIn("python3 features/v176/apply-v176-b1102-critical-entry.py", W)
   self.assertLess(W.index("python3 tests/verify_v175_b662.py"),
-                  W.index("python3 tests/test_v176_b1104_freeze_entry.py"))
+                  W.index("python3 tests/verify_v176_exact_v175_entry.py"))
   self.assertIn("python3 features/v176/apply-v176-b1096-3p-forearm-mount.py", W)
   self.assertIn("python3 features/v176/apply-v176-b1103-all-mk-gametest.py", W)
   self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')",W)
