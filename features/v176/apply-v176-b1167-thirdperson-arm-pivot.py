@@ -4,11 +4,8 @@ import os
 from pathlib import Path
 p=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client/V176MicroMgVisualClient.java"
 s=p.read_text(encoding="utf-8")
-old="""    renderedArm.xRot=-1.535F;renderedArm.yRot=0.0F;renderedArm.zRot=0.0F;
-    drawArm(pose,event.getSubmitNodeCollector(),state.lightCoords,renderedArm,variant,1.0F);"""
-new="""    // The model already contains the arm's rendered animation/attack pose.
-    // Forcing xRot=-1.535 and yaw=0 detached the gun from the visible forearm.
-    drawArm(pose,event.getSubmitNodeCollector(),state.lightCoords,renderedArm,variant,1.0F);"""
+old="    renderedArm.xRot=-1.535F;renderedArm.yRot=0.0F;renderedArm.zRot=0.0F;"
+new="    // B1169: retain actual model right-arm pose for third-person gun."
 assert s.count(old)==1,("B1167_THIRD_PERSON_ARM_ANCHOR_DRIFT",s.count(old))
 s=s.replace(old,new,1)
 assert "renderedArm=event.getRenderer().getModel().rightArm" in s
