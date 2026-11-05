@@ -60,6 +60,16 @@ if target in labels:
  s=s[:a]+labels+s[b:]
 assert s.count('g.text(font,label,0,0,0xffeffaff);')==1,("B1176_NOT_SINGLE_STORED_LABEL",s.count('g.text(font,label,0,0,0xffeffaff);'))
 # Any residual original count line is a hard failure, not an ignored warning.
+# An older B816 text draw may be left after B857 rearranged labels.
+# It is still inside a valid menu loop, but it creates the screenshot's
+# massive SECOND number. Delete the call by exact code signature, regardless
+# of what outer loop or method the legacy overlay landed in.
+old_counter='g.text(font,label,8+(index%9)'
+assert s.count(old_counter)==1,("B1177_DUPLICATE_COUNTER_COUNT",s.count(old_counter))
+p=s.index(old_counter)
+q=s.index(');',p)+2
+assert q-p<160,("B1177_COUNTER_CALL_TOO_LONG",s[p:q])
+s=s[:p]+'/* B1177 old duplicate label disabled */'+s[q:]
 assert 'g.text(font,label,8+(index%9)' not in s
 screen.write_text(s,encoding="utf-8")
 
