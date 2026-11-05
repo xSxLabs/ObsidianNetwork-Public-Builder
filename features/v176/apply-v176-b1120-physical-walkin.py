@@ -86,7 +86,11 @@ def test_patch(s):
 '''                  // B1120 regression: human cannot walk into exact center
                   // while visual shell is present. Reach model outer shell:
                   // r=sqrt(.82^2+.20^2)=.844, far beyond old .469 trigger.
-                  player.setPos(stand.getX()+.82D,stand.getY()+.15D,stand.getZ()+.20D);
+                  player.move(net.minecraft.world.entity.MoverType.SELF,
+                    new net.minecraft.world.phys.Vec3(-.30D,0D,0D));
+                  check(player.getX()-stand.getX()<.90D &&
+                      player.getX()-stand.getX()>.75D,
+                    "B1122_PHYSICAL_MOVE_BLOCKED_OR_OVERSHOT_BY_COLLISION");
                   player.tickCount++;
                   net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(''',"realistic-step")
     s=one(s,
