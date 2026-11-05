@@ -118,6 +118,41 @@ def test_patch(s):
                      "B1120_MUST_NOT_TEST_PERFECT_CENTER_TELEPORT");
                   check(stand.noPhysics,
                      "B1120_REAL_OWNER_COLLISIONLESS_DURING_ENTRY");''',"real-world-test-guards")
+    # Reproduce B1109 recovery on the *same* original item-owning suit
+    # before entry. MK9 in the user's existing world was a saved invisible
+    # Marker ArmorStand after prior aborted runs; original v1119 code never
+    # cleared that flag. Trigger the REAL NeoForge PlayerTickEvent handler.
+    s=one(s,
+'''                  check(!stand.isInvisible(),"exited suit is invisible, tier "+tier);''',
+'''                  check(!stand.isInvisible(),"exited suit is invisible, tier "+tier);
+                  if(tier==8){
+                   stand.setMarker(true);stand.setInvisible(true);
+                   stand.noPhysics=true;
+                   stand.addTag("xsxlabs_v175_temporarily_hidden_world_suit");
+                   player.tickCount=((player.tickCount/40)+1)*40;
+                   net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(
+                     new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(player));
+                   check(!stand.isInvisible()&&!stand.isMarker()&&!stand.noPhysics,
+                     "B1121_RESTORED_MK9_MUST_CLEAR_LEGACY_INVISIBLE_MARKER");
+                   check(dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.full(stand),
+                     "B1121_OLD_MK9_RECOVERY_LOST_OR_DUPLICATED_ITEMS");
+                  }''',"replay-persisted-legacy-marker")
+    # Require a fake player's body to APPROACH from outside to the shell,
+    # proving no early equip at r=1.12 and a real STEP at r=.844.
+    s=one(s,
+'''                  // B1120 regression: human cannot walk into exact center
+                  // while visual shell is present. Reach model outer shell:''',
+'''                  // Physically plausible outer approach, not a click-to-equip.
+                  player.setPos(stand.getX()+1.12D,stand.getY()+.15D,stand.getZ()+.20D);
+                  player.tickCount++;
+                  net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(
+                    new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(player));
+                  check(!dev.obsidiannetwork.powerarmor.PowerArmorRuntime.full(player),
+                    "B1120_PREMATURE_EQUIP_AT_ARMOR_SHELL_OUTSIDE");
+                  check(!stand.isInvisible()&&dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.full(stand),
+                    "B1120_SUITS_MUST_STAY_VISIBLE_UNTIL_STEP");
+                  // B1120 regression: human cannot walk into exact center
+                  // while visual shell is present. Reach model outer shell:''',"approach-not-teleport")
     # Also assert no disappearance during the entire 96-tick opening hold.
     s=one(s,
 '''                  check(dev.obsidiannetwork.powerarmor.PowerArmorSuitWorld.full(stand),
