@@ -12,12 +12,16 @@ assert "python3 features/v176/apply-v176-b1102-critical-entry.py" not in wf
 assert wf.index("python3 tests/verify_v175_b662.py")<wf.index("B1104_FROZEN_V175_MANUAL_ENTRY_SNAPSHOTTED")<wf.index("python3 tests/test_v176_b1104_freeze_entry.py")
 assert wf.index("python3 features/v176/apply-v176-b1103-all-mk-gametest.py") < wf.index("python3 features/v176/apply-v176-b1107-manual-entry-guard.py") < wf.index("python3 tests/test_v176_b1104_freeze_entry.py")
 assert "guard[\"entry_patch\"]" in t and "guard[\"render_patch\"]" in t
+assert "physical[\"entry_patch\"]" in t
 assert "entryStarted1107" in t and "B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING" in t
 assert "B1106_FREEZE175_MANUAL_ENTRY_METHODS_AND_176_WORLD_FEATURES_PASS" in t
-assert "if(!inside(p,stand))return;" in t
+assert "if(!inside(p,stand)){" in t
+assert "B1120_ORIGINAL_SUIT_HIDDEN_WHILE_WAITING_FOR_WALK_IN" in t
 assert "B1106_MANUAL_ENTRY_SOURCE_DRIFT" in t
 assert 'B662_HIDE_ON_STEP_IN_BEFORE_REAL_EQUIP' in gen
 assert 'B662_REVEAL_ONLY_AFTER_EQUIP_COMPLETE' in gen
 assert 'for(int tier=0;tier<24;tier++)' in gen
 assert "contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')" in wf
+assert wf.index("python3 features/v176/apply-v176-b1107-manual-entry-guard.py") < wf.index("python3 features/v176/apply-v176-b1120-physical-walkin.py") < wf.index("python3 tests/test_v176_b1104_freeze_entry.py")
+assert "python3 tests/test_v176_b1120_walkin.py" in wf
 print("B1104_FREEZE175_RESTORATION_PIPELINE_GUARD_PASS")
