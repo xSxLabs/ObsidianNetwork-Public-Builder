@@ -112,6 +112,8 @@ def test_patch(s):
                   check(player.getX()-stand.getX()<.90D &&
                       player.getX()-stand.getX()>.75D,
                     "B1122_PHYSICAL_MOVE_BLOCKED_OR_OVERSHOT_BY_COLLISION");
+                  check(Math.abs(player.getX()-stand.getX())>.70D,
+                    "B1120_MUST_NOT_TEST_PERFECT_CENTER_TELEPORT");
                   player.tickCount++;
                   net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(''',"realistic-step")
     s=one(s,
@@ -119,8 +121,8 @@ def test_patch(s):
                   check(!stand.isInvisible(),"B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING");''',
 '''                  check(!player.isInvisible(),"B1107_PHYSICAL_ENTRY_PLAYER_VISIBLE");
                   check(!stand.isInvisible(),"B1107_ORIGINAL_WORLD_SUIT_VISIBLE_WHILE_ENTERING");
-                  check(Math.abs(player.getX()-stand.getX())>.70D,
-                     "B1120_MUST_NOT_TEST_PERFECT_CENTER_TELEPORT");
+                  check(Math.abs(player.getX()-stand.getX())<.001D,
+                     "B1141_SERVER_MUST_CENTER_PLAYER_AFTER_REAL_STEP");
                   check(!stand.noPhysics,
                      "B1120_WORLD_OWNER_PHYSICS_RESTORED_AFTER_STEP");''',"real-world-test-guards")
     # Reproduce B1109 recovery on the *same* original item-owning suit
