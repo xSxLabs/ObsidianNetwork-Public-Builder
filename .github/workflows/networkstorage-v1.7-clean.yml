@@ -4197,7 +4197,8 @@ jobs:
             python3 features/v176/apply-v176-b1234-backpack-scroll.py
             # B1234: magnet default ON, select actual enabled worn/held bag.
             python3 features/v176/apply-v176-b1234-magnet-fix.py
-            # B1248: reuse unchanged real Storage Cell snapshots and avoid second phase re-decodes.
+            # B1254: count() source variants are kept untouched; only strict-matched hotpaths are optimized.
+            # Regression: count-body drift must never block unrelated lossless optimizations.
             python3 features/v176/apply-v176-b1248-bag-hotpath-elision.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
