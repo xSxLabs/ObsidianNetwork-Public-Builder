@@ -150,6 +150,7 @@ jobs:
           python3 -m py_compile features/v176/*.py tests/test_v176_micro_mg_module.py
           python3 -m unittest discover -s tests -p 'test_v176_multitool.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_hammer.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1224_held_tools.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4174,6 +4175,8 @@ jobs:
             python3 features/v176/apply-v176-b1189-chat-toggle.py
             python3 features/v176/apply-v176-hammer.py
             python3 features/v176/apply-v176-hammer-model.py
+            # B1224: center hammer at the real fist like multitool; properly centered vanilla-size hotbar icons; lower 1P multitool; 3x/6x netherite durability.
+            python3 features/v176/apply-v176-b1224-held-tools.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
             # B1124: old inside() semantic guard, true Entity.move physical step, client GeoVisual noPhysics.
             # B1121: real NeoForge 26.1 noPhysics API + recovered-invisible MK9 GameTest.
