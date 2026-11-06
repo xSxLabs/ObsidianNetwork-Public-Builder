@@ -4,7 +4,9 @@ on:
     branches: [feature/v1.7.6-backpack-runtime-ingress]
     paths:
       - 'features/v176/apply-v176-b1269-backpack-live-cell-runtime.py'
+      - 'features/v176/apply-v176-b1270-magnet-8-instant-batched.py'
       - 'tests/test_v176_b1269_backpack_live_cell_runtime.py'
+      - 'tests/test_v176_b1270_magnet_8_blocks.py'
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - '.github/workflows/v176-b1269-backpack-ingress-source-preflight.yml'
   workflow_dispatch:
@@ -17,9 +19,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Parse prototype patch and safety checks
-        run: python3 -m py_compile features/v176/apply-v176-b1269-backpack-live-cell-runtime.py tests/test_v176_b1269_backpack_live_cell_runtime.py
+        run: python3 -m py_compile features/v176/apply-v176-b1269-backpack-live-cell-runtime.py tests/test_v176_b1269_backpack_live_cell_runtime.py features/v176/apply-v176-b1270-magnet-8-instant-batched.py tests/test_v176_b1270_magnet_8_blocks.py
       - name: Run exact Java source fixture and randomized rollback/accounting checks
         run: |
           python3 -m unittest discover -s tests -p 'test_v176_b1269_backpack_live_cell_runtime.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1270_magnet_8_blocks.py' -v
       - name: Respect release build lock
         run: echo 'B1269_PREPARATION_ONLY_NO_IN_GAME_RELEASE'
