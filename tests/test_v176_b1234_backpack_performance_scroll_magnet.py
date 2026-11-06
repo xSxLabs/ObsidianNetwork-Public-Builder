@@ -58,7 +58,7 @@ class PerformanceAndSafetyB1234(unittest.TestCase):
    "xsxPendingScroll",
    "action>=192&&action<=32959",
    "page(server,(action-192)-storage.page)",
-   "mouseDragged(net.minecraft.client.input.MouseButtonEvent",
+   "mouseDragged(\n   net.minecraft.client.input.MouseButtonEvent",
    "mouseReleased(net.minecraft.client.input.MouseButtonEvent",
   ):self.assertIn(token,s)
   self.assertNotIn("wheelCooldown=5",s)
