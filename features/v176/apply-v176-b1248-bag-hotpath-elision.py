@@ -17,19 +17,29 @@ def swap(old,new):
  assert s.count(old)==1,("B1248_BACKPACK_HOTPATH_SOURCE_DRIFT",s.count(old),old[:110])
  s=s.replace(old,new,1)
 
-# count() previously made three separate defensive copies of the SAME
-# immutable ItemContainerContents, and validated all four slots three times.
-# A single snapshot of the same bag is equivalent on the server thread.
-swap(
-''' public static long count(ItemStack bag,ItemKey key){
+# B1252: The real reconstructed Java differs from the checked-in fixture
+# for count(), presumably because of a preceding build patch. Never overwrite
+# a method whose exact semantics we have not verified. This micro-optimization
+# is optional; the magnet and two-pass insertion changes still fail closed.
+# Keep an unambiguous strict match for the expected count body.
+count_before=''' public static long count(ItemStack bag,ItemKey key){
   long count=0;
   for(int i=1;i<=3;i++){
-   ItemStack cellStack=slots(bag).get(i);''',
-''' public static long count(ItemStack bag,ItemKey key){
+   ItemStack cellStack=slots(bag).get(i);'''
+count_after=''' public static long count(ItemStack bag,ItemKey key){
   long count=0;
   var stored=slots(bag); // same immutable container and validation, once
   for(int i=1;i<=3;i++){
-   ItemStack cellStack=stored.get(i);''')
+   ItemStack cellStack=stored.get(i);'''
+if s.count(count_before)==1:
+ swap(count_before,count_after)
+ count_optimized=True
+else:
+ assert s.count(count_before)==0, "B1252_COUNT_AMBIGUOUS_MATCH"
+ # No changes to the unknown existing implementation. It may already cache
+ # a cell snapshot, or the method may have been inlined by an earlier patch.
+ count_optimized=False
+ print("B1252_COUNT_HOTPATH_SOURCE_CHANGED_SKIP_UNVERIFIED_OPTIMIZATION")
 
 # A magnet entity filter request previously decoded the entire backpack
 # CONTAINER three times, copied CUSTOM_DATA twice, and described one ItemKey
@@ -82,7 +92,7 @@ swap(
     long accepted=store.previewInsertExact(d.key(),d.canonicalPayload(),left);''')
 
 assert s.count("V176BackpackCells")>=1 or "class V176BackpackCells" in s
-assert "var stored=slots(bag);" in s
+assert not count_optimized or "var stored=slots(bag);" in s
 assert "settings.getBooleanOr(MAG_ON,true)" in s
 assert "settings.getBooleanOr(MAG_WHITELIST,false)" in s
 assert "for(int i=0;i<Math.min(FILTER_SLOTS,templates.getSlots());i++)" in s
@@ -91,4 +101,4 @@ assert "if(left<requested)writeSlots(bag,replacements);" in s
 assert "store.insertExact(d.key(),d.canonicalPayload(),accepted);" in s
 assert "if(left<wanted)writeSlots(bag,next);" in s
 p.write_text(s,encoding="utf-8")
-print("B1248_BACKPACK_COUNT_MAGNET_FILTER_INSERT_NO_REPEATED_STORE_READ_PASS")
+print("B1248_BACKPACK_MAGNET_FILTER_INSERT_NO_REPEATED_STORE_READ_PASS COUNT_OPTIMIZED="+str(count_optimized))
