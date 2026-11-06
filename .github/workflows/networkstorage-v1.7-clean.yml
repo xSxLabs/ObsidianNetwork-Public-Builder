@@ -156,6 +156,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1229_powerbank_unlimited_io.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1230_backpack_live_gui.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1234_backpack_performance_scroll_magnet.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1248_backpack_hotpaths.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4196,6 +4197,8 @@ jobs:
             python3 features/v176/apply-v176-b1234-backpack-scroll.py
             # B1234: magnet default ON, select actual enabled worn/held bag.
             python3 features/v176/apply-v176-b1234-magnet-fix.py
+            # B1248: reuse unchanged real Storage Cell snapshots and avoid second phase re-decodes.
+            python3 features/v176/apply-v176-b1248-bag-hotpath-elision.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
