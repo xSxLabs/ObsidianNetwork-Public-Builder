@@ -160,6 +160,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1258_backpack_gui_and_cable_cache.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1261_backpack_selected_hotbar_pickup.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1265_backpack_highspeed_itemcables.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1269_backpack_live_cell_runtime.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4209,6 +4210,9 @@ jobs:
             python3 features/v176/apply-v176-b1261-backpack-selected-hotbar-pickup.py
             # B1265: keep exact counts live after high-speed cable inserts; per-call one decode per cell.
             python3 features/v176/apply-v176-b1265-backpack-cable-burst-fastpath.py
+            # B1269: stage native decoded Cell reuse across placed Backpack ingress.
+            # Cell ItemStacks still serialize on EVERY accepted operation; no unsafe batching.
+            python3 features/v176/apply-v176-b1269-backpack-live-cell-runtime.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
