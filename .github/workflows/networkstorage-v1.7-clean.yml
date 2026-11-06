@@ -158,6 +158,7 @@ jobs:
           python3 -m pip install --user --quiet pillow
           python3 -m unittest discover -s tests -p 'test_v176_b1185.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1187.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1188.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_reactor_unlimited_output.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1085_turret_live_aim.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1093_world_gun_arm_contact.py' -v
@@ -4157,6 +4158,8 @@ jobs:
             # B1187: bind original OBJ material per mesh, triangulate quads, raise worn MG minimally.
             python3 features/v176/apply-v176-b1187-obj-material.py
             python3 features/v176/apply-v176-b1187-worn-arm.py
+            # B1188: no OBJ render dependency - native Minecraft 3D prisms from ALL 132 exact original Blockbench mesh parts.
+            python3 features/v176/apply-v176-b1188-native-3d-multitool.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
             # B1124: old inside() semantic guard, true Entity.move physical step, client GeoVisual noPhysics.
             # B1121: real NeoForge 26.1 noPhysics API + recovered-invisible MK9 GameTest.
