@@ -13,9 +13,10 @@ PATCH=ROOT/"features/v176/apply-v176-b1248-bag-hotpath-elision.py"
 JAVA=ROOT/"features/v176/java/V176BackpackCells.java"
 WORKFLOW=ROOT/".github/workflows/networkstorage-v1.7-clean.yml"
 
-def apply_fixture():
- source=JAVA.read_text(encoding="utf-8").replace(
-  "getBooleanOr(MAG_ON,false);","getBooleanOr(MAG_ON,true);")
+def apply_fixture(source=None):
+ if source is None:
+  source=JAVA.read_text(encoding="utf-8").replace(
+   "getBooleanOr(MAG_ON,false);","getBooleanOr(MAG_ON,true);")
  with tempfile.TemporaryDirectory() as temp:
   target=Path(temp)/"dev/obsidiannetwork/backpack/V176BackpackCells.java"
   target.parent.mkdir(parents=True)
@@ -52,7 +53,7 @@ class B1248Conservation(unittest.TestCase):
  def test_patch_applies_to_real_java_fixture(self):
   ast.parse(PATCH.read_text(encoding="utf-8"))
   before,after,stdout=apply_fixture()
-  self.assertIn("B1248_BACKPACK_COUNT_MAGNET_FILTER_INSERT_NO_REPEATED_STORE_READ_PASS",stdout)
+  self.assertIn("B1248_BACKPACK_MAGNET_FILTER_INSERT_NO_REPEATED_STORE_READ_PASS COUNT_OPTIMIZED=True",stdout)
   self.assertIn("var stored=slots(bag);",after)
   self.assertIn("absentAtFirstPass[i-1]=store;",after)
   self.assertIn("settings.getBooleanOr(MAG_ON,true)",after)
@@ -69,6 +70,25 @@ class B1248Conservation(unittest.TestCase):
                     after.split(marker,1)[1].split(stop,1)[0])
   self.assertIn("if(left<requested)writeSlots(bag,replacements);",after)
   self.assertIn("store.insertExact(d.key(),d.canonicalPayload(),accepted);",after)
+
+ def test_unrecognized_preoptimized_count_is_never_rewritten(self):
+  # Build 1251 failed when the real reconstructed count() body differed.
+  # In that case leave count() untouched, but continue strictly matched
+  # magnet and insertion changes and preserve all item quantities.
+  source=JAVA.read_text(encoding="utf-8").replace(
+   "getBooleanOr(MAG_ON,false);","getBooleanOr(MAG_ON,true);")
+  changed=source.replace(
+   "ItemStack cellStack=slots(bag).get(i);",
+   "ItemStack cellStack=slots(bag) .get(i);")
+  self.assertNotEqual(source,changed)
+  before,after,out=apply_fixture(changed)
+  self.assertIn("B1252_COUNT_HOTPATH_SOURCE_CHANGED_SKIP_UNVERIFIED_OPTIMIZATION",out)
+  self.assertIn("COUNT_OPTIMIZED=False",out)
+  self.assertIn("ItemStack cellStack=slots(bag) .get(i);",after)
+  self.assertIn("absentAtFirstPass[i-1]=store;",after)
+  self.assertIn("settings.getBooleanOr(MAG_ON,true)",after)
+  self.assertIn("settings.getBooleanOr(MAG_WHITELIST,false)",after)
+  self.assertNotIn("var stored=slots(bag);",after)
 
  def test_two_phase_transfer_amounts_preference_and_read_reduction(self):
   rng=random.Random(1248)
