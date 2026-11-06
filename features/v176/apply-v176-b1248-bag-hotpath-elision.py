@@ -64,41 +64,51 @@ swap(
  }
  public static boolean setMagnetFilter''')
 
-# insert() tries already-containing cells first and then truly absent cells.
-# An absent store in phase zero cannot have been modified there; reuse its
-# decoded Store in phase one instead of reading/decoding the same cell twice.
-# The short-circuit loop, exact descriptor, transactional write, overflow
-# and source-cell preference remain identical. No eager scan is introduced.
-swap(
-'''  long left=requested;
+
+# B1255: The real reconstructed Backpack insert() supports additional
+# EquipmentCellItem stores. The checked-in fixture only covers StorageCells.
+# Never modify an enriched two-phase algorithm without a source-specific
+# equivalence proof: optimize only the exact, fully recognized original.
+insert_before='''  long left=requested;
   // Prefer cells already holding the item key; then empty cell-space.
-  for(int phase=0;phase<2&&left>0;phase++){''',
-'''  long left=requested;
+  for(int phase=0;phase<2&&left>0;phase++){'''
+insert_after='''  long left=requested;
   StorageCellStore[] absentAtFirstPass=new StorageCellStore[3];
   // Prefer cells already holding the item key; then empty cell-space.
-  for(int phase=0;phase<2&&left>0;phase++){''')
-swap(
-'''    StorageCellStore store=cell.readStore(cellStack);
+  for(int phase=0;phase<2&&left>0;phase++){'''
+read_before='''    StorageCellStore store=cell.readStore(cellStack);
     boolean present=store.amount(d.key())>0;
     if((phase==0)!=present)continue;
-    long accepted=store.previewInsertExact(d.key(),d.canonicalPayload(),left);''',
-'''    StorageCellStore store=phase==1&&absentAtFirstPass[i-1]!=null
+    long accepted=store.previewInsertExact(d.key(),d.canonicalPayload(),left);'''
+read_after='''    StorageCellStore store=phase==1&&absentAtFirstPass[i-1]!=null
         ?absentAtFirstPass[i-1]:cell.readStore(cellStack);
     boolean present=store.amount(d.key())>0;
     if((phase==0)!=present){
      if(phase==0)absentAtFirstPass[i-1]=store;
      continue;
     }
-    long accepted=store.previewInsertExact(d.key(),d.canonicalPayload(),left);''')
+    long accepted=store.previewInsertExact(d.key(),d.canonicalPayload(),left);'''
+assert s.count(" public static Transfer insert(")==1, "B1255_INSERT_API_MISSING"
+# Capture all existing insertion code. When drifting, guarantee no change
+# whatsoever to capacity, Equipment Cells, routing, counts or transactions.
+insert_original=s[s.index(" public static Transfer insert("):s.index(" public static List<Entry> entries(")]
+if s.count(insert_before)==1 and s.count(read_before)==1:
+ swap(insert_before,insert_after)
+ swap(read_before,read_after)
+ insert_optimized=True
+else:
+ insert_optimized=False
+ print("B1255_INSERT_EQUIPMENT_CELL_SOURCE_CHANGED_SKIP_UNVERIFIED_OPTIMIZATION")
+assert insert_optimized or (s[s.index(" public static Transfer insert("):s.index(" public static List<Entry> entries(")]==insert_original), "B1255_INSERT_CHANGED_DURING_SKIP"
 
 assert s.count("V176BackpackCells")>=1 or "class V176BackpackCells" in s
 assert not count_optimized or "var stored=slots(bag);" in s
 assert "settings.getBooleanOr(MAG_ON,true)" in s
 assert "settings.getBooleanOr(MAG_WHITELIST,false)" in s
 assert "for(int i=0;i<Math.min(FILTER_SLOTS,templates.getSlots());i++)" in s
-assert "absentAtFirstPass[i-1]=store;" in s
-assert "if(left<requested)writeSlots(bag,replacements);" in s
-assert "store.insertExact(d.key(),d.canonicalPayload(),accepted);" in s
-assert "if(left<wanted)writeSlots(bag,next);" in s
+assert not insert_optimized or "absentAtFirstPass[i-1]=store;" in s
+assert not insert_optimized or "if(left<requested)writeSlots(bag,replacements);" in s
+assert not insert_optimized or "store.insertExact(d.key(),d.canonicalPayload(),accepted);" in s
+assert " public static Transfer extract(" in s
 p.write_text(s,encoding="utf-8")
-print("B1248_BACKPACK_MAGNET_FILTER_INSERT_NO_REPEATED_STORE_READ_PASS COUNT_OPTIMIZED="+str(count_optimized))
+print("B1248_BACKPACK_MAGNET_FILTER_NO_REPEATED_READ_PASS COUNT_OPTIMIZED="+str(count_optimized)+" INSERT_OPTIMIZED="+str(insert_optimized))
