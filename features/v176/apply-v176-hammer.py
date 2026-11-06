@@ -10,7 +10,7 @@ s=main.read_text()
 anchor='   public static final DeferredItem<dev.obsidiannetwork.powerarmor.UpgradeCardItem> POWER_CARD_MICRO_MG ='
 assert s.count(anchor)==1
 s=s.replace(anchor,'''   public static final DeferredItem<dev.obsidiannetwork.hammer.HammerItem> HAMMER =
-      ITEMS.registerItem("hammer",p -> new dev.obsidiannetwork.hammer.HammerItem(p.durability(6093)));
+      ITEMS.registerItem("hammer",p -> new dev.obsidiannetwork.hammer.HammerItem(p.durability(12186)));
 '''+anchor,1)
 creative='            output.accept((ItemLike)MULTITOOL.get());'
 assert s.count(creative)==1
