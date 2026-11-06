@@ -157,6 +157,7 @@ jobs:
           # Hammer flipped grip up head down for B1215 screenshot correction.
           # B1217 inverted hammer orientation corrected by 180 degrees.
           # Hammer grip translated right and toward arm based on B1219 screenshot.
+          # Upright hammer: head and upper shaft outside fist, lower shaft in fist.
           python3 -m unittest discover -s tests -p 'test_v176_b1172.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1176.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1178.py' -v
