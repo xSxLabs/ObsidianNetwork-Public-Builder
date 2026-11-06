@@ -1,0 +1,27 @@
+name: v1.7.6 B1234 source-only Backpack safety gates
+on:
+  push:
+    branches: [v1.7.6]
+    paths:
+      - 'features/v176/apply-v176-b1234-*.py'
+      - 'tests/test_v176_b1234_*.py'
+      - '.github/workflows/networkstorage-v1.7-clean.yml'
+      - '.github/workflows/v176-b1234-source-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse B1234 patches
+        run: python3 -m py_compile features/v176/apply-v176-b1234-*.py
+      - name: Safety and integration tests
+        run: |
+          python3 -m unittest discover -s tests -p 'test_v176_b1234_backpack_performance_scroll_magnet.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1230_backpack_live_gui.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1225_backpack_chat.py' -v
+      - name: Respect production build lock
+        run: echo 'B1234_SOURCE_ONLY_CHECKED_NO_BUILD_NO_JAR'
