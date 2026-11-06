@@ -7,6 +7,8 @@ The BE is emptied before block removal to prevent its drop hook from cloning
 the populated item. The original item is restored on removal failure.
 This is applied after all existing v1.7.6 Backpack changes and fails closed.
 """
+# B1261 explicit release-candidate build: compile reconstructed NeoForge Java, run
+# complete regression suite, and publish test JAR only after green CI.
 import os
 from pathlib import Path
 
