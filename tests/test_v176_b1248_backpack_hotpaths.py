@@ -53,7 +53,7 @@ class B1248Conservation(unittest.TestCase):
  def test_patch_applies_to_real_java_fixture(self):
   ast.parse(PATCH.read_text(encoding="utf-8"))
   before,after,stdout=apply_fixture()
-  self.assertIn("B1248_BACKPACK_MAGNET_FILTER_INSERT_NO_REPEATED_STORE_READ_PASS COUNT_OPTIMIZED=True",stdout)
+  self.assertIn("B1248_BACKPACK_MAGNET_FILTER_NO_REPEATED_READ_PASS COUNT_OPTIMIZED=True INSERT_OPTIMIZED=True",stdout)
   self.assertIn("var stored=slots(bag);",after)
   self.assertIn("absentAtFirstPass[i-1]=store;",after)
   self.assertIn("settings.getBooleanOr(MAG_ON,true)",after)
@@ -89,6 +89,25 @@ class B1248Conservation(unittest.TestCase):
   self.assertIn("settings.getBooleanOr(MAG_ON,true)",after)
   self.assertIn("settings.getBooleanOr(MAG_WHITELIST,false)",after)
   self.assertNotIn("var stored=slots(bag);",after)
+
+ def test_enriched_equipment_insert_is_preserved_byte_for_byte(self):
+  # B1254 proved the reconstructed insert source has another cell type.
+  # Do not apply one branch of a partial optimization to an unknown method.
+  source=JAVA.read_text(encoding="utf-8").replace(
+    "getBooleanOr(MAG_ON,false);","getBooleanOr(MAG_ON,true);")
+  enriched=source.replace(
+    "  long left=requested;\n  // Prefer cells already holding the item key;",
+    "  long left=requested;\n  // Preserve an additional Equipment Cell branch.\n  // Prefer cells already holding the item key;")
+  self.assertNotEqual(source,enriched)
+  _,after,out=apply_fixture(enriched)
+  self.assertIn("B1255_INSERT_EQUIPMENT_CELL_SOURCE_CHANGED_SKIP_UNVERIFIED_OPTIMIZATION",out)
+  self.assertIn("INSERT_OPTIMIZED=False",out)
+  start=" public static Transfer insert("
+  stop=" public static List<Entry> entries("
+  self.assertEqual(enriched.split(start,1)[1].split(stop,1)[0],
+                   after.split(start,1)[1].split(stop,1)[0])
+  self.assertIn("settings.getBooleanOr(MAG_ON,true)",after)
+  self.assertIn("settings.getBooleanOr(MAG_WHITELIST,false)",after)
 
  def test_two_phase_transfer_amounts_preference_and_read_reduction(self):
   rng=random.Random(1248)
