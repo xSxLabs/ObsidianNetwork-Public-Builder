@@ -163,18 +163,29 @@ wheel=''' @Override public boolean mouseScrolled(double mx,double my,double scro
 source=source[:a]+wheel+source[b:]
 # Preserve B910's later module click routing! Only replace the five-command
 # for-loop inside the original scrollbar click, not the surrounding method.
-a=source.find("   if(button==0&&scrollX>=173&&scrollX<180&&scrollY>=38&&scrollY<129){")
-assert a>=0,"B1229_SCROLLBAR_HITBOX_MISSING"
-loop=source.find("    for(int i=0;i<5;i++){",a)
-after=source.find("    }\n    return true;",loop)
-assert loop>a and after>loop and after-loop<650,"B1229_SCROLLBAR_LOOP_DRIFT"
-replacement='''    if(wheelCooldown>0)return true;
+# Find the actual command inside B902's final scrollbar handler, regardless
+# of preceding B910/B957 screen transforms and whitespace/hitbox rewrites.
+# Only one invocation must exist, otherwise fail closed.
+token='command(delta>0?"networkbackpack next":"networkbackpack previous");'
+assert source.count(token)==1,("B1230_SCROLLBAR_COMMAND_DRIFT",source.count(token))
+call=source.index(token)
+loop=source.rfind("for(int i=0;i<5;i++)",max(0,call-480),call)
+assert loop>=0,("B1230_SCROLLBAR_LOOP_MISSING",source[call-220:call+120])
+brace=source.find("{",loop,call)
+assert brace>=0,("B1230_SCROLLBAR_BRACE_MISSING",loop,call)
+depth=1
+end=brace+1
+while end<len(source) and depth:
+ if source[end]=="{":depth+=1
+ elif source[end]=="}":depth-=1
+ end+=1
+assert depth==0 and call<end and end-loop<500,"B1230_SCROLLBAR_LOOP_UNSAFE"
+replacement='''if(wheelCooldown>0)return true;
     button(delta>0?1:0);
     wheelCooldown=5;
     if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+delta));
-    else scrollRow=Math.max(0,scrollRow+delta);
-'''
-source=source[:loop]+replacement+source[after+len("    }\n"):]
+    else scrollRow=Math.max(0,scrollRow+delta);'''
+source=source[:loop]+replacement+source[end:]
 assert 'command(scrollY>0?"networkbackpack previous":"networkbackpack next")' not in source
 assert 'command(delta>0?"networkbackpack next":"networkbackpack previous")' not in source
 screen_path.write_text(source,encoding="utf-8")

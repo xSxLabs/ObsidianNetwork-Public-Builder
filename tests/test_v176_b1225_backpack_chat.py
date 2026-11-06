@@ -42,7 +42,7 @@ class B1225BackpackChat(unittest.TestCase):
   self.assertIn("clickMenuButton(Player player,int action)",s)
   self.assertIn('source.find(" @Override public boolean mouseScrolled(")',s)
   self.assertIn("B1228_WHEEL_METHOD_DRIFT",s)
-  self.assertIn("B1229_SCROLLBAR_LOOP_DRIFT",s)
+  self.assertIn("B1230_SCROLLBAR_LOOP_UNSAFE",s)
   self.assertIn('if(wheelCooldown>0)return true;',s)
   self.assertNotIn(' @Override public boolean mouseScrolled(double mx,double my,double dx,double dy)',s)
   self.assertIn("wheelCooldown=5",s)
