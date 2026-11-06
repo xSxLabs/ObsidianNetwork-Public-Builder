@@ -13,6 +13,8 @@ for e in data["elements"]:
  elements.append({"from":[round(v,4) for i,v in enumerate(e["from"])],"to":[round(v,4) for v in e["to"]],"faces":faces})
 # Preserve all source geometry positions and native hand transforms.
 model.write_text(json.dumps({"texture_size":[512,512],"textures":{"0":"obsidiannetwork:item/hammer"},"elements":elements,"display":data["display"]},separators=(",",":"))+"\n")
+definition=assets/"items/hammer.json";definition.parent.mkdir(parents=True,exist_ok=True)
+definition.write_text(json.dumps({"model":{"type":"minecraft:model","model":"obsidiannetwork:item/hammer"}},indent=2)+"\\n")
 tex=assets/"textures/item/hammer.png";tex.parent.mkdir(parents=True,exist_ok=True)
 im=Image.new("RGBA",(512,512),(38,35,50,255))
 d=ImageDraw.Draw(im)
