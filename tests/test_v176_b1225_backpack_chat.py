@@ -48,7 +48,8 @@ class B1225BackpackChat(unittest.TestCase):
   self.assertIn("String pendingSearch",s)
   self.assertIn("selectedCableFilter",s)
   self.assertIn("button(10+selectedFilter)",s)
-  self.assertIn("button((button==1?146:101)+entry)",s)
+  self.assertIn("B857 already routes real list clicks",s)
+  self.assertIn('handleContainerInput', (ROOT/"features/v176/apply-v176-b857-backpack-equipment-gui-3d.py").read_text())
   self.assertIn("button(4); // B1225_NO_CHAT_COMMAND_FOR_MAGNET",s)
   self.assertIn("button(5); // B1225_NO_CHAT_COMMAND_FOR_FILTER_MODE",s)
   # All actions are <=190 and therefore safe in byte-sized GUI button payloads.

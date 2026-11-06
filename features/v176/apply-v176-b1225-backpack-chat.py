@@ -138,18 +138,36 @@ fix(screen,
 
 # B891 removed the old arrow buttons and introduced its own mouseScrolled.
 # Replace only the live scroll action, NOT the deleted arrow callbacks.
+# B902 added a for-loop with scrollRow updates (and a second five-command
+# scrollbar click). Convert BOTH into one bounded inventory-button action.
 fix(screen,
- '    for(int i=0;i<steps;i++)\n     command(scrollY>0?"networkbackpack previous":"networkbackpack next");',
- '    if(wheelCooldown>0)return true;\n'
- '    button(scrollY>0?0:1);\n'
- '    wheelCooldown=5;\n'
- '    if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+(scrollY<0?1:-1)));')
+ '''   for(int i=0;i<steps;i++){
+     command(scrollY>0?"networkbackpack previous":"networkbackpack next");
+     if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+(scrollY<0?1:-1)));
+     else scrollRow=Math.max(0,scrollRow+(scrollY<0?1:-1));
+    }''',
+ '''   if(wheelCooldown>0)return true;
+   button(scrollY>0?0:1);
+   wheelCooldown=5;
+   if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+(scrollY<0?1:-1)));
+   else scrollRow=Math.max(0,scrollRow+(scrollY<0?1:-1));''')
+fix(screen,
+ '''    for(int i=0;i<5;i++){
+     command(delta>0?"networkbackpack next":"networkbackpack previous");
+     if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+delta));
+     else scrollRow=Math.max(0,scrollRow+delta);
+    }''',
+ '''    if(wheelCooldown>0)return true;
+    button(delta>0?1:0);
+    wheelCooldown=5;
+    if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+delta));
+    else scrollRow=Math.max(0,scrollRow+delta);''')
 fix(screen,'command("networkbackpack sort");','button(2);')
 fix(screen,'command("networkbackpack filters");','button(3);')
 fix(screen,'command("networkbackpack clearfilter "+selectedFilter);','button(64);')
 fix(screen,'command("networkbackpack setfilter "+selectedFilter+" "+slot);','button(65+slot);')
-fix(screen,'command("networkbackpack take "+entry+" "+(button==1?1:64));',
-    'button((button==1?146:101)+entry);')
+# B857 already routes real list clicks through container input (not commands),
+# including empty slots. Keep that lossless player cursor/deposit behavior.
 fix(screen,'''     if(button==1)button(64);
      return true;''',
 '''     button(10+selectedFilter);
