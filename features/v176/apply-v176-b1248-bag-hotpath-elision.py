@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""B1248: avoid redundant decoded Storage Cell reads on Backpack hot paths.
+
+Pure re-use of an immutable container snapshot and one previously decoded
+Store where it was NOT mutated. No skip-ticks, buffer limits, pickup delays,
+changes to accepted quantities, storage routing, validation or rollback.
+Applied after B1234's completed cable cache/magnet fixes; strict fail closed.
+"""
+import os
+from pathlib import Path
+
+p=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/backpack/V176BackpackCells.java"
+s=p.read_text(encoding="utf-8")
+
+def swap(old,new):
+ global s
+ assert s.count(old)==1,("B1248_BACKPACK_HOTPATH_SOURCE_DRIFT",s.count(old),old[:110])
+ s=s.replace(old,new,1)
+
+# count() previously made three separate defensive copies of the SAME
+# immutable ItemContainerContents, and validated all four slots three times.
+# A single snapshot of the same bag is equivalent on the server thread.
+swap(
+''' public static long count(ItemStack bag,ItemKey key){
+  long count=0;
+  for(int i=1;i<=3;i++){
+   ItemStack cellStack=slots(bag).get(i);''',
+''' public static long count(ItemStack bag,ItemKey key){
+  long count=0;
+  var stored=slots(bag); // same immutable container and validation, once
+  for(int i=1;i<=3;i++){
+   ItemStack cellStack=stored.get(i);''')
+
+# A magnet entity filter request previously decoded the entire backpack
+# CONTAINER three times, copied CUSTOM_DATA twice, and described one ItemKey
+# per sample. Keep existing exact ItemKey comparisons and all 54 filters.
+# Do not cache module state across clicks: changes must take effect instantly.
+swap(
+''' public static boolean magnetAccepts(Level world,ItemStack bag,ItemStack incoming){
+  if(!magnetEnabled(bag)||incoming.isEmpty())return false;
+  ItemStack upgrade=magnet(bag);
+  var templates=upgrade.getOrDefault(DataComponents.CONTAINER,ItemContainerContents.EMPTY);''',
+''' public static boolean magnetAccepts(Level world,ItemStack bag,ItemStack incoming){
+  ItemStack upgrade=slots(bag).get(SLOT_MAGNET);
+  if(upgrade.isEmpty())return false;
+  var settings=magnetData(upgrade);
+  if(!settings.getBooleanOr(MAG_ON,true)||incoming.isEmpty())return false;
+  var templates=upgrade.getOrDefault(DataComponents.CONTAINER,ItemContainerContents.EMPTY);''')
+swap(
+'''  return magnetWhitelist(bag)?listed:!listed;
+ }
+ public static boolean setMagnetFilter''',
+'''  return settings.getBooleanOr(MAG_WHITELIST,false)?listed:!listed;
+ }
+ public static boolean setMagnetFilter''')
+
+# insert() tries already-containing cells first and then truly absent cells.
+# An absent store in phase zero cannot have been modified there; reuse its
+# decoded Store in phase one instead of reading/decoding the same cell twice.
+# The short-circuit loop, exact descriptor, transactional write, overflow
+# and source-cell preference remain identical. No eager scan is introduced.
+swap(
+'''  long left=requested;
+  // Prefer cells already holding the item key; then empty cell-space.
+  for(int phase=0;phase<2&&left>0;phase++){''',
+'''  long left=requested;
+  StorageCellStore[] absentAtFirstPass=new StorageCellStore[3];
+  // Prefer cells already holding the item key; then empty cell-space.
+  for(int phase=0;phase<2&&left>0;phase++){''')
+swap(
+'''    StorageCellStore store=cell.readStore(cellStack);
+    boolean present=store.amount(d.key())>0;
+    if((phase==0)!=present)continue;
+    long accepted=store.previewInsertExact(d.key(),d.canonicalPayload(),left);''',
+'''    StorageCellStore store=phase==1&&absentAtFirstPass[i-1]!=null
+        ?absentAtFirstPass[i-1]:cell.readStore(cellStack);
+    boolean present=store.amount(d.key())>0;
+    if((phase==0)!=present){
+     if(phase==0)absentAtFirstPass[i-1]=store;
+     continue;
+    }
+    long accepted=store.previewInsertExact(d.key(),d.canonicalPayload(),left);''')
+
+assert s.count("V176BackpackCells")>=1 or "class V176BackpackCells" in s
+assert "var stored=slots(bag);" in s
+assert "settings.getBooleanOr(MAG_ON,true)" in s
+assert "settings.getBooleanOr(MAG_WHITELIST,false)" in s
+assert "for(int i=0;i<Math.min(FILTER_SLOTS,templates.getSlots());i++)" in s
+assert "absentAtFirstPass[i-1]=store;" in s
+assert "if(left<requested)writeSlots(bag,replacements);" in s
+assert "store.insertExact(d.key(),d.canonicalPayload(),accepted);" in s
+assert "if(left<wanted)writeSlots(bag,next);" in s
+p.write_text(s,encoding="utf-8")
+print("B1248_BACKPACK_COUNT_MAGNET_FILTER_INSERT_NO_REPEATED_STORE_READ_PASS")
