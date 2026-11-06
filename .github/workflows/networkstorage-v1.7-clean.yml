@@ -4163,6 +4163,7 @@ jobs:
             python3 features/v176/apply-v176-b1188-native-3d-multitool.py
             # B1189: world-persistent per-player chat toggle, scoped packet filter; preserves user-frozen 3D tool.
             python3 features/v176/apply-v176-b1189-chat-toggle.py
+      python3 features/v176/apply-v176-hammer.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
             # B1124: old inside() semantic guard, true Entity.move physical step, client GeoVisual noPhysics.
             # B1121: real NeoForge 26.1 noPhysics API + recovered-invisible MK9 GameTest.
