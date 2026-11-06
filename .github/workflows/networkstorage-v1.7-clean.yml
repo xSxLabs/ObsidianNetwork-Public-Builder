@@ -155,6 +155,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1226_tool_enchantments.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1229_powerbank_unlimited_io.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1230_backpack_live_gui.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1234_backpack_performance_scroll_magnet.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4189,6 +4190,12 @@ jobs:
             python3 features/v176/apply-v176-b1229-powerbank-unlimited-io.py
             # B1230: keep placed Backpack GUI open and update virtual item list live on committed cable transfers.
             python3 features/v176/apply-v176-b1230-backpack-live-gui.py
+            # B1234: no full cell scan on each Item Cable slot probe / each GUI tick.
+            python3 features/v176/apply-v176-b1234-backpack-cable-perf.py
+            # B1234: smooth scrolling with one batched inventory-button packet/tick.
+            python3 features/v176/apply-v176-b1234-backpack-scroll.py
+            # B1234: magnet default ON, select actual enabled worn/held bag.
+            python3 features/v176/apply-v176-b1234-magnet-fix.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
             # B1124: old inside() semantic guard, true Entity.move physical step, client GeoVisual noPhysics.
             # B1121: real NeoForge 26.1 noPhysics API + recovered-invisible MK9 GameTest.
