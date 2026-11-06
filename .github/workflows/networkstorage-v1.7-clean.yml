@@ -157,6 +157,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1230_backpack_live_gui.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1234_backpack_performance_scroll_magnet.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1248_backpack_hotpaths.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1258_backpack_gui_and_cable_cache.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4200,6 +4201,8 @@ jobs:
             # B1257: preserve already-optimized count() and Equipment Cell insertion source verbatim.
             # Only strict-matched Backpack magnet-filter reads are optimized on enriched sources.
             python3 features/v176/apply-v176-b1248-bag-hotpath-elision.py
+            # B1258: exact descriptor reuse across cable commits; 45-entry preview cache.
+            python3 features/v176/apply-v176-b1258-backpack-preview-and-resource-reuse.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
