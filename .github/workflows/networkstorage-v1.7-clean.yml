@@ -154,6 +154,7 @@ jobs:
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
           # Hammer geometry regression test updated to 110 cubes.
+          # Hammer flipped grip up head down for B1215 screenshot correction.
           python3 -m unittest discover -s tests -p 'test_v176_b1172.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1176.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1178.py' -v
