@@ -65,6 +65,25 @@ class PerformanceAndSafetyB1234(unittest.TestCase):
   self.assertNotIn("command(delta>0?",s)
   self.assertNotIn("for(int i=0;i<5;i++)",s)
 
+ def test_drag_handlers_keep_existing_shift_drag_no_duplicates(self):
+  # B1244 failed Java compilation: B1234 added a second mouseDragged and
+  # mouseReleased. B1245 must merge scrollbar logic into B957's existing
+  # Shift+drag withdraw handler, never replace or duplicate its behavior.
+  tree=ast.parse(SCROLL.read_text("utf-8"))
+  strings={}
+  for node in tree.body:
+   if isinstance(node,ast.Assign) and isinstance(node.value,ast.Constant) and isinstance(node.value.value,str):
+    for target in node.targets:
+     if isinstance(target,ast.Name):strings[target.id]=node.value.value
+  self.assertEqual(strings["wheel"].count("mouseDragged("),0)
+  self.assertEqual(strings["wheel"].count("mouseReleased("),0)
+  self.assertIn("mouseScrolled(",strings["wheel"])
+  self.assertIn("xsxShiftVisited",SCROLL.read_text("utf-8"))
+  self.assertIn("B1245_DUPLICATE_DRAG",SCROLL.read_text("utf-8"))
+  self.assertIn("B1245_DUPLICATE_RELEASE",SCROLL.read_text("utf-8"))
+  self.assertIn("event.hasShiftDown()&&!filterEditor",SCROLL.read_text("utf-8"))
+  self.assertIn("xsxDraggingScrollbar&&event.button()==0",SCROLL.read_text("utf-8"))
+
  def test_magnet_lossless_and_nonblocking_optional_curios(self):
   s=MAGNET.read_text("utf-8")
   for token in (
