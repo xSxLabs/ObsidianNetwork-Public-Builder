@@ -13,6 +13,7 @@ only once across its existing-vs-new-type passes. These are local arrays, NOT
 cross-transaction mutable stores. The same exact two-phase routing remains.
 All changes are anchored and assembled BEFORE writing either Java target.
 """
+# B1265 compiled-candidate: no throttling; strict transactional ItemCable conservation.
 import os
 import re
 from pathlib import Path
