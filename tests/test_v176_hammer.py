@@ -16,13 +16,14 @@ class HammerRegression(unittest.TestCase):
   self.assertEqual((int.from_bytes(raw[16:20],"big"),int.from_bytes(raw[20:24],"big")),(512,512))
  def test_generated_native_model(self):
   geometry=json.loads((FEATURES/"hammer-geometry.json").read_text())
-  self.assertEqual(len(geometry["elements"]),126)
+  self.assertEqual(len(geometry["elements"]),110)
+  self.assertGreaterEqual(min(e["from"][1] for e in geometry["elements"]),-2)
   with tempfile.TemporaryDirectory() as tmp:
    env={**os.environ,"V1_RESOURCE_ROOT":tmp}
    subprocess.run([sys.executable,str(FEATURES/"apply-v176-hammer-model.py")],env=env,check=True,capture_output=True)
    assets=Path(tmp)/"assets/obsidiannetwork"
    model=json.loads((assets/"models/item/hammer.json").read_text())
-   self.assertEqual(len(model["elements"]),126)
+   self.assertEqual(len(model["elements"]),110)
    self.assertEqual(model["display"],geometry["display"])
    self.assertEqual((assets/"textures/item/hammer.png").read_bytes(),base64.b64decode((FEATURES/"hammer-texture.png.base64").read_text().strip()))
    self.assertEqual(json.loads((assets/"items/hammer.json").read_text())["model"]["model"],"obsidiannetwork:item/hammer")
