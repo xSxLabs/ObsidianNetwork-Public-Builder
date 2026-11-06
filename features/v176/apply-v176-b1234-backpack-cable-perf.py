@@ -157,6 +157,41 @@ swap(
 '''     // The same exact resource was already decoded for this slot view.
      if(!xsxCableResources.get(i).equals(wanted))return 0;''')
 
+# Cache GUI visible item list beyond a single tick as long as exact source
+# component and B1230 transaction revision remain unchanged. In-place cable
+# mutation installs a new immutable CONTAINER component on the same stack.
+menu=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/backpack/V176BackpackMenu.java"
+view=menu.read_text(encoding="utf-8")
+def replace_view(old,new):
+ global view
+ assert view.count(old)==1,("B1234_GUI_CACHE_DRIFT",view.count(old),old[:110])
+ view=view.replace(old,new,1)
+replace_view(
+'''  private ItemStack cacheSource=ItemStack.EMPTY;
+  private long cacheCableRevision=Long.MIN_VALUE;''',
+'''  private ItemStack cacheSource=ItemStack.EMPTY;
+  private net.minecraft.world.item.component.ItemContainerContents cacheContainer=null;
+  private long cacheCableRevision=Long.MIN_VALUE;''')
+replace_view(
+'''   if(cacheTick==tick&&cacheSource==live
+        &&cacheCableRevision==liveCableRevision
+        &&cacheQuery.equals(query)&&cacheSort==countSort)return cacheEntries;''',
+'''   var content=live.get(net.minecraft.core.component.DataComponents.CONTAINER);
+   if(cacheSource==live&&cacheContainer==content
+        &&cacheCableRevision==liveCableRevision
+        &&cacheQuery.equals(query)&&cacheSort==countSort)return cacheEntries;''')
+replace_view(
+'''   cacheTick=tick;
+   cacheSource=live;
+   cacheCableRevision=liveCableRevision;''',
+'''   cacheTick=tick;
+   cacheSource=live;
+   cacheContainer=content;
+   cacheCableRevision=liveCableRevision;''')
+assert "cacheContainer==content" in view
+assert "cacheCableRevision==liveCableRevision" in view
+menu.write_text(view,encoding="utf-8")
+
 source=path.read_text(encoding="utf-8")
 assert source.count("V176BackpackCells.entries(backpack)") == 1
 assert source.count("V176BackpackCells.capacity(backpack)") == 1
