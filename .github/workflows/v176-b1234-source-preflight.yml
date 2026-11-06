@@ -4,7 +4,9 @@ on:
     branches: [v1.7.6]
     paths:
       - 'features/v176/apply-v176-b1234-*.py'
+      - 'features/v176/apply-v176-b1248-*.py'
       - 'tests/test_v176_b1234_*.py'
+      - 'tests/test_v176_b1248_*.py'
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - '.github/workflows/v176-b1234-source-preflight.yml'
   workflow_dispatch:
@@ -17,10 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Parse B1234 patches
-        run: python3 -m py_compile features/v176/apply-v176-b1234-*.py
+        run: python3 -m py_compile features/v176/apply-v176-b1234-*.py features/v176/apply-v176-b1248-*.py
       - name: Safety and integration tests
         run: |
           python3 -m unittest discover -s tests -p 'test_v176_b1234_backpack_performance_scroll_magnet.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1248_backpack_hotpaths.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1230_backpack_live_gui.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1225_backpack_chat.py' -v
       - name: Respect production build lock
