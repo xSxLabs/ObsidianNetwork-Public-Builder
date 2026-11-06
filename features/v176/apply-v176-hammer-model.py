@@ -14,16 +14,34 @@ for e in data["elements"]:
 # Preserve all source geometry positions and native hand transforms.
 model.write_text(json.dumps({"texture_size":[512,512],"textures":{"0":"obsidiannetwork:item/hammer"},"elements":elements,"display":data["display"]},separators=(",",":"))+"\n")
 definition=assets/"items/hammer.json";definition.parent.mkdir(parents=True,exist_ok=True)
-definition.write_text(json.dumps({"model":{"type":"minecraft:model","model":"obsidiannetwork:item/hammer"}},indent=2)+"\\n")
+definition.write_text(json.dumps({"model":{"type":"minecraft:model","model":"obsidiannetwork:item/hammer"}},indent=2)+"\n")
 tex=assets/"textures/item/hammer.png";tex.parent.mkdir(parents=True,exist_ok=True)
-im=Image.new("RGBA",(512,512),(38,35,50,255))
-d=ImageDraw.Draw(im)
-for i in range(0,512,16):
- for j in range(0,512,16):
-  c=(57,54,73,255) if (i//16+j//16)%2 else (75,70,90,255)
-  d.rectangle((i,j,i+15,j+15),fill=c)
-for k in range(0,512,64):
- d.line((k,0,k,511),fill=(160,53,230,255),width=5)
- d.line((0,k,511,k),fill=(122,48,180,255),width=4)
+# Native texture is generated during build, as with the Multitool.
+# Eight 64x64 reference material swatches in each of two atlas rows.
+import random,math
+im=Image.new("RGBA",(512,512),(0,0,0,0))
+pix=im.load()
+colors=[(23,20,30),(33,29,43),(45,40,56),(57,48,67),(68,57,76),(81,64,85),(16,13,23),(59,21,76),
+        (140,36,216),(202,77,241),(239,166,250),(93,27,141),(104,89,116),(91,36,121),(30,25,41),(166,49,234)]
+for tile in range(16):
+ x0=(tile%8)*64;y0=(tile//8)*64
+ base=colors[tile]
+ rng=random.Random(176000+tile)
+ for y in range(64):
+  for x in range(64):
+   grain=rng.randrange(-7,8)
+   sheen=0
+   if tile>=8:
+    sheen=int(24*math.exp(-((x-y-5)/22)**2))
+    if tile in (8,9,10,15):sheen+=int(22*math.exp(-((x-y-8)/13)**2))
+   edge=18 if (x in (2,3) or y in (2,3)) and tile>=8 else 0
+   pix[x0+x,y0+y]=tuple(max(0,min(255,v+grain+sheen+edge)) for v in base)+(255,)
+ # Engraved borders and inset bevels from the reference atlas.
+ from PIL import ImageDraw
+ d=ImageDraw.Draw(im)
+ outline=tuple(min(255,v+38) for v in base)+(255,)
+ shade=tuple(max(0,v-15) for v in base)+(255,)
+ d.line([(x0+3,y0+59),(x0+3,y0+3),(x0+59,y0+3)],fill=shade,width=2)
+ d.line([(x0+7,y0+55),(x0+7,y0+7),(x0+55,y0+7)],fill=outline,width=1)
 im.save(tex)
 print("HAMMER_NATIVE_MODEL_126_CUBES_GENERATED")
