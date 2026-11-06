@@ -88,27 +88,38 @@ wheel=''' @Override public boolean mouseScrolled(double mx,double my,double scro
   }
   return super.mouseScrolled(mx,my,scrollX,scrollY);
  }
- @Override public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent event,
-      double dragX,double dragY){
+'''
+src=src[:a]+wheel+src[b:]
+
+# B957 already owns Shift+drag multi-withdraw and clears visited slots on
+# mouse release. Extend those handlers instead of declaring duplicates.
+# Keep original Shift+drag behavior and item conservation intact.
+drag=''' @Override public boolean mouseDragged(
+   net.minecraft.client.input.MouseButtonEvent event,double dx,double dy){
+  if(event.button()==0&&event.hasShiftDown()&&!filterEditor){'''
+assert src.count(drag)==1,("B1245_ORIGINAL_SHIFT_DRAG_NOT_FOUND",src.count(drag))
+src=src.replace(drag,''' @Override public boolean mouseDragged(
+   net.minecraft.client.input.MouseButtonEvent event,double dx,double dy){
   if(xsxDraggingScrollbar&&event.button()==0){
    int y=(int)event.y()-getTopPos();
-   // Each two cursor pixels moves a real 9-item row. Drag can be repeated
-   // for inventories with >24 rows; no hard capped item count.
    xsxScrollTo(xsxDragStartRow+(int)Math.round((y-xsxDragStartY)*0.5D));
    return true;
   }
-  return super.mouseDragged(event,dragX,dragY);
- }
- @Override public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event){
+  if(event.button()==0&&event.hasShiftDown()&&!filterEditor){''',1)
+
+release=''' @Override public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event){
+  xsxShiftVisited.clear();'''
+assert src.count(release)==1,("B1245_ORIGINAL_RELEASE_NOT_FOUND",src.count(release))
+src=src.replace(release,''' @Override public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event){
+  xsxShiftVisited.clear();
   if(xsxDraggingScrollbar&&event.button()==0){
    xsxDraggingScrollbar=false;
    xsxFlushScroll(true);
    return true;
-  }
-  return super.mouseReleased(event);
- }
-'''
-src=src[:a]+wheel+src[b:]
+  }''',1)
+assert src.count(" @Override public boolean mouseDragged(")==1, "B1245_DUPLICATE_DRAG"
+assert src.count(" @Override public boolean mouseReleased(")==1, "B1245_DUPLICATE_RELEASE"
+assert "xsxShiftVisited.add(id)" in src and "xsxShiftVisited.clear();" in src
 
 pattern=r'  if\(button==0&&scrollX>=173&&scrollX<180&&scrollY>=38&&scrollY<129\)\{\s*int delta=.*?\n   return true;\n  \}'
 m=re.search(pattern,src,re.DOTALL)
