@@ -138,30 +138,49 @@ fix(screen,
 
 # B891 removed the old arrow buttons and introduced its own mouseScrolled.
 # Replace only the live scroll action, NOT the deleted arrow callbacks.
-# B902 added a for-loop with scrollRow updates (and a second five-command
-# scrollbar click). Convert BOTH into one bounded inventory-button action.
-fix(screen,
- '''   for(int i=0;i<steps;i++){
-     command(scrollY>0?"networkbackpack previous":"networkbackpack next");
-     if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+(scrollY<0?1:-1)));
-     else scrollRow=Math.max(0,scrollRow+(scrollY<0?1:-1));
-    }''',
- '''   if(wheelCooldown>0)return true;
+# The final B902/B957 (and other intervening render tweaks) can rewrite the
+# wheel loop. Replace the entire existing mouseScrolled override by METHOD
+# BOUNDARIES instead of matching a fragile historical for-loop fragment.
+# Retain the user-visible 9-item row/page offset and vanilla tooltip code.
+screen_path=J/screen
+source=screen_path.read_text(encoding="utf-8")
+a=source.find(" @Override public boolean mouseScrolled(")
+b=source.find(" @Override protected void extractTooltip(",a)
+assert a>=0 and b>a and source.count(" @Override public boolean mouseScrolled(")==1, "B1228_WHEEL_METHOD_DRIFT"
+wheel=''' @Override public boolean mouseScrolled(double mx,double my,double scrollX,double scrollY){
+  int x=(int)mx-getLeftPos(),y=(int)my-getTopPos();
+  if(x>=8&&x<170&&y>=38&&y<128&&scrollY!=0.0D){
+   if(wheelCooldown>0)return true;
    button(scrollY>0?0:1);
    wheelCooldown=5;
    if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+(scrollY<0?1:-1)));
-   else scrollRow=Math.max(0,scrollRow+(scrollY<0?1:-1));''')
-fix(screen,
- '''    for(int i=0;i<5;i++){
-     command(delta>0?"networkbackpack next":"networkbackpack previous");
-     if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+delta));
-     else scrollRow=Math.max(0,scrollRow+delta);
-    }''',
- '''    if(wheelCooldown>0)return true;
+   else scrollRow=Math.max(0,scrollRow+(scrollY<0?1:-1));
+   return true;
+  }
+  return super.mouseScrolled(mx,my,scrollX,scrollY);
+ }
+'''
+source=source[:a]+wheel+source[b:]
+# B902's scrollbar click also sent five chat commands per gesture.
+# Replace this entire action in the final source, preserving its exact hitbox.
+a=source.find("   if(button==0&&scrollX>=173&&scrollX<180&&scrollY>=38&&scrollY<129){")
+b=source.find("  boolean onSearch=",a)
+assert a>=0 and b>a and b-a<1500,"B1228_SCROLLBAR_METHOD_DRIFT"
+scrollbar='''   if(button==0&&scrollX>=173&&scrollX<180&&scrollY>=38&&scrollY<129){
+    if(wheelCooldown>0)return true;
+    int delta=scrollY>38+Math.min(73,scrollRow*3)+8?1:-1;
     button(delta>0?1:0);
     wheelCooldown=5;
     if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+delta));
-    else scrollRow=Math.max(0,scrollRow+delta);''')
+    else scrollRow=Math.max(0,scrollRow+delta);
+    return true;
+   }
+'''
+source=source[:a]+scrollbar+source[b:]
+assert 'command(scrollY>0?"networkbackpack previous":"networkbackpack next")' not in source
+assert 'command(delta>0?"networkbackpack next":"networkbackpack previous")' not in source
+screen_path.write_text(source,encoding="utf-8")
+
 fix(screen,'command("networkbackpack sort");','button(2);')
 fix(screen,'command("networkbackpack filters");','button(3);')
 fix(screen,'command("networkbackpack clearfilter "+selectedFilter);','button(64);')
