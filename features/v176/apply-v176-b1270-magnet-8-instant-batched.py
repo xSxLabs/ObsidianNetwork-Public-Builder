@@ -154,16 +154,13 @@ assert "private static final double RANGE=8.0D;" in java
 assert "player.tickCount%" not in java
 assert "ITEM_BUDGET" not in java and "ENTITY_BUDGET" not in java
 
-# B817 GUI historically defaulted the button's state to OFF while B1234
-# changed the actual installed upgrade to ON by default. Use the same value.
-ui=exactly_once(ui,
-'''tag.getBooleanOr("xsx_v176_magnet_on",false)''',
-'''tag.getBooleanOr("xsx_v176_magnet_on",true)''',
-"magnet ON default button")
-
-assert "tag.getBooleanOr(\"xsx_v176_magnet_on\",true)" in ui
-assert "networkbackpack magnet off" in ui and "networkbackpack magnet on" in ui
-# Preflight both sources completely before writing either.
+# B1225 already uses native inventory-button actions for Magnet ON/OFF.
+# Preserve these direct GUI controls exactly: no obsolete chat-command rewrite.
+# The installed upgrade's default ON is resolved server-side by B1234.
+for required in ("button(4); // B1225_NO_CHAT_COMMAND_FOR_MAGNET",
+                 "button(5); // B1225_NO_CHAT_COMMAND_FOR_FILTER_MODE"):
+ assert required in ui,("B1270_NATIVE_GUI_CONTROL_DRIFT",required)
+assert 'tag.getBooleanOr("xsx_v176_magnet_on",false)' not in ui
+# The GUI is intentionally UNCHANGED. Only the magnet event is rewritten.
 magnet.write_text(java,encoding="utf-8")
-screen.write_text(ui,encoding="utf-8")
 print("B1270_MAGNET_8_BLOCK_EVERY_TICK_EXACT_BATCH_SINGLE_COMMIT_GUI_ON_PASS")
