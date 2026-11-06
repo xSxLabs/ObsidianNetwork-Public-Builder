@@ -10,8 +10,8 @@ model=assets/"models/item/hammer.json";model.parent.mkdir(parents=True,exist_ok=
 elements=[]
 for e in data["elements"]:
  faces={k:{"uv":[round(q/32,5) for q in uv],"texture":"#0"} for k,uv in e["faces"].items()}
- elements.append({"from":[round(v+8 if i==1 else v+8,4) for i,v in enumerate(e["from"])],"to":[round(v+8,4) for v in e["to"]],"faces":faces})
-# Shift geometry into item model space without altering its relative proportions.
+ elements.append({"from":[round(v,4) for i,v in enumerate(e["from"])],"to":[round(v,4) for v in e["to"]],"faces":faces})
+# Preserve all source geometry positions and native hand transforms.
 model.write_text(json.dumps({"texture_size":[512,512],"textures":{"0":"obsidiannetwork:item/hammer"},"elements":elements,"display":data["display"]},separators=(",",":"))+"\n")
 tex=assets/"textures/item/hammer.png";tex.parent.mkdir(parents=True,exist_ok=True)
 im=Image.new("RGBA",(512,512),(38,35,50,255))
