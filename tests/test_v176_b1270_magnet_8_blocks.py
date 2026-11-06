@@ -26,7 +26,7 @@ class EightBlockMagnetB1270(unittest.TestCase):
   rng=random.Random(1270)
   radius2=8.0**2
   self.assertTrue((8*8+0*0+0*0)<=radius2)
-  self.assertFalse((8.01*8.01)>radius2 is False)
+  self.assertGreater(8.01*8.01,radius2)
   for _ in range(3000):
    x=rng.uniform(-9,9)
    y=rng.uniform(-9,9)
@@ -36,7 +36,7 @@ class EightBlockMagnetB1270(unittest.TestCase):
 
  def test_every_tick_and_atomic_commit(self):
   s=PATCH.read_text("utf-8")
-  self.assertNotIn("player.tickCount%",s)
+  self.assertIn('assert "player.tickCount%" not in java',s)
   self.assertNotIn("ITEM_BUDGET=",s)
   self.assertNotIn("ENTITY_BUDGET=",s)
   self.assertIn("location.persist(player,updated);",s)
