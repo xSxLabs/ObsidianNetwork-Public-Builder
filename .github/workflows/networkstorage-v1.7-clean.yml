@@ -152,6 +152,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_hammer.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1224_held_tools.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1225_backpack_chat.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1226_tool_enchantments.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4180,6 +4181,8 @@ jobs:
             python3 features/v176/apply-v176-b1224-held-tools.py
             # B1225: placed Backpack cables both ways, non-chat GUI controls, persistent mod-chat mute.
             python3 features/v176/apply-v176-b1225-backpack-chat.py
+            # B1226: Netherite table/anvil + modded pickaxe enchant support in Survival.
+            python3 features/v176/apply-v176-b1226-tool-enchantments.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
             # B1124: old inside() semantic guard, true Entity.move physical step, client GeoVisual noPhysics.
             # B1121: real NeoForge 26.1 noPhysics API + recovered-invisible MK9 GameTest.

@@ -134,22 +134,16 @@ fix(screen,
   if(mc.gameMode!=null&&mc.player!=null&&mc.player.containerMenu==menu)
    mc.gameMode.handleInventoryButtonClick(menu.containerId,action);
  }
- @Override public boolean mouseScrolled(double mx,double my,double dx,double dy){
-  // Exactly one inventory action per 5 client ticks, never a chat command.
-  if(dy!=0&&wheelCooldown==0
-     &&mx>=getLeftPos()+7&&mx<getLeftPos()+170
-     &&my>=getTopPos()+36&&my<getTopPos()+129){
-   button(dy<0?1:0);
-   wheelCooldown=5;
-   if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+(dy<0?1:-1)));
-   return true;
-  }
-  return super.mouseScrolled(mx,my,dx,dy);
- }
  private static void command(String command){''')
 
-fix(screen,'command("networkbackpack previous");','button(0);')
-fix(screen,'command("networkbackpack next");','button(1);')
+# B891 removed the old arrow buttons and introduced its own mouseScrolled.
+# Replace only the live scroll action, NOT the deleted arrow callbacks.
+fix(screen,
+ '    for(int i=0;i<steps;i++)\n     command(scrollY>0?"networkbackpack previous":"networkbackpack next");',
+ '    if(wheelCooldown>0)return true;\n'
+ '    button(scrollY>0?0:1);\n'
+ '    wheelCooldown=5;\n'
+ '    if(filterEditor)filterPage=Math.max(0,Math.min(1,filterPage+(scrollY<0?1:-1)));')
 fix(screen,'command("networkbackpack sort");','button(2);')
 fix(screen,'command("networkbackpack filters");','button(3);')
 fix(screen,'command("networkbackpack clearfilter "+selectedFilter);','button(64);')
