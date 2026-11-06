@@ -152,6 +152,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_hammer.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
+          # Shortened hammer handle geometry, no image generation.
           python3 -m unittest discover -s tests -p 'test_v176_b1172.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1176.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1178.py' -v
