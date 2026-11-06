@@ -12,6 +12,7 @@ This patch runs after B1234/B1248, B1269 and B907. The 1269 runtime cache is
 for *placed cable ingress only*; this magnet uses the original public insert()
 for detached batch candidates and therefore cannot corrupt that cache.
 """
+# B1270 full NeoForge release candidate: verify unchanged direct GUI controls.
 import os
 from pathlib import Path
 
