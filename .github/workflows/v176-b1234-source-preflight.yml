@@ -7,9 +7,11 @@ on:
       - 'features/v176/apply-v176-b1248-*.py'
       - 'features/v176/apply-v176-b1273-placed-backpack-magnet.py'
       - 'features/v176/apply-v176-b1274-backpack-live-scroll-range.py'
+      - 'features/v176/apply-v176-b1281-powerbank-direct-fe-and-jade-cable.py'
       - 'tests/test_v176_b1234_*.py'
       - 'tests/test_v176_b1248_*.py'
       - 'tests/test_v176_b1273_placed_magnet_scroll.py'
+      - 'tests/test_v176_b1281_powerbank_output_jade_cable.py'
       - '.github/workflows/networkstorage-v1.7-clean.yml'
       - '.github/workflows/v176-b1234-source-preflight.yml'
   workflow_dispatch:
@@ -22,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Parse B1234 patches
-        run: python3 -m py_compile features/v176/apply-v176-b1234-*.py features/v176/apply-v176-b1248-*.py features/v176/apply-v176-b1273-placed-backpack-magnet.py features/v176/apply-v176-b1274-backpack-live-scroll-range.py
+        run: python3 -m py_compile features/v176/apply-v176-b1234-*.py features/v176/apply-v176-b1248-*.py features/v176/apply-v176-b1273-placed-backpack-magnet.py features/v176/apply-v176-b1274-backpack-live-scroll-range.py features/v176/apply-v176-b1281-powerbank-direct-fe-and-jade-cable.py
       - name: Safety and integration tests
         run: |
           python3 -m unittest discover -s tests -p 'test_v176_b1234_backpack_performance_scroll_magnet.py' -v
@@ -30,5 +32,6 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1230_backpack_live_gui.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1225_backpack_chat.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1273_placed_magnet_scroll.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1281_powerbank_output_jade_cable.py' -v
       - name: Respect production build lock
         run: echo 'B1234_SOURCE_ONLY_CHECKED_NO_BUILD_NO_JAR'
