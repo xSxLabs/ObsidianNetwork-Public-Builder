@@ -48,8 +48,8 @@ MENU="""public final class V176BackpackMenu {
   }
   private boolean sort(){
    if(!source.valid())return false;
-    countSort=!countSort;page=0;return true;
-   }
+   countSort=!countSort;page=0;return true;
+  }
  }
 }
 """
