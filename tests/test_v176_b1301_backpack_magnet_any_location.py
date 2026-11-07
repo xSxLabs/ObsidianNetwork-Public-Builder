@@ -138,8 +138,10 @@ class B1301Magnet(unittest.TestCase):
         w=WORKFLOW.read_text("utf-8")
         self.assertIn(PATCH.name,w)
         self.assertIn(Path(__file__).name,w)
-        self.assertLess(w.index("apply-v176-b1273-placed-backpack-magnet.py"),w.index(PATCH.name))
-        self.assertLess(w.index("apply-v176-b1300-energy-conservation.py"),w.index(PATCH.name))
+        self.assertLess(w.index("python3 features/v176/apply-v176-b1273-placed-backpack-magnet.py"),
+                        w.index("python3 features/v176/"+PATCH.name))
+        self.assertLess(w.index("python3 features/v176/apply-v176-b1300-energy-conservation.py"),
+                        w.index("python3 features/v176/"+PATCH.name))
         self.assertNotIn("features/v175/",PATCH.read_text("utf-8"))
         self.assertNotIn("_EXPLICIT_BUILD_",PATCH.read_text("utf-8"))
 
