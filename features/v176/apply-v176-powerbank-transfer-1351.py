@@ -57,8 +57,13 @@ for token in ("private final class Handler implements EnergyHandler",
               "public long getAmountAsLong()",
               "public static void serverTick("):
  assert token in c,("B1351_CELL_ANCHOR",token)
-c=once(c,"    private final class Handler implements EnergyHandler {",
-"""    // B1351_PHYSICAL_CELL_ONE_JOURNAL: all seven capability views mutate the
+# The private baseline Java sources are reconstructed and reformatted by CI.
+# Anchor on the semantic class signature, not a fixed number of spaces.
+cell_handlers=list(re.finditer(
+ r"(?m)^[ \\t]*private[ \\t]+final[ \\t]+class[ \\t]+Handler[ \\t]+implements[ \\t]+EnergyHandler[ \\t]*\\{",c))
+assert len(cell_handlers)==1,("B1351_CELL_HANDLER_DECL_DRIFT",len(cell_handlers))
+insert_at=cell_handlers[0].start()
+c=c[:insert_at]+"""    // B1351_PHYSICAL_CELL_ONE_JOURNAL: all seven capability views mutate the
     // same EnergyBuffer and MUST share one rollback snapshot.
     private EnergyCellBlockEntity.Handler.Journal b1351SharedJournal;
     private EnergyCellBlockEntity.Handler.Journal b1351Journal(
@@ -66,8 +71,7 @@ c=once(c,"    private final class Handler implements EnergyHandler {",
        if (b1351SharedJournal == null) b1351SharedJournal = sideOwner.new Journal();
        return b1351SharedJournal;
     }
-    private final class Handler implements EnergyHandler {""",
-"single_cell_journal")
+"""+c[insert_at:]
 c=once(c,"this.journal = new EnergyCellBlockEntity.Handler.Journal();",
        "this.journal = EnergyCellBlockEntity.this.b1351Journal(this);",
        "side_handlers_share_physical_journal")
