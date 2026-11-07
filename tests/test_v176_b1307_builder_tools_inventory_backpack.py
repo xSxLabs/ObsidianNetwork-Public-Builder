@@ -45,6 +45,7 @@ class BuilderToolBackpackItemCapability(unittest.TestCase):
   self.assertIn("ServerLifecycleHooks.getCurrentServer()",java)
   self.assertIn("V176BackpackCells.entries(before)",java)
   self.assertIn("V176BackpackCells.extract(world,updated,entry.descriptor(),n)",java)
+  self.assertIn("Identifier.parse(entry.descriptor().key().itemId())",java)
   self.assertIn("access.exchange(ItemResource.of(updated),1,tx)",java)
   self.assertIn("if(!requested.equals(resourceOf(entry)))return 0;",java)
   self.assertIn("int n=(int)Math.min((long)amount,entry.count())",java)
