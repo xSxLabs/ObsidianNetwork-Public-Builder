@@ -250,9 +250,9 @@ def inject_override(src,method,args,body,call):
 
 # Minecraft 26.1 uses the MouseButtonEvent object (not legacy doubles).
 # Preserve vanilla/container behavior outside this Powerbank control.
-assert not re.search(r'public\\s+boolean\\s+mouseClicked\\s*\\(',s), "B1383_SCREEN_CLICK_API_CHANGED"
-assert not re.search(r'public\\s+boolean\\s+mouseDragged\\s*\\(',s), "B1383_SCREEN_DRAG_API_CHANGED"
-assert not re.search(r'public\\s+boolean\\s+mouseReleased\\s*\\(',s), "B1383_SCREEN_RELEASE_API_CHANGED"
+assert "boolean mouseClicked(" not in s, "B1383_SCREEN_CLICK_API_CHANGED"
+assert "boolean mouseDragged(" not in s, "B1383_SCREEN_DRAG_API_CHANGED"
+assert "boolean mouseReleased(" not in s, "B1383_SCREEN_RELEASE_API_CHANGED"
 idx=s.rfind('}')
 assert idx>0 and s[idx+1:].strip()==""
 s=s[:idx]+'''
