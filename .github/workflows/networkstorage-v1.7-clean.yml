@@ -180,6 +180,9 @@ jobs:
           # B1324 zero-buffer wireless demand routing, FE conservation and feedback safety.
           python3 -m py_compile features/v176/apply-v176-b1324-zero-buffer-wireless.py tests/test_v176_b1324_zero_buffer_wireless.py
           python3 -m unittest discover -s tests -p 'test_v176_b1324_zero_buffer_wireless.py' -v
+          # B1345 verify EnergyCell / Powerbank no-loop and stale-port reload repair.
+          python3 -m py_compile features/v176/apply-v176-b1345-no-idle-energy-cycles.py features/v176/inject-v176-b1345-fe-cable-loss-gametest.py tests/test_v176_b1345_no_idle_energy_cycles.py
+          python3 -m unittest discover -s tests -p 'test_v176_b1345_no_idle_energy_cycles.py' -v
           # B1301: magnet from worn, Curios, held, inventory or placed backpack.
           python3 -m py_compile features/v176/apply-v176-b1301-backpack-magnet-any-location.py tests/test_v176_b1301_backpack_magnet_any_location.py
           python3 -m unittest discover -s tests -p 'test_v176_b1301_backpack_magnet_any_location.py' -v
@@ -4650,11 +4653,15 @@ jobs:
           # those were valid legacy regression fixtures, and must not be treated
           # as tests of the NEW no-buffer architecture.
           python3 features/v176/apply-v176-b1324-zero-buffer-wireless.py
+          # B1345: preserve FE under no load; repair Powerbank input after reload.
+          python3 features/v176/apply-v176-b1345-no-idle-energy-cycles.py
           # Re-run an actual NeoForge GameTest against FINAL direct FE sources.
           # Important: the old Build103 test class was already removed, because
           # it asserts Transmitter FE buffering which no longer exists.
           cp /tmp/obsidian-perf-gametest/build103_empty.nbt work/src/main/resources/data/obsidiannetwork/structure/
           python3 features/v176/inject-v176-b1324-live-no-demand-gametest.py
+          # Actual FE cable ring: source on/off, Powerbank 2 billion FE, no output.
+          python3 features/v176/inject-v176-b1345-fe-cable-loss-gametest.py
           rm -rf work/build/classes/java/main/dev/obsidiannetwork/build103
           (cd work && gradle --daemon --no-configuration-cache compileJava --stacktrace)
           rm -rf work/run/gametestserver
@@ -4668,6 +4675,10 @@ jobs:
           grep -Fq 'B1324_ROLLBACK_NO_ENERGY_LOSS_GAME_TEST_PASS' /tmp/b1324-direct-gametest.log
           grep -Fq 'B1324_FULL_SINK_ZERO_FE_OUTPUT_GAME_TEST_PASS' /tmp/b1324-direct-gametest.log
           grep -Fq 'B1324_POWERBANK_FULL_SINK_REAL_TICK_ZERO_OUTPUT_PASS' /tmp/b1324-direct-gametest.log
+          grep -Fq 'B1345_POWERBANK_REAL_CABLE_INPUT_RELINK_PASS' /tmp/b1324-direct-gametest.log
+          grep -Fq 'B1345_ENERGY_CELL_NO_5M_PINGPONG_PASS' /tmp/b1324-direct-gametest.log
+          grep -Fq 'B1345_POWERBANK_TWO_BILLION_FE_NO_IDLE_LOSS_PASS' /tmp/b1324-direct-gametest.log
+          grep -Fq 'B1345_IDLE_FE_2B_BUDGET_NO_RETURN_LEAK_PASS' /tmp/b1324-direct-gametest.log
           grep -Fq 'B1324_CROSSDIM_REAL_SOURCE_NO_BUFFER_GAME_TEST_PASS' /tmp/b1324-direct-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/b1324-direct-gametest.log
           # No test-only classes or structures in user JAR.
