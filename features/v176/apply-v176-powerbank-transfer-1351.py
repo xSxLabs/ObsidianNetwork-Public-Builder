@@ -60,7 +60,7 @@ for token in ("private final class Handler implements EnergyHandler",
 # The private baseline Java sources are reconstructed and reformatted by CI.
 # Anchor on the semantic class signature, not a fixed number of spaces.
 cell_handlers=list(re.finditer(
- r"(?m)^[ \\t]*private[ \\t]+final[ \\t]+class[ \\t]+Handler[ \\t]+implements[ \\t]+EnergyHandler[ \\t]*\\{",c))
+ r"(?m)^[ \t]*private[ \t]+final[ \t]+class[ \t]+Handler[ \t]+implements[ \t]+EnergyHandler[ \t]*\{",c))
 assert len(cell_handlers)==1,("B1351_CELL_HANDLER_DECL_DRIFT",len(cell_handlers))
 insert_at=cell_handlers[0].start()
 c=c[:insert_at]+"""    // B1351_PHYSICAL_CELL_ONE_JOURNAL: all seven capability views mutate the
