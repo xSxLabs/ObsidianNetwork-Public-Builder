@@ -31,7 +31,27 @@ def menu_fixture():
          "    else result.sort(java.util.Comparator.comparing(\n"
          "       e->e.descriptor().key().itemId().toString()));")
     assert menu.count(old)==1
-    return menu.replace(old,new,1)
+    menu=menu.replace(old,new,1)
+    # Apply the real B1303 strict patch first; B1304 must match its output,
+    # not a hand-built source that omits Shift's server-side frozen list.
+    screen=None
+    for node in tree.body:
+        if isinstance(node,ast.Assign) and isinstance(node.value,ast.Constant):
+            if any(isinstance(k,ast.Name) and k.id=="SCREEN" for k in node.targets):
+                screen=node.value.value
+                break
+    if screen is None:raise AssertionError("Missing B1303 SCREEN fixture")
+    patch1303=ROOT/"features/v176/apply-v176-b1303-backpack-shift-sort-lock.py"
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory)/"dev/obsidiannetwork"
+        (root/"backpack").mkdir(parents=True)
+        (root/"client").mkdir(parents=True)
+        (root/"backpack/V176BackpackMenu.java").write_text(menu,"utf-8")
+        (root/"client/V176BackpackScreen.java").write_text(screen,"utf-8")
+        run=subprocess.run([sys.executable,str(patch1303)],capture_output=True,text=True,
+                           env={**os.environ,"V1_SOURCE_ROOT":directory})
+        if run.returncode!=0:raise AssertionError("B1303 fixture failed "+run.stderr)
+        return (root/"backpack/V176BackpackMenu.java").read_text("utf-8")
 
 def apply(menu):
     with tempfile.TemporaryDirectory() as directory:
