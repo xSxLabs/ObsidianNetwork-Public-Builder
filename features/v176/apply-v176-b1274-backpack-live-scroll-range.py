@@ -111,11 +111,11 @@ s=once(s,
 
 # B902's actual render variable is thumbY (not thumb). B1280 failed
 # closed on that exact mismatch. Match both size and coordinates only once.
-pattern=r'(?m)\\bint thumbY\\s*=\\s*y\\s*\\+\\s*39\\s*\\+\\s*Math\\.min\\(73,\\s*scrollRow\\s*\\*\\s*3\\s*\\)\\s*;'
+pattern=r'(?m)\bint thumbY\s*=\s*y\s*\+\s*39\s*\+\s*Math\.min\(73,\s*scrollRow\s*\*\s*3\s*\)\s*;'
 hits=list(re.finditer(pattern,s))
 assert len(hits)==1,("B1274_THUMB_DRAW_SOURCE_DRIFT",len(hits))
 s=s[:hits[0].start()]+'int thumbY=y+xsxThumbTop();'+s[hits[0].end():]
-pattern2=r'(?m)\\bg\\.fill\\(x\\s*\\+\\s*174\\s*,\\s*thumbY\\s*,\\s*x\\s*\\+\\s*178\\s*,\\s*thumbY\\s*\\+\\s*16\\s*,'
+pattern2=r'(?m)\bg\.fill\(x\s*\+\s*174\s*,\s*thumbY\s*,\s*x\s*\+\s*178\s*,\s*thumbY\s*\+\s*16\s*,'
 matches=list(re.finditer(pattern2,s))
 assert len(matches)==1,("B1274_THUMB_SIZE_SOURCE_DRIFT",len(matches))
 s=re.sub(pattern2,'g.fill(x+174,thumbY,x+178,thumbY+xsxThumbHeight(),',s,count=1)
