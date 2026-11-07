@@ -109,6 +109,26 @@ public final class B1355EnergyGameTests {
    }
    if(cell.stored()!=initial)
     throw new IllegalStateException("B1355 opposite-order rollback changed FE");
+   // B1375: NeoForge reopens pooled root transaction objects. After an
+   // aborted self-transfer the next INDEPENDENT root must be able to charge,
+   // and extracting in a committed root must not lock out later charging.
+   try(var fresh=Transaction.openRoot()){
+    int accepted=west.insert(1_000_000,fresh);
+    if(accepted!=1_000_000)throw new IllegalStateException(
+       "B1375 cell input blocked after earlier root rollback "+accepted);
+    fresh.commit();
+   }
+   if(cell.stored()!=initial+1_000_000L)
+    throw new IllegalStateException("B1375 cell committed root charge missing");
+   try(var fresh=Transaction.openRoot()){
+    int taken=east.extract(1_000_000,fresh);
+    if(taken!=1_000_000)throw new IllegalStateException(
+       "B1375 cell committed root extraction blocked "+taken);
+    fresh.commit();
+   }
+   if(cell.stored()!=initial)
+    throw new IllegalStateException("B1375 cell conserved FE after root reuse");
+   System.out.println("B1375_ENERGY_CELL_REUSED_ROOT_PASS");
    System.out.println("B1355_ONE_PHYSICAL_CELL_SEVEN_FACES_ROLLBACK_PASS");
    h.succeed();
   }
@@ -155,6 +175,11 @@ public final class B1355EnergyGameTests {
    final long initial=source.stored();
    // No manual revalidate; tick must link the real multiblock.
    final long[] afterSupply=new long[1];
+   final long[] afterDemandBank=new long[1];
+   final long[] afterDemandSink=new long[1];
+   final long[] bankBeforeRestore=new long[1];
+   final long[] sinkBeforeRestore=new long[1];
+   final EnergyCellBlockEntity[] restoredSource=new EnergyCellBlockEntity[1];
    h.startSequence().thenExecuteAfter(60,()->{
     if(!bank.xsxNetworkFormed())throw new IllegalStateException(
       "B1355 Powerbank did not link automatically");
@@ -193,6 +218,18 @@ public final class B1355EnergyGameTests {
      if(n!=2_000_000_000)throw new IllegalStateException("B1355 2B Powerbank charge refused "+n);
      charge.commit();
     }
+    // Follow a committed 2B INPUT with a SECOND real root transaction.
+    // It must not inherit source marks from the previous pooled root.
+    long beforeTopup=bank.xsxNetworkStoredFe();
+    try(var topup=Transaction.openRoot()){
+     int accepted=inlet.energyPort().insert(1_000_000,topup);
+     if(accepted!=1_000_000)throw new IllegalStateException(
+       "B1375 Powerbank reused root rejected next charge "+accepted);
+     topup.commit();
+    }
+    if(bank.xsxNetworkStoredFe()!=beforeTopup+1_000_000L)
+     throw new IllegalStateException("B1375 bank root reuse FE not committed");
+    System.out.println("B1375_POWERBANK_REUSED_ROOT_INPUT_PASS");
     afterSupply[0]=bank.xsxNetworkStoredFe();
     if(afterSupply[0]<2_000_000_000L)
      throw new IllegalStateException("B1355 insufficient idle reserve "+afterSupply[0]);
@@ -203,6 +240,50 @@ public final class B1355EnergyGameTests {
     if(bank.xsxNetworkOutputFePerTick()!=0L)
      throw new IllegalStateException("B1355 phantom output "+bank.xsxNetworkOutputFePerTick());
     System.out.println("B1355_TWO_BILLION_FE_POWERBANK_SOURCE_OFF_FULL_SINK_PASS");
+    // The reactor is still absent. Make actual downstream demand via the
+    // Energy Cell's EAST OUTPUT, physically separate from cable WEST INPUT.
+    sink.cycleSide(Direction.EAST.get3DDataValue());
+    var consumer=w.getCapability(Capabilities.Energy.BLOCK,sinkP,Direction.EAST);
+    if(consumer==null)throw new IllegalStateException("B1375 sink output missing");
+    long full=sink.stored();
+    try(var demand=Transaction.openRoot()){
+     int used=consumer.extract(5_000_000,demand);
+     if(used!=5_000_000)throw new IllegalStateException(
+        "B1375 cannot create post-reactor-off demand "+used);
+     demand.commit();
+    }
+    if(sink.stored()!=full-5_000_000L)
+     throw new IllegalStateException("B1375 actual consumer demand mismatch");
+    afterDemandBank[0]=bank.xsxNetworkStoredFe();
+    afterDemandSink[0]=sink.stored();
+   }).thenExecuteAfter(20,()->{
+    // Must resume delivery FROM STORED FE even after producer vanishes.
+    if(sink.stored()!=afterDemandSink[0]+5_000_000L)
+     throw new IllegalStateException("B1375 Powerbank starved real load after reactor off: "+
+       afterDemandSink[0]+" -> "+sink.stored());
+    if(bank.xsxNetworkStoredFe()!=afterDemandBank[0]-5_000_000L)
+     throw new IllegalStateException("B1375 FE lost or created during battery discharge: "+
+       afterDemandBank[0]+" -> "+bank.xsxNetworkStoredFe());
+    System.out.println("B1375_SOURCE_OFF_BANK_DISCHARGE_PASS");
+    // Restart the producing cell in the SAME network without breaking or
+    // placing the controller again. Verify source -> bank resumes naturally.
+    w.setBlock(sourceP,ObsidianNetwork.ULTIMATE_ENERGY_CELL.get().defaultBlockState(),3);
+    var resumed=(EnergyCellBlockEntity)w.getBlockEntity(sourceP);
+    if(resumed==null)throw new IllegalStateException("B1375 restored reactor cell missing");
+    restoredSource[0]=resumed;
+    resumed.cycleSide(Direction.EAST.get3DDataValue());
+    bankBeforeRestore[0]=bank.xsxNetworkStoredFe();
+    sinkBeforeRestore[0]=sink.stored();
+    fund(resumed,5_000_000L);
+   }).thenExecuteAfter(30,()->{
+    if(restoredSource[0]==null)throw new IllegalStateException("B1375 source reference absent");
+    if(bank.xsxNetworkStoredFe()!=bankBeforeRestore[0]+5_000_000L
+       ||restoredSource[0].stored()!=0L ||sink.stored()!=sinkBeforeRestore[0])
+     throw new IllegalStateException("B1375 reactor restart failed to recharge bank: "+
+       "bank="+bank.xsxNetworkStoredFe()+" before="+bankBeforeRestore[0]+
+       " source="+restoredSource[0].stored()+
+       " sink="+sink.stored()+" beforeSink="+sinkBeforeRestore[0]);
+    System.out.println("B1375_REACTOR_RESTART_BANK_RECHARGE_PASS");
    }).thenSucceed();
   }
  }

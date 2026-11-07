@@ -119,8 +119,13 @@ class B1351Powerbank(unittest.TestCase):
   self.assertIn("inject-v176-powerbank-gametest-1355.py",s)
   for marker in ("B1355_ONE_PHYSICAL_CELL_SEVEN_FACES_ROLLBACK_PASS",
                  "B1355_CELL_CABLE_POWERBANK_CABLE_LIVE_SINK_PASS",
-                 "B1355_TWO_BILLION_FE_POWERBANK_SOURCE_OFF_FULL_SINK_PASS"):
+                 "B1355_TWO_BILLION_FE_POWERBANK_SOURCE_OFF_FULL_SINK_PASS",
+                 "B1375_ENERGY_CELL_REUSED_ROOT_PASS",
+                 "B1375_POWERBANK_REUSED_ROOT_INPUT_PASS",
+                 "B1375_SOURCE_OFF_BANK_DISCHARGE_PASS",
+                 "B1375_REACTOR_RESTART_BANK_RECHARGE_PASS"):
    self.assertIn(marker,s)
+   self.assertIn(marker,(ROOT/"features/v176/inject-v176-powerbank-gametest-1355.py").read_text("utf8"))
   self.assertIn("branches: [v1.7,",s)
   self.assertIn("1.7.6-powerbank",s)
   self.assertIn("apply-v176-b1300-energy-conservation.py",s)
