@@ -7,9 +7,11 @@ name: 'v1.7.6 B1300 FE conservation – fast verification (NO JAR)'
       - features/v176/apply-v176-b1300-energy-conservation.py
       - features/v176/apply-v176-b1301-backpack-magnet-any-location.py
       - features/v176/apply-v176-b1302-backpack-sort-persistent.py
+      - features/v176/apply-v176-b1303-backpack-shift-sort-lock.py
       - tests/test_v176_b1300_energy_conservation.py
       - tests/test_v176_b1301_backpack_magnet_any_location.py
       - tests/test_v176_b1302_backpack_sort_persistent.py
+      - tests/test_v176_b1303_backpack_shift_sort_lock.py
       - .github/workflows/networkstorage-v1.7-clean.yml
       - .github/workflows/v176-b1300-fe-contract.yml
   pull_request:
@@ -19,9 +21,11 @@ name: 'v1.7.6 B1300 FE conservation – fast verification (NO JAR)'
       - features/v176/apply-v176-b1300-energy-conservation.py
       - features/v176/apply-v176-b1301-backpack-magnet-any-location.py
       - features/v176/apply-v176-b1302-backpack-sort-persistent.py
+      - features/v176/apply-v176-b1303-backpack-shift-sort-lock.py
       - tests/test_v176_b1300_energy_conservation.py
       - tests/test_v176_b1301_backpack_magnet_any_location.py
       - tests/test_v176_b1302_backpack_sort_persistent.py
+      - tests/test_v176_b1303_backpack_shift_sort_lock.py
       - .github/workflows/networkstorage-v1.7-clean.yml
       - .github/workflows/v176-b1300-fe-contract.yml
 
@@ -40,8 +44,9 @@ jobs:
       - name: Validate patch syntax and strictly guarded full-sink tests
         run: |
           set -euo pipefail
-          python3 -m py_compile features/v176/apply-v176-b1300-energy-conservation.py tests/test_v176_b1300_energy_conservation.py features/v176/apply-v176-b1301-backpack-magnet-any-location.py tests/test_v176_b1301_backpack_magnet_any_location.py features/v176/apply-v176-b1302-backpack-sort-persistent.py tests/test_v176_b1302_backpack_sort_persistent.py
+          python3 -m py_compile features/v176/apply-v176-b1300-energy-conservation.py tests/test_v176_b1300_energy_conservation.py features/v176/apply-v176-b1301-backpack-magnet-any-location.py tests/test_v176_b1301_backpack_magnet_any_location.py features/v176/apply-v176-b1302-backpack-sort-persistent.py tests/test_v176_b1302_backpack_sort_persistent.py features/v176/apply-v176-b1303-backpack-shift-sort-lock.py tests/test_v176_b1303_backpack_shift_sort_lock.py
           python3 -m unittest discover -s tests -p 'test_v176_b1300_energy_conservation.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1301_backpack_magnet_any_location.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1302_backpack_sort_persistent.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1303_backpack_shift_sort_lock.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1281_powerbank_output_jade_cable.py' -v
