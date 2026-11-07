@@ -187,6 +187,7 @@ jobs:
           python3 -m py_compile features/v176/apply-v176-b1307-backpack-builder-tools-item-capability.py tests/test_v176_b1307_builder_tools_inventory_backpack.py
           python3 -m unittest discover -s tests -p 'test_v176_b1307_builder_tools_inventory_backpack.py' -v
           python3 -m py_compile features/v176/apply-v176-b1381-powerbank-output-slider.py features/v176/apply-v176-b1381-gametest-adapt.py
+          python3 -m py_compile features/v176/apply-v176-b1383-reactor-double.py features/v176/apply-v176-b1384-wireless-500k-buffers.py features/v176/apply-v176-b1384-wireless-gametest.py
           # Freeze 1319 remains untouched; new Powerbank branch only.
           python3 -m py_compile features/v176/apply-v176-powerbank-transfer-1351.py features/v176/inject-v176-powerbank-gametest-1355.py tests/test_v176_powerbank_transfer_1351.py
           python3 -m unittest discover -s tests -p 'test_v176_powerbank_transfer_1351.py' -v
@@ -2240,6 +2241,8 @@ jobs:
           # Wireless #268: unlimited per-call TX throughput / finite real FE;
           # each of the many receivers retains its individual 64k FE/t budget.
           python3 features/wireless-energy/apply-wireless-unlimited-transmitter.py
+          # B1384: genuine 500000 FE per TX/RX, no giant Jade capacity or idle charge.
+          python3 features/v176/apply-v176-b1384-wireless-500k-buffers.py
           # Wireless hotfix: upgrading ordinary tools is ONLY allowed by the
           # Battery Upgrade smithing recipe, never by wireless charging.
           # Recovery command removes just Obsidian's FE marker from one held item.
@@ -4300,6 +4303,8 @@ jobs:
             fi
             # B1381: all OUTPUT ports share one server-tick budget; 2M default, configurable GUI.
             python3 features/v176/apply-v176-b1381-powerbank-output-slider.py
+            # B1383: 2x real Reactor FE output with 2x fuel and coolant, all sizes.
+            python3 features/v176/apply-v176-b1383-reactor-double.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
@@ -4427,6 +4432,7 @@ jobs:
           python3 features/wireless-energy/inject-wireless-dense-runtime-gametest.py
           # Wireless #268: single high-throughput TX feeding 8 actual receiver/sink pairs.
           python3 features/wireless-energy/inject-wireless-one-tx-eight-rx-gametest.py
+          python3 features/v176/apply-v176-b1384-wireless-gametest.py
           grep -Fq 'WIRELESS_ONE_TX_EIGHT_RX_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'var fanoutSink=(dev.obsidiannetwork.blockentity.EnergyCellBlockEntity)' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # Wireless #264: Curios-present JVM may start before distant forced
@@ -4511,6 +4517,7 @@ jobs:
           for count in 10 50 100; do grep -Fq "WIRELESS_DENSE_REAL_SERVER_${count}_V1 PASS" /tmp/build103-postpatch-gametest.log; done
           grep -Fq 'WIRELESS_DENSE_IDLE_RECEIVERS_100_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'WIRELESS_ONE_TX_EIGHT_RX_V1 PASS' /tmp/build103-postpatch-gametest.log
+          grep -Fq 'B1384_REAL_WIRELESS_500K_TX_RX_AND_ROLLBACK_PASS' /tmp/build103-postpatch-gametest.log
           # A second post-patch GameTest JVM actually loads Curios 15.0.0 for MC 26.1.2.
           # Leave the distributable JAR / compileOnly optional dependency unchanged.
           cp work/build.gradle /tmp/wireless-curios-original.gradle
