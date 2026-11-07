@@ -90,28 +90,46 @@ c=once(c,"public final class EnergyCellBlockEntity extends BlockEntity {",
     // are NOT globally blocked merely for having an OUTPUT side.
     private static final ThreadLocal<EnergyCellBlockEntity> b1351AutoPush=
         new ThreadLocal<>();
-    private static final java.util.Map<
-        net.neoforged.neoforge.transfer.transaction.TransactionContext,
-        java.util.Set<EnergyCellBlockEntity>> b1351TxSources=
-        java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+    // B1372_ROOT_TRANSACTION_REUSE_SAFE: NeoForge TransactionManager reuses
+    // its Transaction instance at each depth. A WeakHashMap keyed by that
+    // instance wrongly keeps the old origin across *new* root transactions.
+    // A dedicated SnapshotJournal owns provenance through commit/rollback.
+    private static final class B1372CellOriginState {
+       final java.util.Set<EnergyCellBlockEntity> owners=
+          java.util.Collections.newSetFromMap(
+             new java.util.IdentityHashMap<EnergyCellBlockEntity,Boolean>());
+       final net.neoforged.neoforge.transfer.transaction.SnapshotJournal<
+           java.util.Set<EnergyCellBlockEntity>> journal=new
+             net.neoforged.neoforge.transfer.transaction.SnapshotJournal<>() {
+          @Override protected java.util.Set<EnergyCellBlockEntity> createSnapshot(){
+             var previous=java.util.Collections.newSetFromMap(
+                 new java.util.IdentityHashMap<EnergyCellBlockEntity,Boolean>());
+             previous.addAll(owners);
+             return previous;
+          }
+          @Override protected void revertToSnapshot(
+              java.util.Set<EnergyCellBlockEntity> before){
+             owners.clear();
+             owners.addAll(before);
+          }
+          @Override protected void onRootCommit(
+              java.util.Set<EnergyCellBlockEntity> before){owners.clear();}
+       };
+    }
+    private static final ThreadLocal<B1372CellOriginState> b1351TxSources=
+        ThreadLocal.withInitial(B1372CellOriginState::new);
     private static void b1351MarkSource(
         net.neoforged.neoforge.transfer.transaction.TransactionContext tx,
         EnergyCellBlockEntity source) {
-       synchronized(b1351TxSources){
-          b1351TxSources.computeIfAbsent(tx,k->
-            java.util.Collections.newSetFromMap(
-             new java.util.IdentityHashMap<EnergyCellBlockEntity,Boolean>()))
-             .add(source);
-       }
+       var origins=b1351TxSources.get();
+       origins.journal.updateSnapshots(tx);
+       origins.owners.add(source);
     }
     private static boolean b1351SelfSource(
         net.neoforged.neoforge.transfer.transaction.TransactionContext tx,
         EnergyCellBlockEntity cell){
-       if(b1351AutoPush.get()==cell)return true;
-       synchronized(b1351TxSources){
-          var sources=b1351TxSources.get(tx);
-          return sources!=null && sources.contains(cell);
-       }
+       return b1351AutoPush.get()==cell
+          ||b1351TxSources.get().owners.contains(cell);
     }
 ""","cell_per_transaction_source")
 # ServerTick's receiver-first auto-export is guarded while the sink is
@@ -226,6 +244,62 @@ b=once(b,"if(b==null||!b.formed||!b.xsxNetworkEnabled)return 0;",
 # INPUT-capability endpoints; extracting from INPUT remains forbidden by
 # the original Powerbank energyPort and b1351ActiveImport guard.
 assert "var bank=controller();return bank==null?0L:bank.amount;" in b
+# B1372_POWERBANK_ROOT_TRANSACTION_REUSE_SAFE:
+# NeoForge TransactionManager keeps a per-depth stack and re-opens the SAME
+# Transaction object for new roots. B1300's WeakHashMap retains the prior
+# owner's source marker and indefinitely rejects later legitimate INPUT.
+# A transaction-aware SnapshotJournal restores provenance on rollback and
+# clears it on root commit, including nested transactions. ThreadLocal state
+# avoids cross-thread source leakage and holds ZERO FE.
+bank_map_start=b.index(" private static final java.util.Map<")
+bank_map_end=b.index(" private final net.neoforged.neoforge.transfer.transaction.SnapshotJournal<long[]> journal",bank_map_start)
+bank_legacy=b[bank_map_start:bank_map_end]
+for required in ("WeakHashMap","b1300TxSources","b1300MarkSource",
+                 "b1300SelfCharge","b1300ActiveExport.get()==owner"):
+ assert required in bank_legacy,("B1372_BANK_LEGACY_DRIFT",required)
+bank_safe=r''' private static final class B1372BankOriginState {
+    final java.util.Set<PowerbankBlockEntity> owners=
+        java.util.Collections.newSetFromMap(
+           new java.util.IdentityHashMap<PowerbankBlockEntity,Boolean>());
+    final net.neoforged.neoforge.transfer.transaction.SnapshotJournal<
+         java.util.Set<PowerbankBlockEntity>> journal=new
+           net.neoforged.neoforge.transfer.transaction.SnapshotJournal<>() {
+       @Override protected java.util.Set<PowerbankBlockEntity> createSnapshot(){
+          var before=java.util.Collections.newSetFromMap(
+               new java.util.IdentityHashMap<PowerbankBlockEntity,Boolean>());
+          before.addAll(owners);
+          return before;
+       }
+       @Override protected void revertToSnapshot(
+           java.util.Set<PowerbankBlockEntity> before){
+          owners.clear();
+          owners.addAll(before);
+       }
+       @Override protected void onRootCommit(
+           java.util.Set<PowerbankBlockEntity> before){owners.clear();}
+    };
+ }
+ private static final ThreadLocal<B1372BankOriginState> b1300TxSources=
+    ThreadLocal.withInitial(B1372BankOriginState::new);
+ private static void b1300MarkSource(
+     net.neoforged.neoforge.transfer.transaction.TransactionContext tx,
+     PowerbankBlockEntity owner){
+    var origins=b1300TxSources.get();
+    origins.journal.updateSnapshots(tx);
+    origins.owners.add(owner);
+ }
+ private static boolean b1300SelfCharge(
+     net.neoforged.neoforge.transfer.transaction.TransactionContext tx,
+     PowerbankBlockEntity owner){
+    return b1300ActiveExport.get()==owner
+       ||b1300TxSources.get().owners.contains(owner);
+ }
+'''
+b=b[:bank_map_start]+bank_safe+b[bank_map_end:]
+assert "new java.util.WeakHashMap" not in b
+assert "B1372BankOriginState" in b
+assert "B1372CellOriginState" in c
+
 # ------------------- ZERO-BUFFER ENERGY CABLE -------------------
 for token in ("class CableEnergyHandler implements EnergyHandler",
               "getAmountAsLong()","public int insert(","public int extract(",
@@ -308,6 +382,10 @@ m=once(m,"return amount - var18;",
 assert m.count("int accepted = target.insert(var18, transaction);")==1
 assert "b1351OutputCells.contains(cell)" in m
 x=x[:start]+m+x[end:]
+
+# B1372 contract: no persistent TransactionContext-keyed identity caches.
+assert "new java.util.WeakHashMap" not in c
+assert "B1372_ROOT_TRANSACTION_REUSE_SAFE" in c
 
 for token in ("b1351SharedJournal","b1351AutoPush","b1351MarkSource"):
  assert token in c
