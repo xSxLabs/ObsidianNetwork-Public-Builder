@@ -13,6 +13,8 @@ class ReactorIntegration(unittest.TestCase):
     "ObsidianNetwork.REACTOR_CONTROLLER",
     "ObsidianNetwork.REACTOR_POWER_PORT",
     "ObsidianNetwork.REACTOR_FUEL_ASSEMBLY",
+    "reactor control rod not registered",
+    "origin.offset(3,5,3)",
     "x==3&&y>=2&&y<=4&&z==3",
     "ObsidianNetwork.URANIUM_ROD",
     "ObsidianNetwork.REACTOR_FLUID_PORT",

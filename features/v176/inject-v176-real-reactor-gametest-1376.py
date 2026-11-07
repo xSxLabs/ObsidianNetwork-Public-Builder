@@ -91,6 +91,20 @@ public final class B1376ReactorBankGameTests {
      w.setBlock(p,ObsidianNetwork.REACTOR_POWER_PORT.get().defaultBlockState(),3);
     else w.setBlock(p,ObsidianNetwork.REACTOR_CASING.get().defaultBlockState(),3);
    }
+   // A real fuel column also requires its control rod on the top face.
+   // Look up the mod-registered reactor rod, not a simulated/copper block.
+   net.minecraft.world.level.block.Block controlRod=null;
+   StringBuilder reactorBlocks=new StringBuilder();
+   for(var candidate:net.minecraft.core.registries.BuiltInRegistries.BLOCK){
+    var id=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(candidate);
+    if(!id.getNamespace().equals("obsidiannetwork")||!id.getPath().contains("reactor"))continue;
+    reactorBlocks.append(id.getPath()).append(",");
+    if(id.getPath().contains("control")&&id.getPath().contains("rod"))
+     controlRod=candidate;
+   }
+   if(controlRod==null)
+    throw new IllegalStateException("B1378 reactor control rod not registered: "+reactorBlocks);
+   w.setBlock(origin.offset(3,5,3),controlRod.defaultBlockState(),3);
    // Real 3x3x3 Powerbank with its actual INPUT/OUTPUT shell port entities.
    for(int x=8;x<=10;x++)for(int y=1;y<=3;y++)for(int z=2;z<=4;z++){
     BlockPos p=origin.offset(x,y,z);
