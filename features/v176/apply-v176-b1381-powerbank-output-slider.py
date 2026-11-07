@@ -248,18 +248,27 @@ def inject_override(src,method,args,body,call):
     idx=src.rfind('}')
     return src[:idx]+' @Override public boolean '+method+'('+call[0]+'){\n   '+body+'\n   return super.'+method+'('+call[1]+');\n }\n'+src[idx:]
 
-s=inject_override(s,"mouseClicked",
-  r'double\s+\w+\s*,\s*double\s+\w+\s*,\s*int\s+\w+',
-  'if(machine==Machine.POWERBANK&&b1381Click(mouseX,mouseY,button))return true;',
-  ('double mouseX,double mouseY,int button','mouseX,mouseY,button'))
-s=inject_override(s,"mouseDragged",
-  r'double\s+\w+\s*,\s*double\s+\w+\s*,\s*int\s+\w+\s*,\s*double\s+\w+\s*,\s*double\s+\w+',
-  'if(machine==Machine.POWERBANK&&b1381Drag(mouseX))return true;',
-  ('double mouseX,double mouseY,int button,double dragX,double dragY','mouseX,mouseY,button,dragX,dragY'))
-s=inject_override(s,"mouseReleased",
-  r'double\s+\w+\s*,\s*double\s+\w+\s*,\s*int\s+\w+',
-  'if(machine==Machine.POWERBANK&&b1381Release(button))return true;',
-  ('double mouseX,double mouseY,int button','mouseX,mouseY,button'))
+# Minecraft 26.1 uses the MouseButtonEvent object (not legacy doubles).
+# Preserve vanilla/container behavior outside this Powerbank control.
+assert not re.search(r'public\\s+boolean\\s+mouseClicked\\s*\\(',s), "B1383_SCREEN_CLICK_API_CHANGED"
+assert not re.search(r'public\\s+boolean\\s+mouseDragged\\s*\\(',s), "B1383_SCREEN_DRAG_API_CHANGED"
+assert not re.search(r'public\\s+boolean\\s+mouseReleased\\s*\\(',s), "B1383_SCREEN_RELEASE_API_CHANGED"
+idx=s.rfind('}')
+assert idx>0 and s[idx+1:].strip()==""
+s=s[:idx]+'''
+ @Override public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event,boolean doubleClick){
+  if(machine==Machine.POWERBANK&&b1381Click(event.x(),event.y(),event.button()))return true;
+  return super.mouseClicked(event,doubleClick);
+ }
+ @Override public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent event,double dx,double dy){
+  if(machine==Machine.POWERBANK&&b1381Drag(event.x()))return true;
+  return super.mouseDragged(event,dx,dy);
+ }
+ @Override public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event){
+  if(machine==Machine.POWERBANK&&b1381Release(event.button()))return true;
+  return super.mouseReleased(event);
+ }
+'''+s[idx:]
 assert "B1381_SLIDER" in s
 screen.write_text(s,encoding="utf-8")
 print("B1381_POWERBANK_OUTPUT_GUI_TRANSACTION_SAFE_GLOBAL_RATE_PASS")
