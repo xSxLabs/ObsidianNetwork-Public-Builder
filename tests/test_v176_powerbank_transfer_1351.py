@@ -78,6 +78,11 @@ class B1351Powerbank(unittest.TestCase):
   i=s.index(patch)
   self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ]; then',s[i-300:i])
   self.assertIn("test_v176_powerbank_transfer_1351.py",s)
+  self.assertIn("inject-v176-powerbank-gametest-1355.py",s)
+  for marker in ("B1355_ONE_PHYSICAL_CELL_SEVEN_FACES_ROLLBACK_PASS",
+                 "B1355_CELL_CABLE_POWERBANK_CABLE_LIVE_SINK_PASS",
+                 "B1355_TWO_BILLION_FE_POWERBANK_SOURCE_OFF_FULL_SINK_PASS"):
+   self.assertIn(marker,s)
   self.assertIn("branches: [v1.7,",s)
   self.assertIn("1.7.6-powerbank",s)
   self.assertIn("apply-v176-b1300-energy-conservation.py",s)
