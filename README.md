@@ -1,3 +1,15 @@
+# ⚠ OUTDATED — xSxLabs Network Storage v1.7.6 Build 1224
+
+**STATUS: OUTDATED — DO NOT USE AS THE CURRENT v1.7.6 FREEZE.**
+
+The current frozen v1.7.6 test candidate is **Build 1292**, pinned to commit `8258b8b6a86b6dbf08a5f20981cbba3ad286a8d1` on [freeze/v1.7.6-build1292](https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/tree/freeze/v1.7.6-build1292).
+
+The original, unchanged Build 1224 commit (`8c13d30b2032e999f498926e333f52a88a51123d`) is retained at [outdated/v1.7.6-build1224](https://github.com/xSxLabs/ObsidianNetwork-Public-Builder/tree/outdated/v1.7.6-build1224).
+
+This branch is marked **OUTDATED** for historical reference only. The 1.7.5 freeze is unaffected.
+
+---
+
 # ObsidianNetwork-Public-Builder
 
 RC11_BUILD_TRIGGER=B670-de9b44a5863b3a26deb6255e8e3c91c28177a3eb
