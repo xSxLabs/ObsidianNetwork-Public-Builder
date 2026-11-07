@@ -117,9 +117,14 @@ c=once(c,"int accepted = target.insert(offer, tx);",
                                if(b1351Previous==null)b1351AutoPush.remove();
                                else b1351AutoPush.set(b1351Previous);
                             }""","cell_sender_sink_first_origin")
-c=once(c,"          if (!this.canInsert()) {",
-"""          if (b1351SelfSource(tx,EnergyCellBlockEntity.this))return 0;
-          if (!this.canInsert()) {""","cell_origin_guard")
+# The compiler's decompiled whitespace is not stable; locate the side-mode
+# guard by its semantics, preserving the original Java indentation.
+origin_guard=list(re.finditer(r"if\s*\(\s*!this\.canInsert\(\)\s*\)\s*\{",c))
+assert len(origin_guard)==1,("B1351_CELL_CAN_INSERT_DRIFT",len(origin_guard))
+line=c.rfind("\n",0,origin_guard[0].start())+1
+indent=c[line:origin_guard[0].start()]
+assert indent.strip()=="",("B1351_CELL_INSERT_INDENT",repr(indent))
+c=c[:line]+indent+"if (b1351SelfSource(tx,EnergyCellBlockEntity.this))return 0;\n"+c[line:]
 c=once(c,"return Math.toIntExact(EnergyCellBlockEntity.this.energy.extract(n));",
 """int pulled=Math.toIntExact(EnergyCellBlockEntity.this.energy.extract(n));
                 if(pulled>0)b1351MarkSource(tx,EnergyCellBlockEntity.this);
