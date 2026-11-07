@@ -72,7 +72,8 @@ public final class B1324DirectEnergyGameTests {
    for(int x=0;x<3;x++)for(int y=0;y<3;y++)for(int z=0;z<3;z++){
     BlockPos p=origin.offset(x,y,z);
     if(x==1&&y==1&&z==1){
-     world.setBlock(p,Blocks.AIR.defaultBlockState(),3);
+     // Final v1.7.6 multiblock requires a Powerbank Cell in the core.
+     world.setBlock(p,ObsidianNetwork.POWERBANK_CELL.get().defaultBlockState(),3);
     }else if(p.equals(controlPos)){
      world.setBlock(p,ObsidianNetwork.POWERBANK_CONTROLLER.get().defaultBlockState(),3);
     }else if(p.equals(inputPos)){
