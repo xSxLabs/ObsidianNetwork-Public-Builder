@@ -189,6 +189,8 @@ jobs:
           # Freeze 1319 remains untouched; new Powerbank branch only.
           python3 -m py_compile features/v176/apply-v176-powerbank-transfer-1351.py features/v176/inject-v176-powerbank-gametest-1355.py tests/test_v176_powerbank_transfer_1351.py
           python3 -m unittest discover -s tests -p 'test_v176_powerbank_transfer_1351.py' -v
+          python3 -m py_compile features/v176/inject-v176-real-reactor-gametest-1376.py tests/test_v176_real_reactor_bank_1376.py
+          python3 -m unittest discover -s tests -p 'test_v176_real_reactor_bank_1376.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4442,6 +4444,7 @@ jobs:
           if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ]; then
             export V1_SOURCE_ROOT="$PWD/work/src/main/java"
             python3 features/v176/inject-v176-powerbank-gametest-1355.py
+            python3 features/v176/inject-v176-real-reactor-gametest-1376.py
           fi
           # Build #237: prove Java test locals do not shadow original energy-cell locals.
           # Separate the second GameTest server from the first CI-only test universe.
@@ -4461,6 +4464,10 @@ jobs:
             grep -Fq 'B1375_POWERBANK_REUSED_ROOT_INPUT_PASS' /tmp/build103-postpatch-gametest.log
             grep -Fq 'B1375_SOURCE_OFF_BANK_DISCHARGE_PASS' /tmp/build103-postpatch-gametest.log
             grep -Fq 'B1375_REACTOR_RESTART_BANK_RECHARGE_PASS' /tmp/build103-postpatch-gametest.log
+            grep -Fq 'B1376_REAL_REACTOR_CABLE_BANK_CONSUMER_PASS' /tmp/build103-postpatch-gametest.log
+            grep -Fq 'B1376_REACTOR_OFF_TWO_BILLION_IDLE_NO_LOSS_PASS' /tmp/build103-postpatch-gametest.log
+            grep -Fq 'B1376_REACTOR_OFF_BANK_TO_CONSUMER_PASS' /tmp/build103-postpatch-gametest.log
+            grep -Fq 'B1376_REACTOR_RESTART_BANK_AUTO_RECHARGE_PASS' /tmp/build103-postpatch-gametest.log
           fi
           grep -Fq 'FULL_EQUIPMENT_CELL_PHASE_NS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'EQUIPMENT_DIRTY_SERIALIZATION_MUTATION_GAMETEST PASS' /tmp/build103-postpatch-gametest.log
@@ -4566,6 +4573,7 @@ jobs:
           # Tests must never be shipped in the distributable JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
           rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
+          rm -f work/src/main/resources/data/obsidiannetwork/structure/b1376_reactor_energy.nbt
           # Consolidated, machine-readable four-issue diagnostic for this run.
           # This reports missing coverage explicitly rather than treating green
           # source checks as a real dedicated-server restart or UI stress test.
