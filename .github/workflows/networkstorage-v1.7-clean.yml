@@ -164,6 +164,9 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1270_magnet_8_blocks.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1273_placed_magnet_scroll.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1281_powerbank_output_jade_cable.py' -v
+          # B1300: no energy loss on partial sinks or full consumers; no self-recharge.
+          python3 -m py_compile features/v176/apply-v176-b1300-energy-conservation.py tests/test_v176_b1300_energy_conservation.py
+          python3 -m unittest discover -s tests -p 'test_v176_b1300_energy_conservation.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4225,6 +4228,9 @@ jobs:
             # B1281: remove the hidden 1m FE/t autonomous Powerbank output cap.
             # Cable remains pure FE transport; optional Jade hides external storage row.
             python3 features/v176/apply-v176-b1281-powerbank-direct-fe-and-jade-cable.py
+            # B1300: atomic partial transfers and charge-loop prevention; Jade sees zero cable buffer.
+            # Run after B1281 and BEFORE the final Java and server regression build.
+            python3 features/v176/apply-v176-b1300-energy-conservation.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
