@@ -1,4 +1,8 @@
-"""B1351 independent FE conservation / branch isolation regression gates."""
+"""B1351 independent FE conservation / branch isolation regression gates.
+
+Full Java compile and the existing NeoForge GameTest suite are mandatory;
+these contract tests guard against regressions in the source patch itself.
+"""
 from pathlib import Path
 import ast
 import unittest
