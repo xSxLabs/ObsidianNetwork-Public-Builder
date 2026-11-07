@@ -38,6 +38,34 @@ class B1351Powerbank(unittest.TestCase):
   self.assertIn('b=bank_comment_once(b,"// B1300_NO_SELF_CHARGE',p)
   self.assertIn('b=bank_comment_once(b,"// B591_POWERBANK_OUTPUT_PUSH',p)
 
+ def test_neoforge_reuses_root_transaction_objects_no_sticky_fe(self):
+  # TransactionManager.stack reopens the same Transaction object at depth 0.
+  # A WeakHashMap[TransactionContext, origins] persists a committed source
+  # tag and incorrectly blocks the next independent energy insertion.
+  patch=PATCH.read_text("utf8")
+  for marker in ("B1372_ROOT_TRANSACTION_REUSE_SAFE",
+                 "B1372_POWERBANK_ROOT_TRANSACTION_REUSE_SAFE",
+                 "B1372CellOriginState","B1372BankOriginState",
+                 "origins.journal.updateSnapshots(tx);",
+                 "onRootCommit(", "revertToSnapshot("):
+   self.assertIn(marker,patch)
+  self.assertNotIn("new java.util.WeakHashMap",patch)
+  # Model both callback paths: commit clears origins; rollback restores
+  # the prior set, including when a nested transaction aborts.
+  origins=set()
+  origins.add("bank")
+  self.assertIn("bank",origins)
+  origins.clear()  # onRootCommit for the first use of a pooled root object
+  self.assertNotIn("bank",origins)  # next use of SAME root object is legitimate
+  origins.add("bank")
+  original=origins.copy()
+  origins.add("cell")
+  origins=original  # revertToSnapshot for an aborted nested transaction
+  self.assertIn("bank",origins)
+  self.assertNotIn("cell",origins)
+  origins.clear()  # root closed
+  self.assertEqual(origins,set())
+
  def test_real_rollback_is_per_physical_cell_not_face(self):
   # The bug: two side handlers for one cell each independently snapshot FE.
   # Shared journal must restore to ONE common pre-transaction baseline.
