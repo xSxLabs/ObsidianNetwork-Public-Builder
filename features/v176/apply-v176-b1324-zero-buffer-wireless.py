@@ -8,8 +8,8 @@ Use direct transactional FE forwarding:
   loaded neighboring sources at an indexed transmitter;
 - receiver auto-push performs sink preflight and commits only exact delivery.
 No chunk loads, offline buffers, FE creation, or unbounded network traversal.
-Legacy 'wireless_fe' NBT is retired; old saved transmitter balances are not
-treated as available new energy. Run only after all existing wireless patches.
+Legacy 'wireless_fe' remains a read-only compatibility archive for rollback;
+NEVER re-expose its balance as a new runtime transmitter/receiver buffer. Run only after all existing wireless patches.
 """
 import os
 from pathlib import Path
@@ -58,7 +58,7 @@ def swap_method(src,signature,code):
 # power storage from the actual wireless blocks; cells/powerbank keep storage.
 e=one(e," public static final long CAPACITY=64000000L;\n",
  "// B1324_DIRECT_FE_NO_TX_RX_BUFFER: antennas do not own energy.\n","remove_capacity")
-e=one(e," private long stored;\n","","remove_stored_field")
+e=one(e," private long stored;\n"," private long b1324LegacyFeArchive;\n","archive_old_fe_read_only")
 e=one(e," public long stored(){return stored;}"," public long stored(){return 0L;}","legacy_status_no_storage")
 e=one(e,"&&stored>0;",";","live_tx_not_buffer")
 assert e.count("if(transmitter)WirelessEnergyRuntime.unregister(this);")==3
@@ -69,13 +69,14 @@ e=e.replace("if(transmitter)WirelessEnergyRuntime.register(this);","WirelessEner
 assert e.count("if(transmitter)WirelessEnergyRuntime.unregister(this);")==3
 e=e.replace("if(transmitter)WirelessEnergyRuntime.unregister(this);","WirelessEnergyRuntime.unregister(this);")
 e=one(e,'  out.putLong("wireless_fe",stored);',
- """  // Legacy buffer NBT deliberately NOT emitted. Antennas now move FE only
-  // between real machines; the saved network ID and owner remain persistent.""",
- "no_wireless_fe_save")
+ """  // Compatibility-only. Old FE is NOT used by any new energy handler.
+  out.putLong("wireless_fe",b1324LegacyFeArchive);""",
+ "legacy_archive_save")
 e=one(e,'  stored=transmitter?Math.max(0L,Math.min(CAPACITY,in.getLongOr("wireless_fe",0L))):0L;',
- """  // Legacy wireless_fe is ignored; never mint or silently re-expose it as
-  // a new buffer. Drain older transmitter storage before installing this build.""",
- "no_wireless_fe_load")
+ """  // Archive historical FE for rollback only, not for energy routing.
+  b1324LegacyFeArchive=transmitter?Math.max(0L,
+      Math.min(64000000L,in.getLongOr("wireless_fe",0L))):0L;""",
+ "legacy_archive_load")
 
 e=swap_method(e," public int withdraw(int requested,TransactionContext tx)",r''' public int withdraw(int requested,TransactionContext tx){
   if(!isActive()||requested<=0||!(level instanceof ServerLevel world))return 0;
@@ -158,7 +159,8 @@ e=swap_method(e," private final class Handler implements EnergyHandler",r''' pri
  }''')
 assert "private long stored;" not in e
 assert "journal.updateSnapshots(tx)" not in e
-assert 'putLong("wireless_fe"' not in e
+assert 'putLong("wireless_fe",stored)' not in e
+assert e.count("b1324LegacyFeArchive")==3
 assert "stored+=" not in e and "stored-=" not in e
 
 # Keep the proven weak loaded-transmitter registry, its round-robin sender
