@@ -69,6 +69,15 @@ change(r,
 inject_commit(r,"energyJournal","storedFe",
  """if(level!=null&&before>storedFe)
       xsxRates.committed(level.getGameTime(),0L,before-storedFe);""")
+# B1380: OFF must suppress *all* reactor server-tick work, not only
+# active port pushes and one 20-tick generation tail. B489 and later patches
+# may insert work before the old late "if(!be.formed)return" anchor.
+# Keep existing original runtime, fuel and coolant semantics when enabled.
+change(r,
+'''public static void tick(Level level,BlockPos pos,BlockState state,ReactorControllerBlockEntity be){''',
+'''public static void tick(Level level,BlockPos pos,BlockState state,ReactorControllerBlockEntity be){
+  // B1380_REACTOR_OFF_BLOCKS_ALL_SERVER_TICKS
+  if(!be.xsxNetworkEnabled)return;''')
 change(r,
 '''    if(demand<=0||!formed)return 0;''',
 '''    if(demand<=0||!formed||!xsxNetworkEnabled)return 0;''')

@@ -21,6 +21,7 @@ class ReactorIntegration(unittest.TestCase):
     "ObsidianNetwork.REACTOR_ITEM_PORT",
     "reactor.revalidate(w)",
     "reactor.xsxNetworkSetEnabled(false)",
+    "B1380 reactor FE changed during external idle funding",
     "reactor.xsxNetworkSetEnabled(true)",
     "ObsidianNetwork.POWERBANK_INPUT",
     "ObsidianNetwork.POWERBANK_OUTPUT",
@@ -43,4 +44,7 @@ class ReactorIntegration(unittest.TestCase):
    self.assertIn(marker,flow)
    self.assertIn(marker,SOURCE.read_text("utf8"))
   self.assertIn("rm -f work/src/main/resources/data/obsidiannetwork/structure/b1376_reactor_energy.nbt",flow)
+  control=(ROOT/"features/v176/apply-v176-reactor-powerbank-control.py").read_text("utf8")
+  self.assertIn("B1380_REACTOR_OFF_BLOCKS_ALL_SERVER_TICKS",control)
+  self.assertIn("if(!be.xsxNetworkEnabled)return;",control)
 if __name__=="__main__":unittest.main()

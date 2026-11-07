@@ -133,6 +133,7 @@ public final class B1376ReactorBankGameTests {
    reactor.setItem(0,new ItemStack(ObsidianNetwork.URANIUM_ROD.get()));
    reactor.setItem(1,new ItemStack(Items.WATER_BUCKET));
    final long[] bankIdle=new long[1], reactorIdle=new long[1];
+   final long[] reactorToggleFe=new long[1];
    final long[] bankBeforeDemand=new long[1], bankBeforeRestart=new long[1];
    final long[] totalBeforeRestart=new long[1];
    h.startSequence().thenExecuteAfter(80,()->{
@@ -145,6 +146,7 @@ public final class B1376ReactorBankGameTests {
        " sink="+sink.stored()+" status="+reactor.status());
     System.out.println("B1376_REAL_REACTOR_CABLE_BANK_CONSUMER_PASS produced="+produced);
     // Stop the REAL reactor, not a simulated Energy Cell producer.
+    reactorToggleFe[0]=reactor.xsxNetworkStoredFe();
     reactor.xsxNetworkSetEnabled(false);
     fund(sink,sink.energyHandler(null).getCapacityAsLong()-sink.stored());
     try(var tx=Transaction.openRoot()){
@@ -155,6 +157,11 @@ public final class B1376ReactorBankGameTests {
     }
     bankIdle[0]=bank.xsxNetworkStoredFe();
     reactorIdle[0]=reactor.xsxNetworkStoredFe();
+    if(reactorIdle[0]!=reactorToggleFe[0])
+     throw new IllegalStateException("B1380 reactor FE changed during external idle funding: "+
+       reactorToggleFe[0]+" -> "+reactorIdle[0]+
+       " enabled="+reactor.xsxNetworkEnabled()+
+       " consumer="+sink.stored()+" status="+reactor.status());
     if(bankIdle[0]<2_000_000_000L)
      throw new IllegalStateException("B1376 bank reserve smaller than 2B");
    }).thenExecuteAfter(40,()->{
