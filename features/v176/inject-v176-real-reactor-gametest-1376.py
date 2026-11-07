@@ -160,8 +160,11 @@ public final class B1376ReactorBankGameTests {
    }).thenExecuteAfter(40,()->{
     if(bank.xsxNetworkStoredFe()!=bankIdle[0]
        ||reactor.xsxNetworkStoredFe()!=reactorIdle[0])
-     throw new IllegalStateException("B1376 lost reserve while reactor OFF and sink FULL: "+
-       bankIdle[0]+" -> "+bank.xsxNetworkStoredFe());
+     throw new IllegalStateException("B1376 REAL reactor OFF changed stored FE: "+
+       "bank "+bankIdle[0]+" -> "+bank.xsxNetworkStoredFe()+
+       " reactor "+reactorIdle[0]+" -> "+reactor.xsxNetworkStoredFe()+
+       " reactorEnabled="+reactor.xsxNetworkEnabled()+
+       " consumer="+sink.stored()+" status="+reactor.status());
     if(bank.xsxNetworkOutputFePerTick()!=0L)
      throw new IllegalStateException("B1376 phantom output to full consumer");
     System.out.println("B1376_REACTOR_OFF_TWO_BILLION_IDLE_NO_LOSS_PASS");

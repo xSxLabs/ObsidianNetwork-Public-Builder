@@ -18,6 +18,7 @@ class ReactorUnlimitedOutput(unittest.TestCase):
             "energyPort.extract(accepted,tx)==accepted",
             "tx.commit();",
             "ReactorPortBlockEntity.java",
+            "if(!formed||!enabled||!xsxNetworkEnabled||storedFe<=0L)return;",
             "x.extract(n,tx)",
         ):
             self.assertIn(token, SRC)

@@ -29,6 +29,14 @@ for invariant in (
     "int paid=(int)Math.min((long)demand,storedFe);",
 ):
     assert invariant in s, ("V176_REACTOR_FE_TRANSACTION_CHANGED", invariant)
+# The real Reactor shutdown must halt the active POWER-port pusher, not
+# merely generation and passive EnergyHandler.extract. Otherwise an externally
+# disabled Reactor still probes and attempts to export its remaining buffer.
+old_guard = "if(!formed||!enabled||storedFe<=0L)return;"
+new_guard = "if(!formed||!enabled||!xsxNetworkEnabled||storedFe<=0L)return;"
+assert s.count(old_guard) == 1, ("V176_REACTOR_ACTIVE_PUSH_GUARD_DRIFT", s.count(old_guard))
+s = s.replace(old_guard, new_guard, 1)
+assert "V176_REACTOR_UNCAPPED_PORT_PUSH" in new
 s = s.replace(old, new, 1)
 assert "262144L" not in s[s.index("private void pushToPowerPort("):s.index("private void pushToPowerPort(")+2000]
 src.write_text(s, encoding="utf-8")
