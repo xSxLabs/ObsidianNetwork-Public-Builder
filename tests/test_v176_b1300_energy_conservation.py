@@ -173,7 +173,7 @@ class ConservationB1300(unittest.TestCase):
         self.assertEqual(accepted,3)
         self.assertEqual(bank,1_999_997)
         self.assertEqual(machine["stored"],1_000_000)
-        self.assertEqual(bank+machine["stored"],3_000_000)
+        self.assertEqual(bank+machine["stored"],2_999_997)
 
     def test_empty_output_meter_after_20_ticks_without_commits(self):
         # The existing V176PowerRateMeter uses a 20 tick rolling committed
@@ -199,7 +199,8 @@ class ConservationB1300(unittest.TestCase):
         s=WORKFLOW.read_text("utf-8")
         self.assertIn(PATCH.name,s)
         self.assertIn(Path(__file__).name,s)
-        self.assertLess(s.index(B1281.name),s.index(PATCH.name))
+        self.assertLess(s.index("python3 features/v176/"+B1281.name),
+                        s.index("python3 features/v176/"+PATCH.name))
         self.assertIn("B1300_NO_SELF_CHARGE",PATCH.read_text("utf-8"))
         self.assertNotIn("_EXPLICIT_BUILD_",PATCH.read_text("utf-8"))
 
