@@ -134,7 +134,13 @@ assert "xsxDraggingScrollbar" in s
 assert "xsxThumbTop()" in s and "xsxThumbHeight()" in s
 assert 'tag.putInt("xsx_v176_scroll_total_types",resultEntries().size());' in m
 assert "int position=page*9+slot-4;" in m
-assert "int last=Math.max(0,(resultEntries().size()-45+8)/9);" in m
+# B817's filter editor makes the valid final expression:
+# int last=filterEditor?1:Math.max(0,(resultEntries().size()-45+8)/9);
+# Earlier B891 source has no filterEditor branch. Accept only these two safe
+# shapes; never delete/overrule server-side filtered row bounds.
+assert (("int last=filterEditor?1:Math.max(0,(resultEntries().size()-45+8)/9);" in m)
+    or ("int last=Math.max(0,(resultEntries().size()-45+8)/9);" in m)),(
+    "B1274_SERVER_ROW_BOUNDS_DRIFT",m.count("resultEntries().size()-45+8"))
 # Both Java files remain unchanged if any guard fails.
 menu.write_text(m,"utf-8")
 screen.write_text(s,"utf-8")
