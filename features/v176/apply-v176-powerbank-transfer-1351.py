@@ -139,7 +139,11 @@ for token in ("private void b591PushOutput(ServerLevel server){",
               "activePorts","be.b591PushOutput(sl);"):
  assert token in b,("B1351_BANK_ANCHOR",token)
 
-b=once(b,"  // B592_POWERBANK_OUTPUT_TICK\n  be.b591PushOutput(sl);",
+bank_tick_matches=list(re.finditer(
+ r"(?m)^[ \t]*// B592_POWERBANK_OUTPUT_TICK[ \t]*\n[ \t]*be\.b591PushOutput\(sl\);",b))
+assert len(bank_tick_matches)==1,("B1351_BANK_TICK_ANCHOR",len(bank_tick_matches))
+bank_tick_old=bank_tick_matches[0].group(0)
+b=once(b,bank_tick_old,
 """  // B1351_RELINK_ON_LOAD: initial port owner mappings are reconstructed
   // before either I/O operation; no manual controller break is needed.
   if((!be.formed||be.activePorts.isEmpty())
