@@ -25,7 +25,7 @@ for required in (
  "private boolean sort(){",
  "if(countSort)result.sort(java.util.Comparator",
  "private final Source source;",
- "Storage(Source source){super(54);this.source=source;}",
+ "private java.util.List<V176BackpackCells.Entry> resultEntries()",
  "private ItemStack live(){",
  "case CHEST->", "case CURIOS_BACK->",
  "case MAIN_HAND->", "case OFF_HAND->",
@@ -58,18 +58,28 @@ m=one(m,
 # These fields live in the existing item CUSTOM_DATA, independent of the
 # magnet upgrade's CUSTOM_DATA and of the storage cell CONTAINER.
 m=one(m,
- """   Storage(Source source){super(54);this.source=source;}""",
- """   // B1302_SORT_RESTORED: one per-backpack server-side setting.
-   Storage(Source source){
-    super(54);this.source=source;
-    if(source.valid()){
-     var data=source.current().getOrDefault(
-         net.minecraft.core.component.DataComponents.CUSTOM_DATA,
-         net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
-     countSort=data.getBooleanOr("xsx_v176_backpack_sort_count",false);
-    }
+ """   private boolean countSort=false;""",
+ """   private boolean countSort=false;
+   // B1302_SORT_RESTORED: lazy load the saved choice before first list sort.
+   // Do not replace Storage(Source) constructor, whose exact shape is
+   // legitimately revised by earlier B1230/B1258 GUI optimizations.
+   private boolean xsxSortLoaded=false;
+   private void xsxLoadSortOnce(){
+    if(xsxSortLoaded||!source.valid())return;
+    var data=source.current().getOrDefault(
+        net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+        net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+    countSort=data.getBooleanOr("xsx_v176_backpack_sort_count",false);
+    xsxSortLoaded=true;
    }""",
  "persistent_sort_load")
+m=one(m,
+ """   private java.util.List<V176BackpackCells.Entry> resultEntries(){
+    if(!source.valid())return java.util.List.of();""",
+ """   private java.util.List<V176BackpackCells.Entry> resultEntries(){
+    if(!source.valid())return java.util.List.of();
+    xsxLoadSortOnce();""",
+ "initial_list_uses_saved_sort")
 
 m=one(m,
  """   private boolean sort(){
@@ -78,6 +88,7 @@ m=one(m,
    }""",
  """   private boolean sort(){
     if(!source.valid())return false;
+    xsxLoadSortOnce();
     // B1302_SORT_SAVE_CAS: keep current list if its source changed.
     boolean requested=!countSort;
     ItemStack updated=source.current().copy();
