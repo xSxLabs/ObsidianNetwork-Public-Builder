@@ -267,9 +267,19 @@ j=one(j,"&& block.getBlock() instanceof EnergyCableBlock){",
 gui=root/"client/WirelessNetworkScreen.java"
 g=gui.read_text("utf-8")
 g=one(g,'Sender buffer: ','Live source FE: ',"wireless_gui_source_label")
+# The menu used to read the transmitter's physical stored buffer. Read the
+# actual neighboring source FE instead; this is NOT receiver local storage.
+menu=root/"menu/WirelessNetworkMenu.java"
+m=menu.read_text("utf-8")
+m=one(m,'case 3 -> (int)Math.min(32767,be.stored()/1000);',
+ """case 3 -> (int)Math.min(32767L,
+      dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(
+       player.level().getServer(),be.networkId())/1000L);""",
+ "wireless_menu_live_source")
 # Both files checked before any write.
 entity.write_text(e,encoding="utf-8")
 runtime.write_text(r,encoding="utf-8")
 jade.write_text(j,encoding="utf-8")
 gui.write_text(g,encoding="utf-8")
+menu.write_text(m,encoding="utf-8")
 print("B1324_ZERO_BUFFER_WIRELESS_DIRECT_FE_DEMAND_ONLY_ATOMIC_PASS")
