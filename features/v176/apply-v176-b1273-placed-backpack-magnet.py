@@ -29,10 +29,10 @@ def once(source,old,new,label):
     return source.replace(old,new,1)
 
 block_src=once(block_src,
-'''  @Nullable @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){
+''' @Nullable @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){
   return new NetworkBackpackBlockEntity(p,s);
  }''',
-'''  @Nullable @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){
+''' @Nullable @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){
   return new NetworkBackpackBlockEntity(p,s);
  }
  // A placed backpack has no player inventory slot and was never considered
