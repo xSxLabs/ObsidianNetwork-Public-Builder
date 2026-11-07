@@ -33,11 +33,11 @@ MENU="""public final class V176BackpackMenu {
  }
  private static final class Storage extends SimpleContainer {
   private final Source source;
-   private boolean countSort=false;
+  private boolean countSort=false;
   private int page=0;
    Storage(Source source){super(54);this.source=source;}
-   private java.util.List<V176BackpackCells.Entry> resultEntries(){
-    if(!source.valid())return java.util.List.of();
+  private java.util.List<V176BackpackCells.Entry> resultEntries(){
+   if(!source.valid())return java.util.List.of();
    var result=new java.util.ArrayList<V176BackpackCells.Entry>();
    if(countSort)result.sort(java.util.Comparator
        .comparingLong(V176BackpackCells.Entry::count).reversed()
@@ -46,8 +46,8 @@ MENU="""public final class V176BackpackMenu {
        e->e.descriptor().key().itemId().toString()));
    return result;
   }
-   private boolean sort(){
-    if(!source.valid())return false;
+  private boolean sort(){
+   if(!source.valid())return false;
     countSort=!countSort;page=0;return true;
    }
  }
