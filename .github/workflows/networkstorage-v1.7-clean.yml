@@ -162,6 +162,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1265_backpack_highspeed_itemcables.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1269_backpack_live_cell_runtime.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1270_magnet_8_blocks.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1273_placed_magnet_scroll.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4216,6 +4217,10 @@ jobs:
             python3 features/v176/apply-v176-b1269-backpack-live-cell-runtime.py
             # B1270: 8-block per-tick exact-batched Magnet pickup, GUI default ON.
             python3 features/v176/apply-v176-b1270-magnet-8-instant-batched.py
+            # B1273: placed Backpack collects 8-block world drops with exact native cells, one atomic commit.
+            python3 features/v176/apply-v176-b1273-placed-backpack-magnet.py
+            # B1274: server-reported item-type count bounds all 9-item row scrolling; thumb matches content.
+            python3 features/v176/apply-v176-b1274-backpack-live-scroll-range.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
