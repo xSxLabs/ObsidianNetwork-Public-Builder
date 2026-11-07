@@ -2,6 +2,7 @@ name: 'v1.7.6 B1300 FE conservation – fast verification (NO JAR)'
 'on':
   push:
     branches:
+      - v1.7.6
       - fix/v176-energy-accounting-conservation-after-b1292
     paths:
       - features/v176/apply-v176-b1300-energy-conservation.py
