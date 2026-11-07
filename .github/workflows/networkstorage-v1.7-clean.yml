@@ -186,6 +186,7 @@ jobs:
           # B1307: native item capability for inventory/worn builder tools only.
           python3 -m py_compile features/v176/apply-v176-b1307-backpack-builder-tools-item-capability.py tests/test_v176_b1307_builder_tools_inventory_backpack.py
           python3 -m unittest discover -s tests -p 'test_v176_b1307_builder_tools_inventory_backpack.py' -v
+          python3 -m py_compile features/v176/apply-v176-b1381-powerbank-output-slider.py features/v176/apply-v176-b1381-gametest-adapt.py
           # Freeze 1319 remains untouched; new Powerbank branch only.
           python3 -m py_compile features/v176/apply-v176-powerbank-transfer-1351.py features/v176/inject-v176-powerbank-gametest-1355.py tests/test_v176_powerbank_transfer_1351.py
           python3 -m unittest discover -s tests -p 'test_v176_powerbank_transfer_1351.py' -v
@@ -4297,6 +4298,8 @@ jobs:
             if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ]; then
               python3 features/v176/apply-v176-powerbank-transfer-1351.py
             fi
+            # B1381: all OUTPUT ports share one server-tick budget; 2M default, configurable GUI.
+            python3 features/v176/apply-v176-b1381-powerbank-output-slider.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
@@ -4445,6 +4448,7 @@ jobs:
             export V1_SOURCE_ROOT="$PWD/work/src/main/java"
             python3 features/v176/inject-v176-powerbank-gametest-1355.py
             python3 features/v176/inject-v176-real-reactor-gametest-1376.py
+            python3 features/v176/apply-v176-b1381-gametest-adapt.py
           fi
           # Build #237: prove Java test locals do not shadow original energy-cell locals.
           # Separate the second GameTest server from the first CI-only test universe.
@@ -4468,6 +4472,7 @@ jobs:
             grep -Fq 'B1376_REACTOR_OFF_TWO_BILLION_IDLE_NO_LOSS_PASS' /tmp/build103-postpatch-gametest.log
             grep -Fq 'B1376_REACTOR_OFF_BANK_TO_CONSUMER_PASS' /tmp/build103-postpatch-gametest.log
             grep -Fq 'B1376_REACTOR_RESTART_BANK_AUTO_RECHARGE_PASS' /tmp/build103-postpatch-gametest.log
+            grep -Fq 'B1381_POWERBANK_TWO_MILLION_RATE_AND_ROLLBACK_PASS' /tmp/build103-postpatch-gametest.log
           fi
           grep -Fq 'FULL_EQUIPMENT_CELL_PHASE_NS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'EQUIPMENT_DIRTY_SERIALIZATION_MUTATION_GAMETEST PASS' /tmp/build103-postpatch-gametest.log
