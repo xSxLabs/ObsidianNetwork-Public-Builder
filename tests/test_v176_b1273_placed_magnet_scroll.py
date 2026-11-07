@@ -159,7 +159,7 @@ class B1273PlacedMagnetScroll(unittest.TestCase):
  def test_no_item_loss_and_atomic_placed_magnet(self):
   source=PATCH_MAG.read_text("utf-8")
   start=source.index("java='''")
-  helper=source[start:]
+  helper=source[start:source.index("'''",start+8)]
   self.assertIn("ItemResource.of(item)",helper)
   self.assertIn("RANGE=8.0D",helper)
   self.assertIn("bag.replaceBackpack(original,next)",helper)
