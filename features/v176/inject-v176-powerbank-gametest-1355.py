@@ -13,6 +13,8 @@ from pathlib import Path
 root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 p=root/"build103/B1355EnergyGameTests.java"
 assert not p.exists(),("B1355_GAME_TEST_COLLISION",p)
+# Unique CI-only environment key: Build103GameTests already owns build103_env.
+# Re-registering that key aborts NeoForge before any energy test executes.
 p.parent.mkdir(parents=True,exist_ok=True)
 p.write_text(r'''package dev.obsidiannetwork.build103;
 
@@ -39,7 +41,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 @EventBusSubscriber(modid="obsidiannetwork")
 public final class B1355EnergyGameTests {
  private static final Identifier ENV=Identifier.fromNamespaceAndPath(
-   "obsidiannetwork","build103_env");
+   "obsidiannetwork","b1355_energy_env");
  private static final Identifier STRUCTURE=Identifier.fromNamespaceAndPath(
    "obsidiannetwork","build103_empty");
  @SubscribeEvent public static void register(RegisterGameTestsEvent event){
