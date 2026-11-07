@@ -66,8 +66,8 @@ assert " @Override public boolean keyReleased(" not in s
 # Freeze only the visible entries' order and descriptors; the actual
 # backpack's stored cells are NEVER locked or duplicated.
 m=once(m,
-"""   private boolean countSort=false;""",
-"""   private boolean countSort=false;
+"""  private boolean countSort=false;""",
+"""  private boolean countSort=false;
    // B1303_SHIFT_SORT_LOCK: menu-local transient layout snapshot.
    // Never serialize it to the Backpack; only the chosen sort mode persists.
    private boolean xsxShiftLayoutFrozen=false;
@@ -92,10 +92,10 @@ m=once(m,
 "shift_snapshot_fields")
 
 m=once(m,
-"""   private java.util.List<V176BackpackCells.Entry> resultEntries(){
-    if(!source.valid())return java.util.List.of();""",
-"""   private java.util.List<V176BackpackCells.Entry> resultEntries(){
-    if(!source.valid())return java.util.List.of();
+"""  private java.util.List<V176BackpackCells.Entry> resultEntries(){
+   if(!source.valid())return java.util.List.of();""",
+"""  private java.util.List<V176BackpackCells.Entry> resultEntries(){
+   if(!source.valid())return java.util.List.of();
     // Preview AND extraction resolve the same immutable entry-to-slot
     // mapping until Shift is released; no ghost misrouting on live insert.
     if(xsxShiftLayoutFrozen)return xsxShiftEntries;""",
