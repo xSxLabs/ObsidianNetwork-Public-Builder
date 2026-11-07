@@ -87,6 +87,7 @@ r''' // Every action below is on the actual server and actual EnergyHandlers.
    final long initial=funded;
    // Deliberately DO NOT revalidate() manually: the prior version only
    // recovered INPUT/OUTPUT links after breaking/replacing the controller.
+   final long[] reserve=new long[1];
    h.startSequence().thenExecuteAfter(60,()->{
     if(!bank.xsxNetworkFormed())
      throw new IllegalStateException("B1345 bank failed automatic reload/relink");
@@ -102,16 +103,15 @@ r''' // Every action below is on the actual server and actual EnergyHandlers.
     // and no consuming machines. Powerbank reserve must not leak to the
     // returned output cable while no consumer can accept it.
     world.setBlock(sourcePos,Blocks.AIR.defaultBlockState(),3);
-    long reserve=bank.xsxNetworkStoredFe();
-    h.startSequence().thenExecuteAfter(40,()->{
-     if(bank.xsxNetworkStoredFe()!=reserve)
-      throw new IllegalStateException("B1345 idle Powerbank lost FE "+reserve+
+    reserve[0]=bank.xsxNetworkStoredFe();
+   }).thenExecuteAfter(40,()->{
+     if(bank.xsxNetworkStoredFe()!=reserve[0])
+      throw new IllegalStateException("B1345 idle Powerbank lost FE "+reserve[0]+
        " -> "+bank.xsxNetworkStoredFe());
      if(bank.xsxNetworkOutputFePerTick()!=0L)
       throw new IllegalStateException("B1345 phantom Powerbank output on empty loop");
      System.out.println("B1345_IDLE_FE_2B_BUDGET_NO_RETURN_LEAK_PASS");
-    }).thenSucceed();
-   });
+   }).thenSucceed();
   }
  }
  private static final class PowerbankIdleTest extends GameTestInstance {''',
