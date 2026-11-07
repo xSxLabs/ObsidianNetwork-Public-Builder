@@ -4666,6 +4666,7 @@ jobs:
           grep -Fq 'B1324_DIRECT_TRUE_DEMAND_FE_GAME_TEST_PASS' /tmp/b1324-direct-gametest.log
           grep -Fq 'B1324_ROLLBACK_NO_ENERGY_LOSS_GAME_TEST_PASS' /tmp/b1324-direct-gametest.log
           grep -Fq 'B1324_FULL_SINK_ZERO_FE_OUTPUT_GAME_TEST_PASS' /tmp/b1324-direct-gametest.log
+          grep -Fq 'B1324_POWERBANK_FULL_SINK_REAL_TICK_ZERO_OUTPUT_PASS' /tmp/b1324-direct-gametest.log
           grep -Eq 'All [0-9]+ required tests passed' /tmp/b1324-direct-gametest.log
           # No test-only classes or structures in user JAR.
           rm -rf work/src/main/java/dev/obsidiannetwork/build103
