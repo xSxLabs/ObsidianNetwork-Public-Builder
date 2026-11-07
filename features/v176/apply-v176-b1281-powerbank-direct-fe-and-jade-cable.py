@@ -19,6 +19,8 @@ capabilities, node traversal, configured side modes or transfer quantities.
 
 All strict guards finish before any Java source is written.
 """
+# B1288 explicit release candidate: remove Powerbank active 1m output limit,
+# preserve direct cable transport and correct Jade's misleading storage meter.
 import os,re
 from pathlib import Path
 root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
