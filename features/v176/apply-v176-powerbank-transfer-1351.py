@@ -57,7 +57,7 @@ for token in ("private final class Handler implements EnergyHandler",
               "public long getAmountAsLong()",
               "public static void serverTick("):
  assert token in c,("B1351_CELL_ANCHOR",token)
-c=once(c,"    private final EnergyHandler rawHandler = new EnergyCellBlockEntity.Handler(null);",
+c=once(c,"    private final class Handler implements EnergyHandler {",
 """    // B1351_PHYSICAL_CELL_ONE_JOURNAL: all seven capability views mutate the
     // same EnergyBuffer and MUST share one rollback snapshot.
     private EnergyCellBlockEntity.Handler.Journal b1351SharedJournal;
@@ -66,7 +66,7 @@ c=once(c,"    private final EnergyHandler rawHandler = new EnergyCellBlockEntity
        if (b1351SharedJournal == null) b1351SharedJournal = sideOwner.new Journal();
        return b1351SharedJournal;
     }
-    private final EnergyHandler rawHandler = new EnergyCellBlockEntity.Handler(null);""",
+    private final class Handler implements EnergyHandler {""",
 "single_cell_journal")
 c=once(c,"this.journal = new EnergyCellBlockEntity.Handler.Journal();",
        "this.journal = EnergyCellBlockEntity.this.b1351Journal(this);",
