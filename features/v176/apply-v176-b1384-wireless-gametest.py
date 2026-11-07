@@ -42,7 +42,11 @@ once('''                     check(singleTx.stored()==480000,
                       try(var b1384Probe=net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()){
                        int filled=rxAtFirst.b1384ReceiveFromNetwork(480000,b1384Probe);
                        check(filled==480000&&rxAtFirst.stored()==480000L
-                         &&singleTx.stored()==0L,"B1384_REAL_RX_BUFFER_RECEIVES_480K");
+                         &&singleTx.stored()==0L,"B1384_REAL_RX_BUFFER_RECEIVES_480K"
+                         +" pulled="+filled+" rx="+rxAtFirst.stored()
+                         +" tx="+singleTx.stored()+" indexed="+
+                            dev.obsidiannetwork.wireless.WirelessEnergyRuntime.available(
+                              world.getServer(),singleTx.networkId()));
                       }
                       check(rxAtFirst.stored()==0L&&singleTx.stored()==480000L,
                        "B1384_ROLLBACK_RESTORES_BOTH_BUFFERS");

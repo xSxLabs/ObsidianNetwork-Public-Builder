@@ -98,6 +98,16 @@ once('''    int withdrawn=WirelessEnergyRuntime.pull(server.getServer(),be.netwo
      }''',
      "autopush_receiver_buffer_transaction")
 
+# B1391: first charge can precede onLoad, so register the freshly
+# funded transmitter once. A rolled-back zero balance stays inactive.
+once("journal.updateSnapshots(tx);stored+=accepted;return accepted;",
+     """boolean b1391FirstFunding=stored==0L;
+    journal.updateSnapshots(tx);stored+=accepted;
+    if(b1391FirstFunding&&level instanceof ServerLevel)
+      WirelessEnergyRuntime.register(WirelessNetworkBlockEntity.this);
+    return accepted;""",
+     "first_funded_sender_immediate_registration")
+
 # No fake 64-million FE capacity, all storage is tracked via the same
 # per-block journal. No receiver buffer is eagerly charged at idle.
 assert "CAPACITY=64000000L" not in s
