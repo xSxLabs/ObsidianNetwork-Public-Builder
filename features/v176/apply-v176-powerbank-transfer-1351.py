@@ -212,13 +212,12 @@ b=once(b,"  // B591_POWERBANK_OUTPUT_PUSH: bounded by actual validated shell por
 b=once(b,"if(b==null||!b.formed||!b.xsxNetworkEnabled)return 0;",
        "if(b==null||!b.formed||!b.xsxNetworkEnabled||b1351ActiveImport.get()==b)return 0;",
        "bank_source_excludes_own_output_during_pull")
-# INPUT port advertises ZERO extractable FE to cable-source traversal. The
-# stored controller value is still truthful in its GUI and own status().
-b=once(b,"@Override public long getAmountAsLong(){\n      var bank=controller();return bank==null?0L:bank.amount;\n     }",
-"""@Override public long getAmountAsLong(){
-      if(mode()!=PowerbankBlock.Mode.OUTPUT)return 0L;
-      var bank=controller();return bank==null?0L:bank.amount;
-     }""","bank_source_visibility")
+# B1367_NE0FORGE_CAPABILITY_CONTRACT: getAmountAsLong() is the actual
+# physical stored FE even on INPUT-only views. Misreporting 0 here breaks
+# producer compatibility. Only the cable's source discovery filters
+# INPUT-capability endpoints; extracting from INPUT remains forbidden by
+# the original Powerbank energyPort and b1351ActiveImport guard.
+assert "var bank=controller();return bank==null?0L:bank.amount;" in b
 # ------------------- ZERO-BUFFER ENERGY CABLE -------------------
 for token in ("class CableEnergyHandler implements EnergyHandler",
               "getAmountAsLong()","public int insert(","public int extract(",
