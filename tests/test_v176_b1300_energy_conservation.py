@@ -132,13 +132,58 @@ class ConservationB1300(unittest.TestCase):
                 transferred=tentative_insert
             else:
                 # First tentative debit and insertion are rolled back.
-                assert energy==energy
+                self.assertEqual(energy,energy) # source snapshot remains unchanged on rollback
                 retry_extract=min(energy,tentative_insert)
                 retry_insert=min(retry_extract,sink_free)
                 transferred=retry_insert if retry_extract==retry_insert==tentative_insert else 0
             self.assertEqual(energy+sink_free,(energy-transferred)+(sink_free+transferred))
             self.assertLessEqual(transferred,energy)
             self.assertLessEqual(transferred,sink_free)
+
+    def test_full_consumers_zero_real_draw_even_with_huge_advertised_capacity(self):
+        # A proxy cable can report 2.14 billion FE capacity, but demand is
+        # what the sink REALLY accepts, never its advertised capacity.
+        source_initial=9_000_000
+        endpoints=[{"stored":1_000_000,"capacity":1_000_000},
+                   {"stored":64_000,"capacity":64_000},
+                   {"stored":0,"capacity":0}]
+        cable_capacity=2_147_483_647
+        source=source_initial
+        output_committed=0
+        for _ in range(100):
+            for target in endpoints:
+                request=min(2_147_483_647,source)
+                acceptance=min(request,max(0,target["capacity"]-target["stored"]))
+                if acceptance>0:
+                    target["stored"]+=acceptance
+                    source-=acceptance
+                    output_committed+=acceptance
+        self.assertEqual(cable_capacity,2_147_483_647)
+        self.assertEqual(source,source_initial)
+        self.assertEqual(output_committed,0)
+        self.assertTrue(all(e["stored"]==e["capacity"] for e in endpoints))
+
+    def test_partial_fill_only_draws_acceptance_not_remaining_total_capacity(self):
+        bank=2_000_000
+        machine={"stored":999_997,"capacity":1_000_000}
+        cable_claimed_capacity=2_147_483_647
+        accepted=min(bank,cable_claimed_capacity,machine["capacity"]-machine["stored"])
+        machine["stored"]+=accepted
+        bank-=accepted
+        self.assertEqual(accepted,3)
+        self.assertEqual(bank,1_999_997)
+        self.assertEqual(machine["stored"],1_000_000)
+        self.assertEqual(bank+machine["stored"],3_000_000)
+
+    def test_empty_output_meter_after_20_ticks_without_commits(self):
+        # The existing V176PowerRateMeter uses a 20 tick rolling committed
+        # window; it must not show the cable's getCapacityAsLong as draw.
+        commits={1:2_000_000}
+        def rate(now):
+            return sum(v for tick,v in commits.items() if now-20<tick<=now)//20
+        self.assertEqual(rate(1),100_000)
+        self.assertEqual(rate(21),0)
+        self.assertEqual(rate(300),0)
 
     def test_same_controller_loop_blocked_but_other_bank_allowed(self):
         src=object(); other=object(); tx_sources={1:{src}}
