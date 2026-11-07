@@ -109,17 +109,16 @@ s=once(s,
 '''   else if(scrollY>thumb+xsxThumbHeight())xsxScrollTo(xsxDragStartRow+5);''',
 "track click true thumb size")
 
-# The visual thumb currently assumes unlimited 3-pixels-per-page progress.
-# Source surrounding it can shift with harmless GUI styling; match this ONE
-# expression precisely before changing any screen file.
-pattern=r'(?m)\bint thumb\s*=\s*y\s*\+\s*39\s*\+\s*Math\.min\(73,\s*scrollRow\s*\*\s*3\s*\)\s*;'
+# B902's actual render variable is thumbY (not thumb). B1280 failed
+# closed on that exact mismatch. Match both size and coordinates only once.
+pattern=r'(?m)\\bint thumbY\\s*=\\s*y\\s*\\+\\s*39\\s*\\+\\s*Math\\.min\\(73,\\s*scrollRow\\s*\\*\\s*3\\s*\\)\\s*;'
 hits=list(re.finditer(pattern,s))
 assert len(hits)==1,("B1274_THUMB_DRAW_SOURCE_DRIFT",len(hits))
-s=s[:hits[0].start()]+'int thumb=y+xsxThumbTop();'+s[hits[0].end():]
-# This is the one visual draw of the 4-pixel cyan thumb.
-pattern2=r'(?m)\bg\.fill\(x\s*\+\s*174\s*,\s*thumb\s*,\s*x\s*\+\s*178\s*,\s*thumb\s*\+\s*16\s*,'
-assert len(list(re.finditer(pattern2,s)))==1,("B1274_THUMB_SIZE_SOURCE_DRIFT",len(list(re.finditer(pattern2,s))))
-s=re.sub(pattern2,'g.fill(x+174,thumb,x+178,thumb+xsxThumbHeight(),',s,count=1)
+s=s[:hits[0].start()]+'int thumbY=y+xsxThumbTop();'+s[hits[0].end():]
+pattern2=r'(?m)\\bg\\.fill\\(x\\s*\\+\\s*174\\s*,\\s*thumbY\\s*,\\s*x\\s*\\+\\s*178\\s*,\\s*thumbY\\s*\\+\\s*16\\s*,'
+matches=list(re.finditer(pattern2,s))
+assert len(matches)==1,("B1274_THUMB_SIZE_SOURCE_DRIFT",len(matches))
+s=re.sub(pattern2,'g.fill(x+174,thumbY,x+178,thumbY+xsxThumbHeight(),',s,count=1)
 
 # Every frame observes server updates, not just when scrolling.
 pattern3=r'(?m)(@Override public void extractBackground\([^\n]*\)\{\s*\n\s*int x=getLeftPos\(\),y=getTopPos\(\),h=getImageHeight\(\);)'
