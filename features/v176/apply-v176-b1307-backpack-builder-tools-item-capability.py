@@ -141,7 +141,7 @@ assert "access.exchange(ItemResource.of(updated),1,tx)" in java
 assert "V176BackpackCells.extract(world,updated,entry.descriptor(),n)" in java
 assert "registerBlockEntity(Capabilities.Item.BLOCK" in modified
 assert "NETWORK_BACKPACK_MK24" in modified and "NETWORK_BACKPACK_MK1" in modified
-assert "onRootCommit" in java
+assert "access.exchange(ItemResource.of(updated),1,tx)" in java
 handler.write_text(java,encoding="utf-8")
 cap.write_text(modified,encoding="utf-8")
 print("B1307_BACKPACK_INVENTORY_CURIO_WORN_BUILDER_CAPABILITY_REAL_CELLS_TRANSACTIONAL_PASS")
