@@ -163,6 +163,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1269_backpack_live_cell_runtime.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1270_magnet_8_blocks.py' -v
           python3 -m unittest discover -s tests -p 'test_v176_b1273_placed_magnet_scroll.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1281_powerbank_output_jade_cable.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4221,6 +4222,9 @@ jobs:
             python3 features/v176/apply-v176-b1273-placed-backpack-magnet.py
             # B1274: server-reported item-type count bounds all 9-item row scrolling; thumb matches content.
             python3 features/v176/apply-v176-b1274-backpack-live-scroll-range.py
+            # B1281: remove the hidden 1m FE/t autonomous Powerbank output cap.
+            # Cable remains pure FE transport; optional Jade hides external storage row.
+            python3 features/v176/apply-v176-b1281-powerbank-direct-fe-and-jade-cable.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
