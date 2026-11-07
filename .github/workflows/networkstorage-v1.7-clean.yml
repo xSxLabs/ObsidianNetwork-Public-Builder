@@ -180,6 +180,9 @@ jobs:
           # B1304: real displayed item names A-Z across mods, not mod ID grouping.
           python3 -m py_compile features/v176/apply-v176-b1304-backpack-sort-display-names.py tests/test_v176_b1304_backpack_sort_display_names.py
           python3 -m unittest discover -s tests -p 'test_v176_b1304_backpack_sort_display_names.py' -v
+          # B1307: native item capability for inventory/worn builder tools only.
+          python3 -m py_compile features/v176/apply-v176-b1307-backpack-builder-tools-item-capability.py tests/test_v176_b1307_builder_tools_inventory_backpack.py
+          python3 -m unittest discover -s tests -p 'test_v176_b1307_builder_tools_inventory_backpack.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4252,6 +4255,9 @@ jobs:
             python3 features/v176/apply-v176-b1303-backpack-shift-sort-lock.py
             # B1304: A-Z by visible item names, amount-desc untouched.
             python3 features/v176/apply-v176-b1304-backpack-sort-display-names.py
+            # B1307: Construction Sticks/Building Gadgets consume exact Cell items from worn/inventory bags.
+            # This does NOT add placed backpacks as building-tool supply sources.
+            python3 features/v176/apply-v176-b1307-backpack-builder-tools-item-capability.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
