@@ -3712,7 +3712,7 @@ jobs:
           tick=s[start:end]
           assert tick.index('if(target==null)continue;') < tick.index('if(remainingSupply<0){'), 'sender index queried without a real FE neighbor'
           assert tick.count('WirelessEnergyRuntime.available(')==1, 'receiver should scan sender index at most once per dispatch'
-          assert 'if(accepted==withdrawn){tx.commit();remainingBudget-=accepted;remainingSupply-=accepted;}' in tick, 'FE conservation budget drift'
+          assert 'if(accepted==fromBuffer){' in tick and 'remainingBudget-=accepted;' in tick and 'remainingSupply-=fromRemote;' in tick, 'B1384 real-buffer FE conservation budget drift'
           print('WIRELESS_RECEIVER_LAZY_INDEX_GUARD_V2 PASS')
           PY
           grep -Fq 'var bucket=server.get(sender.networkId());' work/src/main/java/dev/obsidiannetwork/wireless/WirelessEnergyRuntime.java
