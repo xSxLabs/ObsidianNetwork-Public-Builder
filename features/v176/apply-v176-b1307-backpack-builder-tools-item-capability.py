@@ -89,7 +89,7 @@ public final class V176BackpackBuilderSupply implements ResourceHandler<ItemReso
   // Clients may query material previews without an integrated server;
   // the native identifier is sufficient to display ordinary building blocks.
   // Server extraction below ALWAYS performs exact component verification.
-  var item=BuiltInRegistries.ITEM.getValue(entry.descriptor().key().itemId());
+  var item=BuiltInRegistries.ITEM.getValue(net.minecraft.resources.Identifier.parse(entry.descriptor().key().itemId()));
   return item==null?ItemResource.EMPTY:ItemResource.of(item);
  }
  @Override public int size(){return entries().size();}
