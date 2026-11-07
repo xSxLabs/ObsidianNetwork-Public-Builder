@@ -13,6 +13,8 @@ B891 uses 9 entries per scroll position, 45 visible entries. The 45/9
 distinction is essential: rows, not 45-item jumps. No change to clicks,
 item ownership, magnet, filter settings, or stored inventory.
 """
+# B1280 full NeoForge verification: placed 8-block magnet, live-scroll bounds,
+# lossless high-throughput cable runtime. No throttling and no item duplication.
 import os,re
 from pathlib import Path
 root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
