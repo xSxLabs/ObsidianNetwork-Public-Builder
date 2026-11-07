@@ -168,7 +168,7 @@ public final class B1355EnergyGameTests {
     // Fill real sink so its remaining capacity cannot count as demand.
     long capacity=sink.energyHandler(null).getCapacityAsLong();
     int loops=0;
-    while(sink.stored()<capacity&&loops++<500){
+    while(sink.stored()<capacity&&loops++<4096){
      try(var fill=Transaction.openRoot()){
       int n=sink.energyHandler(null).insert(
        (int)Math.min((long)Integer.MAX_VALUE,capacity-sink.stored()),fill);
