@@ -34,7 +34,7 @@ try(Transaction tx=Transaction.openRoot()){int got=from.extract(1000,tx);if(got<
 """
     bank="""class PowerbankBlockEntity {
  // B1281_UNCAPPED_POWERBANK_AUTO_EXPORT
- private final SnapshotJournal<long[]> journal=null;
+ private final net.neoforged.neoforge.transfer.transaction.SnapshotJournal<long[]> journal=null;
  private void xsxCommittedTransfer(long in,long out){
   if(level==null)return;
   xsxRates.committed(level.getGameTime(),Math.max(0L,in),Math.max(0L,out));
