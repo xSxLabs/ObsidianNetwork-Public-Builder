@@ -146,7 +146,7 @@ s=once(s,
  }
  private void xsxUpdateSortLabel(){
   if(xsxSortButton!=null)xsxSortButton.setMessage(
-      Component.literal(countSort?"SORT: MENGE ↓":"SORT: A-Z"));
+      Component.literal(countSort?"M ↓":"A-Z"));
  }
  private void xsxReadSortMode(){
   if(filterEditor)return;
@@ -206,12 +206,12 @@ part=s[begin:end]
 assert part.count("countSort=!countSort;")==1
 assert part.count("button(2);")==1
 part=part.replace("addRenderableWidget(","xsxSortButton=addRenderableWidget(",1)
-part=part.replace('Component.literal("SORT")','Component.literal("SORT: A-Z")',1)
+part=part.replace('Component.literal("SORT")','Component.literal("A-Z")',1)
 part=part.replace("countSort=!countSort;","countSort=!countSort;\n         xsxUpdateSortLabel();",1)
 s=s[:begin]+part+s[end:]
 assert "xsxSortButton=addRenderableWidget(" in s
-assert 'Component.literal("SORT: A-Z")' in s
-assert 'countSort?"SORT: MENGE ↓":"SORT: A-Z"' in s
+assert 'Component.literal("A-Z")' in s
+assert 'countSort?"M ↓":"A-Z"' in s
 assert "xsxReadSortMode();" in s
 assert s.count(" @Override public boolean mouseDragged(")==1
 assert s.count(" @Override public boolean mouseReleased(")==1
