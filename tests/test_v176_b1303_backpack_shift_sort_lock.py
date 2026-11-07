@@ -152,7 +152,7 @@ class ShiftFrozenBackpackB1303(unittest.TestCase):
         self.assertIn("xsxSetShiftLayout(action==32960)",m)
         self.assertIn('tag.putBoolean("xsx_v176_backpack_sort_count",countSort);',m)
         self.assertIn("xsxSyncShiftLayout(event.hasShiftDown())",s)
-        self.assertIn("Screen.hasShiftDown()",s)
+        self.assertNotIn("xsxSyncShiftLayout(net.minecraft.client.gui.screens.Screen.hasShiftDown());",s)
         self.assertIn("button(shift?32960:32961)",s)
         self.assertIn("if(xsxShiftLockedSent==shift)return;",s)
         self.assertIn("SORT: MENGE ↓",s)
