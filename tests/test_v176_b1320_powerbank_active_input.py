@@ -23,6 +23,7 @@ def b1300_fixture():
  src=original["powerbank/PowerbankBlockEntity.java"]
  src=src.replace("class PowerbankBlockEntity {",
   """class PowerbankBlockEntity {
+ private java.util.Set<Long> activePorts;
  static void serverTick(Level world,BlockPos pos,BlockState state,
                         PowerbankBlockEntity be){
   if(!(world instanceof ServerLevel sl)||be.mode()!=PowerbankBlock.Mode.CONTROLLER)return;
