@@ -4259,8 +4259,6 @@ jobs:
             python3 features/v176/apply-v176-b1300-energy-conservation.py
             # B1320: own source excluded during active INPUT polling, all FE conserved.
             python3 features/v176/apply-v176-b1320-powerbank-active-input.py
-            # B1324 remove Wireless Transmitter/Receiver FE storage: direct transactional relay.
-            python3 features/v176/apply-v176-b1324-zero-buffer-wireless.py
             # B1301: inventory magnet slot search/write CAS; keep all existing modes.
             python3 features/v176/apply-v176-b1301-backpack-magnet-any-location.py
             # B1302: persistent per-item sort flag, with no change to original cells.
@@ -4646,6 +4644,33 @@ jobs:
           diagnostics.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\n')
           print('ITEM_CONDUIT_RESTART_DIAGNOSTIC_GATE PASS')
           PY
+          # B1324 source conversion happens AFTER the old saved-buffer tests:
+          # those were valid legacy regression fixtures, and must not be treated
+          # as tests of the NEW no-buffer architecture.
+          python3 features/v176/apply-v176-b1324-zero-buffer-wireless.py
+          # Re-run an actual NeoForge GameTest against FINAL direct FE sources.
+          # Important: the old Build103 test class was already removed, because
+          # it asserts Transmitter FE buffering which no longer exists.
+          cp /tmp/obsidian-perf-gametest/build103_empty.nbt work/src/main/resources/data/obsidiannetwork/structure/
+          python3 features/v176/inject-v176-b1324-live-no-demand-gametest.py
+          rm -rf work/build/classes/java/main/dev/obsidiannetwork/build103
+          (cd work && gradle --daemon --no-configuration-cache compileJava --stacktrace)
+          rm -rf work/run/gametestserver
+          set +e
+          (cd work && gradle --daemon --no-configuration-cache runGameTestServer --stacktrace) > /tmp/b1324-direct-gametest.log 2>&1
+          B1324_GT_RC=$?
+          set -e
+          cat /tmp/b1324-direct-gametest.log
+          test "$B1324_GT_RC" -eq 0 || { echo "B1324 direct server game test failed"; exit "$B1324_GT_RC"; }
+          grep -Fq 'B1324_DIRECT_TRUE_DEMAND_FE_GAME_TEST_PASS' /tmp/b1324-direct-gametest.log
+          grep -Fq 'B1324_ROLLBACK_NO_ENERGY_LOSS_GAME_TEST_PASS' /tmp/b1324-direct-gametest.log
+          grep -Fq 'B1324_FULL_SINK_ZERO_FE_OUTPUT_GAME_TEST_PASS' /tmp/b1324-direct-gametest.log
+          grep -Eq 'All [0-9]+ required tests passed' /tmp/b1324-direct-gametest.log
+          # No test-only classes or structures in user JAR.
+          rm -rf work/src/main/java/dev/obsidiannetwork/build103
+          rm -rf work/build/classes/java/main/dev/obsidiannetwork/build103
+          rm -f work/src/main/resources/data/obsidiannetwork/structure/build103_empty.nbt
+          echo 'B1324_REAL_SERVER_ZERO_IDLE_TRANSFER_AND_ROLLBACK_PASS'
           echo '===== BUILD 101 FINAL BUILD ====='
           (cd work && gradle --daemon --no-configuration-cache build --stacktrace)
           test -n "$(find work/build/test-results/test -name '*.xml' -type f -print -quit)"
