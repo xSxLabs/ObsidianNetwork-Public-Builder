@@ -11,21 +11,21 @@ def one(path,old,new):
     p.write_text(s.replace(old,new,1),encoding="utf-8")
 
 one("B1355EnergyGameTests.java",
-    '    source.cycleSide(Direction.EAST.get3DDataValue());',
+    '   source.cycleSide(Direction.EAST.get3DDataValue());',
     '''    if(bank.b1381OutputLimit()!=2_000_000L)
      throw new IllegalStateException("B1381 expected default 2M FE/t");
     bank.b1381SetOutputLimit(13); // Existing B1355 5M delivery test uses original unlimited rate.
     source.cycleSide(Direction.EAST.get3DDataValue());''')
 
 one("B1376ReactorBankGameTests.java",
-    '    var formed=reactor.revalidate(w);',
+    '   var formed=reactor.revalidate(w);',
     '''    if(bank.b1381OutputLimit()!=2_000_000L)
      throw new IllegalStateException("B1381 default bank rate was not 2M");
     bank.b1381SetOutputLimit(13); // Keep preexisting 5M transfer assertions.
     var formed=reactor.revalidate(w);''')
 
 one("B1355EnergyGameTests.java",
-    '     System.out.println("B1355_TWO_BILLION_FE_POWERBANK_SOURCE_OFF_FULL_SINK_PASS");',
+    '    System.out.println("B1355_TWO_BILLION_FE_POWERBANK_SOURCE_OFF_FULL_SINK_PASS");',
     '''     System.out.println("B1355_TWO_BILLION_FE_POWERBANK_SOURCE_OFF_FULL_SINK_PASS");
      // B1381 real storage, real OUTPUT port, two pulls in ONE transaction.
      // The second pull must see ZERO budget and aborted transaction must
