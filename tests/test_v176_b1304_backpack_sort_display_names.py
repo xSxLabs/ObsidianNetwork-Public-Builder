@@ -24,12 +24,12 @@ def menu_fixture():
     if menu is None:raise AssertionError("Missing B1303 MENU fixture")
     old=("   if(countSort)result.sort(java.util.Comparator.comparingLong(V176BackpackCells.Entry::count).reversed());\n"
          "   else result.sort(java.util.Comparator.comparing(e->e.descriptor().key().itemId().toString()));")
-    new=("    if(countSort)result.sort(java.util.Comparator\n"
-         "       .comparingLong(V176BackpackCells.Entry::count).reversed()\n"
-         "       .thenComparing(e->e.descriptor().key().itemId().toString()));\n"
-         "    // The default is a stable item-identity sort, not unordered HashMap order.\n"
-         "    else result.sort(java.util.Comparator.comparing(\n"
-         "       e->e.descriptor().key().itemId().toString()));")
+    new=("   if(countSort)result.sort(java.util.Comparator\n"
+         "      .comparingLong(V176BackpackCells.Entry::count).reversed()\n"
+         "      .thenComparing(e->e.descriptor().key().itemId().toString()));\n"
+         "   // The default is a stable item-identity sort, not unordered HashMap order.\n"
+         "   else result.sort(java.util.Comparator.comparing(\n"
+         "      e->e.descriptor().key().itemId().toString()));")
     assert menu.count(old)==1
     menu=menu.replace(old,new,1)
     # Apply the real B1303 strict patch first; B1304 must match its output,
