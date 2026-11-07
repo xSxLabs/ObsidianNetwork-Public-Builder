@@ -179,6 +179,14 @@ public final class B1355EnergyGameTests {
      }
     }
     if(sink.stored()!=capacity)throw new IllegalStateException("B1355 sink not full");
+    // Inspect controller link and true NeoForge INPUT capability before funding.
+    System.out.println("B1355_IDLE_INPUT_DIAG bank="+bank.status()
+      +" inlet="+inlet.status()+" inletMode="+inlet.mode()
+      +" enabled="+bank.xsxNetworkEnabled()
+      +" bankStored="+bank.xsxNetworkStoredFe()
+      +" bankCapacity="+bank.xsxNetworkCapacityFe()
+      +" inletAmount="+inlet.energyPort().getAmountAsLong()
+      +" inletCapacity="+inlet.energyPort().getCapacityAsLong());
     // Fund exactly 2B stored FE on the controller via its real INPUT port.
     try(var charge=Transaction.openRoot()){
      int n=inlet.energyPort().insert(2_000_000_000,charge);
