@@ -252,7 +252,20 @@ assert "be.stored()" not in r
 assert "be.withdraw(remaining,tx)" in r and "be.offerToNeighbors(remaining,tx)" in r
 assert "IN_TRANSFER.set(false)" in r and "IN_AVAILABLE.set(false)" in r
 assert "NEXT_SENDER" in r and "WeakReference<WirelessNetworkBlockEntity>" in r
+# Jade must not render the receiver's remote energy proxy as internal storage.
+jade=root/"compat/EnergyCableJadePlugin.java"
+j=jade.read_text("utf-8")
+j=one(j,"&& block.getBlock() instanceof EnergyCableBlock){",
+ """&& (block.getBlock() instanceof EnergyCableBlock
+            || block.getBlock() instanceof dev.obsidiannetwork.block.WirelessNetworkBlock)){""",
+ "jade_wireless_zero_buffer")
+# Replace only the misleading GUI label; the number is now remote source FE.
+gui=root/"client/WirelessNetworkScreen.java"
+g=gui.read_text("utf-8")
+g=one(g,'Sender buffer: ','Live source FE: ',"wireless_gui_source_label")
 # Both files checked before any write.
 entity.write_text(e,encoding="utf-8")
 runtime.write_text(r,encoding="utf-8")
+jade.write_text(j,encoding="utf-8")
+gui.write_text(g,encoding="utf-8")
 print("B1324_ZERO_BUFFER_WIRELESS_DIRECT_FE_DEMAND_ONLY_ATOMIC_PASS")
