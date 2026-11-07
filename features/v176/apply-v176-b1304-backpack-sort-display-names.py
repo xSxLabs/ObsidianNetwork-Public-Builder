@@ -30,9 +30,9 @@ for key in (
  "private java.util.List<V176BackpackCells.Entry> resultEntries()",
 ):
  assert key in s,("B1304_SORT_SOURCE_DRIFT",key)
-old="""    // The default is a stable item-identity sort, not unordered HashMap order.
-    else result.sort(java.util.Comparator.comparing(
-       e->e.descriptor().key().itemId().toString()));"""
+old="""   // The default is a stable item-identity sort, not unordered HashMap order.
+   else result.sort(java.util.Comparator.comparing(
+      e->e.descriptor().key().itemId().toString()));"""
 new="""    // B1304_REAL_NAME_AZ: alphabetical by displayed item name, NOT the
     // registry namespace. Resolve labels ONCE before O(N log N) sorting.
     // Keep exact descriptors and native items untouched.
