@@ -68,7 +68,10 @@ public final class B1324DirectEnergyGameTests {
    BlockPos controlPos=origin.offset(1,1,0);
    BlockPos inputPos=origin.offset(0,1,1);
    BlockPos outputPos=origin.offset(2,1,1);
-   BlockPos destination=outputPos.east();
+   // Include an actual live Energy Cable: reproduce the reported 2M FE
+   // phantom output even with the wireless transmitter physically removed.
+   BlockPos cablePos=outputPos.east();
+   BlockPos destination=cablePos.east();
    for(int x=0;x<3;x++)for(int y=0;y<3;y++)for(int z=0;z<3;z++){
     BlockPos p=origin.offset(x,y,z);
     if(x==1&&y==1&&z==1){
@@ -93,6 +96,7 @@ public final class B1324DirectEnergyGameTests {
      throw new IllegalStateException("B1324 POWERBANK failed to accept real FE");
     funding.commit();
    }
+   world.setBlock(cablePos,ObsidianNetwork.ENERGY_CABLE.get().defaultBlockState(),3);
    world.setBlock(destination,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
    var full=(EnergyCellBlockEntity)world.getBlockEntity(destination);
    if(full==null)throw new IllegalStateException("B1324 no full sink");
