@@ -37,6 +37,14 @@ def once(s,old,new,label):
  assert n==1,("B1351_SOURCE_DRIFT",label,n,old[:130])
  return s.replace(old,new,1)
 
+def bank_comment_once(s, old, new, label):
+ # Private Java reconstruction normalizes indentation inconsistently.
+ # Match exactly one whole-line semantic marker, never assume 1/2 spaces.
+ matches=list(re.finditer(r"(?m)^[ \\t]*"+re.escape(old)+r"[ \\t]*$",s))
+ assert len(matches)==1,("B1351_BANK_MARKER_DRIFT",label,len(matches),old)
+ m=matches[0]
+ return s[:m.start()]+new+s[m.end():]
+
 def span(src,signature):
  start=src.index(signature)
  brace=src.index("{",start+len(signature))
@@ -155,12 +163,12 @@ b=once(b,bank_tick_old,
   // buffer in either connector; then feed real consumers from OUTPUT.
   be.b1351PullInput(sl);
   be.b591PushOutput(sl);""","bank_tick_ingress_before_egress")
-b=once(b,"  // B1300_NO_SELF_CHARGE: only owned controller is excluded, never other banks.",
+b=bank_comment_once(b,"// B1300_NO_SELF_CHARGE: only owned controller is excluded, never other banks.",
 """  private long b1351NextRelink=Long.MIN_VALUE;
   private static final ThreadLocal<PowerbankBlockEntity> b1351ActiveImport=
       new ThreadLocal<>();
   // B1300_NO_SELF_CHARGE: only owned controller is excluded, never other banks.""","bank_input_origin_decl")
-b=once(b,"  // B591_POWERBANK_OUTPUT_PUSH: bounded by actual validated shell ports.",
+b=bank_comment_once(b,"// B591_POWERBANK_OUTPUT_PUSH: bounded by actual validated shell ports.",
 """  // B1351_REAL_INPUT_SOURCE: on loaded, validated input ports only. Pure
   // source->sink transaction; no generator duplication or cable batteries.
   private void b1351PullInput(ServerLevel server){
