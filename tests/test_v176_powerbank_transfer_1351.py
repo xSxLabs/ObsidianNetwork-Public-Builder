@@ -34,6 +34,9 @@ class B1351Powerbank(unittest.TestCase):
   self.assertIn("B1351_CELL_HANDLER_DECL_DRIFT",p)
   self.assertIn("B1351_CELL_CAN_INSERT_DRIFT",p)
   self.assertIn("B1351_BANK_TICK_ANCHOR",p)
+  self.assertIn("def bank_comment_once(",p)
+  self.assertIn('b=bank_comment_once(b,"// B1300_NO_SELF_CHARGE',p)
+  self.assertIn('b=bank_comment_once(b,"// B591_POWERBANK_OUTPUT_PUSH',p)
 
  def test_real_rollback_is_per_physical_cell_not_face(self):
   # The bug: two side handlers for one cell each independently snapshot FE.
