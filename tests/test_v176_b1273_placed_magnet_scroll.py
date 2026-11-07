@@ -74,8 +74,8 @@ SCREEN='''class V176BackpackScreen {
  }
  @Override public void extractBackground(GuiGraphicsExtractor g,int mx,int my,float partial){
   int x=getLeftPos(),y=getTopPos(),h=getImageHeight();
-  int thumb=y+39+Math.min(73,scrollRow*3);
-  g.fill(x+174,thumb,x+178,thumb+16,0xff123456);
+  int thumbY=y+39+Math.min(73,scrollRow*3);
+  g.fill(x+174,thumbY,x+178,thumbY+16,0xff123456);
  }
 }'''
 
@@ -127,7 +127,7 @@ class B1273PlacedMagnetScroll(unittest.TestCase):
   self.assertIn("xsxSyncServerScroll()",screen)
   self.assertIn("xsxThumbHeight()",screen)
   self.assertIn("xsxThumbTop()",screen)
-  self.assertIn("thumb+xsxThumbHeight()",screen)
+  self.assertIn("thumbY+xsxThumbHeight()",screen)
   self.assertIn("xsx_v176_scroll_total_types",menu)
   self.assertIn("xsx_v176_scroll_page",menu)
   self.assertIn("page*9+slot-4",menu)
