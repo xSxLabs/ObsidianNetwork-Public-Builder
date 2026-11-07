@@ -1,0 +1,37 @@
+name: 'v1.7.6 B1300 FE conservation – fast verification (NO JAR)'
+'on':
+  push:
+    branches:
+      - fix/v176-energy-accounting-conservation-after-b1292
+    paths:
+      - features/v176/apply-v176-b1300-energy-conservation.py
+      - tests/test_v176_b1300_energy_conservation.py
+      - .github/workflows/networkstorage-v1.7-clean.yml
+      - .github/workflows/v176-b1300-fe-contract.yml
+  pull_request:
+    branches:
+      - v1.7.6
+    paths:
+      - features/v176/apply-v176-b1300-energy-conservation.py
+      - tests/test_v176_b1300_energy_conservation.py
+      - .github/workflows/networkstorage-v1.7-clean.yml
+      - .github/workflows/v176-b1300-fe-contract.yml
+
+permissions:
+  contents: read
+
+jobs:
+  fe_conservation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate patch syntax and strictly guarded full-sink tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile features/v176/apply-v176-b1300-energy-conservation.py tests/test_v176_b1300_energy_conservation.py
+          python3 -m unittest discover -s tests -p 'test_v176_b1300_energy_conservation.py' -v
+          python3 -m unittest discover -s tests -p 'test_v176_b1281_powerbank_output_jade_cable.py' -v
