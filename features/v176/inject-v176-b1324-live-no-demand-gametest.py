@@ -47,6 +47,77 @@ public final class B1324DirectEnergyGameTests {
     "b1324_true_demand_zero_buffer"),
     new DirectTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(
       environment,STRUCTURE,200,0,true,Rotation.NONE)));
+  event.registerTest(Identifier.fromNamespaceAndPath("obsidiannetwork",
+    "b1324_powerbank_full_sink_zero_output"),
+    new PowerbankIdleTest(new TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>>(
+      environment,STRUCTURE,120,0,true,Rotation.NONE)));
+ }
+ private static final class PowerbankIdleTest extends GameTestInstance {
+  PowerbankIdleTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data){
+   super(data);
+  }
+  @Override public com.mojang.serialization.MapCodec<? extends GameTestInstance> codec(){
+   throw new UnsupportedOperationException("B1324 CI-only Powerbank idle test");
+  }
+  @Override protected net.minecraft.network.chat.MutableComponent typeDescription(){
+   return Component.literal("Powerbank 2M FE must remain stored when all consumers full");
+  }
+  @Override public void run(GameTestHelper helper){
+   ServerLevel world=(ServerLevel)helper.getLevel();
+   BlockPos origin=helper.absolutePos(new BlockPos(3,1,3));
+   BlockPos controlPos=origin.offset(1,1,0);
+   BlockPos inputPos=origin.offset(0,1,1);
+   BlockPos outputPos=origin.offset(2,1,1);
+   BlockPos destination=outputPos.east();
+   for(int x=0;x<3;x++)for(int y=0;y<3;y++)for(int z=0;z<3;z++){
+    BlockPos p=origin.offset(x,y,z);
+    if(x==1&&y==1&&z==1){
+     world.setBlock(p,Blocks.AIR.defaultBlockState(),3);
+    }else if(p.equals(controlPos)){
+     world.setBlock(p,ObsidianNetwork.POWERBANK_CONTROLLER.get().defaultBlockState(),3);
+    }else if(p.equals(inputPos)){
+     world.setBlock(p,ObsidianNetwork.POWERBANK_INPUT.get().defaultBlockState(),3);
+    }else if(p.equals(outputPos)){
+     world.setBlock(p,ObsidianNetwork.POWERBANK_OUTPUT.get().defaultBlockState(),3);
+    }else{
+     world.setBlock(p,ObsidianNetwork.POWERBANK_CASING.get().defaultBlockState(),3);
+    }
+   }
+   var bank=(dev.obsidiannetwork.powerbank.PowerbankBlockEntity)world.getBlockEntity(controlPos);
+   var inlet=(dev.obsidiannetwork.powerbank.PowerbankBlockEntity)world.getBlockEntity(inputPos);
+   if(bank==null||inlet==null||!bank.revalidate(world).valid())
+    throw new IllegalStateException("B1324 POWERBANK structure failed");
+   try(var funding=Transaction.openRoot()){
+    if(inlet.energyPort().insert(2_000_000,funding)!=2_000_000)
+     throw new IllegalStateException("B1324 POWERBANK failed to accept real FE");
+    funding.commit();
+   }
+   world.setBlock(destination,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+   var full=(EnergyCellBlockEntity)world.getBlockEntity(destination);
+   if(full==null)throw new IllegalStateException("B1324 no full sink");
+   long cap=full.energyHandler(null).getCapacityAsLong();
+   int rounds=0;
+   while(full.stored()<cap&&rounds++<4096){
+    try(var fill=Transaction.openRoot()){
+     int actual=full.energyHandler(null).insert((int)Math.min(
+         Integer.MAX_VALUE,cap-full.stored()),fill);
+     if(actual<=0)throw new IllegalStateException("B1324 sink refused its own fill");
+     fill.commit();
+    }
+   }
+   if(full.stored()!=cap||bank.xsxNetworkStoredFe()!=2_000_000)
+    throw new IllegalStateException("B1324 cannot establish full sink fixture");
+   final long before=bank.xsxNetworkStoredFe();
+   // Bank still has an active OUTPUT port and no transmitter. A completely
+   // filled sink must reject every push for 40 real server ticks.
+   helper.startSequence().thenExecuteAfter(40,()->{
+    if(bank.xsxNetworkStoredFe()!=before||full.stored()!=cap)
+     throw new IllegalStateException("B1324 2M FE lost despite full Energy Cell");
+    if(bank.xsxNetworkOutputFePerTick()!=0L)
+     throw new IllegalStateException("B1324 phantom Powerbank OUTPUT while idle");
+    System.out.println("B1324_POWERBANK_FULL_SINK_REAL_TICK_ZERO_OUTPUT_PASS");
+   }).thenSucceed();
+  }
  }
  private static final class DirectTest extends GameTestInstance {
   DirectTest(TestData<net.minecraft.core.Holder<TestEnvironmentDefinition<?>>> data){
