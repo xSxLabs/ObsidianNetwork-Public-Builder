@@ -32,7 +32,7 @@ MENU="""class V176BackpackMenu {
  private static class Storage {
   private final Source source;
   private String query="";
-   private boolean countSort=false;
+  private boolean countSort=false;
   private int page=0;
   private ItemStack cacheSource=ItemStack.EMPTY;
   private long cacheTick=Long.MIN_VALUE;
@@ -46,8 +46,8 @@ MENU="""class V176BackpackMenu {
     countSort=data.getBooleanOr("xsx_v176_backpack_sort_count",false);
    }
   }
-   private java.util.List<V176BackpackCells.Entry> resultEntries(){
-    if(!source.valid())return java.util.List.of();
+  private java.util.List<V176BackpackCells.Entry> resultEntries(){
+   if(!source.valid())return java.util.List.of();
    ItemStack live=source.current();
    if(cacheSource==live)return cacheEntries;
    var result=new java.util.ArrayList<V176BackpackCells.Entry>();
