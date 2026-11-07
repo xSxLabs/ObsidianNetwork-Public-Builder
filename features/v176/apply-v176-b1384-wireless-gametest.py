@@ -21,17 +21,17 @@ once("singleTx.stored()==512000","singleTx.stored()==480000","fanout_stored")
 once("conservation==512000L","conservation==480000L","fanout_conservation")
 
 once('''                      check(rx!=null&&!rx.isTransmitter()&&fanoutSink!=null,
-                        "WIRELESS fanout real receiver and sink placed");''',
+                       "WIRELESS fanout real receiver and sink placed");''',
 '''                      check(rx!=null&&!rx.isTransmitter()&&fanoutSink!=null,
-                        "WIRELESS fanout real receiver and sink placed");
+                       "WIRELESS fanout real receiver and sink placed");
                       check(rx.energyHandler().getCapacityAsLong()==500000L&&rx.stored()==0L,
                         "B1384_REAL_RX_500K_JADE_CAPACITY");''',
 "rx_cap")
 
-once('''                      check(singleTx.stored()==480000,
-                       "WIRELESS one TX holds committed 512000 FE");''',
-'''                      check(singleTx.stored()==480000,
-                       "WIRELESS one TX holds committed 480000 FE");
+once('''                     check(singleTx.stored()==480000,
+                      "WIRELESS one TX holds committed 512000 FE");''',
+'''                     check(singleTx.stored()==480000,
+                      "WIRELESS one TX holds committed 480000 FE");
                       check(singleTx.energyHandler().getCapacityAsLong()==500000L,
                        "B1384_REAL_TX_500K_JADE_CAPACITY");
                       var rxAtFirst=(dev.obsidiannetwork.blockentity.WirelessNetworkBlockEntity)
