@@ -186,6 +186,9 @@ jobs:
           # B1307: native item capability for inventory/worn builder tools only.
           python3 -m py_compile features/v176/apply-v176-b1307-backpack-builder-tools-item-capability.py tests/test_v176_b1307_builder_tools_inventory_backpack.py
           python3 -m unittest discover -s tests -p 'test_v176_b1307_builder_tools_inventory_backpack.py' -v
+          # Freeze 1319 remains untouched; new Powerbank branch only.
+          python3 -m py_compile features/v176/apply-v176-powerbank-transfer-1351.py tests/test_v176_powerbank_transfer_1351.py
+          python3 -m unittest discover -s tests -p 'test_v176_powerbank_transfer_1351.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4287,6 +4290,11 @@ jobs:
             # B1307: Construction Sticks/Building Gadgets consume exact Cell items from worn/inventory bags.
             # This does NOT add placed backpacks as building-tool supply sources.
             python3 features/v176/apply-v176-b1307-backpack-builder-tools-item-capability.py
+            # B1351 isolated from frozen 1319: physical-cell shared journal,
+            # real-consumer-first cable transfer, Powerbank input/relink.
+            if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ]; then
+              python3 features/v176/apply-v176-powerbank-transfer-1351.py
+            fi
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
