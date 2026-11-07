@@ -136,7 +136,7 @@ assert 'tag.putInt("xsx_v176_scroll_total_types",resultEntries().size());' in m
 assert "int position=page*9+slot-4;" in m
 # Match the actual B817 filter-editor-aware server page bound. Ignore
 # formatting/indent only; the math and filter behavior must be exact.
-normalized=re.sub(r'\\s+','',m)
+normalized=re.sub(r'\s+','',m)
 assert (
  "intlast=filterEditor?1:Math.max(0,(resultEntries().size()-45+8)/9);" in normalized
  or "intlast=Math.max(0,(resultEntries().size()-45+8)/9);" in normalized
