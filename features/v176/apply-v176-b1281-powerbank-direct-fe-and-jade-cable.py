@@ -21,6 +21,7 @@ All strict guards finish before any Java source is written.
 """
 # B1288 explicit release candidate: remove Powerbank active 1m output limit,
 # preserve direct cable transport and correct Jade's misleading storage meter.
+# B1292 full compiled rerun: preserve B817 filter-page bound and uncapped Powerbank auto-export.
 import os,re
 from pathlib import Path
 root=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
