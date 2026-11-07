@@ -58,8 +58,8 @@ m=one(m,
 # These fields live in the existing item CUSTOM_DATA, independent of the
 # magnet upgrade's CUSTOM_DATA and of the storage cell CONTAINER.
 m=one(m,
- """   private boolean countSort=false;""",
- """   private boolean countSort=false;
+ """  private boolean countSort=false;""",
+ """  private boolean countSort=false;
    // B1302_SORT_RESTORED: lazy load the saved choice before first list sort.
    // Do not replace Storage(Source) constructor, whose exact shape is
    // legitimately revised by earlier B1230/B1258 GUI optimizations.
@@ -74,21 +74,21 @@ m=one(m,
    }""",
  "persistent_sort_load")
 m=one(m,
- """   private java.util.List<V176BackpackCells.Entry> resultEntries(){
-    if(!source.valid())return java.util.List.of();""",
- """   private java.util.List<V176BackpackCells.Entry> resultEntries(){
-    if(!source.valid())return java.util.List.of();
-    xsxLoadSortOnce();""",
+ """  private java.util.List<V176BackpackCells.Entry> resultEntries(){
+   if(!source.valid())return java.util.List.of();""",
+ """  private java.util.List<V176BackpackCells.Entry> resultEntries(){
+   if(!source.valid())return java.util.List.of();
+   xsxLoadSortOnce();""",
  "initial_list_uses_saved_sort")
 
 m=one(m,
- """   private boolean sort(){
-    if(!source.valid())return false;
-    countSort=!countSort;page=0;return true;
-   }""",
- """   private boolean sort(){
-    if(!source.valid())return false;
-    xsxLoadSortOnce();
+ """  private boolean sort(){
+   if(!source.valid())return false;
+   countSort=!countSort;page=0;return true;
+  }""",
+ """  private boolean sort(){
+   if(!source.valid())return false;
+   xsxLoadSortOnce();
     // B1302_SORT_SAVE_CAS: keep current list if its source changed.
     boolean requested=!countSort;
     ItemStack updated=source.current().copy();
