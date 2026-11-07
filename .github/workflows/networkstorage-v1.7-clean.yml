@@ -187,7 +187,7 @@ jobs:
           python3 -m py_compile features/v176/apply-v176-b1307-backpack-builder-tools-item-capability.py tests/test_v176_b1307_builder_tools_inventory_backpack.py
           python3 -m unittest discover -s tests -p 'test_v176_b1307_builder_tools_inventory_backpack.py' -v
           # Freeze 1319 remains untouched; new Powerbank branch only.
-          python3 -m py_compile features/v176/apply-v176-powerbank-transfer-1351.py tests/test_v176_powerbank_transfer_1351.py
+          python3 -m py_compile features/v176/apply-v176-powerbank-transfer-1351.py features/v176/inject-v176-powerbank-gametest-1355.py tests/test_v176_powerbank_transfer_1351.py
           python3 -m unittest discover -s tests -p 'test_v176_powerbank_transfer_1351.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
@@ -4438,6 +4438,11 @@ jobs:
           grep -Fq 'WIRELESS_CROSSDIM_READY_FE_GAMETEST_V1' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'BlockPos wirelessSourcePos=' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'var wirelessSink=' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
+          # B1355: real FE tests on isolated Powerbank branch (removed before JAR).
+          if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ]; then
+            export V1_SOURCE_ROOT="$PWD/work/src/main/java"
+            python3 features/v176/inject-v176-powerbank-gametest-1355.py
+          fi
           # Build #237: prove Java test locals do not shadow original energy-cell locals.
           # Separate the second GameTest server from the first CI-only test universe.
           rm -rf work/run/gametestserver
@@ -4448,6 +4453,11 @@ jobs:
           cat /tmp/build103-postpatch-gametest.log
           if [ "$POST_GT_RC" -ne 0 ]; then echo "Post-patch GameTest failed rc=$POST_GT_RC"; exit "$POST_GT_RC"; fi
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-postpatch-gametest.log
+          if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ]; then
+            grep -Fq 'B1355_ONE_PHYSICAL_CELL_SEVEN_FACES_ROLLBACK_PASS' /tmp/build103-postpatch-gametest.log
+            grep -Fq 'B1355_CELL_CABLE_POWERBANK_CABLE_LIVE_SINK_PASS' /tmp/build103-postpatch-gametest.log
+            grep -Fq 'B1355_TWO_BILLION_FE_POWERBANK_SOURCE_OFF_FULL_SINK_PASS' /tmp/build103-postpatch-gametest.log
+          fi
           grep -Fq 'FULL_EQUIPMENT_CELL_PHASE_NS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'EQUIPMENT_DIRTY_SERIALIZATION_MUTATION_GAMETEST PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_AUTOCRAFT_RESERVATION_CONSERVATION_V1 PASS' /tmp/build103-postpatch-gametest.log
