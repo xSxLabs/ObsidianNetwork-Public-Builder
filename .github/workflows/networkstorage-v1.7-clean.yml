@@ -173,6 +173,9 @@ jobs:
           # B1302: backpack sort mode survives close/open and placed item roundtrip.
           python3 -m py_compile features/v176/apply-v176-b1302-backpack-sort-persistent.py tests/test_v176_b1302_backpack_sort_persistent.py
           python3 -m unittest discover -s tests -p 'test_v176_b1302_backpack_sort_persistent.py' -v
+          # B1303: Shift freezes visible Backpack slots and server click mapping; selected mode persists.
+          python3 -m py_compile features/v176/apply-v176-b1303-backpack-shift-sort-lock.py tests/test_v176_b1303_backpack_shift_sort_lock.py
+          python3 -m unittest discover -s tests -p 'test_v176_b1303_backpack_shift_sort_lock.py' -v
           # Hammer B1207: durability 12186, angled upward grip.
           # Hammer grip position adjustment; build on B1205 reference.
           # Shortened hammer handle geometry, no image generation.
@@ -4241,6 +4244,8 @@ jobs:
             python3 features/v176/apply-v176-b1301-backpack-magnet-any-location.py
             # B1302: persistent per-item sort flag, with no change to original cells.
             python3 features/v176/apply-v176-b1302-backpack-sort-persistent.py
+            # B1303: transient Shift-order lock, persistent A-Z or quantity descending sort.
+            python3 features/v176/apply-v176-b1303-backpack-shift-sort-lock.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
