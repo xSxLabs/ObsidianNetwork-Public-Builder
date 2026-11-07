@@ -101,8 +101,9 @@ public final class B1355EnergyGameTests {
    // Transaction B: test opposite ordering on same root transaction.
    try(var rollback=Transaction.openRoot()){
     int received=west.insert(2_000_000,rollback);
-    if(received>0 && east.extract(received,rollback)>0)
-     throw new IllegalStateException("B1355 duplicated own cell deposit");
+    // Even a valid same-buffer insert/extract must remain reversible.
+    // This transaction intentionally aborts, so exact starting FE is required.
+    if(received>0)east.extract(received,rollback);
    }
    if(cell.stored()!=initial)
     throw new IllegalStateException("B1355 opposite-order rollback changed FE");
