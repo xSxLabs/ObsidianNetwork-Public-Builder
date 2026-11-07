@@ -49,7 +49,10 @@ class B1351Powerbank(unittest.TestCase):
                  "origins.journal.updateSnapshots(tx);",
                  "onRootCommit(", "revertToSnapshot("):
    self.assertIn(marker,patch)
-  self.assertNotIn("new java.util.WeakHashMap",patch)
+  # The patch script must mention the legacy type only to assert its
+  # absence from the emitted Java; do not reject the assertion text itself.
+  self.assertIn('assert "new java.util.WeakHashMap" not in b',patch)
+  self.assertIn('assert "new java.util.WeakHashMap" not in c',patch)
   # Model both callback paths: commit clears origins; rollback restores
   # the prior set, including when a nested transaction aborts.
   origins=set()
