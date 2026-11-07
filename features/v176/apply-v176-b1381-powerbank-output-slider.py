@@ -161,28 +161,28 @@ helpers=r'''
       :b1381Compact(limit);
   g.text(font,"INPUT: UNLIMITED",8,106,0xff83eeb8);
   g.text(font,"MAX OUTPUT: "+label+" FE/t",8,119,0xffe9e2f5);
-  g.text(font,"0",12,144,0xffa9c0d8);
-  g.text(font,"1B FE/t",127,144,0xffa9c0d8);
-  g.text(font,"UNLIMITED",24,154,limit<0?0xff86ffe0:0xff9eb0c1);
+  g.text(font,"0",12,141,0xffa9c0d8);
+  g.text(font,"1B FE/t",127,141,0xffa9c0d8);
+  g.text(font,"UNLIMITED",24,151,limit<0?0xff86ffe0:0xff9eb0c1);
  }
  private void b1381DrawBackground(GuiGraphicsExtractor g){
   var bank=b1381Bank();
   if(bank==null)return;
   int x=getLeftPos(),y=getTopPos();
-  g.fill(x+5,y+102,x+171,y+167,0xff132837);
+  g.fill(x+5,y+102,x+171,y+161,0xff132837);
   g.fill(x+12,y+133,x+166,y+139,0xff37576e);
   int idx=b1381Dragging?b1381PreviewIndex:b1381RateIndex(bank.b1381OutputLimit());
   if(idx>12)idx=4;
   int thumb=x+12+(int)Math.round(154D*idx/12D);
   g.fill(thumb-4,y+129,thumb+4,y+142,0xff97e7ff);
-  g.fill(x+9,y+151,x+20,y+162,0xff6b9eb5);
+  g.fill(x+9,y+149,x+20,y+160,0xff6b9eb5);
   if(bank.b1381OutputLimit()<0)
-   g.fill(x+11,y+153,x+18,y+160,0xff64eed1);
+   g.fill(x+11,y+151,x+18,y+158,0xff64eed1);
  }
  private boolean b1381Click(double mx,double my,int button){
   if(button!=0||b1381Bank()==null)return false;
   int x=getLeftPos(),y=getTopPos();
-  if(mx>=x+9&&mx<=x+167&&my>=y+150&&my<=y+164){
+  if(mx>=x+9&&mx<=x+167&&my>=y+149&&my<=y+160){
    long chosen=b1381Bank().b1381OutputLimit();
    b1381Send(chosen<0?4:13);
    return true;
