@@ -249,7 +249,7 @@ r=swap_method(r," public static int pull(MinecraftServer server,String id,int wa
   }finally{IN_TRANSFER.set(false);}
  }''')
 assert "be.stored()" not in r
-assert "be.withdraw(remaining,tx)" in r and "be.offerToNeighbors(remaining,tx)" in r
+assert "be.withdraw(remaining,tx)" in r and "device.offerToNeighbors(remaining,tx)" in r
 assert "IN_TRANSFER.set(false)" in r and "IN_AVAILABLE.set(false)" in r
 assert "NEXT_SENDER" in r and "WeakReference<WirelessNetworkBlockEntity>" in r
 # Jade must not render the receiver's remote energy proxy as internal storage.
