@@ -61,11 +61,12 @@ e=one(e," public static final long CAPACITY=64000000L;\n",
 e=one(e," private long stored;\n","","remove_stored_field")
 e=one(e," public long stored(){return stored;}"," public long stored(){return 0L;}","legacy_status_no_storage")
 e=one(e,"&&stored>0;",";","live_tx_not_buffer")
-e=one(e,"if(transmitter)WirelessEnergyRuntime.unregister(this);","WirelessEnergyRuntime.unregister(this);","select_unregister")
-# There are three more old sender-only registration/unregistration sites.
+assert e.count("if(transmitter)WirelessEnergyRuntime.unregister(this);")==3
+# Change all three lifecycle paths (selectNetwork, setRemoved, unload).
+# There are three old sender-only unregister sites.
 assert e.count("if(transmitter)WirelessEnergyRuntime.register(this);")==2
 e=e.replace("if(transmitter)WirelessEnergyRuntime.register(this);","WirelessEnergyRuntime.register(this);")
-assert e.count("if(transmitter)WirelessEnergyRuntime.unregister(this);")==2
+assert e.count("if(transmitter)WirelessEnergyRuntime.unregister(this);")==3
 e=e.replace("if(transmitter)WirelessEnergyRuntime.unregister(this);","WirelessEnergyRuntime.unregister(this);")
 e=one(e,'  out.putLong("wireless_fe",stored);',
  """  // Legacy buffer NBT deliberately NOT emitted. Antennas now move FE only
