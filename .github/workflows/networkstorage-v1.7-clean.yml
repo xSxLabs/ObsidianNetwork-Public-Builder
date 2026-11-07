@@ -1,3 +1,4 @@
+# B1334 legacy wireless tests stay intact, followed by final zero-buffer real-server no-demand gate.
 # B1329 real no-demand FE follow-up: zero wireless buffer with full-consumer rejection; run full CI.
 # B1310 user-authorized v1.7.6 full build: exact Minecraft 26.1 Identifier + event-driven Shift input, compact SORT labels.
 # B1309 explicitly authorized v1.7.6 rebuilt with accurate B816 Backpack SORT/Shift/A-Z anchors and B1307 item capability.
