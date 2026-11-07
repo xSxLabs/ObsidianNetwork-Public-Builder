@@ -211,6 +211,50 @@ public final class B1324DirectEnergyGameTests {
     throw new IllegalStateException("B1324 IDLE FULL CONSUMER CONSERVATION");
    System.out.println("B1324_FULL_SINK_ZERO_FE_OUTPUT_GAME_TEST_PASS");
 
+   // Cross-dimension no-buffer transfer: the Nether source is a real cell,
+   // not a transmitter battery, and the remote Overworld receiver is a proxy.
+   WirelessEnergyRuntime.unregister(tx);
+   var nether=level.getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+   if(nether==null)throw new IllegalStateException("B1324 Nether level unavailable");
+   BlockPos remoteSourcePos=new BlockPos(8,80,8);
+   BlockPos remoteTransmitterPos=remoteSourcePos.east();
+   int rxChunkX=remoteSourcePos.getX()>>4,rxChunkZ=remoteSourcePos.getZ()>>4;
+   nether.setChunkForced(rxChunkX,rxChunkZ,true); // test-only fixture ticket
+   nether.getChunkAt(remoteSourcePos);
+   nether.setBlock(remoteSourcePos,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+   nether.setBlock(remoteTransmitterPos,ObsidianNetwork.NETWORK_TRANSMITTER.get().defaultBlockState(),3);
+   var remoteSource=(EnergyCellBlockEntity)nether.getBlockEntity(remoteSourcePos);
+   var remoteTx=(WirelessNetworkBlockEntity)nether.getBlockEntity(remoteTransmitterPos);
+   if(remoteSource==null||remoteTx==null)
+    throw new IllegalStateException("B1324 remote energy source unavailable");
+   try(var remoteFund=Transaction.openRoot()){
+    if(remoteSource.energyHandler(null).insert(10000,remoteFund)!=10000)
+     throw new IllegalStateException("B1324 Nether source funding");
+    remoteFund.commit();
+   }
+   remoteSource.cycleSide(Direction.EAST.get3DDataValue());
+   WirelessEnergyRuntime.register(remoteTx);
+   // Empty remote target replaces the now-full local sink.
+   level.setBlock(sinkPos,Blocks.AIR.defaultBlockState(),3);
+   level.setBlock(sinkPos,ObsidianNetwork.BASIC_ENERGY_CELL.get().defaultBlockState(),3);
+   var remoteTarget=(EnergyCellBlockEntity)level.getBlockEntity(sinkPos);
+   if(remoteTarget==null)throw new IllegalStateException("B1324 remote target missing");
+   long remoteInitial=remoteSource.stored();
+   try(var remoteTransfer=Transaction.openRoot()){
+    int drawn=WirelessEnergyRuntime.pull(level.getServer(),
+      "obsidiannetwork:main",2000,remoteTransfer);
+    if(drawn!=2000||remoteTarget.energyHandler(null).insert(drawn,remoteTransfer)!=drawn)
+     throw new IllegalStateException("B1324 crossdim FE not delivered");
+    remoteTransfer.commit();
+   }
+   if(remoteSource.stored()+remoteTarget.stored()!=remoteInitial
+      ||remoteTx.stored()!=0||receiver.stored()!=0)
+    throw new IllegalStateException("B1324 crossdim energy vanished or buffered");
+   nether.setBlock(remoteTransmitterPos,Blocks.AIR.defaultBlockState(),3);
+   nether.setBlock(remoteSourcePos,Blocks.AIR.defaultBlockState(),3);
+   nether.setChunkForced(rxChunkX,rxChunkZ,false);
+   System.out.println("B1324_CROSSDIM_REAL_SOURCE_NO_BUFFER_GAME_TEST_PASS");
+
    level.setBlock(sinkPos,Blocks.AIR.defaultBlockState(),3);
    level.setBlock(rxPos,Blocks.AIR.defaultBlockState(),3);
    level.setBlock(txPos,Blocks.AIR.defaultBlockState(),3);
