@@ -74,11 +74,11 @@ public final class B1376ReactorBankGameTests {
    ServerLevel w=(ServerLevel)h.getLevel();
    BlockPos origin=h.absolutePos(new BlockPos(0,0,0));
    // Actual 5x5x5 Reactor: complete shell, 3 required ports, an
-   // internal rod assembly, fuel, and a water bucket.
+   // complete vertical fuel column (y=2..4), fuel, and a water bucket.
    for(int x=1;x<=5;x++)for(int y=1;y<=5;y++)for(int z=1;z<=5;z++){
     BlockPos p=origin.offset(x,y,z);
     boolean outer=x==1||x==5||y==1||y==5||z==1||z==5;
-    if(!outer)w.setBlock(p,x==3&&y==2&&z==3?
+    if(!outer)w.setBlock(p,x==3&&y>=2&&y<=4&&z==3?
        ObsidianNetwork.REACTOR_FUEL_ASSEMBLY.get().defaultBlockState():
        Blocks.AIR.defaultBlockState(),3);
     else if(x==1&&y==2&&z==1)

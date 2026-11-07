@@ -13,6 +13,7 @@ class ReactorIntegration(unittest.TestCase):
     "ObsidianNetwork.REACTOR_CONTROLLER",
     "ObsidianNetwork.REACTOR_POWER_PORT",
     "ObsidianNetwork.REACTOR_FUEL_ASSEMBLY",
+    "x==3&&y>=2&&y<=4&&z==3",
     "ObsidianNetwork.URANIUM_ROD",
     "ObsidianNetwork.REACTOR_FLUID_PORT",
     "ObsidianNetwork.REACTOR_ITEM_PORT",
