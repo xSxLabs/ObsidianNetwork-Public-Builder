@@ -3670,10 +3670,10 @@ jobs:
           assert 'MAX_TRANSFER=320000' in be and 'MAX_TRANSFER=16000' not in be
           assert 'server.getGameTime()%5!=0' not in be
           assert 'int remainingBudget=Math.min(MAX_TRANSFER,64000);' in be
-          assert 'CAPACITY=64000000L' in be, 'large TX buffer missing'
+          assert 'CAPACITY=500000L' in be and 'B1384_REAL_500K_TX_RX' in be, 'TX/RX real 500k buffer missing'
           assert 'int taken=(int)Math.min(stored,(long)requested);' in be, 'TX withdraw has artificial rate cap'
           assert 'int accepted=(int)Math.min((long)amount,CAPACITY-stored);' in be, 'TX intake has artificial rate cap'
-          assert 'return WirelessEnergyRuntime.pull(world.getServer(),networkId,Math.min(amount,64000),tx);' in be, 'RX extraction limit drift'
+          assert 'int request=Math.min(amount,64000);' in be and 'b1384ExtractLocal(request,tx)' in be, 'RX 64k extract and real buffer drift'
           charging=(j/'wireless/WirelessPlayerCharging.java').read_text()
           assert 'MAX_PER_PLAYER_TICK=64000;' in charging
           assert 'player.level().getGameTime()%20!=0' not in charging
