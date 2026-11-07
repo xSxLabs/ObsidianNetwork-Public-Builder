@@ -30,7 +30,7 @@ class ZeroBufferWirelessB1324(unittest.TestCase):
                  "public static int pull(MinecraftServer server,String id,int wanted,TransactionContext tx)",
                  "source.extract(requested-moved,tx)",
                  "sink.insert(offered-moved,tx)",
-                 "remaining-=be.offerToNeighbors(remaining,tx)",
+                 "remaining-=device.offerToNeighbors(remaining,tx)",
                  "remaining-=be.withdraw(remaining,tx)",
                  "IN_TRANSFER.get()", "IN_AVAILABLE.get()",
                  "RECEIVERS =", "NEXT_SENDER"):
