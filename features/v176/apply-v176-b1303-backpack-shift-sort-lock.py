@@ -166,9 +166,10 @@ s=once(s,
   super.containerTick();""",
 """ @Override protected void containerTick(){
   super.containerTick();
-  xsxSyncShiftLayout(net.minecraft.client.gui.screens.Screen.hasShiftDown());
+  // 26.1: Shift state comes from real KeyEvent and MouseButtonEvent modifiers.
+  // Screen.hasShiftDown() no longer exists; no toggled-sneak polling here.
   xsxReadSortMode();""",
-"poll_held_shift_and_sort")
+"sort_mode_client_sync_event_driven_shift")
 
 s=once(s,
 """  double mx=event.x(),my=event.y(); int button=event.button();""",
