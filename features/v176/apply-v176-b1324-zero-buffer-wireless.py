@@ -143,8 +143,10 @@ e=swap_method(e," private final class Handler implements EnergyHandler",r''' pri
    return WirelessEnergyRuntime.available(server.getServer(),networkId);
   }
   public long getCapacityAsLong(){
-   // Receiver has a proxy extraction capability, not an FE tank.
-   return transmitter?0L:Integer.MAX_VALUE;
+   // Virtual pass-through address space, NOT an FE reservoir. Some other
+   // generators refuse to push into a capability advertising zero capacity.
+   // Actual insert() still returns zero when remote sinks cannot accept.
+   return Integer.MAX_VALUE;
   }
   public int insert(int amount,TransactionContext tx){
    if(!transmitter||amount<=0||!(level instanceof ServerLevel server)
