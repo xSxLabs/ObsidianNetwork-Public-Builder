@@ -1,3 +1,4 @@
+# B1309 explicitly authorized v1.7.6 rebuilt with accurate B816 Backpack SORT/Shift/A-Z anchors and B1307 item capability.
 # B1308 user-authorized v1.7.6 full Java/GameTest build: B1300-B1304 + B1307 native inventory/worn builder supply.
 # B1305 user-approved explicit full Java/GameTest build on isolated v1.7.6 fix branch, protecting build1292 freeze.
 # B957 automatic source regression repair: retain original 3-space turret shot anchor via scoped regex.
