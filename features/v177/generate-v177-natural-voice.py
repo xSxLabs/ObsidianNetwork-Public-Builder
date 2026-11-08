@@ -14,9 +14,10 @@ import edge_tts
 import imageio_ffmpeg
 from num2words import num2words
 
-# A German-native, multilingual male timbre makes German numbers and English
-# sentences share the same speaker. More restrained, low-pitched JARVIS feel.
-VOICE = "de-DE-FlorianMultilingualNeural"
+# English: restrained British male sci-fi assistant character; German:
+# neutral German male. Each finished phrase is rendered in its own language.
+# Both are packaged inside the JAR and require no client-side TTS install.
+VOICE_BY_LANGUAGE = {"en": "en-GB-RyanNeural", "de": "de-DE-FlorianMultilingualNeural"}
 ROOT = Path(os.environ["V1_SOURCE_ROOT"]).parent / "resources" / "assets" / "obsidiannetwork" / "jarvis_audio"
 ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -32,7 +33,7 @@ FIXED = {
     "attack_on": ("Attack mode activated.", "Angriffsmodus aktiviert."),
     "attack_off": ("Attack mode deactivated.", "Angriffsmodus deaktiviert."),
     "projectile": ("Incoming projectile, sir.", "Ein Geschoss nähert sich, Sir."),
-    "home": ("Welcome home, sir.", "Willkommen zu Hause, Sir."),
+    "home": ("Welcome back, sir.", "Willkommen zurück, Sir."),
     "cave": ("Sir, we are entering a deep cave. Visibility is limited.", "Sir, wir betreten eine tiefe Höhle. Die Sicht ist eingeschränkt."),
     "exit": ("See you later, sir.", "Bis später, Sir."),
     "sleep_begin": ("Sleeping in progress, sir.", "Schlafvorgang läuft, Sir."),
@@ -42,9 +43,9 @@ FIXED = {
     "critical_structure": ("Critical structural failure, sir. All armor protection systems are offline.", "Kritischer Strukturausfall, Sir. Alle Rüstungsschutzsysteme sind offline."),
     "empty_energy": ("Warning, sir. Armor energy reserves are completely depleted. Powered systems are offline.", "Warnung, Sir. Die Rüstungsenergie ist vollständig aufgebraucht."),
     "empty_paste": ("Warning, sir. NutriPaste reserves are at one percent. Immediate refilling is recommended.", "Sir, der NutriPaste-Vorrat liegt bei eins Prozent."),
-    "morning": ("Good morning, sir. Welcome back.", "Guten Morgen, Sir. Willkommen zurück."),
-    "afternoon": ("Good afternoon, sir. Welcome back.", "Guten Tag, Sir. Willkommen zurück."),
-    "evening": ("Good evening, sir. Welcome back.", "Guten Abend, Sir. Willkommen zurück."),
+    "morning": ("Good morning, sir.", "Guten Morgen, Sir."),
+    "afternoon": ("Good afternoon, sir.", "Guten Tag, Sir."),
+    "evening": ("Good evening, sir.", "Guten Abend, Sir."),
 }
 # Pre-record critical threshold sentences as full utterances: no splices.
 for percent in (25, 50):
@@ -203,8 +204,9 @@ async def main():
                 try:
                     with tempfile.TemporaryDirectory(prefix="xsxvoice_") as tmp:
                         mp3 = Path(tmp) / "speech.mp3"
-                        comm = edge_tts.Communicate(text=spell_numbers(text,lang), voice=VOICE,
-                                                    rate="-5%", pitch="-15Hz")
+                        comm = edge_tts.Communicate(text=spell_numbers(text,lang),
+                                                    voice=VOICE_BY_LANGUAGE[lang],
+                                                    rate="-9%", pitch="-12Hz")
                         await asyncio.wait_for(comm.save(str(mp3)), timeout=50)
                         if not mp3.is_file() or mp3.stat().st_size < 200:
                             raise RuntimeError("empty TTS output")
@@ -241,7 +243,7 @@ async def main():
     assert (ROOT / "de" / "startup_paste_42.wav").stat().st_size > 1000
     assert (ROOT / "en" / "nearest_distance_27_0.wav").stat().st_size > 1000
     assert (ROOT / "de" / "nearest_zombie.wav").stat().st_size > 1000
-    print(f"V177_NATURAL_BILINGUAL_VOICE_BUNDLED: {count} WAV clips, voice={VOICE}, no narrator, no runtime downloads")
+    print(f"V177_NATURAL_BILINGUAL_VOICE_BUNDLED: {count} WAV clips, voices={VOICE_BY_LANGUAGE}, no narrator, no runtime downloads")
 
 if __name__ == "__main__":
     asyncio.run(main())
