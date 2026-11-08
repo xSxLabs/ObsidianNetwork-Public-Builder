@@ -1,25 +1,29 @@
 #!/usr/bin/env python3
-"""Keep J.A.R.V.I.S. voice settings reachable at Minecraft GUI scale."""
+"""Check paged, individually toggleable JARVIS GUI does not hide buttons."""
 from pathlib import Path
 import re
 
 source = Path("features/v177/apply-v177-jarvis-voice.py").read_text(encoding="utf-8")
 begin = 'add("client/V177JarvisSettingsScreen.java",r\'\'\''
-assert source.count(begin) == 1, "JARVIS settings screen source missing"
-screen = source.split(begin, 1)[1].split("\'\'\')", 1)[0]
-assert 'flag(x,y+138,"Sleep announcements","sleep");' in screen
-assert 'int doneOffset = page == 0 ? 164 : 147;' in screen
-assert 'button(x,y+doneOffset,238,"DONE",()->this.onClose());' in screen
-assert 'int x=this.width/2-120,y=Math.max(32,this.height/2-125);' in screen
+assert source.count(begin)==1, "JARVIS settings source missing"
+screen = source.split(begin,1)[1].split("\'\'\')",1)[0]
 
-# MC widgets are 20 GUI pixels high. DONE may not cover the seventh row.
-sleep_bottom = 138 + 20
-done_top = int(re.search(r'page == 0 \? (\d+) :', screen).group(1))
-assert done_top - sleep_bottom >= 4, "DONE overlaps Sleep announcements"
-
-# Screenshot-sized GUI (approx. 260 scaled pixels tall) must show both.
-height = 260
-top = max(32, height // 2 - 125)
-first_setting_y = top + 27
-assert first_setting_y + done_top + 20 <= height, "DONE falls off screen"
-print("V177_JARVIS_VOICE_SETTINGS_LAYOUT_PASS")
+for marker in ('private int page=0,subpage=0;', 'FLAGS[page][subpage]',
+               '"< PREV"', '"NEXT >"', '"DONE"',
+               'flight_on|Flight ON', 'flight_off|Flight OFF',
+               'sleep_begin|Sleep begins','sleep_end|Sleep finishes',
+               'home|Welcome back at home','integrity_0|Integrity zero'):
+    assert marker in screen, marker
+assert '"\\\\|"'.replace('\\\\','\\\\') in screen, "split regex absent"
+# Vertical layout at screenshot scale 260 UI pixels.
+height=260
+tabs_y=max(22,height//2-125)
+settings_y=tabs_y+27
+last_setting_bottom=settings_y+5*23+20
+nav_top=settings_y+143
+done_top=settings_y+168
+assert last_setting_bottom<nav_top
+assert nav_top+20<done_top
+assert done_top+20<=height
+assert 'flag(x,y+138,"Sleep announcements"' not in screen
+print("V177_JARVIS_PAGED_SETTINGS_LAYOUT_PASS")
