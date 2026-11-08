@@ -44,6 +44,8 @@ class HomeBridgeTests(unittest.TestCase):
                      "PacketDistributor.sendToPlayer(player,new V177HomeProximityPayload(near))"):
             self.assertIn(text, s)
         self.assertNotIn("sendSystemMessage", s)
+        self.assertNotIn("player.connection.connection", s)
+        self.assertIn("if(player.connection==null)return;", s)
 
     def test_client_uses_spawn_and_command_home_and_only_audio(self):
         s = self.patch
