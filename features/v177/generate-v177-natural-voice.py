@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 import edge_tts
+import imageio_ffmpeg
 from num2words import num2words
 
 VOICE = "en-US-AndrewMultilingualNeural"
@@ -131,7 +132,7 @@ async def main():
                         await asyncio.wait_for(comm.save(str(mp3)), timeout=50)
                         if not mp3.is_file() or mp3.stat().st_size < 200:
                             raise RuntimeError("empty TTS output")
-                        subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-nostdin",
+                        subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-loglevel", "error", "-nostdin",
                                         "-y", "-i", str(mp3),
                                         "-af", "highpass=f=70,lowpass=f=8500,acompressor=threshold=-18dB:ratio=2:attack=5:release=80",
                                         "-ar", "22050", "-ac", "1", "-sample_fmt", "s16",
