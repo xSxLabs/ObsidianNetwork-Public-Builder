@@ -61,6 +61,7 @@ public final class V177JarvisSettings {
  public static int radius=32;
  public static boolean german=false;
  public static boolean enabled=true;
+ public static int volume=85;
  static {
   for(String key:new String[]{"voice","actions","startup","greeting","sleep",
        "energy","paste","integrity","hostiles","passives","players","bosses",
@@ -74,6 +75,7 @@ public final class V177JarvisSettings {
   radius=Math.max(8,Math.min(64,Math.round(value/8F)*8));save();
  }
  public static void language(boolean de){german=de;save();}
+ public static void setVolume(int value){volume=Math.max(0,Math.min(100,value));save();}
  public static void enabled(boolean on){enabled=on;save();}
  private static Path file(){
   return Minecraft.getInstance().gameDirectory.toPath().resolve("config")
@@ -81,13 +83,15 @@ public final class V177JarvisSettings {
  }
  public static void load(UUID uuid){
   if(uuid.equals(owner))return;
-  owner=uuid;radius=32;german=false;enabled=true;
+  owner=uuid;radius=32;german=false;enabled=true;volume=85;
   for(String key:switches.keySet())switches.put(key,true);
   Properties p=new Properties();
   try(var stream=Files.newInputStream(file())){p.load(stream);}
   catch(java.io.IOException ignored){return;}
   enabled=Boolean.parseBoolean(p.getProperty("enabled","true"));
   german=Boolean.parseBoolean(p.getProperty("german","false"));
+  try{volume=Math.max(0,Math.min(100,Integer.parseInt(p.getProperty("volume","85"))));}
+  catch(NumberFormatException ignored){volume=85;}
   try{radius=Math.max(8,Math.min(64,((Integer.parseInt(p.getProperty("radius","32"))+4)/8)*8));}
   catch(NumberFormatException ignored){radius=32;}
   for(String key:switches.keySet())
@@ -99,6 +103,7 @@ public final class V177JarvisSettings {
   p.setProperty("enabled",String.valueOf(enabled));
   p.setProperty("german",String.valueOf(german));
   p.setProperty("radius",String.valueOf(radius));
+  p.setProperty("volume",String.valueOf(volume));
   for(var entry:switches.entrySet())
     p.setProperty(entry.getKey(),String.valueOf(entry.getValue()));
   try{
@@ -136,11 +141,13 @@ public final class V177JarvisSettingsScreen extends Screen {
   if(page==0){
    button(x,y,238,"Voice language: "+(V177JarvisSettings.german?"DEUTSCH":"ENGLISH"),
       ()->V177JarvisSettings.language(!V177JarvisSettings.german));
-   flag(x,y+23,"Voice assistant","voice");
-   flag(x,y+46,"Action announcements","actions");
-   flag(x,y+69,"Startup status report","startup");
-   flag(x,y+92,"Personal greeting","greeting");
-   flag(x,y+115,"Sleep announcements","sleep");
+   button(x,y+23,238,"Voice volume: "+V177JarvisSettings.volume+"% (step 10)",
+     ()->V177JarvisSettings.setVolume(V177JarvisSettings.volume>=100?0:V177JarvisSettings.volume+10));
+   flag(x,y+46,"Voice assistant","voice");
+   flag(x,y+69,"Action announcements","actions");
+   flag(x,y+92,"Startup status report","startup");
+   flag(x,y+115,"Personal greeting","greeting");
+   flag(x,y+138,"Sleep announcements","sleep");
   }else if(page==1){
    button(x,y,238,"Detection radius: "+V177JarvisSettings.radius+" blocks (step 8)",
      ()->V177JarvisSettings.setRadius(V177JarvisSettings.radius>=64?8:V177JarvisSettings.radius+8));
@@ -268,7 +275,7 @@ public final class V177JarvisClient {
   try{
    if(!narratorUnavailable){
     if(narrator==null)narrator=com.mojang.text2speech.Narrator.getNarrator();
-    narrator.say(text,true);
+    narrator.say(text,true,V177JarvisSettings.volume/100f);
    }
   }catch(Throwable t){
    narratorUnavailable=true; // native audio may be unavailable on Linux
@@ -313,11 +320,11 @@ public final class V177JarvisClient {
   prevEnergy=energy;prevPaste=paste;prevIntegrity=integrity;
  }
  private static String greeting(LocalPlayer p){
-  long time=Math.floorMod(p.level().getDayTime(),24000L);
+  long time=Math.floorMod(p.level().getOverworldClockTime(),24000L);
   return time<6000L?"Good morning":time<12000L?"Good afternoon":"Good evening";
  }
  private static String greetingDe(LocalPlayer p){
-  long time=Math.floorMod(p.level().getDayTime(),24000L);
+  long time=Math.floorMod(p.level().getOverworldClockTime(),24000L);
   return time<6000L?"Guten Morgen":time<12000L?"Guten Tag":"Guten Abend";
  }
  private static void start(LocalPlayer p){
