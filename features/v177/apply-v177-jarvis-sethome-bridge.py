@@ -264,9 +264,20 @@ public final class V177HomeTracker {
   if(player.tickCount%20!=0)return; // max one lookup per player per second
   if(player.connection==null)return; // connection internals are protected in 26.1
   V177HomeIndex index=V177HomeIndex.get(player.level().getServer());
+  // 26.1 keeps personal bed/respawn-anchor coordinates on ServerPlayer.
+  // Include these in the same privacy-preserving, boolean-only proximity sync.
+  boolean bedNear=false,bedOutside=true;
+  var config=player.getRespawnConfig();
+  if(config!=null&&config.respawnData()!=null
+      &&config.respawnData().dimension().equals(player.level().dimension())){
+   var bed=config.respawnData().pos();
+   double sq=player.distanceToSqr(bed.getX()+.5D,bed.getY()+.5D,bed.getZ()+.5D);
+   bedNear=sq<=64D;
+   bedOutside=sq>=144D;
+  }
   Boolean previous=PREVIOUS.get(player);
-  boolean near=previous!=null&&previous&&!index.outside(player);
-  if(!near)near=index.near(player);
+  boolean near=previous!=null&&previous&&(!index.outside(player)||!bedOutside);
+  if(!near)near=index.near(player)||bedNear;
   if(previous==null||previous!=near){
    PREVIOUS.put(player,near);
    PacketDistributor.sendToPlayer(player,new V177HomeProximityPayload(near));
