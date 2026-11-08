@@ -29,7 +29,9 @@ class ArmorStationFastFluidCable(unittest.TestCase):
   # Keep IMPORT tick interval and all ordinary fluid budgets unchanged.
   self.assertNotIn("private int interval(Direction d){",PATCH)
   self.assertNotIn("private int fluidAmount(Direction d){",PATCH)
-  self.assertIn("assert len(matches)==1",PATCH)
+  self.assertIn("assert end is not None",PATCH)
+  self.assertIn("s=s[:start]+new+s[end:]",PATCH)
+  self.assertIn("cableAllows(in,",PATCH)
   self.assertNotIn("src.drain(25_000,",PATCH)
 
  def test_30_seconds_even_with_default_five_tick_cable_cadence(self):
