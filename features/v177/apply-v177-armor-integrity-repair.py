@@ -82,6 +82,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.CustomData;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
@@ -93,21 +95,34 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageTypes;
 
 /** Dedicated MK1-MK24 structural integrity. Never break or delete armor items.
- *  Vanilla unbreakable keeps old suits safe; damage is applied MANUALLY.
+ *  Vanilla UNBREAKABLE stays intact. Custom item data holds 1000 persistent HP,
+ *  independently of vanilla durability, with client synchronization.
  */
 @EventBusSubscriber(modid="obsidiannetwork")
 public final class V177ArmorIntegrity {
  private V177ArmorIntegrity(){}
  public static boolean piece(ItemStack stack,int slot){
-  return !stack.isEmpty()&&PowerArmorRuntime.tier(stack,slot)>0
-     &&stack.getMaxDamage()>1;
+  return !stack.isEmpty()&&PowerArmorRuntime.tier(stack,slot)>0;
  }
  // The four synchronously worn pieces each carry the same 1000-HP pool.
  // The combined HUD represents 1000 HP, not 4 x 1000.
  public static final int SUIT_HITPOINTS=1000;
- private static int max(ItemStack s){return SUIT_HITPOINTS;}
+ private static final String HP_KEY="xsxlabs_armor_integrity_hp";
+ public static int hitpoints(ItemStack stack){
+  if(stack.isEmpty())return 0;
+  CustomData data=stack.get(DataComponents.CUSTOM_DATA);
+  if(data!=null&&data.contains(HP_KEY)){
+   return Math.max(0,Math.min(SUIT_HITPOINTS,data.copyTag().getIntOr(HP_KEY,SUIT_HITPOINTS)));
+  }
+  // Safely migrate 1445 wear if an older suit has a nonzero vanilla damage field.
+  return Math.max(0,SUIT_HITPOINTS-Math.min(SUIT_HITPOINTS,stack.getDamageValue()));
+ }
+ private static void setHitpoints(ItemStack stack,int hp){
+  int safe=Math.max(0,Math.min(SUIT_HITPOINTS,hp));
+  CustomData.update(DataComponents.CUSTOM_DATA,stack,tag->tag.putInt(HP_KEY,safe));
+ }
  public static boolean broken(ItemStack s){
-  return s.getMaxDamage()>1&&s.getDamageValue()>=max(s);
+  return s.getItem() instanceof PowerArmorItem&&hitpoints(s)<=0;
  }
  public static boolean failed(ServerPlayer p){
   return PowerArmorRuntime.full(p)&&totalHitpoints(p)<=0;
@@ -119,7 +134,7 @@ public final class V177ArmorIntegrity {
    ItemStack s=p.getItemBySlot(PowerArmorRuntime.SLOTS[i]);
    if(!piece(s,i))continue;
    pieces++;
-   remaining+=Math.max(0,SUIT_HITPOINTS-Math.min(SUIT_HITPOINTS,s.getDamageValue()));
+   remaining+=hitpoints(s);
   }
   return pieces==0?0:(int)Math.round((double)remaining/pieces);
  }
@@ -146,10 +161,10 @@ public final class V177ArmorIntegrity {
   for(int i=0;i<4;i++){
    ItemStack stack=p.getItemBySlot(PowerArmorRuntime.SLOTS[i]);
    if(!piece(stack,i))continue;
-   stack.setDamageValue(Math.min(max(stack),stack.getDamageValue()+hitpoints));
+   setHitpoints(stack,hitpoints(stack)-hitpoints);
   }
  }
- @SubscribeEvent(priority=EventPriority.LOWEST)
+ @SubscribeEvent(priority=EventPriority.HIGHEST)
  public static void wear(LivingIncomingDamageEvent e){
   if(!(e.getEntity() instanceof ServerPlayer p)||!PowerArmorRuntime.full(p))return;
   if(p.isCreative()||p.isSpectator()||e.isCanceled())return;
@@ -194,12 +209,12 @@ public final class V177ArmorIntegrity {
   }
  }
  private static int repairOne(ItemStack stack,int availableFe){
-  if(availableFe<=0||stack.isEmpty()||stack.getDamageValue()<=0)return 0;
+  if(availableFe<=0||stack.isEmpty()||hitpoints(stack)>=SUIT_HITPOINTS)return 0;
   // A full suit repair uses 100000 FE; max station buffer remains 200000 FE.
-  int restore=Math.min(stack.getDamageValue(),Math.min(10,availableFe/25));
+  int restore=Math.min(SUIT_HITPOINTS-hitpoints(stack),Math.min(10,availableFe/25));
   if(restore<=0)return 0;
   int cost=restore*25; // exact finite energy cost
-  stack.setDamageValue(Math.max(0,stack.getDamageValue()-restore));
+  setHitpoints(stack,hitpoints(stack)+restore);
   return cost;
  }
  public static void repairNearby(ServerLevel level,BlockPos pos,ArmorStationBlockEntity station){
@@ -241,7 +256,7 @@ public final class V177IntegrityHud {
   g.pose().pushMatrix();
   g.pose().translate((float)x,(float)(y+4));
   g.pose().scale(.6f,.6f);
-  g.text(mc.font,"ARMOR INTEGRITY",0,0,color);
+  g.text(mc.font,"INTEGRITY",0,0,color);
   g.pose().popMatrix();
   // One decimal: even an ordinary -2 HP strike immediately changes 100.0 -> 99.8.
   String percent=String.format(java.util.Locale.ROOT,"%.1f%%",
