@@ -177,13 +177,13 @@ public final class V177ArmorIntegrity {
    // high-speed wall impacts once even without a Minecraft damage event.
    double horizontal=p.getDeltaMovement().horizontalDistance();
    if(state.flight&&p.horizontalCollision&&state.priorHorizontal>.85D
-       &&state.lastImpactTick!=p.tickCount){
+       &&(long)p.tickCount-(long)state.lastImpactTick>1L){
     subtract(p,5);state.lastImpactTick=p.tickCount;
    }
    state.priorHorizontal=horizontal;
   }else{
    if(state.airborne&&state.flight&&state.maxDownward>.75D
-       &&state.lastImpactTick!=p.tickCount){
+       &&(long)p.tickCount-(long)state.lastImpactTick>1L){
     subtract(p,5);state.lastImpactTick=p.tickCount;
    }
    state.airborne=false;state.flight=false;state.maxDownward=0D;
