@@ -39,8 +39,12 @@ class PowerArmorSleepPercentage(unittest.TestCase):
             "if(sleepers<needed)return;",
         ):
             self.assertIn(statement,PATCH)
+        # The old all-players loop is retained as a literal replacement
+        # anchor in the build patch, but not in its injected Java replacement.
+        replacement=PATCH.split("int percentage=world.getGameRules()",1)[1]
         self.assertNotIn(
-            "if(other.isAlive()&&!other.isSpectator()&&!SLEEPING.containsKey(other))",PATCH)
+            "if(other.isAlive()&&!other.isSpectator()&&!SLEEPING.containsKey(other))",
+            replacement)
     def test_build_pipeline_keeps_patch_on_v177_only(self):
         self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
         self.assertIn("python3 features/v177/apply-v177-power-sleep-fix.py",FLOW)
