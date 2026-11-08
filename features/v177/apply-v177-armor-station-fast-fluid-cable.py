@@ -13,13 +13,24 @@ from pathlib import Path
 
 p=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/blockentity/LogisticsCableBlockEntity.java"
 s=p.read_text(encoding="utf-8")
-matches=list(re.finditer(r"^ private void transferFluid\(Direction in\)\{[^\r\n]*$",s,re.MULTILINE))
-assert len(matches)==1,("V177_STATION_FLUID_IMPORT_SHAPE_DRIFT",len(matches))
-old=matches[0].group()
-# Earlier reconstruction patches can change the transactional method's formatting.
-# Match its unique method signature; the replacement below preserves simulated
-# source/destination transfer and refunds unused fluid.
-assert "Capabilities.Fluid.BLOCK" in old, "V177_STATION_FLUID_CAPABILITY_MISSING"
+# Earlier cable-filter patches insert extra lines inside transferFluid.
+# Replace the complete brace-balanced method, never just its first line.
+start=s.find(" private void transferFluid(Direction in){")
+assert start>=0,"V177_STATION_FLUID_METHOD_MISSING"
+brace=s.index("{",start)
+depth=0
+end=None
+for i in range(brace,len(s)):
+ if s[i]=="{": depth+=1
+ elif s[i]=="}":
+  depth-=1
+  if depth==0:
+   end=i+1
+   break
+assert end is not None,"V177_STATION_FLUID_METHOD_UNBALANCED"
+old=s[start:end]
+assert "Capabilities.Fluid.BLOCK" in old,"V177_STATION_FLUID_CAPABILITY_MISSING"
+assert "cableAllows(in," in old,"V177_STATION_FLUID_FILTER_MISSING"
 new=""" private void transferFluid(Direction in){
   var srcR=level.getCapability(Capabilities.Fluid.BLOCK,worldPosition.relative(in),in.getOpposite());
   IFluidHandler src=srcR==null?null:IFluidHandler.of(srcR);
@@ -35,7 +46,7 @@ new=""" private void transferFluid(Direction in){
       instanceof dev.obsidiannetwork.powerarmor.ArmorStationBlockEntity)
     max=Math.max(max,25_000);
    FluidStack sim=src.drain(max,IFluidHandler.FluidAction.SIMULATE);
-   if(sim.isEmpty())return;
+   if(sim.isEmpty())return;\n   if(!this.cableAllows(in,net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(sim.getFluid())))return;
    int accepted=dst.fill(sim,IFluidHandler.FluidAction.SIMULATE);
    if(accepted<=0)continue;
    FluidStack got=src.drain(accepted,IFluidHandler.FluidAction.EXECUTE);
@@ -50,6 +61,6 @@ new=""" private void transferFluid(Direction in){
    return;
   }
  }"""
-s=s[:matches[0].start()]+new+s[matches[0].end():]
+s=s[:start]+new+s[end:]
 p.write_text(s,encoding="utf-8")
 print("V177_STATION_25000_MB_PER_FLUID_CABLE_TRANSFER_OTHER_TARGETS_UNCHANGED_PASS")
