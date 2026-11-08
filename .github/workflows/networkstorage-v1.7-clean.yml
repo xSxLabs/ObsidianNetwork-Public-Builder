@@ -188,6 +188,10 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1307_builder_tools_inventory_backpack.py' -v
           python3 -m py_compile features/v176/apply-v176-b1381-powerbank-output-slider.py features/v176/apply-v176-b1381-gametest-adapt.py
           python3 -m py_compile features/v176/apply-v176-b1383-reactor-double.py features/v176/apply-v176-b1384-wireless-500k-buffers.py features/v176/apply-v176-b1384-wireless-gametest.py
+          # v1.7.7 feature injector syntax check; no alternate branches modified.
+          if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
+            python3 -m py_compile features/v177/*.py
+          fi
           # B1392: fail-closed Shift+Deconstruct stack source and conservation tests.
           python3 -m py_compile features/v176/apply-v176-b1392-deconstructor-stack.py tests/test_v176_b1392_deconstructor_stack.py
           python3 -m unittest discover -s tests -p 'test_v176_b1392_deconstructor_stack.py' -v
@@ -4331,6 +4335,12 @@ jobs:
             python3 features/v176/apply-v176-b1383-reactor-double.py
             # B1392: Shift+DECONSTRUCT consumes whole input stack in one server-authoritative batch.
             python3 features/v176/apply-v176-b1392-deconstructor-stack.py
+            # v1.7.7 user-authorized J.A.R.V.I.S. / nonbreaking Armor Integrity /
+            # FE-powered Power Armor Station, isolated to the 1.7.7 branch.
+            if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
+              python3 features/v177/apply-v177-armor-integrity-repair.py
+              python3 features/v177/apply-v177-jarvis-voice.py
+            fi
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
