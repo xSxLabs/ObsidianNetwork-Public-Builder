@@ -4951,6 +4951,11 @@ jobs:
            assert 'LivingIncomingDamageEvent' in integrity and 'DamageTypeTags.IS_EXPLOSION' in integrity
            assert 'explosion?10:collision?5:2' in integrity
            assert 'totalHitpoints' in integrity and 'getRespawnData()' in jarvis
+           assert 'CustomData.update(DataComponents.CUSTOM_DATA' in integrity
+           assert 'stack.setDamageValue(Math.min(max(stack)' not in integrity
+           assert 'getRespawnConfig()' in VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V177HomeTracker.java').read_text()
+           sleep=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V176PowerSleepServer.java').read_text()
+           assert 'CanContinueSleepingEvent' in sleep and 'p.startSleeping(p.blockPosition())' in sleep
            assert 'g.text(mc.font,subtitle' not in jarvis
            print('V177_INTEGRITY_1000_HP_2_10_5_AND_AUDIO_ONLY_HOME_SOURCE_GATE_PASS')
            print('V177_OFFLINE_BILINGUAL_NEURAL_AUDIO_COMPILED_JAR_PASS')
