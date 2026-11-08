@@ -49,7 +49,7 @@ patch("client/V177JarvisClient.java",
   // Per-server home locations never leak to the client, only a proximity flag.
   var data=p.level().getRespawnData();
   boolean atSpawn=false;
-  boolean pastSpawn=false;
+  boolean pastSpawn=true;
   if(data!=null&&data.dimension().equals(p.level().dimension())){
    BlockPos home=data.pos();
    double sq=p.distanceToSqr(home.getX()+.5,home.getY()+.5,home.getZ()+.5);
@@ -216,10 +216,14 @@ public final class V177HomeTracker {
   // Recognize namespaced commands while never assuming which mod owns them.
   int colon=op.indexOf(':');
   if(colon>=0)op=op.substring(colon+1);
+  int opIndex=0;
+  if((op.equals("ftbessentials")||op.equals("essentials"))&&parts.length>1){
+   op=parts[1].toLowerCase(Locale.ROOT);opIndex=1;
+  }
   boolean set=op.equals("sethome");
   boolean delete=op.equals("delhome")||op.equals("deletehome");
   if(!set&&!delete)return;
-  final String homeName=parts.length>=2?parts[1]:"home";
+  final String homeName=parts.length>opIndex+1?parts[opIndex+1]:"home";
   final BlockPos position=player.blockPosition().immutable();
   final String dimension=player.level().dimension().identifier().toString();
   CommandResultCallback observer=(success,result)->{
