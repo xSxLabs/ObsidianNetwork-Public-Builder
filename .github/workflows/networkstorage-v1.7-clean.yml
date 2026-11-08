@@ -4346,8 +4346,11 @@ jobs:
             # FE-powered Power Armor Station, isolated to the 1.7.7 branch.
             if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
               python3 features/v177/apply-v177-armor-integrity-repair.py
-              # Guard the VOICE page's last toggle against DONE overlap.
+              # Power-sleep must use a stable Minecraft sleep state, not pose spam.
+              python3 features/v177/apply-v177-power-sleep-fix.py
               python3 tests/test_v177_jarvis_voice_settings_layout.py
+              python3 tests/test_v177_integrity_sleep_voice_contract.py
+              python3 -m unittest tests/test_v177_sethome_bridge.py
               python3 features/v177/apply-v177-jarvis-voice.py
               # Observe successful /sethome from other mods; never replace command.
               python3 features/v177/apply-v177-jarvis-sethome-bridge.py
