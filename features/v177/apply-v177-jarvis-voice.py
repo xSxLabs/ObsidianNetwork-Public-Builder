@@ -168,7 +168,9 @@ public final class V177JarvisSettingsScreen extends Screen {
    flag(x,y+46,"Speech on armor entry","startup");
    flag(x,y+69,"Speech on armor exit","greeting");
   }
-  button(x,y+147,238,"DONE",()->this.onClose());
+  // The VOICE page has seven 20px-high rows; keep DONE beneath the sleep toggle.
+  int doneOffset = page == 0 ? 164 : 147;
+  button(x,y+doneOffset,238,"DONE",()->this.onClose());
  }
  @Override public void extractBackground(net.minecraft.client.gui.GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partial){
   super.extractBackground(graphics,mouseX,mouseY,partial);
