@@ -120,8 +120,8 @@ assert "b1392DeconstructStack(" in m
 # Capture modifiers from the actual 26.1 mouse-click event BEFORE vanilla
 # Button.onPress is invoked by super.mouseClicked. No removed Screen APIs,
 # key polling or per-tick network packets are used.
-init_method = re.search(r"\bprotected\s+void\s+init\s*\(", s)
-assert init_method is not None and len(re.findall(r"\bprotected\s+void\s+init\s*\(", s)) == 1, "B1402 Screen init anchor drift"
+init_method = re.search(r"\b(?:protected\s+)?void\s+init\s*\(", s)
+assert init_method is not None and len(re.findall(r"\b(?:protected\s+)?void\s+init\s*\(", s)) == 1, "B1402 Screen init anchor drift"
 mouse_override = """
   // B1402_261_EVENT_SHIFT: read modifiers from the real click.
   private boolean xsxDeconstructBatchShift = false;
