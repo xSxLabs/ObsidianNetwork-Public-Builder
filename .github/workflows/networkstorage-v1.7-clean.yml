@@ -4355,6 +4355,10 @@ jobs:
             # v1.7.7 user-authorized J.A.R.V.I.S. / nonbreaking Armor Integrity /
             # FE-powered Power Armor Station, isolated to the 1.7.7 branch.
             if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
+              # Held Multitool performance: 2318 -> 518 native 3D cuboids.
+              # Preserve all 132 original Blockbench parts and 128x128 PNG.
+              python3 features/v177/apply-v177-multitool-render-lod.py
+              python3 -m unittest discover -s tests -p 'test_v177_multitool_fps_lod.py' -v
               python3 features/v177/apply-v177-armor-integrity-repair.py
               # 500mB input-only NutriPaste fluid tank on Armor Station; helmet auto-refill.
               python3 features/v177/apply-v177-armor-station-nutripaste.py
