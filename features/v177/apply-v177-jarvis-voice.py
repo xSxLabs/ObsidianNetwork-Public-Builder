@@ -267,8 +267,8 @@ public final class V177JarvisClient {
  }
  public static void toggle(){
   V177JarvisSettings.enabled(!enabled());
-  if(enabled())enqueue(2,"At your service, sir.","Zu Ihren Diensten, Sir.");
-  else directly("Going offline. Until next time, sir.",
+  if(enabled()&&V177JarvisSettings.on("service"))enqueue(2,"At your service, sir.","Zu Ihren Diensten, Sir.");
+  else if(!enabled()&&V177JarvisSettings.on("offline"))directly("Going offline. Until next time, sir.",
                 "Ich gehe offline. Bis zum nächsten Mal, Sir.");
  }
  public static void wheelAction(int action){
@@ -276,17 +276,18 @@ public final class V177JarvisClient {
   switch(action){
    case 3->{
     // The sole voice action outside a worn suit: immediate recall acknowledgement.
+    if(!V177JarvisSettings.on("recall"))return;
     if(!available()) directly("Armor recall initiated. I'm on my way, sir.",
                               "Rüstungsrückruf eingeleitet. Ich bin auf dem Weg, Sir.");
     else enqueue(3,"Armor recall initiated. I'm on my way, sir.",
                    "Rüstungsrückruf eingeleitet. Ich bin auf dem Weg, Sir.");
    }
-   case 6->enqueue(1,"Follow mode command received, sir.",
-                      "Folgemodus-Befehl empfangen, Sir.");
-   case 7->enqueue(1,"Turret mode command received, sir.",
-                      "Geschützturmmodus-Befehl empfangen, Sir.");
-   case 8->enqueue(1,"Sleep mode command received, sir.",
-                      "Schlafmodus-Befehl empfangen, Sir.");
+   case 6->{if(V177JarvisSettings.on("follow"))enqueue(1,"Follow mode command received, sir.",
+                      "Folgemodus-Befehl empfangen, Sir.");}
+   case 7->{if(V177JarvisSettings.on("turret"))enqueue(1,"Turret mode command received, sir.",
+                      "Geschützturmmodus-Befehl empfangen, Sir.");}
+   case 8->{if(V177JarvisSettings.on("sleep_command"))enqueue(1,"Sleep mode command received, sir.",
+                      "Schlafmodus-Befehl empfangen, Sir.");}
    default->{}
   }
  }
@@ -332,18 +333,18 @@ public final class V177JarvisClient {
   int e=threshold(energy,prevEnergy,new int[]{0,25,50});
   int n=threshold(paste,prevPaste,new int[]{1,25,50,57});
   int a=threshold(integrity,prevIntegrity,new int[]{0,1,25,50});
-  if(e>=0&&V177JarvisSettings.on("energy"))
+  if(e>=0&&V177JarvisSettings.on("energy")&&V177JarvisSettings.on("energy_"+e))
    enqueue(e==0?5:e==25?4:2,
       e==0?"Warning, sir. Armor energy reserves are completely depleted. Powered systems are offline.":
       "Sir, armor energy reserves have dropped to "+e+" percent.",
       e==0?"Warnung, Sir. Die Rüstungsenergie ist vollständig aufgebraucht.":
       "Sir, die Rüstungsenergie liegt bei "+e+" Prozent.");
-  if(n>=0&&V177JarvisSettings.on("paste"))
+  if(n>=0&&V177JarvisSettings.on("paste")&&V177JarvisSettings.on("paste_"+n))
    enqueue(n<=1?5:n<=25?4:2,
      n<=1?"Warning, sir. NutriPaste reserves are at one percent. Immediate refilling is recommended.":
          "Sir, NutriPaste reserves are at "+n+" percent.",
      "Sir, der NutriPaste-Vorrat liegt bei "+n+" Prozent.");
-  if(a>=0&&V177JarvisSettings.on("integrity"))
+  if(a>=0&&V177JarvisSettings.on("integrity")&&V177JarvisSettings.on("integrity_"+a))
    enqueue(a==0?5:a<=25?4:2,
      a==0?"Critical structural failure, sir. All armor protection systems are offline.":
           "Sir, armor structural integrity is at "+a+" percent.",
@@ -361,9 +362,13 @@ public final class V177JarvisClient {
  }
  private static void start(LocalPlayer p){
   checkLevels(p);
-  if(V177JarvisSettings.on("greeting"))
-   enqueue(2,greeting(p)+", sir. Welcome back.",
-            greetingDe(p)+", Sir. Willkommen zurück.");
+  if(V177JarvisSettings.on("greeting")){
+   String period=greeting(p);
+   String key=period.equals("Good morning")?"morning":
+     period.equals("Good afternoon")?"afternoon":"evening";
+   if(V177JarvisSettings.on(key))
+    enqueue(2,period+", sir.",greetingDe(p)+", Sir.");
+  }
   if(V177JarvisSettings.on("startup")){
    enqueue(2,"Armor diagnostics complete. Structural integrity at "+
      prevIntegrity+" percent. Energy reserves at "+prevEnergy+
@@ -427,13 +432,13 @@ public final class V177JarvisClient {
    }
   }
   int tick=p.tickCount;
-  if(projectile&&tick-lastProjectile>100){
+  if(projectile&&V177JarvisSettings.on("projectile")&&tick-lastProjectile>100){
    lastProjectile=tick;
    enqueue(4,"Incoming projectile, sir.","Ein Geschoss nähert sich, Sir.");
   }
   String key=hostile+"/"+passive+"/"+players+"/"+bosses;
   boolean any=hostile+passive+players+bosses>0;
-  if(any&&!key.equals(scanKey)&&tick-lastScanSpeech>=200){
+  if(any&&V177JarvisSettings.on("scan")&&!key.equals(scanKey)&&tick-lastScanSpeech>=200){
    // Include only actual categories, never irrelevant zero counts.
    var enParts=new java.util.ArrayList<String>();
    var deParts=new java.util.ArrayList<String>();
@@ -478,7 +483,7 @@ public final class V177JarvisClient {
   double distance=p.distanceToSqr(home.getX()+.5,home.getY()+.5,home.getZ()+.5);
   if(!nearHome&&distance<=64D){
    nearHome=true;
-   enqueue(2,"Welcome home, sir.","Willkommen zu Hause, Sir.");
+   enqueue(2,"Welcome back, sir.","Willkommen zurück, Sir.");
   }else if(nearHome&&distance>=144D)nearHome=false;
  }
  private static void checkEnvironment(LocalPlayer p){
@@ -500,7 +505,7 @@ public final class V177JarvisClient {
   V177JarvisSettings.load(p.getUUID());
   boolean worn=full(p);
   if(!worn){
-   if(wasInArmor&&enabled()&&V177JarvisSettings.on("greeting"))
+   if(wasInArmor&&enabled()&&V177JarvisSettings.on("exit"))
     directly("See you later, sir.","Bis später, Sir.");
    wasInArmor=false;wasSleeping=false;wasFlying=false;prevAttackMode=false;
    messages.clear();initial=true;return;
@@ -515,21 +520,21 @@ public final class V177JarvisClient {
   // Use the real synced armor upgrade state instead of guessing from the click.
   boolean attackMode=V176AttackModeClient.active();
   if(attackMode!=prevAttackMode&&V177JarvisSettings.on("actions")){
-   if(attackMode)enqueue(3,"Attack mode activated.","Angriffsmodus aktiviert.");
-   else enqueue(3,"Attack mode deactivated.","Angriffsmodus deaktiviert.");
+   if(attackMode&&V177JarvisSettings.on("attack_on"))enqueue(3,"Attack mode activated.","Angriffsmodus aktiviert.");
+   else if(!attackMode&&V177JarvisSettings.on("attack_off"))enqueue(3,"Attack mode deactivated.","Angriffsmodus deaktiviert.");
   }
   prevAttackMode=attackMode;
   boolean sleep=p.getPose()==Pose.SLEEPING;
-  if(sleep&&!wasSleeping&&V177JarvisSettings.on("sleep"))
+  if(sleep&&!wasSleeping&&V177JarvisSettings.on("sleep")&&V177JarvisSettings.on("sleep_begin"))
    enqueue(2,"Sleeping in progress, sir.","Schlafvorgang läuft, Sir.");
-  if(!sleep&&wasSleeping&&V177JarvisSettings.on("sleep"))
+  if(!sleep&&wasSleeping&&V177JarvisSettings.on("sleep")&&V177JarvisSettings.on("sleep_end"))
    enqueue(2,"Sleeping finished. Good morning, sir.",
              "Schlafvorgang abgeschlossen. Guten Morgen, Sir.");
   wasSleeping=sleep;
   boolean flight=p.getAbilities().flying;
-  if(!wasFlying&&flight&&V177JarvisSettings.on("actions"))
+  if(!wasFlying&&flight&&V177JarvisSettings.on("actions")&&V177JarvisSettings.on("flight_on"))
    enqueue(2,"Flight systems engaged, sir.","Flugsysteme aktiviert, Sir.");
-  else if(wasFlying&&!flight&&V177JarvisSettings.on("actions"))
+  else if(wasFlying&&!flight&&V177JarvisSettings.on("actions")&&V177JarvisSettings.on("flight_off"))
    enqueue(1,"Flight systems disengaged.","Flugsysteme deaktiviert.");
   wasFlying=flight;
   if(p.tickCount%20==0){scan(p);checkHome(p);}
