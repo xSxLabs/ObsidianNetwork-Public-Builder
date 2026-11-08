@@ -71,7 +71,8 @@ public final class V177JarvisSettings {
        "flight_on","flight_off","morning","afternoon","evening",
        "energy_50","energy_25","energy_0","paste_57","paste_50",
        "paste_25","paste_1","integrity_50","integrity_25",
-       "integrity_1","integrity_0"})
+       "integrity_1","integrity_0","startup_integrity","startup_energy",
+       "startup_paste","startup_outcome"})
    switches.put(key,true);
  }
  public static boolean on(String key){return switches.getOrDefault(key,true);}
@@ -132,7 +133,9 @@ public final class V177JarvisSettingsScreen extends Screen {
    {"voice|Voice assistant","startup|Diagnostics at armor entry","greeting|Greeting at armor entry","service|Assistant ON reply"},
    {"morning|Good morning greeting","afternoon|Good afternoon greeting",
     "evening|Good evening greeting","offline|Assistant OFF reply",
-    "exit|Armor exit farewell"}
+    "exit|Armor exit farewell"},
+   {"startup_integrity|Entry integrity","startup_energy|Entry energy",
+    "startup_paste|Entry NutriPaste","startup_outcome|Entry systems ready/failed"}
   },
   { // SCAN
    {"scan|Mob scan summary","hostiles|Detect hostile mobs","passives|Detect passive mobs",
@@ -370,13 +373,25 @@ public final class V177JarvisClient {
     enqueue(2,period+", sir.",greetingDe(p)+", Sir.");
   }
   if(V177JarvisSettings.on("startup")){
-   enqueue(2,"Armor diagnostics complete. Structural integrity at "+
-     prevIntegrity+" percent. Energy reserves at "+prevEnergy+
-     " percent. NutriPaste reserves at "+prevPaste+" percent. "+
-     (prevIntegrity==0?"Armor systems offline.":"All systems operational."),
-     "Rüstungsdiagnose abgeschlossen. Integrität "+prevIntegrity+
-     " Prozent. Energie "+prevEnergy+" Prozent. NutriPaste "+prevPaste+
-     " Prozent. "+(prevIntegrity==0?"Rüstungssysteme offline.":"Alle Systeme einsatzbereit."));
+   StringBuilder en=new StringBuilder("Armor diagnostics complete.");
+   StringBuilder de=new StringBuilder("Rüstungsdiagnose abgeschlossen.");
+   if(V177JarvisSettings.on("startup_integrity")){
+    en.append(" Structural integrity at ").append(prevIntegrity).append(" percent.");
+    de.append(" Integrität ").append(prevIntegrity).append(" Prozent.");
+   }
+   if(V177JarvisSettings.on("startup_energy")){
+    en.append(" Energy reserves at ").append(prevEnergy).append(" percent.");
+    de.append(" Energie ").append(prevEnergy).append(" Prozent.");
+   }
+   if(V177JarvisSettings.on("startup_paste")){
+    en.append(" NutriPaste reserves at ").append(prevPaste).append(" percent.");
+    de.append(" NutriPaste ").append(prevPaste).append(" Prozent.");
+   }
+   if(V177JarvisSettings.on("startup_outcome")){
+    en.append(prevIntegrity==0?" Armor systems offline.":" All systems operational.");
+    de.append(prevIntegrity==0?" Rüstungssysteme offline.":" Alle Systeme einsatzbereit.");
+   }
+   enqueue(2,en.toString(),de.toString());
   }
  }
  private static String direction(LocalPlayer p,Entity e){
