@@ -4366,6 +4366,10 @@ jobs:
               # 1M-mB helmet-sized NutriPaste input-only buffer on Armor Station; fast helmet refill.
               python3 features/v177/apply-v177-armor-station-nutripaste.py
               python3 -m unittest discover -s tests -p 'test_v177_armor_station_paste.py' -v
+              # Allow a real Fluid Cable to refill the 1M mB helmet in <=30 seconds:
+              # 25k mB per five ticks to Armor Station only, other targets untouched.
+              python3 features/v177/apply-v177-armor-station-fast-fluid-cable.py
+              python3 -m unittest discover -s tests -p 'test_v177_armor_station_fast_fluid_cable.py' -v
               # One station services integrity, real suit FE and helmet paste.
               # No extra ticker; per-5-tick budget; native FE consumption.
               python3 features/v177/apply-v177-armor-station-energy-charge.py
