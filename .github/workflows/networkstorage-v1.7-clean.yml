@@ -4796,8 +4796,9 @@ jobs:
             data=z.read(f'dev/obsidiannetwork/menu/{terminal}.class')
             assert b'giveExperienceLevels' not in data, f'B836_XP_DEDUCTION_STILL_PRESENT_IN_{terminal}'
           # Real final JAR must include both sides of the Shift-button contract.
-          decon=z.read('dev/obsidiannetwork/menu/DeconstructionTerminalMenu.class')
-          decon_screen=z.read('dev/obsidiannetwork/client/DeconstructionTerminalScreen.class')
+          with ZipFile(jar) as batch_jar:
+           decon=batch_jar.read('dev/obsidiannetwork/menu/DeconstructionTerminalMenu.class')
+           decon_screen=batch_jar.read('dev/obsidiannetwork/client/DeconstructionTerminalScreen.class')
           assert b'b1392DeconstructStack' in decon, 'B1392_BATCH_SERVER_MISSING'
           assert b'B1392 DECONSTRUCT_STACK' in decon, 'B1392_BATCH_SERVER_NOT_COMPILED'
           assert b'hasShiftDown' in decon_screen, 'B1392_SHIFT_CLIENT_NOT_COMPILED'
