@@ -86,8 +86,11 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageTypes;
 
 /** Dedicated MK1-MK24 structural integrity. Never break or delete armor items.
  *  Vanilla unbreakable keeps old suits safe; damage is applied MANUALLY.
@@ -99,17 +102,15 @@ public final class V177ArmorIntegrity {
   return !stack.isEmpty()&&PowerArmorRuntime.tier(stack,slot)>0
      &&stack.getMaxDamage()>1;
  }
- private static int max(ItemStack s){return Math.max(1,s.getMaxDamage()-1);}
+ // The four synchronously worn pieces each carry the same 1000-HP pool.
+ // The combined HUD represents 1000 HP, not 4 x 1000.
+ public static final int SUIT_HITPOINTS=1000;
+ private static int max(ItemStack s){return SUIT_HITPOINTS;}
  public static boolean broken(ItemStack s){
   return s.getMaxDamage()>1&&s.getDamageValue()>=max(s);
  }
  public static boolean failed(ServerPlayer p){
-  if(!PowerArmorRuntime.full(p))return false;
-  for(int i=0;i<4;i++){
-   ItemStack stack=p.getItemBySlot(PowerArmorRuntime.SLOTS[i]);
-   if(piece(stack,i)&&broken(stack))return true;
-  }
-  return false;
+  return PowerArmorRuntime.full(p)&&totalPercent(p)<=0;
  }
  public static int totalPercent(Player p){
   long total=0L,remaining=0L;
@@ -127,39 +128,74 @@ public final class V177ArmorIntegrity {
   if(!(stack.getItem() instanceof PowerArmorItem)||!broken(stack))return;
   e.clearModifiers(); // zero armor, toughness, knockback, and all item modifiers
  }
- // IncomingDamage happens BEFORE vanilla armor, shields and all suit FE
- // protections.  A blocked hit is still a physical strike to the suit.
- // Count the raw incoming hit exactly once; no health-damage dependence.
+ // Incoming damage happens BEFORE shields, FE absorption and health damage.
+ // One valid attack always costs fixed integrity, regardless of how much HP
+ // the shield prevents. Explosion 10, fall/flight collision 5, ordinary 2.
+ private static final java.util.WeakHashMap<ServerPlayer,Landing> LANDINGS=
+     new java.util.WeakHashMap<>();
+ private static final class Landing {
+  boolean airborne=false,flight=false;
+  double maxDownward=0D,priorHorizontal=0D;
+  int lastImpactTick=Integer.MIN_VALUE;
+ }
+ public static void subtract(ServerPlayer p,int hitpoints){
+  if(hitpoints<=0||!PowerArmorRuntime.full(p)||failed(p))return;
+  for(int i=0;i<4;i++){
+   ItemStack stack=p.getItemBySlot(PowerArmorRuntime.SLOTS[i]);
+   if(!piece(stack,i))continue;
+   stack.setDamageValue(Math.min(max(stack),stack.getDamageValue()+hitpoints));
+  }
+ }
  @SubscribeEvent(priority=EventPriority.LOWEST)
  public static void wear(LivingIncomingDamageEvent e){
   if(!(e.getEntity() instanceof ServerPlayer p)||!PowerArmorRuntime.full(p))return;
   if(p.isCreative()||p.isSpectator()||e.isCanceled())return;
-  float amount=e.getContainer().getOriginalDamage();
-  if(!(amount>0F)||!Float.isFinite(amount))return;
-  if(!failed(p)){
-   // 0.25 percent of every piece per raw damage point, including fully
-   // shield-absorbed hits.  Never use hurtAndBreak: items must persist.
-   int wear=Math.max(1,Math.min(500000,(int)Math.ceil(amount*10000F)));
-   for(int i=0;i<4;i++){
-    ItemStack s=p.getItemBySlot(PowerArmorRuntime.SLOTS[i]);
-    if(!piece(s,i))continue;
-    s.setDamageValue(Math.min(max(s),s.getDamageValue()+wear));
-   }
-  }
-  // A failed full suit has NO armor or armor-enchantment mitigation,
-  // including remaining healthy pieces; do not remove shield, potion,
-  // absorption, innate resistances or other non-armor defenses.
-  // Only IncomingDamage is early enough to affect vanilla reductions.
+  float incoming=e.getContainer().getOriginalDamage();
+  if(!(incoming>0F)||!Float.isFinite(incoming))return;
+  var src=e.getContainer().getSource();
+  boolean explosion=src.is(DamageTypeTags.IS_EXPLOSION);
+  boolean collision=src.is(DamageTypeTags.IS_FALL)||src.is(DamageTypes.FLY_INTO_WALL);
+  subtract(p,explosion?10:collision?5:2);
+  if(collision)LANDINGS.computeIfAbsent(p,key->new Landing()).lastImpactTick=p.tickCount;
   if(failed(p)){
+   // Full integrity failure disables even vanilla armor/enchantment reductions.
    e.getContainer().addModifier(DamageContainer.Reduction.ARMOR,(c,reduction)->0F);
    e.getContainer().addModifier(DamageContainer.Reduction.ENCHANTMENTS,(c,reduction)->0F);
   }
  }
+ @SubscribeEvent
+ public static void flightLanding(PlayerTickEvent.Post event){
+  if(!(event.getEntity() instanceof ServerPlayer p)||!PowerArmorRuntime.full(p)
+     ||p.isCreative()||p.isSpectator()){return;}
+  Landing state=LANDINGS.computeIfAbsent(p,key->new Landing());
+  boolean flyingNow=p.getAbilities().flying||p.isFallFlying();
+  if(!p.onGround()){
+   state.airborne=true;
+   state.flight|=flyingNow;
+   state.maxDownward=Math.max(state.maxDownward,Math.max(0D,-p.getDeltaMovement().y));
+   // Some flight modes suppress vanilla FLY_INTO_WALL damage: count real
+   // high-speed wall impacts once even without a Minecraft damage event.
+   double horizontal=p.getDeltaMovement().horizontalDistance();
+   if(state.flight&&p.horizontalCollision&&state.priorHorizontal>.85D
+       &&state.lastImpactTick!=p.tickCount){
+    subtract(p,5);state.lastImpactTick=p.tickCount;
+   }
+   state.priorHorizontal=horizontal;
+  }else{
+   if(state.airborne&&state.flight&&state.maxDownward>.75D
+       &&state.lastImpactTick!=p.tickCount){
+    subtract(p,5);state.lastImpactTick=p.tickCount;
+   }
+   state.airborne=false;state.flight=false;state.maxDownward=0D;
+   state.priorHorizontal=0D;
+  }
+ }
  private static int repairOne(ItemStack stack,int availableFe){
   if(availableFe<=0||stack.isEmpty()||stack.getDamageValue()<=0)return 0;
-  int restore=Math.min(stack.getDamageValue(),Math.min(25000,availableFe*100));
+  // A full suit repair uses 100000 FE; max station buffer remains 200000 FE.
+  int restore=Math.min(stack.getDamageValue(),Math.min(10,availableFe/25));
   if(restore<=0)return 0;
-  int cost=(restore+99)/100; // exactly consumed and never negative
+  int cost=restore*25; // exact finite energy cost
   stack.setDamageValue(Math.max(0,stack.getDamageValue()-restore));
   return cost;
  }
