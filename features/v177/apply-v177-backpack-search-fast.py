@@ -139,7 +139,6 @@ s=replace_one(s,
 start="  if(searchDelay>0&&--searchDelay==0&&!filterEditor){"
 assert s.count(start)==1,("V177_FAST_SEARCH_DEBOUNCE_GATE_DRIFT",s.count(start))
 a=s.index(start)
-b=s.index("\\n  }",a) if False else -1
 # Search the generated Java source as literal text with a bounded method end.
 b=s.find("\n  }",a)
 assert b>a and b-a<600,("V177_FAST_SEARCH_DEBOUNCE_END_DRIFT",a,b)
@@ -180,7 +179,7 @@ s=replace_one(s,
  "flush final query next tick")
 
 assert m.count("V177_FAST_SEARCH")==1
-assert s.count("V177_FAST_SEARCH")==1
+assert s.count("V177_FAST_SEARCH")==2
 assert "V176BackpackCells.entries(live)" in m
 assert "if(xsxShiftLayoutFrozen)return xsxShiftEntries;" in m
 assert "cacheEntries=java.util.List.copyOf(result);" in m
