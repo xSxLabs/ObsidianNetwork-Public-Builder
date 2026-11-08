@@ -194,12 +194,16 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * Listen to successfully EXECUTED external home commands; never intercept,
  * register or replace /sethome, never change a command's return value.
  * Supports /sethome, /sethome <name>, /delhome, /delhome <name>,
- * and namespace-prefixed forms (e.g. /ftbessentials:sethome).
+ * and existing /home teleport destinations, including namespace-prefixed forms.
  */
 @EventBusSubscriber(modid="obsidiannetwork")
 public final class V177HomeTracker {
  private V177HomeTracker(){}
  private static final WeakHashMap<ServerPlayer,Boolean> PREVIOUS=new WeakHashMap<>();
+ // /home may teleport after a configured warmup. Learn its ACTUAL destination
+ // only after a successful command and a genuine player teleport.
+ private record Pending(String name,String dimension,double x,double y,double z,int expires){}
+ private static final WeakHashMap<ServerPlayer,Pending> PENDING=new WeakHashMap<>();
  @SubscribeEvent(priority=EventPriority.LOWEST)
  public static void command(CommandEvent event){
   if(event.isCanceled())return;
@@ -222,21 +226,41 @@ public final class V177HomeTracker {
   }
   boolean set=op.equals("sethome");
   boolean delete=op.equals("delhome")||op.equals("deletehome");
-  if(!set&&!delete)return;
+  boolean travel=op.equals("home")||op.equals("gohome");
+  if(!set&&!delete&&!travel)return;
   final String homeName=parts.length>opIndex+1?parts[opIndex+1]:"home";
   final BlockPos position=player.blockPosition().immutable();
   final String dimension=player.level().dimension().identifier().toString();
+  final double x=player.getX(),y=player.getY(),z=player.getZ();
   CommandResultCallback observer=(success,result)->{
    if(!success||result<=0)return; // do not record rejected homes or denied commands
    V177HomeIndex homes=V177HomeIndex.get(player.level().getServer());
    if(set)homes.record(player,homeName,position,dimension);
-   else homes.delete(player,homeName);
+   else if(delete)homes.delete(player,homeName);
+   else{
+    // Existing homes from external mods are learned by observing a real /home
+    // teleport. Never store the command's starting location as its destination.
+    String currentDimension=player.level().dimension().identifier().toString();
+    if(!dimension.equals(currentDimension)||player.distanceToSqr(x,y,z)>64D)
+     homes.record(player,homeName,player.blockPosition(),currentDimension);
+    else PENDING.put(player,new Pending(homeName,dimension,x,y,z,player.tickCount+400));
+   }
   };
   // Chain the ORIGINAL callback; do not steal other mods' command callbacks.
   parsed.getContext().withSource(source.withCallback(observer,CommandResultCallback::chain));
  }
  @SubscribeEvent public static void proximity(PlayerTickEvent.Post event){
   if(!(event.getEntity() instanceof ServerPlayer player))return;
+  Pending pending=PENDING.get(player);
+  if(pending!=null){
+   if(player.tickCount>pending.expires())PENDING.remove(player);
+   else if(!player.level().dimension().identifier().toString().equals(pending.dimension())
+     ||player.distanceToSqr(pending.x(),pending.y(),pending.z())>64D){
+    V177HomeIndex.get(player.level().getServer()).record(player,pending.name(),
+      player.blockPosition(),player.level().dimension().identifier().toString());
+    PENDING.remove(player);
+   }
+  }
   if(player.tickCount%20!=0)return; // max one lookup per player per second
   if(player.connection==null||!player.connection.connection.isConnected())return;
   V177HomeIndex index=V177HomeIndex.get(player.level().getServer());
