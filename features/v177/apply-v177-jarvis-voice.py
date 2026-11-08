@@ -285,10 +285,22 @@ public final class V177JarvisClient {
     else enqueue(3,"Armor recall initiated. I'm on my way, sir.",
                    "Rüstungsrückruf eingeleitet. Ich bin auf dem Weg, Sir.");
    }
-   case 6->{if(V177JarvisSettings.on("follow"))enqueue(1,"Follow mode command received, sir.",
-                      "Folgemodus-Befehl empfangen, Sir.");}
-   case 7->{if(V177JarvisSettings.on("turret"))enqueue(1,"Turret mode command received, sir.",
-                      "Geschützturmmodus-Befehl empfangen, Sir.");}
+   case 6->{
+    if(V177JarvisSettings.on("follow")){
+     if(available())enqueue(1,"Follow mode command received, sir.",
+                         "Folgemodus-Befehl empfangen, Sir.");
+     else directly("Follow mode command received, sir.",
+                   "Folgemodus-Befehl empfangen, Sir.");
+    }
+   }
+   case 7->{
+    if(V177JarvisSettings.on("turret")){
+     if(available())enqueue(1,"Turret mode command received, sir.",
+                         "Geschützturmmodus-Befehl empfangen, Sir.");
+     else directly("Turret mode command received, sir.",
+                   "Geschützturmmodus-Befehl empfangen, Sir.");
+    }
+   }
    case 8->{if(V177JarvisSettings.on("sleep_command"))enqueue(1,"Sleep mode command received, sir.",
                       "Schlafmodus-Befehl empfangen, Sir.");}
    default->{}
