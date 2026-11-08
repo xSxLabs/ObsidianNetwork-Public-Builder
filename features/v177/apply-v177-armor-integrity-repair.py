@@ -72,7 +72,7 @@ replace("powerarmor/PowerArmorRuntime.java",
 replace("client/PowerArmorBuild98Client.java",
  '   String pasteLabel="PASTE";',
  '''   // V177_INTEGRITY_ABOVE_PASTE (single combined value for four pieces)
-   dev.obsidiannetwork.client.V177IntegrityHud.draw(event,px,py-24,pasteWidth);
+   dev.obsidiannetwork.client.V177IntegrityHud.draw(event,px,py-16,pasteWidth);
    String pasteLabel="PASTE";''')
 
 add("powerarmor/V177ArmorIntegrity.java",r'''package dev.obsidiannetwork.powerarmor;
