@@ -85,7 +85,8 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
 
 /** Dedicated MK1-MK24 structural integrity. Never break or delete armor items.
@@ -126,24 +127,32 @@ public final class V177ArmorIntegrity {
   if(!(stack.getItem() instanceof PowerArmorItem)||!broken(stack))return;
   e.clearModifiers(); // zero armor, toughness, knockback, and all item modifiers
  }
- @SubscribeEvent public static void wear(LivingDamageEvent.Pre e){
+ // IncomingDamage happens BEFORE vanilla armor, shields and all suit FE
+ // protections.  A blocked hit is still a physical strike to the suit.
+ // Count the raw incoming hit exactly once; no health-damage dependence.
+ @SubscribeEvent(priority=EventPriority.LOWEST)
+ public static void wear(LivingIncomingDamageEvent e){
   if(!(e.getEntity() instanceof ServerPlayer p)||!PowerArmorRuntime.full(p))return;
-  if(failed(p)){
-   // The armor must provide NO enchantment damage reduction when failed.
-   // Preserve other mods' shields, potions, innate resistance and absorption.
-   float enchant=e.getContainer().getReduction(DamageContainer.Reduction.ENCHANTMENTS);
-   if(enchant>0&&Float.isFinite(enchant))
-     e.setNewDamage(Math.max(0F,e.getNewDamage()+enchant));
-   return;
-  }
-  float amount=e.getNewDamage();
+  if(p.isCreative()||p.isSpectator()||e.isCanceled())return;
+  float amount=e.getContainer().getOriginalDamage();
   if(!(amount>0F)||!Float.isFinite(amount))return;
-  // ~0.25% integrity per one point of actually received health damage.
-  int wear=Math.max(1,Math.min(500000,(int)Math.ceil(amount*10000F)));
-  for(int i=0;i<4;i++){
-   ItemStack s=p.getItemBySlot(PowerArmorRuntime.SLOTS[i]);
-   if(!piece(s,i))continue;
-   s.setDamageValue(Math.min(max(s),s.getDamageValue()+wear));
+  if(!failed(p)){
+   // 0.25 percent of every piece per raw damage point, including fully
+   // shield-absorbed hits.  Never use hurtAndBreak: items must persist.
+   int wear=Math.max(1,Math.min(500000,(int)Math.ceil(amount*10000F)));
+   for(int i=0;i<4;i++){
+    ItemStack s=p.getItemBySlot(PowerArmorRuntime.SLOTS[i]);
+    if(!piece(s,i))continue;
+    s.setDamageValue(Math.min(max(s),s.getDamageValue()+wear));
+   }
+  }
+  // A failed full suit has NO armor or armor-enchantment mitigation,
+  // including remaining healthy pieces; do not remove shield, potion,
+  // absorption, innate resistances or other non-armor defenses.
+  // Only IncomingDamage is early enough to affect vanilla reductions.
+  if(failed(p)){
+   e.getContainer().addModifier(DamageContainer.Reduction.ARMOR,(c,reduction)->0F);
+   e.getContainer().addModifier(DamageContainer.Reduction.ENCHANTMENTS,(c,reduction)->0F);
   }
  }
  private static int repairOne(ItemStack stack,int availableFe){
