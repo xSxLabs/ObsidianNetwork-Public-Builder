@@ -262,7 +262,7 @@ public final class V177HomeTracker {
    }
   }
   if(player.tickCount%20!=0)return; // max one lookup per player per second
-  if(player.connection==null||!player.connection.connection.isConnected())return;
+  if(player.connection==null)return; // connection internals are protected in 26.1
   V177HomeIndex index=V177HomeIndex.get(player.level().getServer());
   Boolean previous=PREVIOUS.get(player);
   boolean near=previous!=null&&previous&&!index.outside(player);
