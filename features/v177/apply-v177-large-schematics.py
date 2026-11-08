@@ -448,17 +448,31 @@ public final class V177SchematicCapture {
    return;
   }
   var world=player.level();
+  int loadedChunks=0;
   for(int budget=0;budget<PER_TICK&&t.next<t.volume;budget++){
    int index=t.next++;
    int x=index%t.sx;
    int z=(index/t.sx)%t.sz;
    int y=index/(t.sx*t.sz);
    BlockPos pos=new BlockPos(t.x+x,t.y+y,t.z+z);
-   if(!world.hasChunkAt(pos)){
+   if(!world.getWorldBorder().isWithinBounds(pos)
+       ||!world.isInWorldBounds(pos)){
     TASKS.remove(player.getUUID());
     player.sendSystemMessage(Component.literal(
-      "Schematic capture cancelled: selected chunks must be loaded."));
+       "Schematic capture cancelled: selection outside world bounds."));
     return;
+   }
+   if(!world.hasChunkAt(pos)){
+    // Explicit capture may span thousands of chunks. Load at MOST one new
+    // chunk per player per tick; never scan 30m blocks on one server tick.
+    if(loadedChunks>=1){t.next--;break;}
+    world.getChunk(pos.getX()>>4,pos.getZ()>>4);
+    loadedChunks++;
+    if(!world.hasChunkAt(pos)){
+     TASKS.remove(player.getUUID());
+     player.sendSystemMessage(Component.literal("Schematic chunk could not be loaded."));
+     return;
+    }
    }
    var state=world.getBlockState(pos);
    if(world.getBlockEntity(pos)!=null||!state.getFluidState().isEmpty()
