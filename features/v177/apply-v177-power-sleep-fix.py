@@ -46,7 +46,7 @@ replace_once(
 # with armor sleepers; NEVER require everyone in SLEEPING.
 replace_once(
  'import net.minecraft.world.entity.Pose;',
- 'import net.minecraft.world.entity.Pose;\\n'
+ 'import net.minecraft.world.entity.Pose;\n'
  'import net.minecraft.world.level.gamerules.GameRules;')
 replace_once(
  '''  for(ServerPlayer other:world.players()){
