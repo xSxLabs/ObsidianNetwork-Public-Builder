@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: exactly 500mB real NutriPaste in Armor Station and helmet refill."""
+"""Regression: real 1,000,000mB helmet-sized NutriPaste tank and accurate fluid debit."""
 import ast
 import unittest
 from pathlib import Path
@@ -11,10 +11,10 @@ FLOW=(ROOT/".github/workflows/networkstorage-v1.7-clean.yml").read_text(encoding
 class StationPaste(unittest.TestCase):
  def test_python_syntax(self):
   ast.parse(PATCH)
- def test_real_500mb_tank_accepts_only_nutripaste(self):
+ def test_real_helmet_sized_tank_accepts_only_nutripaste(self):
   for token in (
-    "V177_STATION_NUTRIPASTE_500MB",
-    "V177_PASTE_CAPACITY=500L",
+    "V177_STATION_NUTRIPASTE_HELMET_SIZE",
+    "V177_PASTE_CAPACITY=1_000_000L",
     "NutriPasteFluids.SOURCE.get()",
     "return paste().equals(resource);",
     "if(offered<=0||!isValid(slot,resource))return 0;",
@@ -48,13 +48,13 @@ class StationPaste(unittest.TestCase):
     "Paste refill does not consume FE",
   ):self.assertIn(token,PATCH,token)
  def test_amount_conservation(self):
-  # Saturation cannot create paste, accept beyond 500 or overfill a helmet.
+  # Saturation cannot create paste, accept beyond 1M or overfill a helmet.
   def fill(tank,helmet,helmet_capacity=1_000_000):
    inserted=max(0,min(tank,helmet_capacity-helmet))
    return tank-inserted,helmet+inserted,inserted
-  self.assertEqual(fill(500,0),(0,500,500))
+  self.assertEqual(fill(1_000_000,0),(0,1_000_000,1_000_000))
   self.assertEqual(fill(500,999_800),(300,1_000_000,200))
-  self.assertEqual(fill(500,1_000_000),(500,1_000_000,0))
+  self.assertEqual(fill(1_000_000,1_000_000),(1_000_000,1_000_000,0))
   self.assertEqual(fill(0,400),(0,400,0))
  def test_v177_only_after_energy_station(self):
   first=FLOW.index("python3 features/v177/apply-v177-armor-integrity-repair.py")
