@@ -1,7 +1,7 @@
 # B1511 armor station triple-service: integrity repair, all-four-piece FE recharge and helmet NutriPaste refill.
 # B1510: preserve exact v177 armor-entry preflight contract; optimize Multitool afterward.
 # Performance: rebuild low-overdraw 518-cuboid native Multitool model for stable held-item FPS (v177 only).
-# v1.7.7 user request: Armor Station holds 500mB NutriPaste, Fluid Cable native input, automatic helmet refill.
+# v1.7.7 30s station target: full 1M-mB helmet via real Fluid Cable input; energy and integrity serviced concurrently.
 # B1498 JARVIS one entry NutriPaste reading, suppress first thresholds while preserving live warnings.
 # User correction: 1.7.6 already publishes Quill/Blueprint/Printer via B476; no duplicate exposure.
 # B1491: final user-specified server xsxschematics folder, creative Quill, 30m bounded copy.
@@ -4363,7 +4363,7 @@ jobs:
               # Preserve all 132 original Blockbench parts and 128x128 PNG.
               python3 features/v177/apply-v177-multitool-render-lod.py
               python3 -m unittest discover -s tests -p 'test_v177_multitool_fps_lod.py' -v
-              # 500mB input-only NutriPaste fluid tank on Armor Station; helmet auto-refill.
+              # 1M-mB helmet-sized NutriPaste input-only buffer on Armor Station; fast helmet refill.
               python3 features/v177/apply-v177-armor-station-nutripaste.py
               python3 -m unittest discover -s tests -p 'test_v177_armor_station_paste.py' -v
               # One station services integrity, real suit FE and helmet paste.
@@ -4994,7 +4994,7 @@ jobs:
            stationPaste=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V177ArmorStationPaste.java').read_text()
            armorStation=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/ArmorStationBlockEntity.java').read_text()
            assert 'NutriPaste.add(helmet,available)' in stationPaste
-           assert 'V177_PASTE_CAPACITY=500L' in armorStation
+           assert 'V177_PASTE_CAPACITY=1_000_000L' in armorStation
            assert 'v177_armor_station_paste_mb' in armorStation
            assert 'getRespawnConfig()' in VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V177HomeTracker.java').read_text()
            sleep=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V176PowerSleepServer.java').read_text()
