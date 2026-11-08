@@ -612,8 +612,29 @@ jobs:
           print('B580 LOGISTICS + NETWORK FLUID STRUCTURE PASS')
           PY
           mkdir -p work/libs
-          curl -fL --retry 4 -o work/libs/refinedstorage-neoforge-3.2.1.jar https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/refinedstorage-neoforge-3.2.1.jar
-          for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do curl -fL --retry 4 -o "work/libs/$a-3.2.1-sources.jar" "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$a-3.2.1-sources.jar"; done
+          # B1401: upstream GitHub release CDN intermittently responds HTTP 504.
+          # Fetch the exact same 3.2.1 binary from Refined Storage's official
+          # CreeperHost Maven first; fall back to its original GitHub release.
+          # Validate every archive before extracting or compiling.
+          rs_get_321() {
+            local filename="$1" module="${1%-3.2.1*}" target="work/libs/$1" url
+            for url in \
+              "https://maven.creeperhost.net/com/refinedmods/refinedstorage/$module/3.2.1/$filename" \
+              "https://github.com/refinedmods/refinedstorage2/releases/download/v3.2.1/$filename"; do
+              rm -f "$target"
+              if curl -fLsS --retry 4 --retry-all-errors --connect-timeout 12 --max-time 85 -o "$target" "$url" &&
+                  jar tf "$target" >/dev/null 2>&1; then
+                echo "B1401_VALIDATED_REFINED_STORAGE_DEPENDENCY $filename"
+                return 0
+              fi
+            done
+            echo "B1401 download or archive validation failed: $filename" >&2
+            return 1
+          }
+          rs_get_321 refinedstorage-neoforge-3.2.1.jar
+          for a in refinedstorage-common refinedstorage-common-api refinedstorage-core-api refinedstorage-network refinedstorage-network-api refinedstorage-resource-api refinedstorage-storage-api; do
+            rs_get_321 "$a-3.2.1-sources.jar"
+          done
           mkdir -p work/rs-src
           for j in work/libs/*-3.2.1-sources.jar; do (cd work/rs-src && jar xf "../libs/$(basename "$j")"); done
           export RS_SOURCE_ROOT="$GITHUB_WORKSPACE/work/rs-src"
