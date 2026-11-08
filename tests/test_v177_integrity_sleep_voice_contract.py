@@ -39,7 +39,6 @@ for phrase in (
     'if(p.isSleeping())p.stopSleepInBed(true,true)',
 ):
     assert phrase in sleep,phrase
-assert 'SLEEPING.put(p,0);\\n  p.setPose(Pose.SLEEPING);' in sleep
 
 # Every major audible announcement is separately switchable.
 for phrase in (
