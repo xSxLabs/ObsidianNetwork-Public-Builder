@@ -5003,14 +5003,14 @@ jobs:
            gui=VoicePath('work/src/main/java/dev/obsidiannetwork/client/V177GuiInventoryKeyFocus.java').read_text()
            assert 'ScreenEvent.KeyPressed.Pre' in gui and 'screen.onClose();' in gui
            assert 'box.isFocused()&&box.isActive()' in gui and 'if(!state.hasField)return;' not in gui
-            assert 'if(state.isEditing||jeiEditing)' in gui
-            assert 'V177JeiSearchFocusBridge.searchFocused()' in gui
-            bridge=VoicePath('work/src/main/java/dev/obsidiannetwork/client/V177JeiSearchFocusBridge.java').read_text()
-            assert 'getIngredientListOverlay().hasKeyboardFocus()' in bridge
-            with zipfile.ZipFile(jar) as z:
-             members=set(z.namelist())
-             assert 'dev/obsidiannetwork/client/V177GuiInventoryKeyFocus.class' in members
-             assert 'dev/obsidiannetwork/client/V177JeiSearchFocusBridge.class' in members
+           assert 'if(state.isEditing||jeiEditing)' in gui
+           assert 'V177JeiSearchFocusBridge.searchFocused()' in gui
+           bridge=VoicePath('work/src/main/java/dev/obsidiannetwork/client/V177JeiSearchFocusBridge.java').read_text()
+           assert 'getIngredientListOverlay().hasKeyboardFocus()' in bridge
+           with zipfile.ZipFile(jar) as z:
+            members=set(z.namelist())
+            assert 'dev/obsidiannetwork/client/V177GuiInventoryKeyFocus.class' in members
+            assert 'dev/obsidiannetwork/client/V177JeiSearchFocusBridge.class' in members
            print('V177_INTEGRITY_1000_HP_2_10_5_AND_AUDIO_ONLY_HOME_SOURCE_GATE_PASS')
            print('V177_OFFLINE_BILINGUAL_NEURAL_AUDIO_COMPILED_JAR_PASS')
           PY_B508_JAR
