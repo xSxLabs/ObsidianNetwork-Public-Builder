@@ -4356,6 +4356,9 @@ jobs:
               python3 features/v177/apply-v177-power-sleep-fix.py
               # All xSxLabs text-input GUIs: E types while focused, closes otherwise.
               python3 features/v177/apply-v177-gui-e-text-focus.py
+              # WorldEdit .schem import lives on the SERVER; up to 30m voxels.
+              python3 features/v177/apply-v177-large-schematics.py
+              python3 tests/test_v177_large_schematics.py
               python3 -m unittest discover -s tests -p 'test_v177_gui_e_text_focus.py' -v
               python3 tests/test_v177_jarvis_voice_settings_layout.py
               python3 tests/test_v177_integrity_sleep_voice_contract.py
