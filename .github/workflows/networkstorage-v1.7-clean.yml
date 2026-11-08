@@ -4353,6 +4353,9 @@ jobs:
               python3 features/v177/apply-v177-armor-integrity-repair.py
               # Power-sleep must use a stable Minecraft sleep state, not pose spam.
               python3 features/v177/apply-v177-power-sleep-fix.py
+              # All xSxLabs text-input GUIs: E types while focused, closes otherwise.
+              python3 features/v177/apply-v177-gui-e-text-focus.py
+              python3 -m unittest discover -s tests -p 'test_v177_gui_e_text_focus.py' -v
               python3 tests/test_v177_jarvis_voice_settings_layout.py
               python3 tests/test_v177_integrity_sleep_voice_contract.py
               # Match vanilla 26.1 0/1/50/100% player sleep thresholds.
@@ -4964,6 +4967,9 @@ jobs:
            sleep=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V176PowerSleepServer.java').read_text()
            assert 'CanContinueSleepingEvent' in sleep and 'p.startSleeping(p.blockPosition())' in sleep
            assert 'g.text(mc.font,subtitle' not in jarvis
+           gui=VoicePath('work/src/main/java/dev/obsidiannetwork/client/V177GuiInventoryKeyFocus.java').read_text()
+           assert 'ScreenEvent.KeyPressed.Pre' in gui and 'screen.onClose();' in gui
+           assert 'box.isFocused()&&box.isActive()' in gui and 'if(!state.hasField)return;' in gui
            print('V177_INTEGRITY_1000_HP_2_10_5_AND_AUDIO_ONLY_HOME_SOURCE_GATE_PASS')
            print('V177_OFFLINE_BILINGUAL_NEURAL_AUDIO_COMPILED_JAR_PASS')
           PY_B508_JAR
