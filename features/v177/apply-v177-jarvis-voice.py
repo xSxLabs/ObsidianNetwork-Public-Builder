@@ -464,9 +464,29 @@ public final class V177JarvisClient {
          " im Umkreis von "+radius+" Blöcken.";
    if(closest!=null&&V177JarvisSettings.on("nearest")){
     int dist=(int)Math.round(Math.sqrt(closestD));
-    String kind=closest.getType().getDescription().getString();
-    en+=" The closest threat is a "+kind+", "+dist+" blocks "+direction(p,closest)+".";
-    de+=" Die nächste Bedrohung ist "+kind+", "+dist+" Blöcke "+directionDe(p,closest)+".";
+    // Use stable registry IDs: localized mob display names vary with GUI language
+    // and cannot be matched by our bundled DE/EN voice catalog.
+    String id=net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
+       .getKey(closest.getType()).getPath();
+    String[] words=id.split("_");
+    StringBuilder label=new StringBuilder();
+    for(String word:words){
+     if(!label.isEmpty())label.append(' ');
+     if(!word.isEmpty())label.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+    }
+    String known="|zombie|skeleton|creeper|spider|cave_spider|enderman|witch|slime|"
+      +"pillager|vindicator|evoker|phantom|drowned|husk|stray|blaze|ghast|piglin|"
+      +"wither_skeleton|endermite|silverfish|guardian|elder_guardian|shulker|"
+      +"magma_cube|hoglin|ravager|bogged|breeze|warden|";
+    if(known.contains("|"+id+"|")){
+     en+=" The closest threat is a "+label+", "+dist+" blocks "+direction(p,closest)+".";
+     de+=" Die nächste Bedrohung ist "+label+", "+dist+" Blöcke "+directionDe(p,closest)+".";
+    }else{
+     // Never suppress an entire scan because an unknown modded entity name
+     // is absent from the offline voice dictionary.
+     en+=" The closest threat is a hostile entity, "+dist+" blocks "+direction(p,closest)+".";
+     de+=" Die nächste Bedrohung ist eine feindliche Kreatur, "+dist+" Blöcke "+directionDe(p,closest)+".";
+    }
    }
    enqueue(hostile+bosses>0?3:1,en,de);
    lastScanSpeech=tick;
