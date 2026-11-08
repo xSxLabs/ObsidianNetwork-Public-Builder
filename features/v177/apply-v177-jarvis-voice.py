@@ -65,7 +65,13 @@ public final class V177JarvisSettings {
  static {
   for(String key:new String[]{"voice","actions","startup","greeting","sleep",
        "energy","paste","integrity","hostiles","passives","players","bosses",
-       "nearest","home","projectile","environment"})
+       "nearest","home","projectile","environment","scan",
+       "service","offline","recall","follow","turret","sleep_command",
+       "attack_on","attack_off","sleep_begin","sleep_end","exit",
+       "flight_on","flight_off","morning","afternoon","evening",
+       "energy_50","energy_25","energy_0","paste_57","paste_50",
+       "paste_25","paste_1","integrity_50","integrity_25",
+       "integrity_1","integrity_0"})
    switches.put(key,true);
  }
  public static boolean on(String key){return switches.getOrDefault(key,true);}
@@ -118,9 +124,39 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 
-/** Four small pages instead of an oversized, unscrollable settings list. */
+/** Each JARVIS announcement is selectable; six compact rows per page. */
 public final class V177JarvisSettingsScreen extends Screen {
- private int page=0;
+ private int page=0,subpage=0;
+ private static final String[][][] FLAGS={
+  { // VOICE
+   {"voice|Voice assistant","startup|Diagnostics at armor entry","greeting|Greeting at armor entry","service|Assistant ON reply"},
+   {"morning|Good morning greeting","afternoon|Good afternoon greeting",
+    "evening|Good evening greeting","offline|Assistant OFF reply",
+    "exit|Armor exit farewell"}
+  },
+  { // SCAN
+   {"scan|Mob scan summary","hostiles|Detect hostile mobs","passives|Detect passive mobs",
+    "players|Detect other players","bosses|Detect bosses"},
+   {"nearest|Nearest mob and distance","projectile|Incoming projectile",
+    "environment|Cave and visibility warning"}
+  },
+  { // ALERTS
+   {"energy_50|Energy 50%","energy_25|Energy 25%",
+    "energy_0|Energy empty","paste_57|NutriPaste 57%","paste_50|NutriPaste 50%"},
+   {"paste_25|NutriPaste 25%","paste_1|NutriPaste 1%",
+    "integrity_50|Integrity 50%","integrity_25|Integrity 25%",
+    "integrity_1|Integrity 1%","integrity_0|Integrity zero"}
+  },
+  { // MODULES
+   {"flight_on|Flight ON","flight_off|Flight OFF",
+    "attack_on|Attack ON","attack_off|Attack OFF",
+    "sleep_begin|Sleep begins"},
+   {"sleep_end|Sleep finishes","sleep_command|Sleep mode command",
+    "follow|Follow mode","turret|Turret mode","recall|Armor recall"},
+   {"home|Welcome back at home","actions|General action sounds",
+    "sleep|General sleep sounds"}
+  }
+ };
  public V177JarvisSettingsScreen(){super(Component.literal("J.A.R.V.I.S. CONFIGURATION"));}
  private void button(int x,int y,int w,String text,Runnable action){
   addRenderableWidget(Button.builder(Component.literal(text),b->{
@@ -132,50 +168,46 @@ public final class V177JarvisSettingsScreen extends Screen {
     ()->V177JarvisSettings.toggle(key));
  }
  @Override protected void init(){
-  int x=this.width/2-120,y=Math.max(32,this.height/2-125);
-  button(x,y,58,"VOICE",()->page=0);
-  button(x+60,y,58,"SCAN",()->page=1);
-  button(x+120,y,58,"ALERTS",()->page=2);
-  button(x+180,y,58,"MODULES",()->page=3);
+  int x=this.width/2-120,y=Math.max(22,this.height/2-125);
+  button(x,y,58,"VOICE",()->{page=0;subpage=0;});
+  button(x+60,y,58,"SCAN",()->{page=1;subpage=0;});
+  button(x+120,y,58,"ALERTS",()->{page=2;subpage=0;});
+  button(x+180,y,58,"MODULES",()->{page=3;subpage=0;});
   y+=27;
-  if(page==0){
+  if(page==0&&subpage==0){
    button(x,y,238,"Voice language: "+(V177JarvisSettings.german?"DEUTSCH":"ENGLISH"),
-      ()->V177JarvisSettings.language(!V177JarvisSettings.german));
+    ()->V177JarvisSettings.language(!V177JarvisSettings.german));
    button(x,y+23,238,"Voice volume: "+V177JarvisSettings.volume+"% (step 10)",
-     ()->V177JarvisSettings.setVolume(V177JarvisSettings.volume>=100?0:V177JarvisSettings.volume+10));
-   flag(x,y+46,"Voice assistant","voice");
-   flag(x,y+69,"Action announcements","actions");
-   flag(x,y+92,"Startup status report","startup");
-   flag(x,y+115,"Personal greeting","greeting");
-   flag(x,y+138,"Sleep announcements","sleep");
-  }else if(page==1){
+    ()->V177JarvisSettings.setVolume(V177JarvisSettings.volume>=100?0:V177JarvisSettings.volume+10));
+   String[] flags=FLAGS[page][subpage];
+   for(int i=0;i<flags.length;i++){
+    String[] entry=flags[i].split("\\|",2);
+    flag(x,y+(i+2)*23,entry[1],entry[0]);
+   }
+  }else if(page==1&&subpage==0){
    button(x,y,238,"Detection radius: "+V177JarvisSettings.radius+" blocks (step 8)",
-     ()->V177JarvisSettings.setRadius(V177JarvisSettings.radius>=64?8:V177JarvisSettings.radius+8));
-   flag(x,y+23,"Detect hostile mobs","hostiles");
-   flag(x,y+46,"Detect passive mobs","passives");
-   flag(x,y+69,"Detect other players","players");
-   flag(x,y+92,"Detect bosses","bosses");
-   flag(x,y+115,"Announce nearest threat","nearest");
-  }else if(page==2){
-   flag(x,y,"Energy warnings 50/25/0","energy");
-   flag(x,y+23,"NutriPaste 57/50/25/1","paste");
-   flag(x,y+46,"Integrity 50/25/1/0","integrity");
-   flag(x,y+69,"Projectile warning","projectile");
-   flag(x,y+92,"Environmental analysis","environment");
+    ()->V177JarvisSettings.setRadius(V177JarvisSettings.radius>=64?8:V177JarvisSettings.radius+8));
+   String[] flags=FLAGS[page][subpage];
+   for(int i=0;i<flags.length;i++){
+    String[] entry=flags[i].split("\\|",2);
+    flag(x,y+(i+1)*23,entry[1],entry[0]);
+   }
   }else{
-   flag(x,y,"Welcome home","home");
-   flag(x,y+23,"Voice output","voice");
-   flag(x,y+46,"Speech on armor entry","startup");
-   flag(x,y+69,"Speech on armor exit","greeting");
+   String[] flags=FLAGS[page][subpage];
+   for(int i=0;i<flags.length;i++){
+    String[] entry=flags[i].split("\\|",2);
+    flag(x,y+i*23,entry[1],entry[0]);
+   }
   }
-  // The VOICE page has seven 20px-high rows; keep DONE beneath the sleep toggle.
-  int doneOffset = page == 0 ? 164 : 147;
-  button(x,y+doneOffset,238,"DONE",()->this.onClose());
+  // Navigation occupies its own row; DONE never overlaps any toggle.
+  if(subpage>0)button(x,y+143,86,"< PREV",()->subpage--);
+  if(subpage<FLAGS[page].length-1)button(x+152,y+143,86,"NEXT >",()->subpage++);
+  button(x,y+168,238,"DONE",()->this.onClose());
  }
  @Override public void extractBackground(net.minecraft.client.gui.GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partial){
   super.extractBackground(graphics,mouseX,mouseY,partial);
   graphics.text(font,"J.A.R.V.I.S.  /  ARMOR INTELLIGENCE SYSTEM",
-      this.width/2-105,Math.max(14,this.height/2-148),0xff75d9ea);
+      this.width/2-105,Math.max(10,this.height/2-148),0xff75d9ea);
  }
 }
 ''')
