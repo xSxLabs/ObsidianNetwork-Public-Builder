@@ -131,7 +131,7 @@ for number in range(101):
 
 def spell_numbers(text, lang):
     # Never let the voice choose its own numerical locale from raw digits.
-    return re.sub(r"(?<![A-Za-z])\\b([0-9]{1,3})\\b(?![A-Za-z])",
+    return re.sub(r"(?<![A-Za-z])\b([0-9]{1,3})\b(?![A-Za-z])",
                   lambda m: num2words(int(m.group(1)), lang=lang), text)
 
 async def main():
