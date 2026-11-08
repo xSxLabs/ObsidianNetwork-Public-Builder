@@ -164,7 +164,7 @@ s=replace_one(s,
   xsxFlushSearch();""",
  "flush final query next tick")
 
-assert m.count("V177_FAST_SEARCH")==2
+assert m.count("V177_FAST_SEARCH")==1
 assert s.count("V177_FAST_SEARCH")==1
 assert "V176BackpackCells.entries(live)" in m
 assert "if(xsxShiftLayoutFrozen)return xsxShiftEntries;" in m
@@ -174,7 +174,7 @@ assert "xsxSearchCableRevision!=liveCableRevision" in m
 assert s.count("searchBox.setResponder(value->xsxQueueSearch(value));")==1
 assert "xsxFlushSearch();" in s
 assert "button(192+xsxPendingScroll);" in s
-assert 'command("networkbackpack take ' in s or 'button(3+' in s
+assert "xsxShiftVisited.add(id)" in s
 
 # Fail closed before writing either file; preserve every v1.7.6 patch.
 menu.write_text(m,encoding="utf-8")
