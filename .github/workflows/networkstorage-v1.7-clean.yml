@@ -1,3 +1,4 @@
+# B1511 armor station triple-service: integrity repair, all-four-piece FE recharge and helmet NutriPaste refill.
 # B1510: preserve exact v177 armor-entry preflight contract; optimize Multitool afterward.
 # Performance: rebuild low-overdraw 518-cuboid native Multitool model for stable held-item FPS (v177 only).
 # v1.7.7 user request: Armor Station holds 500mB NutriPaste, Fluid Cable native input, automatic helmet refill.
