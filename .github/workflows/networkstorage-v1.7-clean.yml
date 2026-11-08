@@ -188,6 +188,9 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_v176_b1307_builder_tools_inventory_backpack.py' -v
           python3 -m py_compile features/v176/apply-v176-b1381-powerbank-output-slider.py features/v176/apply-v176-b1381-gametest-adapt.py
           python3 -m py_compile features/v176/apply-v176-b1383-reactor-double.py features/v176/apply-v176-b1384-wireless-500k-buffers.py features/v176/apply-v176-b1384-wireless-gametest.py
+          # B1392: fail-closed Shift+Deconstruct stack source and conservation tests.
+          python3 -m py_compile features/v176/apply-v176-b1392-deconstructor-stack.py tests/test_v176_b1392_deconstructor_stack.py
+          python3 -m unittest discover -s tests -p 'test_v176_b1392_deconstructor_stack.py' -v
           # Freeze 1319 remains untouched; new Powerbank branch only.
           python3 -m py_compile features/v176/apply-v176-powerbank-transfer-1351.py features/v176/inject-v176-powerbank-gametest-1355.py tests/test_v176_powerbank_transfer_1351.py
           python3 -m unittest discover -s tests -p 'test_v176_powerbank_transfer_1351.py' -v
@@ -4305,6 +4308,8 @@ jobs:
             python3 features/v176/apply-v176-b1381-powerbank-output-slider.py
             # B1383: 2x real Reactor FE output with 2x fuel and coolant, all sizes.
             python3 features/v176/apply-v176-b1383-reactor-double.py
+            # B1392: Shift+DECONSTRUCT consumes whole input stack in one server-authoritative batch.
+            python3 features/v176/apply-v176-b1392-deconstructor-stack.py
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
             # B1141: verify non-center player position BEFORE tick; server recenter AFTER tick.
@@ -4790,6 +4795,13 @@ jobs:
            for terminal in ('DeconstructionTerminalMenu','DisenchantingTerminalMenu'):
             data=z.read(f'dev/obsidiannetwork/menu/{terminal}.class')
             assert b'giveExperienceLevels' not in data, f'B836_XP_DEDUCTION_STILL_PRESENT_IN_{terminal}'
+          # Real final JAR must include both sides of the Shift-button contract.
+          decon=z.read('dev/obsidiannetwork/menu/DeconstructionTerminalMenu.class')
+          decon_screen=z.read('dev/obsidiannetwork/client/DeconstructionTerminalScreen.class')
+          assert b'b1392DeconstructStack' in decon, 'B1392_BATCH_SERVER_MISSING'
+          assert b'B1392 DECONSTRUCT_STACK' in decon, 'B1392_BATCH_SERVER_NOT_COMPILED'
+          assert b'hasShiftDown' in decon_screen, 'B1392_SHIFT_CLIENT_NOT_COMPILED'
+          print('B1392_DECONSTRUCTOR_STACK_COMPILED_GATE PASS')
           print('B836_ZERO_XP_DECONSTRUCTION_DISENCHANTING_COMPILED_GATE PASS')
           print('V176_B697_COMPLETE_MODULE_LOOTING_PROJECTILES_FOLLOW_TURRET_AND_24_VISUALS_PASS')
           PY_V176_JAR
