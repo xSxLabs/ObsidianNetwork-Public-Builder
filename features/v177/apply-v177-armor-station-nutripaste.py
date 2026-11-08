@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1.7.7: native Fluid Cable NutriPaste input, 500 mB station tank, worn helmet refill.
+"""v1.7.7: native Fluid Cable NutriPaste input, helmet-sized station buffer, worn helmet refill.
 
 Non-destructive addition after apply-v177-armor-integrity-repair.py. The station
 keeps its 200,000 FE buffer and energy-based integrity repair independent of
@@ -19,9 +19,9 @@ def patch(rel,old,new):
 patch("powerarmor/ArmorStationBlockEntity.java",
 ''' public int v177StoredFe(){return (int)v177Energy.getAmountAsLong();}''',
 ''' public int v177StoredFe(){return (int)v177Energy.getAmountAsLong();}
- // V177_STATION_NUTRIPASTE_500MB: accepts ONLY real registered NutriPaste.
+ // V177_STATION_NUTRIPASTE_HELMET_SIZE: accepts real registered paste, enough for a full helmet.
  // Never substitute water or energy; never extract paste through a pipe.
- public static final long V177_PASTE_CAPACITY=500L;
+ public static final long V177_PASTE_CAPACITY=1_000_000L;
  private long v177Paste=0L;
  private final net.neoforged.neoforge.transfer.transaction.SnapshotJournal<Long>
      v177PasteJournal=new net.neoforged.neoforge.transfer.transaction.SnapshotJournal<>() {
@@ -152,4 +152,4 @@ public final class V177ArmorStationPaste {
  }
 }
 ''',encoding="utf-8")
-print("V177_ARMOR_STATION_500MB_NUTRIPASTE_FLUID_CABLE_HELMET_FILL_INSTALLED")
+print("V177_ARMOR_STATION_1M_NUTRIPASTE_FLUID_CABLE_HELMET_FILL_INSTALLED")
