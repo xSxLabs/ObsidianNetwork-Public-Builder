@@ -110,14 +110,32 @@ assert previous_button_id.strip() in ("1", "DeconstructionTerminalMenu.DECONSTRU
     "B1392 unexpected Deconstruct button identity", previous_button_id
 )
 shift_call = ("handleInventoryButtonClick(" + container_id + ", "
-              + "(net.minecraft.client.gui.screens.Screen.hasShiftDown() ? 2 : "
+              + "(xsxDeconstructBatchShift ? 2 : "
               + previous_button_id.strip() + "));")
 s = s[:matches[0].start()] + shift_call + s[matches[0].end():]
 changed = 1
 assert changed == 1
 assert "B1392_DECONSTRUCT_STACK" in m
 assert "b1392DeconstructStack(" in m
-assert "hasShiftDown() ? 2 :" in s
+# Capture modifiers from the actual 26.1 mouse-click event BEFORE vanilla
+# Button.onPress is invoked by super.mouseClicked. No removed Screen APIs,
+# key polling or per-tick network packets are used.
+init_method = re.search(r"\\bprotected\\s+void\\s+init\\s*\\(", s)
+assert init_method is not None and len(re.findall(r"\\bprotected\\s+void\\s+init\\s*\\(", s)) == 1, "B1402 Screen init anchor drift"
+mouse_override = """
+  // B1402_261_EVENT_SHIFT: read modifiers from the real click.
+  private boolean xsxDeconstructBatchShift = false;
+  @Override public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event,
+                                        boolean doubleClick) {
+    xsxDeconstructBatchShift = event.hasShiftDown();
+    return super.mouseClicked(event, doubleClick);
+  }
+
+"""
+s = s[:init_method.start()] + mouse_override + s[init_method.start():]
+assert "xsxDeconstructBatchShift ? 2 :" in s
+assert "event.hasShiftDown()" in s
+assert "Screen.hasShiftDown()" not in s
 menu.write_text(m, "utf-8")
 screen.write_text(s, "utf-8")
 print("B1392_DECONSTRUCT_STACK_SERVER_CLIENT_PATCH_PASS")
