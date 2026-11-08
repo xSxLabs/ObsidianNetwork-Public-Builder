@@ -55,7 +55,7 @@ class HomeBridgeTests(unittest.TestCase):
                 self.assertNotIn(text, s)
             else:
                 self.assertIn(text, s)
-        self.assertIn('enqueue(2,"Welcome home, sir.","Willkommen zu Hause, Sir.")', s)
+        self.assertIn('enqueue(2,"Welcome back, sir.","Willkommen zurück, Sir.")', s)
 
     def test_play_to_client_only(self):
         s = self.patch
