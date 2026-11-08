@@ -436,18 +436,16 @@ public final class V177JarvisClient {
  }
  private static void checkHome(LocalPlayer p){
   if(!V177JarvisSettings.on("home"))return;
-  // Only the client-known world spawn fallback. /sethome requires
-  // a compatible external mod API; never guess another mod's data.
-  try{
-   var method=p.level().getClass().getMethod("getSharedSpawnPos");
-   Object point=method.invoke(p.level());
-   if(!(point instanceof BlockPos home))return;
-   double distance=p.distanceToSqr(home.getX()+.5,home.getY()+.5,home.getZ()+.5);
-   if(!nearHome&&distance<=64D){
-    nearHome=true;
-    enqueue(1,"Welcome home, sir.","Willkommen zu Hause, Sir.");
-   }else if(nearHome&&distance>=144D)nearHome=false;
-  }catch(ReflectiveOperationException ignored){}
+  // 26.1 replaced getSharedSpawnPos with synchronized respawn data.
+  // /sethome is mod-specific and cannot be inferred from world spawn.
+  var data=p.level().getRespawnData();
+  if(data==null||!data.dimension().equals(p.level().dimension()))return;
+  BlockPos home=data.pos();
+  double distance=p.distanceToSqr(home.getX()+.5,home.getY()+.5,home.getZ()+.5);
+  if(!nearHome&&distance<=64D){
+   nearHome=true;
+   enqueue(2,"Welcome home, sir.","Willkommen zu Hause, Sir.");
+  }else if(nearHome&&distance>=144D)nearHome=false;
  }
  private static void checkEnvironment(LocalPlayer p){
   if(!V177JarvisSettings.on("environment"))return;
@@ -519,8 +517,8 @@ public final class V177JarvisClient {
   g.text(mc.font,"J.A.R.V.I.S.",0,0,0xff78e1f5);
   g.text(mc.font,"ARMOR INTELLIGENCE SYSTEM",0,11,0xffa8c4dc);
   g.text(mc.font,enabled()?"ONLINE":"OFFLINE",0,22,enabled()?0xff87eac1:0xffe98f7a);
-  if(!subtitle.isEmpty()&&mc.player.tickCount<subtitleUntil)
-   g.text(mc.font,subtitle,0,33,0xffd6efff);
+  // Audio-only J.A.R.V.I.S.: no spoken sentence text in the HUD.
+  // Preserve title, ARMOR INTELLIGENCE SYSTEM and ONLINE/OFFLINE.
   g.pose().popMatrix();
  }
 }
