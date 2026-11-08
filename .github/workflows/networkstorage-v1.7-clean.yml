@@ -4346,6 +4346,8 @@ jobs:
             # FE-powered Power Armor Station, isolated to the 1.7.7 branch.
             if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
               python3 features/v177/apply-v177-armor-integrity-repair.py
+              # Guard the VOICE page's last toggle against DONE overlap.
+              python3 tests/test_v177_jarvis_voice_settings_layout.py
               python3 features/v177/apply-v177-jarvis-voice.py
               # Observe successful /sethome from other mods; never replace command.
               python3 features/v177/apply-v177-jarvis-sethome-bridge.py
