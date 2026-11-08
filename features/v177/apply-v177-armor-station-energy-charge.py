@@ -34,11 +34,11 @@ import net.minecraft.world.item.ItemStack;
  *
  *  Existing integrity repairs take precedence. The station has 200,000 FE
  *  of *real* input-only storage; every charged FE is debited from that same
- *  tank. Maximum 20,000 FE per 5-tick station cycle, no extra tick handler.
+ *  tank. Maximum 60,000 FE per 5-tick station cycle (3x v1.7.7 B1530), no extra tick handler.
  */
 public final class V177ArmorStationCharge {
  private V177ArmorStationCharge(){}
- public static final int MAX_FE_PER_SERVICE=20_000;
+ public static final int MAX_FE_PER_SERVICE=60_000; // 3x faster suit charging
 
  public static void chargeWornArmor(ServerLevel level,BlockPos pos,
                                    ArmorStationBlockEntity station){
