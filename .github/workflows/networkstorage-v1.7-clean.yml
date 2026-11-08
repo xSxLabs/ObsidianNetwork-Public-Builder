@@ -4363,6 +4363,8 @@ jobs:
               python3 tests/test_v177_large_schematics.py
               python3 -m unittest discover -s tests -p 'test_v177_gui_e_text_focus.py' -v
               python3 tests/test_v177_jarvis_voice_settings_layout.py
+              # No duplicate NutriPaste warning on armor entry; keep live warnings.
+              python3 -m unittest discover -s tests -p 'test_v177_jarvis_single_entry_status.py' -v
               python3 tests/test_v177_integrity_sleep_voice_contract.py
               # Match vanilla 26.1 0/1/50/100% player sleep thresholds.
               python3 -m unittest discover -s tests -p 'test_v177_sleep_percentage.py' -v
