@@ -1,3 +1,4 @@
+# B1478 approved: armor sleep uses vanilla gamerule 0/1/50/100 and bed sleepers.
 # B1474 requested full v1.7.7 build: retry with corrected home command regression assert.
 # B147x user-requested: external /sethome callback incl zero-result, audible off-suit FOLLOW/TURRET.
 # B145x user-authorized integration: no-break armor HP, sleep state, paged JARVIS and smooth voice.
