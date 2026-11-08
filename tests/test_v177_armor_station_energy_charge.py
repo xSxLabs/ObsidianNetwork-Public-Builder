@@ -14,7 +14,6 @@ class ArmorStationEnergyCharge(unittest.TestCase):
 
  def test_all_three_services_share_station_tick_and_buffers(self):
   for needle in (
-      "V177ArmorIntegrity.repairNearby(server,pos,be);",
       "V177ArmorStationPaste.fillHelmet(server,pos,be);",
       "V177ArmorStationCharge.chargeWornArmor(server,pos,be);",
       "public static final int MAX_FE_PER_SERVICE=20_000;",
@@ -27,6 +26,16 @@ class ArmorStationEnergyCharge(unittest.TestCase):
       "PowerArmorRuntime.full(player)",
       "V177ArmorIntegrity.piece(armor,slot)",
   ):self.assertIn(needle,PATCH,needle)
+  # Integrity is installed by the earlier feature injector, not by this
+  # FE-only injector. Assert the stage handoff rather than a false string.
+  integrity=(ROOT/"features/v177/apply-v177-armor-integrity-repair.py").read_text(encoding="utf-8")
+  paste=(ROOT/"features/v177/apply-v177-armor-station-nutripaste.py").read_text(encoding="utf-8")
+  self.assertIn("V177ArmorIntegrity.repairNearby(server,pos,be);",integrity)
+  self.assertIn("V177ArmorStationPaste.fillHelmet(server,pos,be);",paste)
+  self.assertIn('old="""    // Paste refill does not consume FE',PATCH)
+  self.assertIn('new="""    // Paste refills independently of FE',PATCH)
+  self.assertIn('assert text.count(old)==1',PATCH)
+  self.assertIn("server.getGameTime()%5L==0L",integrity)
 
  def test_fe_debited_before_item_mutation(self):
   self.assertLess(PATCH.index("int drawn=station.v177ConsumeFe(offered);"),
