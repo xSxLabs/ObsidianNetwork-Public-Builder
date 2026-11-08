@@ -34,11 +34,11 @@ import net.minecraft.world.item.ItemStack;
  *
  *  Existing integrity repairs take precedence. The station has 200,000 FE
  *  of *real* input-only storage; every charged FE is debited from that same
- *  tank. Maximum 60,000 FE per 5-tick station cycle (3x v1.7.7 B1530), no extra tick handler.
+ *  tank. Maximum 200,000 FE per 5-tick cycle. With steady FE input, a 4x4M-FE suit charges within 30 seconds at 20 TPS; no extra ticker.
  */
 public final class V177ArmorStationCharge {
  private V177ArmorStationCharge(){}
- public static final int MAX_FE_PER_SERVICE=60_000; // 3x faster suit charging
+ public static final int MAX_FE_PER_SERVICE=200_000; // 30-second full-suit target with sufficient input
 
  public static void chargeWornArmor(ServerLevel level,BlockPos pos,
                                    ArmorStationBlockEntity station){
@@ -79,4 +79,4 @@ public final class V177ArmorStationCharge {
  }
 }
 ''',encoding="utf-8")
-print("V177_ARMOR_STATION_THREE_WAY_SERVICE_PASS: integrity + 200k-FE suit recharge + 500mB helmet paste")
+print("V177_ARMOR_STATION_THREE_WAY_SERVICE_PASS: integrity + 200k-FE per-cycle suit recharge + helmet paste")
