@@ -46,7 +46,8 @@ new=""" private void transferFluid(Direction in){
       instanceof dev.obsidiannetwork.powerarmor.ArmorStationBlockEntity)
     max=Math.max(max,25_000);
    FluidStack sim=src.drain(max,IFluidHandler.FluidAction.SIMULATE);
-   if(sim.isEmpty())return;\n   if(!this.cableAllows(in,net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(sim.getFluid())))return;
+   if(sim.isEmpty())return;
+   if(!this.cableAllows(in,net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(sim.getFluid())))return;
    int accepted=dst.fill(sim,IFluidHandler.FluidAction.SIMULATE);
    if(accepted<=0)continue;
    FluidStack got=src.drain(accepted,IFluidHandler.FluidAction.EXECUTE);
