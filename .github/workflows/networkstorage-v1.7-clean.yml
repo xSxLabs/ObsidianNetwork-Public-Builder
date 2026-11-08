@@ -4925,12 +4925,23 @@ jobs:
             assert root+'catalog.tsv' in members
             catalog=z.read(root+'catalog.tsv').decode('utf-8')
             for lang in ('de','en'):
-             for clip in ('attack_on','attack_off','recall','morning','diagnostics_start','number_42'):
+             for clip in ('attack_on','attack_off','recall','morning','diagnostics_start','number_42','startup_integrity_100','startup_energy_50','startup_paste_42','scan_hostile_3','scan_bosses_1','radius_32'):
               key=root+lang+'/'+clip+'.wav'
               assert key in members, key
               assert z.read(key)[:4] == b'RIFF', key
-            assert len([x for x in members if x.startswith(root) and x.endswith('.wav')]) >= 250
+            assert len([x for x in members if x.startswith(root) and x.endswith('.wav')]) >= 1600
             assert 'Angriffsmodus aktiviert.' in catalog and 'Attack mode activated.' in catalog
+           # Fail-closed actual reconstruct source checks for the 1000 HP
+           # durability contract and removed JARVIS spoken-text overlay.
+           from pathlib import Path as VoicePath
+           integrity=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V177ArmorIntegrity.java').read_text()
+           jarvis=VoicePath('work/src/main/java/dev/obsidiannetwork/client/V177JarvisClient.java').read_text()
+           assert 'SUIT_HITPOINTS=1000' in integrity
+           assert 'LivingIncomingDamageEvent' in integrity and 'DamageTypeTags.IS_EXPLOSION' in integrity
+           assert 'explosion?10:collision?5:2' in integrity
+           assert 'totalHitpoints' in integrity and 'getRespawnData()' in jarvis
+           assert 'g.text(mc.font,subtitle' not in jarvis
+           print('V177_INTEGRITY_1000_HP_2_10_5_AND_AUDIO_ONLY_HOME_SOURCE_GATE_PASS')
            print('V177_OFFLINE_BILINGUAL_NEURAL_AUDIO_COMPILED_JAR_PASS')
           PY_B508_JAR
       - name: Save NeoForge dependencies even on red builds
