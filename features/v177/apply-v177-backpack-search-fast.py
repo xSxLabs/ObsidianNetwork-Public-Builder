@@ -35,7 +35,7 @@ for needle in (
 ):
  assert needle in m,("V177_FAST_SEARCH_MENU_PREREQUISITE",needle)
 for needle in (
- "searchBox.setResponder(value->command(",
+ "searchBox.setResponder(value->{pendingSearch=value;searchDelay=25;});",
  " @Override protected void containerTick(){",
  "  super.containerTick();",
  "xsxSyncServerScroll();",
@@ -125,10 +125,25 @@ replacement="""   // The exact stored cell snapshot, cable commit revision and m
 m=m[:a]+replacement+m[b:]
 
 s=replace_one(s,
- """  searchBox.setResponder(value->command(
-      value.isBlank()?"networkbackpack search clear":"networkbackpack search "+value));""",
+ """  searchBox.setResponder(value->{pendingSearch=value;searchDelay=25;});""",
  """  searchBox.setResponder(value->xsxQueueSearch(value));""",
- "coalesce direct editbox responder")
+ "remove 25-tick debounce and coalesce direct editbox responder")
+
+# The old B1225 debounce waits 25 game ticks AFTER typing stops,
+# or about 1.25 seconds. Remove it entirely; do not add another timer.
+s=replace_one(s,
+ """ private String pendingSearch="";
+ private int searchDelay=-1;""",
+ """ // V177_FAST_SEARCH: no artificial 25-tick delay.""",
+ "delete 1.25s debounce fields")
+start="  if(searchDelay>0&&--searchDelay==0&&!filterEditor){"
+assert s.count(start)==1,("V177_FAST_SEARCH_DEBOUNCE_GATE_DRIFT",s.count(start))
+a=s.index(start)
+b=s.index("\\n  }",a) if False else -1
+# Search the generated Java source as literal text with a bounded method end.
+b=s.find("\n  }",a)
+assert b>a and b-a<600,("V177_FAST_SEARCH_DEBOUNCE_END_DRIFT",a,b)
+s=s[:a]+"  xsxFlushSearch();"+s[b+len("\n  }"):]
 
 s=replace_one(s,
  """ private void button(int action){""",
@@ -143,12 +158,12 @@ s=replace_one(s,
   xsxFlushSearch();
  }
  private void xsxFlushSearch(){
-  if(xsxPendingSearch==null)return;
+  if(xsxPendingSearch==null||filterEditor)return;
   var mc=net.minecraft.client.Minecraft.getInstance();
   if(mc.level==null||mc.player==null||mc.player.containerMenu!=menu)return;
   long tick=mc.level.getGameTime();
   if(tick==xsxLastSearchPacketTick)return;
-  String current=xsxPendingSearch;
+  String current=xsxPendingSearch.replace("\\r","").replace("\\n","").trim();
   xsxPendingSearch=null;
   xsxLastSearchPacketTick=tick;
   command(current.isBlank()?"networkbackpack search clear":"networkbackpack search "+current);
@@ -172,6 +187,7 @@ assert "cacheEntries=java.util.List.copyOf(result);" in m
 assert "if(xsxSearchKeys.get(i).contains(query))" in m
 assert "xsxSearchCableRevision!=liveCableRevision" in m
 assert s.count("searchBox.setResponder(value->xsxQueueSearch(value));")==1
+assert "searchDelay" not in s and "pendingSearch" not in s
 assert "xsxFlushSearch();" in s
 assert "button(192+xsxPendingScroll);" in s
 assert "xsxShiftVisited.add(id)" in s
