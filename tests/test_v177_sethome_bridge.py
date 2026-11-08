@@ -26,7 +26,8 @@ class HomeBridgeTests(unittest.TestCase):
         self.assertNotIn("if(!success||result<=0)return;", s)
         self.assertIn("event.setParseResults(new ParseResults<>(", s)
         self.assertIn("parsed.getReader(),parsed.getExceptions()", s)
-        self.assertIn("withCallback(observer,CommandResultCallback::chain)", s)
+        self.assertIn("source.withCallback(", s)
+        self.assertIn("observer,CommandResultCallback::chain", s)
         self.assertNotIn("Commands.literal", s)  # never hijack third-party commands
         self.assertNotIn("sendCommand", s)
 
