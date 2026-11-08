@@ -129,6 +129,33 @@ for number in range(101):
             CATALOG.append((lang, template.format(value=number), clipkey))
             SPEECH.append((lang, clipkey, template.format(value=text)))
 
+# Whole scan count phrases avoid spelling single digits and mob labels as
+# disconnected phonemes. Use one take per natural category expression.
+for number in range(1, 65):
+    for lang in ("en", "de"):
+        word = num2words(number, lang=lang)
+        for kind, one_en, many_en, one_de, many_de in (
+            ("hostile", "hostile entity", "hostile entities", "feindliche Kreatur", "feindliche Kreaturen"),
+            ("passive", "passive creature", "passive creatures", "friedliche Kreatur", "friedliche Kreaturen"),
+            ("players", "player", "players", "Spieler", "Spieler"),
+            ("bosses", "boss", "bosses", "Boss", "Bosse"),
+        ):
+            category = (one_de if number == 1 else many_de) if lang == "de" else (one_en if number == 1 else many_en)
+            key = f"scan_{kind}_{number}"
+            CATALOG.append((lang, f"{number} {category}", key))
+            SPEECH.append((lang, key, f"{word} {category}"))
+        key = f"distance_{number}"
+        suffix = "Blöcke" if lang == "de" else "blocks"
+        CATALOG.append((lang, f"{number} {suffix}", key))
+        SPEECH.append((lang, key, f"{word} {suffix}"))
+for radius in range(8, 65, 8):
+    for lang in ("en", "de"):
+        word = num2words(radius, lang=lang)
+        key = f"radius_{radius}"
+        template = "im Umkreis von {value} Blöcken." if lang == "de" else "within {value} blocks."
+        CATALOG.append((lang, template.format(value=radius), key))
+        SPEECH.append((lang, key, template.format(value=word)))
+
 def spell_numbers(text, lang):
     # Never let the voice choose its own numerical locale from raw digits.
     return re.sub(r"(?<![A-Za-z])\b([0-9]{1,3})\b(?![A-Za-z])",
