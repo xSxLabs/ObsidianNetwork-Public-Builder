@@ -14,7 +14,7 @@ for marker in ('private int page=0,subpage=0;', 'FLAGS[page][subpage]',
                'sleep_begin|Sleep begins','sleep_end|Sleep finishes',
                'home|Welcome back at home','integrity_0|Integrity zero'):
     assert marker in screen, marker
-assert '"\\\\|"'.replace('\\\\','\\\\') in screen, "split regex absent"
+assert 'split(' in screen and 'entry[1],entry[0]' in screen, "toggle parser missing"
 # Vertical layout at screenshot scale 260 UI pixels.
 height=260
 tabs_y=max(22,height//2-125)
