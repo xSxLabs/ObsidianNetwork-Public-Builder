@@ -645,16 +645,8 @@ public final class V177JarvisAudio {
    if(Character.isWhitespace(ch)||ch==','||ch=='.'||ch==';'||ch==':'||ch=='!'||ch=='?'){
     index++;continue;
    }
-   if(ch>='0'&&ch<='9'){
-    int start=index;
-    while(index<text.length()&&text.charAt(index)>='0'&&text.charAt(index)<='9')index++;
-    try{
-     int n=Integer.parseInt(text.substring(start,index));
-     if(n<0||n>100)return List.of();
-     clips.add((german?"de":"en")+"/number_"+n+".wav");
-     continue;
-    }catch(NumberFormatException err){return List.of();}
-   }
+   // Prefer a complete pre-rendered sentence/phrase even when it begins
+   // with digits (mob counts, distances), rather than splitting a number first.
    ClipSpec matching=null;
    for(ClipSpec spec:list){
     String word=spec.text();
@@ -665,8 +657,21 @@ public final class V177JarvisAudio {
       &&Character.isLetterOrDigit(text.charAt(end)))continue;
     matching=spec;break;
    }
-   if(matching==null)return List.of();
-   clips.add(matching.resource());index+=matching.text().length();
+   if(matching!=null){
+    clips.add(matching.resource());index+=matching.text().length();
+    continue;
+   }
+   if(ch>='0'&&ch<='9'){
+    int start=index;
+    while(index<text.length()&&text.charAt(index)>='0'&&text.charAt(index)<='9')index++;
+    try{
+     int n=Integer.parseInt(text.substring(start,index));
+     if(n<0||n>100)return List.of();
+     clips.add((german?"de":"en")+"/number_"+n+".wav");
+     continue;
+    }catch(NumberFormatException err){return List.of();}
+   }
+   return List.of();
   }
   return List.copyOf(clips);
  }
