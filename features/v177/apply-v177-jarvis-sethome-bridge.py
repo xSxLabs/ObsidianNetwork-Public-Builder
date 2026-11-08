@@ -233,7 +233,7 @@ public final class V177HomeTracker {
   final String dimension=player.level().dimension().identifier().toString();
   final double x=player.getX(),y=player.getY(),z=player.getZ();
   CommandResultCallback observer=(success,result)->{
-   if(!success||result<=0)return; // do not record rejected homes or denied commands
+   if(!success)return; // Brigadier success may legally return result=0 (third-party /sethome).
    V177HomeIndex homes=V177HomeIndex.get(player.level().getServer());
    if(set)homes.record(player,homeName,position,dimension);
    else if(delete)homes.delete(player,homeName);
@@ -246,8 +246,13 @@ public final class V177HomeTracker {
     else PENDING.put(player,new Pending(homeName,dimension,x,y,z,player.tickCount+400));
    }
   };
-  // Chain the ORIGINAL callback; do not steal other mods' command callbacks.
-  parsed.getContext().withSource(source.withCallback(observer,CommandResultCallback::chain));
+  // Chain the original callback and hand the modified parse result back to NeoForge.
+  // Merely calling withSource on a builder is not a reliable event handoff:
+  // another CommandEvent subscriber may replace the ParseResults afterwards.
+  event.setParseResults(new ParseResults<>(
+    parsed.getContext().withSource(source.withCallback(
+      observer,CommandResultCallback::chain)),
+    parsed.getReader(),parsed.getExceptions()));
  }
  @SubscribeEvent public static void proximity(PlayerTickEvent.Post event){
   if(!(event.getEntity() instanceof ServerPlayer player))return;
