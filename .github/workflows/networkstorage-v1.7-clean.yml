@@ -194,7 +194,8 @@ jobs:
           python3 -m py_compile features/v176/apply-v176-b1383-reactor-double.py features/v176/apply-v176-b1384-wireless-500k-buffers.py features/v176/apply-v176-b1384-wireless-gametest.py
           # v1.7.7 feature injector syntax check; no alternate branches modified.
           if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
-            python3 -m py_compile features/v177/*.py
+            python3 -m py_compile features/v177/*.py tests/test_v177_sethome_bridge.py
+            python3 -m unittest discover -s tests -p 'test_v177_sethome_bridge.py' -v
           fi
           # B1392: fail-closed Shift+Deconstruct stack source and conservation tests.
           python3 -m py_compile features/v176/apply-v176-b1392-deconstructor-stack.py tests/test_v176_b1392_deconstructor_stack.py
