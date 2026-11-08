@@ -14,7 +14,7 @@ import edge_tts
 from num2words import num2words
 
 VOICE = "en-US-AndrewMultilingualNeural"
-ROOT = Path(os.environ["V1_SOURCE_ROOT"]).parents[2] / "resources" / "assets" / "obsidiannetwork" / "jarvis_audio"
+ROOT = Path(os.environ["V1_SOURCE_ROOT"]).parent / "resources" / "assets" / "obsidiannetwork" / "jarvis_audio"
 ROOT.mkdir(parents=True, exist_ok=True)
 
 # One voice identity for both languages. Fixed lines are always one recording
