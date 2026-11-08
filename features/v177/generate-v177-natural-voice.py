@@ -99,7 +99,18 @@ MOBS = ("Zombie", "Skeleton", "Creeper", "Spider", "Cave Spider", "Enderman",
         "Endermite", "Silverfish", "Guardian", "Elder Guardian", "Shulker",
         "Magma Cube", "Hoglin", "Ravager", "Bogged", "Breeze", "Warden")
 for mob in MOBS:
-    PARTS["mob_" + re.sub(r"[^a-z0-9]+", "_", mob.lower())] = (mob, mob)
+    key = re.sub(r"[^a-z0-9]+", "_", mob.lower())
+    PARTS["mob_" + key] = (mob, mob)
+    # One natural voice take for the entire mob identifier, not three clips
+    # between "closest threat", type, and its associated grammatical prefix.
+    PARTS["nearest_" + key] = (
+        f"The closest threat is a {mob}",
+        f"Die nächste Bedrohung ist {mob}",
+    )
+PARTS["nearest_unknown"] = (
+    "The closest threat is a hostile entity",
+    "Die nächste Bedrohung ist eine feindliche Kreatur",
+)
 
 # For variable 0-100% status and actual scan counts. Use natural written-out
 # number words (EN/DE), never feed unlocalized digits to an English TTS voice.
@@ -148,6 +159,25 @@ for number in range(1, 65):
         suffix = "Blöcke" if lang == "de" else "blocks"
         CATALOG.append((lang, f"{number} {suffix}", key))
         SPEECH.append((lang, key, f"{word} {suffix}"))
+# Record the entire distance+direction clause as ONE clip, eliminating
+# hesitations around digits / "blocks" / compass directions.
+DIRECTIONS = (
+    ("ahead of you", "vor Ihnen"),
+    ("behind you", "hinter Ihnen"),
+    ("to your left", "links von Ihnen"),
+    ("to your right", "rechts von Ihnen"),
+)
+for distance in range(65):
+    for direction_index, (en_dir, de_dir) in enumerate(DIRECTIONS):
+        for lang in ("en", "de"):
+            direction = de_dir if lang == "de" else en_dir
+            unit = "Blöcke" if lang == "de" else "blocks"
+            phrase = f"{distance} {unit} {direction}."
+            spoken = f"{num2words(distance, lang=lang)} {unit} {direction}."
+            key = f"nearest_distance_{distance}_{direction_index}"
+            CATALOG.append((lang, phrase, key))
+            SPEECH.append((lang, key, spoken))
+
 for radius in range(8, 65, 8):
     for lang in ("en", "de"):
         word = num2words(radius, lang=lang)
@@ -180,7 +210,9 @@ async def main():
                             raise RuntimeError("empty TTS output")
                         subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-loglevel", "error", "-nostdin",
                                         "-y", "-i", str(mp3),
-                                        "-af", "highpass=f=70,lowpass=f=8500,acompressor=threshold=-18dB:ratio=2:attack=5:release=80",
+                                        "-af", "highpass=f=70,lowpass=f=8500,acompressor=threshold=-18dB:ratio=2:attack=5:release=80,"
+                                               "silenceremove=start_periods=1:start_duration=0.02:start_threshold=-50dB,"
+                                               "areverse,silenceremove=start_periods=1:start_duration=0.04:start_threshold=-50dB,areverse",
                                         "-ar", "22050", "-ac", "1", "-sample_fmt", "s16",
                                         str(target)], check=True, timeout=35)
                         with target.open("rb") as f:
@@ -207,6 +239,8 @@ async def main():
     assert len(SPEECH) > 900 and count == len(SPEECH)
     assert (ROOT / "en" / "startup_energy_50.wav").stat().st_size > 1000
     assert (ROOT / "de" / "startup_paste_42.wav").stat().st_size > 1000
+    assert (ROOT / "en" / "nearest_distance_27_0.wav").stat().st_size > 1000
+    assert (ROOT / "de" / "nearest_zombie.wav").stat().st_size > 1000
     print(f"V177_NATURAL_BILINGUAL_VOICE_BUNDLED: {count} WAV clips, voice={VOICE}, no narrator, no runtime downloads")
 
 if __name__ == "__main__":
