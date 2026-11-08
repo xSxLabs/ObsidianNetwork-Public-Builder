@@ -163,10 +163,10 @@ public final class V177JarvisSettingsScreen extends Screen {
   }
   button(x,y+147,238,"DONE",()->this.onClose());
  }
- @Override public void render(net.minecraft.client.gui.GuiGraphics graphics,int mouseX,int mouseY,float partial){
-  super.render(graphics,mouseX,mouseY,partial);
-  graphics.drawCenteredString(font,"J.A.R.V.I.S.  /  ARMOR INTELLIGENCE SYSTEM",
-      this.width/2,Math.max(14,this.height/2-148),0xff75d9ea);
+ @Override public void extractBackground(net.minecraft.client.gui.GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partial){
+  super.extractBackground(graphics,mouseX,mouseY,partial);
+  graphics.text(font,"J.A.R.V.I.S.  /  ARMOR INTELLIGENCE SYSTEM",
+      this.width/2-105,Math.max(14,this.height/2-148),0xff75d9ea);
  }
 }
 ''')
