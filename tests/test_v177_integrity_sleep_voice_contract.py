@@ -51,6 +51,13 @@ for phrase in (
     'enqueue(2,"Welcome back, sir.","Willkommen zurück, Sir.")',
 ):
     assert phrase in voice,phrase
+# Follow and turret confirmations must play immediately when a suit is nearby but unworn.
+assert 'else directly("Follow mode command received, sir."' in voice
+assert 'else directly("Turret mode command received, sir."' in voice
+assert 'if(available())enqueue(1,"Follow mode command received, sir."' in voice
+assert 'if(available())enqueue(1,"Turret mode command received, sir."' in voice
+assert 'event.setParseResults(new ParseResults<>(' in homes
+assert 'if(!success)return;' in homes
 assert 'getRespawnConfig()' in homes
 assert 'config.respawnData().pos()' in homes
 assert 'nearest_distance_' in tts
