@@ -334,7 +334,9 @@ public final class V177JarvisClient {
   for(int level:levels)if(previous>level&&current<=level)return level;
   return -1;
  }
- private static void checkLevels(LocalPlayer p){
+ // Seed warning baselines silently on armor entry: no false 101%-to-0%
+ // NutriPaste alert. Later real energy/paste/integrity crossings still speak.
+ private static void checkLevels(LocalPlayer p,boolean announce){
   long total=0L,max=0L;
   for(var slot:PowerArmorRuntime.SLOTS){
    ItemStack stack=p.getItemBySlot(slot);
@@ -348,18 +350,18 @@ public final class V177JarvisClient {
   int e=threshold(energy,prevEnergy,new int[]{0,25,50});
   int n=threshold(paste,prevPaste,new int[]{1,25,50,57});
   int a=threshold(integrity,prevIntegrity,new int[]{0,1,25,50});
-  if(e>=0&&V177JarvisSettings.on("energy")&&V177JarvisSettings.on("energy_"+e))
+  if(announce&&e>=0&&V177JarvisSettings.on("energy")&&V177JarvisSettings.on("energy_"+e))
    enqueue(e==0?5:e==25?4:2,
       e==0?"Warning, sir. Armor energy reserves are completely depleted. Powered systems are offline.":
       "Sir, armor energy reserves have dropped to "+e+" percent.",
       e==0?"Warnung, Sir. Die Rüstungsenergie ist vollständig aufgebraucht.":
       "Sir, die Rüstungsenergie liegt bei "+e+" Prozent.");
-  if(n>=0&&V177JarvisSettings.on("paste")&&V177JarvisSettings.on("paste_"+n))
+  if(announce&&n>=0&&V177JarvisSettings.on("paste")&&V177JarvisSettings.on("paste_"+n))
    enqueue(n<=1?5:n<=25?4:2,
      n<=1?"Warning, sir. NutriPaste reserves are at one percent. Immediate refilling is recommended.":
          "Sir, NutriPaste reserves are at "+n+" percent.",
      "Sir, der NutriPaste-Vorrat liegt bei "+n+" Prozent.");
-  if(a>=0&&V177JarvisSettings.on("integrity")&&V177JarvisSettings.on("integrity_"+a))
+  if(announce&&a>=0&&V177JarvisSettings.on("integrity")&&V177JarvisSettings.on("integrity_"+a))
    enqueue(a==0?5:a<=25?4:2,
      a==0?"Critical structural failure, sir. All armor protection systems are offline.":
           "Sir, armor structural integrity is at "+a+" percent.",
@@ -376,7 +378,7 @@ public final class V177JarvisClient {
   return time<6000L?"Guten Morgen":time<12000L?"Guten Tag":"Guten Abend";
  }
  private static void start(LocalPlayer p){
-  checkLevels(p);
+  checkLevels(p,false); // baseline for the single combined entry report
   if(V177JarvisSettings.on("greeting")){
    String period=greeting(p);
    String key=period.equals("Good morning")?"morning":
@@ -563,7 +565,7 @@ public final class V177JarvisClient {
    if(enabled())start(p);
   }
   if(!enabled())return;
-  if(p.tickCount%5==0)checkLevels(p);
+  if(p.tickCount%5==0)checkLevels(p,true);
   // Use the real synced armor upgrade state instead of guessing from the click.
   boolean attackMode=V176AttackModeClient.active();
   if(attackMode!=prevAttackMode&&V177JarvisSettings.on("actions")){
