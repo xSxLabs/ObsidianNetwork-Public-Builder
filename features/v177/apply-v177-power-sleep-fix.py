@@ -41,5 +41,30 @@ replace_once(
    event.setContinueSleeping(true);
  }
  @SubscribeEvent public static void tick(PlayerTickEvent.Post event){''')
+# Minecraft 26.1 stores gamerules as typed GameRule<Integer> values.
+# Mirror the vanilla percentage rounding and count real bed sleepers together
+# with armor sleepers; NEVER require everyone in SLEEPING.
+replace_once(
+ 'import net.minecraft.world.entity.Pose;',
+ 'import net.minecraft.world.entity.Pose;\\n'
+ 'import net.minecraft.world.level.gamerules.GameRules;')
+replace_once(
+ '''  for(ServerPlayer other:world.players()){
+   if(other.isAlive()&&!other.isSpectator()&&!SLEEPING.containsKey(other))
+    return; // never skip another player's night without their consent
+  }''',
+ '''  // Vanilla-style percentage: ceil(eligible * percentage / 100), minimum 1.
+  // 0% means one sleeper, 1% with up to 100 players means one sleeper,
+  // 100% means everyone, and values >100 cannot pass the night.
+  // Count real bed sleepers AND players resting in Power Armor.
+  int percentage=world.getGameRules().get(GameRules.PLAYERS_SLEEPING_PERCENTAGE);
+  int eligible=0,sleepers=0;
+  for(ServerPlayer other:world.players()){
+   if(!other.isAlive()||other.isSpectator())continue;
+   eligible++;
+   if(other.isSleeping()||SLEEPING.containsKey(other))sleepers++;
+  }
+  long needed=Math.max(1L,(eligible*(long)percentage+99L)/100L);
+  if(sleepers<needed)return;''')
 p.write_text(s,encoding="utf-8")
-print("V177_POWERARMOR_SLEEP_PERSISTENT_STATE_PATCHED")
+print("V177_POWERARMOR_SLEEP_GAMERULE_PERCENTAGE_AND_BED_SLEEPERS_PATCHED")
