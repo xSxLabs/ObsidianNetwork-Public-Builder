@@ -4355,6 +4355,9 @@ jobs:
             # FE-powered Power Armor Station, isolated to the 1.7.7 branch.
             if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
               python3 features/v177/apply-v177-armor-integrity-repair.py
+              # 500mB input-only NutriPaste fluid tank on Armor Station; helmet auto-refill.
+              python3 features/v177/apply-v177-armor-station-nutripaste.py
+              python3 -m unittest discover -s tests -p 'test_v177_armor_station_paste.py' -v
               # Power-sleep must use a stable Minecraft sleep state, not pose spam.
               python3 features/v177/apply-v177-power-sleep-fix.py
               # All xSxLabs text-input GUIs: E types while focused, closes otherwise.
@@ -4972,6 +4975,11 @@ jobs:
            assert 'totalHitpoints' in integrity and 'getRespawnData()' in jarvis
            assert 'CustomData.update(DataComponents.CUSTOM_DATA' in integrity
            assert 'stack.setDamageValue(Math.min(max(stack)' not in integrity
+           stationPaste=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V177ArmorStationPaste.java').read_text()
+           armorStation=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/ArmorStationBlockEntity.java').read_text()
+           assert 'NutriPaste.add(helmet,available)' in stationPaste
+           assert 'V177_PASTE_CAPACITY=500L' in armorStation
+           assert 'v177_armor_station_paste_mb' in armorStation
            assert 'getRespawnConfig()' in VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V177HomeTracker.java').read_text()
            sleep=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V176PowerSleepServer.java').read_text()
            assert 'CanContinueSleepingEvent' in sleep and 'p.startSleeping(p.blockPosition())' in sleep
