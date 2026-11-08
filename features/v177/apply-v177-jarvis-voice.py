@@ -213,6 +213,7 @@ public final class V177JarvisClient {
  private static int lastTick=Integer.MIN_VALUE;
  private static int nextTalk=0;
  private static boolean wasInArmor=false,wasSleeping=false,wasFlying=false;
+ private static boolean prevAttackMode=false;
  private static boolean nearHome=false;
  private static int prevEnergy=101,prevPaste=101,prevIntegrity=101;
  private static String scanKey="";
@@ -240,8 +241,13 @@ public final class V177JarvisClient {
  public static void wheelAction(int action){
   if(!enabled()||!V177JarvisSettings.on("actions"))return;
   switch(action){
-   case 3->enqueue(3,"Armor recall initiated. I'm on my way, sir.",
-                      "Rüstungsrückruf eingeleitet. Ich bin auf dem Weg, Sir.");
+   case 3->{
+    // The sole voice action outside a worn suit: immediate recall acknowledgement.
+    if(!available()) directly("Armor recall initiated. I'm on my way, sir.",
+                              "Rüstungsrückruf eingeleitet. Ich bin auf dem Weg, Sir.");
+    else enqueue(3,"Armor recall initiated. I'm on my way, sir.",
+                   "Rüstungsrückruf eingeleitet. Ich bin auf dem Weg, Sir.");
+   }
    case 6->enqueue(1,"Follow mode command received, sir.",
                       "Folgemodus-Befehl empfangen, Sir.");
    case 7->enqueue(1,"Turret mode command received, sir.",
@@ -359,6 +365,11 @@ public final class V177JarvisClient {
    default->"links von Ihnen";
   };
  }
+ private static String joinCategories(java.util.List<String> categories,String conjunction){
+  if(categories.size()==1)return categories.get(0);
+  return String.join(", ",categories.subList(0,categories.size()-1))+
+         " "+conjunction+" "+categories.get(categories.size()-1);
+ }
  private static void scan(LocalPlayer p){
   var mc=Minecraft.getInstance();
   int radius=V177JarvisSettings.radius;
@@ -397,12 +408,29 @@ public final class V177JarvisClient {
   String key=hostile+"/"+passive+"/"+players+"/"+bosses;
   boolean any=hostile+passive+players+bosses>0;
   if(any&&!key.equals(scanKey)&&tick-lastScanSpeech>=200){
-   String en="Sir, I am detecting "+hostile+" hostile entities, "+passive+
-       " passive creatures, "+players+" players, and "+bosses+
-       " bosses within "+radius+" blocks.";
-   String de="Sir, ich erkenne "+hostile+" feindliche, "+passive+
-       " friedliche Kreaturen, "+players+" Spieler und "+bosses+
-       " Bosse im Umkreis von "+radius+" Blöcken.";
+   // Include only actual categories, never irrelevant zero counts.
+   var enParts=new java.util.ArrayList<String>();
+   var deParts=new java.util.ArrayList<String>();
+   if(hostile>0){
+    enParts.add(hostile+(hostile==1?" hostile entity":" hostile entities"));
+    deParts.add(hostile+(hostile==1?" feindliche Kreatur":" feindliche Kreaturen"));
+   }
+   if(passive>0){
+    enParts.add(passive+(passive==1?" passive creature":" passive creatures"));
+    deParts.add(passive+(passive==1?" friedliche Kreatur":" friedliche Kreaturen"));
+   }
+   if(players>0){
+    enParts.add(players+(players==1?" player":" players"));
+    deParts.add(players+" Spieler");
+   }
+   if(bosses>0){
+    enParts.add(bosses+(bosses==1?" boss":" bosses"));
+    deParts.add(bosses+(bosses==1?" Boss":" Bosse"));
+   }
+   String en="Sir, I am detecting "+joinCategories(enParts,"and")+
+         " within "+radius+" blocks.";
+   String de="Sir, ich erkenne "+joinCategories(deParts,"und")+
+         " im Umkreis von "+radius+" Blöcken.";
    if(closest!=null&&V177JarvisSettings.on("nearest")){
     int dist=(int)Math.round(Math.sqrt(closestD));
     String kind=closest.getType().getDescription().getString();
@@ -450,15 +478,23 @@ public final class V177JarvisClient {
   if(!worn){
    if(wasInArmor&&enabled()&&V177JarvisSettings.on("greeting"))
     directly("See you later, sir.","Bis später, Sir.");
-   wasInArmor=false;wasSleeping=false;wasFlying=false;
+   wasInArmor=false;wasSleeping=false;wasFlying=false;prevAttackMode=false;
    messages.clear();initial=true;return;
   }
   if(!wasInArmor){
    wasInArmor=true;initial=true;prevEnergy=101;prevPaste=101;prevIntegrity=101;
+   prevAttackMode=V176AttackModeClient.active();
    if(enabled())start(p);
   }
   if(!enabled())return;
   if(p.tickCount%5==0)checkLevels(p);
+  // Use the real synced armor upgrade state instead of guessing from the click.
+  boolean attackMode=V176AttackModeClient.active();
+  if(attackMode!=prevAttackMode&&V177JarvisSettings.on("actions")){
+   if(attackMode)enqueue(3,"Attack mode activated.","Angriffsmodus aktiviert.");
+   else enqueue(3,"Attack mode deactivated.","Angriffsmodus deaktiviert.");
+  }
+  prevAttackMode=attackMode;
   boolean sleep=p.getPose()==Pose.SLEEPING;
   if(sleep&&!wasSleeping&&V177JarvisSettings.on("sleep"))
    enqueue(2,"Sleeping in progress, sir.","Schlafvorgang läuft, Sir.");
