@@ -40,7 +40,7 @@ patch("client/V177JarvisClient.java",
   double distance=p.distanceToSqr(home.getX()+.5,home.getY()+.5,home.getZ()+.5);
   if(!nearHome&&distance<=64D){
    nearHome=true;
-   enqueue(2,"Welcome home, sir.","Willkommen zu Hause, Sir.");
+   enqueue(2,"Welcome back, sir.","Willkommen zurück, Sir.");
   }else if(nearHome&&distance>=144D)nearHome=false;
  }''',
 ''' private static void checkHome(LocalPlayer p){
@@ -58,7 +58,7 @@ patch("client/V177JarvisClient.java",
   }
   if(!nearHome&&(nearCommandHome||atSpawn)){
    nearHome=true;
-   enqueue(2,"Welcome home, sir.","Willkommen zu Hause, Sir.");
+   enqueue(2,"Welcome back, sir.","Willkommen zurück, Sir.");
   }else if(nearHome&&!nearCommandHome&&!atSpawn&&pastSpawn)nearHome=false;
  }''')
 
