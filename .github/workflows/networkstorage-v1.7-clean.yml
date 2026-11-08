@@ -4374,6 +4374,10 @@ jobs:
               python3 features/v177/apply-v177-power-sleep-fix.py
               # All xSxLabs text-input GUIs: E types while focused, closes otherwise.
               python3 features/v177/apply-v177-gui-e-text-focus.py
+              # V177: cache sorted backpack results by real Cell data revision;
+              # coalesce typed search to one latest query per tick, no ghost slots.
+              python3 features/v177/apply-v177-backpack-search-fast.py
+              python3 -m unittest discover -s tests -p 'test_v177_backpack_search_fast.py' -v
               # WorldEdit .schem import lives on the SERVER; up to 30m voxels.
               python3 features/v177/apply-v177-large-schematics.py
               python3 tests/test_v177_large_schematics.py
