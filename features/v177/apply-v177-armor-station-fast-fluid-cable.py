@@ -3,7 +3,7 @@
 
 The regular LogisticsCable fluid import defaults to 250 mB every five ticks,
 which cannot refill a 1,000,000 mB helmet within 30 seconds. Give only Armor
-Station destinations a 25,000 mB per transfer budget. The normal 250 mB +
+Station destinations a 25,000 mB per transfer budget. The normal 250 mB plus
 upgrades limit remains untouched for every other destination, and both source
 and destination are still simulated and executed authoritatively.
 """
