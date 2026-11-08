@@ -22,7 +22,10 @@ class HomeBridgeTests(unittest.TestCase):
         self.assertIn('op.equals("delhome")', s)
         self.assertIn('op.equals("deletehome")', s)
         self.assertIn('op.equals("ftbessentials")', s)
-        self.assertIn("if(!success||result<=0)return;", s)
+        self.assertIn("if(!success)return;", s)
+        self.assertNotIn("if(!success||result<=0)return;", s)
+        self.assertIn("event.setParseResults(new ParseResults<>(", s)
+        self.assertIn("parsed.getReader(),parsed.getExceptions()", s)
         self.assertIn("withCallback(observer,CommandResultCallback::chain)", s)
         self.assertNotIn("Commands.literal", s)  # never hijack third-party commands
         self.assertNotIn("sendCommand", s)
