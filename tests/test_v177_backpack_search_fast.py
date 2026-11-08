@@ -28,8 +28,11 @@ class FastBackpackSearch(unittest.TestCase):
     "B1304_REAL_NAME_AZ",
   ):
    self.assertIn(needle,PATCH,needle)
-  self.assertLess(PATCH.index("if(xsxRebuildSearch){"),
-                  PATCH.index("new java.util.ArrayList<>(V176BackpackCells.entries(live))"))
+  # Inspect the generated Java replacement, not the Python search anchor
+  # (the anchor intentionally contains the former list-builder string).
+  replacement=PATCH[PATCH.index('replacement="""'):]
+  self.assertLess(replacement.index("if(xsxRebuildSearch){"),
+                  replacement.index("var all=new java.util.ArrayList<>(V176BackpackCells.entries(live))"))
   self.assertLess(PATCH.index("xsxSearchKeys=java.util.List.copyOf(keys)"),
                   PATCH.index("if(xsxSearchKeys.get(i).contains(query))"))
 
@@ -38,7 +41,7 @@ class FastBackpackSearch(unittest.TestCase):
     "searchBox.setResponder(value->xsxQueueSearch(value));",
     "xsxPendingSearch=value;",
     "if(tick==xsxLastSearchPacketTick)return;",
-    "String current=xsxPendingSearch;",
+    "String current=xsxPendingSearch.replace(",
     "xsxPendingSearch=null;",
     "command(current.isBlank()?",
     "xsxFlushSearch();",
@@ -46,6 +49,7 @@ class FastBackpackSearch(unittest.TestCase):
     "button(192+xsxPendingScroll)",
   ):
    self.assertIn(needle,PATCH,needle)
+  self.assertIn('assert "searchDelay" not in s',PATCH)
   self.assertNotIn("CustomPacketPayload",PATCH)
   self.assertNotIn("player.getInventory().add(",PATCH)
 
