@@ -45,22 +45,21 @@ class LargeSchematics(unittest.TestCase):
    'Truncated/invalid varint',
    'Untrusted block-entity inventories, entities and biomes deliberately excluded.',
   ):self.assertIn(key,PATCH)
- def test_server_auto_folder_and_creative_access(self):
+ def test_server_folder_created_on_start_without_creative_recipe_rewrites(self):
   for key in (
    "ServerStartedEvent event",
    "V177SchematicStore.imports(event.getServer());",
-   'output.accept((ItemLike)NETWORK_PRINTER_ITEM.get());',
-   'output.accept((ItemLike)NETWORK_SCHEMATIC_QUILL.get());',
-   'output.accept((ItemLike)NETWORK_BLUEPRINT.get());',
-   'V177_SCHEM_QUILL_PRINTER_REEXPOSED_IN_CREATIVE_JEI_AND_RECIPES',
-   'network_schematic_quill.json',
-   'network_printer.json',
-   'WORLD',
-   'Files.isSymbolicLink(file)',
-   'loadedChunks>=1',
-  ):
-   if key=='WORLD':continue
-   self.assertIn(key,PATCH)
+   "server.getServerDirectory()",
+   'resolve("xsxschematics")',
+   "Files.isSymbolicLink(file)",
+  ):self.assertIn(key,PATCH)
+  # Existing B476 restored these entries in every release including 1.7.6.
+  # V177 must not duplicate the Creative/JEI/recipe changes.
+  self.assertNotIn("V177_SCHEM_QUILL_PRINTER_REEXPOSED",PATCH)
+  self.assertNotIn("NETWORK_PRINTER_ITEM.get());",PATCH)
+  existing=(ROOT/"features/v174/apply-wip-public-test-476.py").read_text()
+  for name in ("NETWORK_PRINTER_ITEM","NETWORK_BLUEPRINT","NETWORK_SCHEMATIC_QUILL"):
+   self.assertIn(name,existing)
  def test_capture_loads_at_most_one_chunk_each_tick(self):
   for key in (
    'int loadedChunks=0;',
