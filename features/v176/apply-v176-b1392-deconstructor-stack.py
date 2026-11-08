@@ -100,18 +100,24 @@ m = m[:xp.start()] + helper + m[xp.start():]
 # Vanilla container button traffic is already server-authoritative and does
 # not spam chat/commands. Shift state is sampled only when the GUI button is
 # actually clicked. ID 1 stays the existing behavior; ID 2 requests batch.
-client_call = re.compile(r"handleInventoryButtonClick\s*\(\s*([^;,]+?)\s*,\s*1\s*\)")
+client_call = re.compile(r"handleInventoryButtonClick\\s*\\((.*?)\\)\\s*;", re.DOTALL)
 matches = list(client_call.finditer(s))
 assert len(matches) == 1, ("B1392 client click anchor drift", len(matches))
-s, changed = client_call.subn(
-    lambda hit: "handleInventoryButtonClick("
-    + hit.group(1) + ", (net.minecraft.client.gui.screens.Screen.hasShiftDown() ? 2 : 1))",
-    s, count=1,
+raw_args = matches[0].group(1)
+assert "," in raw_args, "B1392 client click lacks button ID"
+container_id, previous_button_id = raw_args.rsplit(",", 1)
+assert previous_button_id.strip() in ("1", "DeconstructionTerminalMenu.DECONSTRUCT_BUTTON"), (
+    "B1392 unexpected Deconstruct button identity", previous_button_id
 )
+shift_call = ("handleInventoryButtonClick(" + container_id + ", "
+              + "(net.minecraft.client.gui.screens.Screen.hasShiftDown() ? 2 : "
+              + previous_button_id.strip() + "));")
+s = s[:matches[0].start()] + shift_call + s[matches[0].end():]
+changed = 1
 assert changed == 1
 assert "B1392_DECONSTRUCT_STACK" in m
 assert "b1392DeconstructStack(" in m
-assert "hasShiftDown() ? 2 : 1" in s
+assert "hasShiftDown() ? 2 :" in s
 menu.write_text(m, "utf-8")
 screen.write_text(s, "utf-8")
 print("B1392_DECONSTRUCT_STACK_SERVER_CLIENT_PATCH_PASS")
