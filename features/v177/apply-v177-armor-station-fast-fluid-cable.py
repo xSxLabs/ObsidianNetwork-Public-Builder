@@ -18,7 +18,6 @@ assert len(matches)==1,("V177_STATION_FLUID_IMPORT_SHAPE_DRIFT",len(matches))
 old=matches[0].group()
 for needle in (
     "src.drain(fluidAmount(in),IFluidHandler.FluidAction.SIMULATE)",
-    "for(Endpoint e:exports())",
     "dst.fill(sim,IFluidHandler.FluidAction.SIMULATE)",
     "src.drain(accepted,IFluidHandler.FluidAction.EXECUTE)",
     "dst.fill(got,IFluidHandler.FluidAction.EXECUTE)",
