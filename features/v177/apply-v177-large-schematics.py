@@ -295,12 +295,17 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import dev.obsidiannetwork.ObsidianNetwork;
 
 /** Server-only /xsxschematic load NAME; importing never blocks the tick loop. */
 @EventBusSubscriber(modid="obsidiannetwork")
 public final class V177SchematicCommand {
  private V177SchematicCommand(){}
+ @SubscribeEvent public static void serverStarted(ServerStartedEvent event){
+  try{V177SchematicStore.imports(event.getServer());}
+  catch(Exception ex){System.err.println("[xSxLabs] xsxschematics folder: "+ex.getMessage());}
+ }
  @SubscribeEvent public static void commands(RegisterCommandsEvent event){
   event.getDispatcher().register(Commands.literal("xsxschematic")
     .then(Commands.literal("load")
@@ -523,3 +528,42 @@ public final class V177SchematicCapture {
 }
 ''')
 print("V177_LARGE_SCHEMATICS_SERVER_ONLY_COMMAND_30M_ASYNC_CAPTURE_INSTALLED")
+
+# The B398 WIP freeze hides the Quill/Blueprint/Printer even in Creative and
+# removes its crafting recipes. In 1.7.7 these features are user-requested.
+# Re-expose ONLY these three, keep unfinished Hologram Terminal hidden.
+main=root/"ObsidianNetwork.java"
+source=main.read_text(encoding="utf8")
+marker='            output.accept((ItemLike)NETWORK_PLANTER_ITEM.get());'
+assert source.count(marker)==1,"V177_SCHEM_CREATIVE_DRIFT"
+source=source.replace(marker,marker+'''
+            output.accept((ItemLike)NETWORK_PRINTER_ITEM.get());
+            output.accept((ItemLike)NETWORK_SCHEMATIC_QUILL.get());
+            output.accept((ItemLike)NETWORK_BLUEPRINT.get());''',1)
+main.write_text(source,encoding="utf8")
+jei=root/"compat/jei/WipItemsJeiPlugin.java"
+jeis=jei.read_text(encoding="utf8")
+assert jeis.count("NETWORK_SCHEMATIC_QUILL.get()")==1,"V177_SCHEM_JEI_DRIFT"
+# Retain the WIP filter for the *unfinished* Hologram Terminal only.
+start=jeis.index("        java.util.List.of(")
+end=jeis.index("\n        )",start)
+jeis=jeis[:start]+'''        java.util.List.of(
+          new net.minecraft.world.item.ItemStack(
+              dev.obsidiannetwork.ObsidianNetwork.NETWORK_HOLOGRAM_TERMINAL_ITEM.get())'''+jeis[end:]
+jei.write_text(jeis,encoding="utf8")
+import json
+data=Path(os.environ["V1_RESOURCE_ROOT"])/"data/obsidiannetwork/recipe"
+assert not (data/"network_schematic_quill.json").exists()
+assert not (data/"network_printer.json").exists()
+data.mkdir(parents=True,exist_ok=True)
+(data/"network_schematic_quill.json").write_text(json.dumps({
+ "type":"minecraft:crafting_shaped","pattern":["PFP","BIB","PFP"],
+ "key":{"P":"minecraft:paper","F":"minecraft:feather",
+        "B":"minecraft:book","I":"minecraft:ink_sac"},
+ "result":{"id":"obsidiannetwork:network_schematic_quill","count":1}},indent=2)+"\n",encoding="utf8")
+(data/"network_printer.json").write_text(json.dumps({
+ "type":"minecraft:crafting_shaped","pattern":["IRI","RDR","IRI"],
+ "key":{"I":"minecraft:iron_ingot","R":"minecraft:redstone",
+        "D":"minecraft:diamond"},
+ "result":{"id":"obsidiannetwork:network_printer","count":1}},indent=2)+"\n",encoding="utf8")
+print("V177_SCHEM_QUILL_PRINTER_REEXPOSED_IN_CREATIVE_JEI_AND_RECIPES")
