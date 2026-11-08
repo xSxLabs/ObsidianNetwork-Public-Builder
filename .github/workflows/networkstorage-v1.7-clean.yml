@@ -4344,6 +4344,8 @@ jobs:
             if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
               python3 features/v177/apply-v177-armor-integrity-repair.py
               python3 features/v177/apply-v177-jarvis-voice.py
+              # Observe successful /sethome from other mods; never replace command.
+              python3 features/v177/apply-v177-jarvis-sethome-bridge.py
               # One-time BUILD-TIME voice rendering: the shipped mod is fully offline.
               # Fail closed if neural assets are unavailable; NEVER package narrator
               # as a substitute for the promised male DE/EN voice.
