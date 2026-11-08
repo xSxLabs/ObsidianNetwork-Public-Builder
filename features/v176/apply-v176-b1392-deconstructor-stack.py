@@ -100,7 +100,7 @@ m = m[:xp.start()] + helper + m[xp.start():]
 # Vanilla container button traffic is already server-authoritative and does
 # not spam chat/commands. Shift state is sampled only when the GUI button is
 # actually clicked. ID 1 stays the existing behavior; ID 2 requests batch.
-client_call = re.compile(r"handleInventoryButtonClick\\s*\\((.*?)\\)\\s*;", re.DOTALL)
+client_call = re.compile(r"handleInventoryButtonClick\s*\((.*?)\)\s*;", re.DOTALL)
 matches = list(client_call.finditer(s))
 assert len(matches) == 1, ("B1392 client click anchor drift", len(matches))
 raw_args = matches[0].group(1)
