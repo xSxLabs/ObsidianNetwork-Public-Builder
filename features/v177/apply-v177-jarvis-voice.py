@@ -206,8 +206,7 @@ public final class V177JarvisClient {
  private V177JarvisClient(){}
  private record Message(int priority,String english,String deutsch){}
  private static final ArrayDeque<Message> messages=new ArrayDeque<>();
- private static com.mojang.text2speech.Narrator narrator;
- private static boolean narratorUnavailable;
+ // v1.7.7 uses bundled offline male voice clips, never the Minecraft narrator.
  private static String subtitle="";
  private static int subtitleUntil;
  private static int lastTick=Integer.MIN_VALUE;
@@ -278,14 +277,7 @@ public final class V177JarvisClient {
   subtitle=text;
   var mc=Minecraft.getInstance();
   subtitleUntil=(mc.player==null?0:mc.player.tickCount)+100;
-  try{
-   if(!narratorUnavailable){
-    if(narrator==null)narrator=com.mojang.text2speech.Narrator.getNarrator();
-    narrator.say(text,true,V177JarvisSettings.volume/100f);
-   }
-  }catch(Throwable t){
-   narratorUnavailable=true; // native audio may be unavailable on Linux
-  }
+  V177JarvisAudio.enqueue(text,V177JarvisSettings.german,V177JarvisSettings.volume);
  }
  private static String number(int v){return String.valueOf(v);}
  private static int threshold(int current,int previous,int[] levels){
@@ -530,6 +522,131 @@ public final class V177JarvisClient {
   if(!subtitle.isEmpty()&&mc.player.tickCount<subtitleUntil)
    g.text(mc.font,subtitle,0,33,0xffd6efff);
   g.pose().popMatrix();
+ }
+}
+''')
+add("client/V177JarvisAudio.java",r'''package dev.obsidiannetwork.client;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.SourceDataLine;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+
+/** Bundled neural speech; no network, third-party app, or narrator at runtime. */
+public final class V177JarvisAudio {
+ private V177JarvisAudio(){}
+ private record ClipSpec(String text,String resource){}
+ private record Job(List<String> clips,int volume){}
+ private static final AudioFormat FORMAT=new AudioFormat(22050f,16,1,true,false);
+ private static final ArrayBlockingQueue<Job> queue=new ArrayBlockingQueue<>(8);
+ private static final Map<String,List<ClipSpec>> CATALOG=loadCatalog();
+ private static final Thread WORKER=startWorker();
+ private static Map<String,List<ClipSpec>> loadCatalog(){
+  Map<String,List<ClipSpec>> map=new HashMap<>();
+  try(InputStream input=V177JarvisAudio.class.getResourceAsStream(
+       "/assets/obsidiannetwork/jarvis_audio/catalog.tsv")){
+   if(input==null){System.err.println("XSXLABS_JARVIS_NO_VOICE_ASSETS");return map;}
+   try(BufferedReader reader=new BufferedReader(new InputStreamReader(input,StandardCharsets.UTF_8))){
+    String line;
+    while((line=reader.readLine())!=null){
+     String[] parts=line.split("\\t",3);
+     if(parts.length!=3||parts[1].isEmpty())continue;
+     map.computeIfAbsent(parts[0],k->new ArrayList<>())
+       .add(new ClipSpec(parts[1],parts[0]+"/"+parts[2]+".wav"));
+    }
+   }
+   for(List<ClipSpec> list:map.values())
+    list.sort(Comparator.comparingInt((ClipSpec c)->c.text().length()).reversed());
+  }catch(Exception ex){System.err.println("XSXLABS_JARVIS_CATALOG_ERROR "+ex);}
+  return map;
+ }
+ private static List<String> plan(String text,boolean german){
+  List<ClipSpec> list=CATALOG.get(german?"de":"en");
+  if(list==null||list.isEmpty()||text==null||text.isEmpty())return List.of();
+  List<String> clips=new ArrayList<>();
+  int index=0;
+  while(index<text.length()){
+   char ch=text.charAt(index);
+   if(Character.isWhitespace(ch)||ch==','||ch=='.'||ch==';'||ch==':'||ch=='!'||ch=='?'){
+    index++;continue;
+   }
+   if(ch>='0'&&ch<='9'){
+    int start=index;
+    while(index<text.length()&&text.charAt(index)>='0'&&text.charAt(index)<='9')index++;
+    try{
+     int n=Integer.parseInt(text.substring(start,index));
+     if(n<0||n>100)return List.of();
+     clips.add((german?"de":"en")+"/number_"+n+".wav");
+     continue;
+    }catch(NumberFormatException err){return List.of();}
+   }
+   ClipSpec matching=null;
+   for(ClipSpec spec:list){
+    String word=spec.text();
+    if(index+word.length()>text.length()||
+       !text.regionMatches(true,index,word,0,word.length()))continue;
+    int end=index+word.length();
+    if(Character.isLetterOrDigit(word.charAt(word.length()-1))&&end<text.length()
+      &&Character.isLetterOrDigit(text.charAt(end)))continue;
+    matching=spec;break;
+   }
+   if(matching==null)return List.of();
+   clips.add(matching.resource());index+=matching.text().length();
+  }
+  return List.copyOf(clips);
+ }
+ public static boolean enqueue(String text,boolean german,int volume){
+  List<String> clips=plan(text,german);
+  if(clips.isEmpty()){
+   System.err.println("XSXLABS_JARVIS_MISSING_SPOKEN_LINE: "+text);
+   return false;
+  }
+  Job job=new Job(clips,Math.max(0,Math.min(100,volume)));
+  if(!queue.offer(job)){queue.poll();queue.offer(job);}
+  return true;
+ }
+ private static Thread startWorker(){
+  Thread t=new Thread(()->{
+   while(!Thread.currentThread().isInterrupted()){
+    try{play(queue.take());}
+    catch(InterruptedException ex){Thread.currentThread().interrupt();}
+    catch(Exception ex){System.err.println("XSXLABS_JARVIS_AUDIO_PLAYBACK "+ex);}
+   }
+  },"xSxLabs-JARVIS-Voice");
+  t.setDaemon(true);t.start();return t;
+ }
+ private static void play(Job job) throws Exception{
+  if(job.volume()==0)return;
+  SourceDataLine line=AudioSystem.getSourceDataLine(FORMAT);
+  try{
+   line.open(FORMAT,32768);line.start();
+   byte[] buf=new byte[8192];
+   for(String key:job.clips()){
+    String path="/assets/obsidiannetwork/jarvis_audio/"+key;
+    try(InputStream raw=V177JarvisAudio.class.getResourceAsStream(path)){
+     if(raw==null)throw new IOException("missing audio "+key);
+     try(AudioInputStream wav=AudioSystem.getAudioInputStream(new BufferedInputStream(raw))){
+      if(!wav.getFormat().matches(FORMAT))
+       throw new IOException("voice format mismatch "+key+" "+wav.getFormat());
+      int count;
+      while((count=wav.read(buf,0,buf.length))>=0){
+       if(count==0)continue;
+       int size=count-(count%2);
+       for(int i=0;i<size;i+=2){
+        int sample=(short)((buf[i]&0xff)|(buf[i+1]<<8));
+        int scaled=(int)(sample*(job.volume()/100f));
+        buf[i]=(byte)scaled;buf[i+1]=(byte)(scaled>>>8);
+       }
+       line.write(buf,0,size);
+      }
+     }
+    }
+   }
+   line.drain();
+  }finally{line.stop();line.close();}
  }
 }
 ''')
