@@ -4370,6 +4370,8 @@ jobs:
               # No extra ticker; per-5-tick budget; native FE consumption.
               python3 features/v177/apply-v177-armor-station-energy-charge.py
               python3 -m unittest discover -s tests -p 'test_v177_armor_station_energy_charge.py' -v
+              # All three services must refill a depleted suit within 30 seconds with adequate input.
+              python3 -m unittest discover -s tests -p 'test_v177_armor_station_30s.py' -v
               # Power-sleep must use a stable Minecraft sleep state, not pose spam.
               python3 features/v177/apply-v177-power-sleep-fix.py
               # All xSxLabs text-input GUIs: E types while focused, closes otherwise.
