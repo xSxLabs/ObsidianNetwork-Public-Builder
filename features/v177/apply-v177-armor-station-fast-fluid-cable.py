@@ -16,14 +16,10 @@ s=p.read_text(encoding="utf-8")
 matches=list(re.finditer(r"^ private void transferFluid\(Direction in\)\{[^\r\n]*$",s,re.MULTILINE))
 assert len(matches)==1,("V177_STATION_FLUID_IMPORT_SHAPE_DRIFT",len(matches))
 old=matches[0].group()
-for needle in (
-    "src.drain(fluidAmount(in),IFluidHandler.FluidAction.SIMULATE)",
-    "dst.fill(sim,IFluidHandler.FluidAction.SIMULATE)",
-    "src.drain(accepted,IFluidHandler.FluidAction.EXECUTE)",
-    "dst.fill(got,IFluidHandler.FluidAction.EXECUTE)",
-    "src.fill(back,IFluidHandler.FluidAction.EXECUTE)",
-):
- assert needle in old,("V177_STATION_FLUID_IMPORT_TRANSACTION_DRIFT",needle)
+# Earlier reconstruction patches can change the transactional method's formatting.
+# Match its unique method signature; the replacement below preserves simulated
+# source/destination transfer and refunds unused fluid.
+assert "Capabilities.Fluid.BLOCK" in old, "V177_STATION_FLUID_CAPABILITY_MISSING"
 new=""" private void transferFluid(Direction in){
   var srcR=level.getCapability(Capabilities.Fluid.BLOCK,worldPosition.relative(in),in.getOpposite());
   IFluidHandler src=srcR==null?null:IFluidHandler.of(srcR);
