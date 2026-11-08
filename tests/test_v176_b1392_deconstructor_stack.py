@@ -72,7 +72,10 @@ class DeconstructorStack1392(unittest.TestCase):
         self.assertIn("serverPlayer.drop(result, false)", menu)
         self.assertIn("this.syncPreview(this.serverPlan(serverPlayer))", menu)
         self.assertEqual(menu.count("this.broadcastChanges();"), 1)
-        self.assertIn("hasShiftDown() ? 2 : 1", screen)
+        self.assertIn("xsxDeconstructBatchShift ? 2 : 1", screen)
+        self.assertIn("event.hasShiftDown()", screen)
+        self.assertIn("super.mouseClicked(event, doubleClick)", screen)
+        self.assertNotIn("Screen.hasShiftDown()", screen)
 
     def test_fail_closed_no_modified_sources_on_drift(self):
         for menu, screen in (
