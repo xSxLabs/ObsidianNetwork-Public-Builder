@@ -110,18 +110,21 @@ public final class V177ArmorIntegrity {
   return s.getMaxDamage()>1&&s.getDamageValue()>=max(s);
  }
  public static boolean failed(ServerPlayer p){
-  return PowerArmorRuntime.full(p)&&totalPercent(p)<=0;
+  return PowerArmorRuntime.full(p)&&totalHitpoints(p)<=0;
  }
- public static int totalPercent(Player p){
-  long total=0L,remaining=0L;
+ public static int totalHitpoints(Player p){
+  long remaining=0L;
+  int pieces=0;
   for(int i=0;i<4;i++){
    ItemStack s=p.getItemBySlot(PowerArmorRuntime.SLOTS[i]);
    if(!piece(s,i))continue;
-   int m=max(s);
-   total+=m;
-   remaining+=Math.max(0,m-Math.min(m,s.getDamageValue()));
+   pieces++;
+   remaining+=Math.max(0,SUIT_HITPOINTS-Math.min(SUIT_HITPOINTS,s.getDamageValue()));
   }
-  return total==0L?0:(int)Math.round(100.0*remaining/(double)total);
+  return pieces==0?0:(int)Math.round((double)remaining/pieces);
+ }
+ public static int totalPercent(Player p){
+  return (int)Math.round(totalHitpoints(p)/10.0);
  }
  @SubscribeEvent public static void noBrokenAttributes(ItemAttributeModifierEvent e){
   ItemStack stack=e.getItemStack();
@@ -240,7 +243,9 @@ public final class V177IntegrityHud {
   g.pose().scale(.6f,.6f);
   g.text(mc.font,"ARMOR INTEGRITY",0,0,color);
   g.pose().popMatrix();
-  String percent=value+"%";
+  // One decimal: even an ordinary -2 HP strike immediately changes 100.0 -> 99.8.
+  String percent=String.format(java.util.Locale.ROOT,"%.1f%%",
+      V177ArmorIntegrity.totalHitpoints(mc.player)/10.0);
   g.pose().pushMatrix();
   g.pose().translate(x+width-mc.font.width(percent)*.6f-1f,y+4f);
   g.pose().scale(.6f,.6f);
