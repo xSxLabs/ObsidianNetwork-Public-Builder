@@ -14,7 +14,9 @@ import edge_tts
 import imageio_ffmpeg
 from num2words import num2words
 
-VOICE = "en-US-AndrewMultilingualNeural"
+# A German-native, multilingual male timbre makes German numbers and English
+# sentences share the same speaker. More restrained, low-pitched JARVIS feel.
+VOICE = "de-DE-FlorianMultilingualNeural"
 ROOT = Path(os.environ["V1_SOURCE_ROOT"]).parent / "resources" / "assets" / "obsidiannetwork" / "jarvis_audio"
 ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -64,11 +66,9 @@ for percent in (1, 25, 50):
 # Dynamic fragments only where numbers, mob names and scan counts change.
 # Long parts make sentences far smoother than word-at-a-time TTS.
 PARTS = {
-    "diagnostics_start": ("Armor diagnostics complete. Structural integrity at", "Rüstungsdiagnose abgeschlossen. Integrität"),
-    "diagnostics_energy": ("percent. Energy reserves at", "Prozent. Energie"),
-    "diagnostics_paste": ("percent. NutriPaste reserves at", "Prozent. NutriPaste"),
-    "diagnostics_ok": ("percent. All systems operational.", "Prozent. Alle Systeme einsatzbereit."),
-    "diagnostics_failed": ("percent. Armor systems offline.", "Prozent. Rüstungssysteme offline."),
+    "diagnostics_start": ("Armor diagnostics complete.", "Rüstungsdiagnose abgeschlossen."),
+    "diagnostics_ok": ("All systems operational.", "Alle Systeme einsatzbereit."),
+    "diagnostics_failed": ("Armor systems offline.", "Rüstungssysteme offline."),
     "energy_prefix": ("Sir, armor energy reserves have dropped to", "Sir, die Rüstungsenergie liegt bei"),
     "paste_prefix": ("Sir, NutriPaste reserves are at", "Sir, der NutriPaste-Vorrat liegt bei"),
     "integrity_prefix": ("Sir, armor structural integrity is at", "Sir, die Rüstungsintegrität liegt bei"),
@@ -110,11 +110,29 @@ for key, pair in {**FIXED, **PARTS}.items():
         # Duplicate phrase keys are harmless; fixed phrases are longest matches.
         SPEECH.append((lang, key, text))
         CATALOG.append((lang, text, key))
+# Complete percent clauses, recorded for 0..100 separately in EACH language.
+# Startup joins at sentence boundaries only: no audible joins between numbers
+# and "percent" / "Prozent". Catalog retains digits for runtime matching;
+# the neural voice receives fully written-out words in its native language.
 for number in range(101):
     for lang in ("en", "de"):
         key = f"number_{number}"
-        text = num2words(number, lang=("de" if lang == "de" else "en"))
+        text = num2words(number, lang=lang)
         SPEECH.append((lang, key, text))
+        for topic, english, deutsch in (
+            ("integrity", "Structural integrity at {value} percent.", "Integrität {value} Prozent."),
+            ("energy", "Energy reserves at {value} percent.", "Energie {value} Prozent."),
+            ("paste", "NutriPaste reserves at {value} percent.", "NutriPaste {value} Prozent."),
+        ):
+            template = deutsch if lang == "de" else english
+            clipkey = f"startup_{topic}_{number}"
+            CATALOG.append((lang, template.format(value=number), clipkey))
+            SPEECH.append((lang, clipkey, template.format(value=text)))
+
+def spell_numbers(text, lang):
+    # Never let the voice choose its own numerical locale from raw digits.
+    return re.sub(r"(?<![A-Za-z])\\b([0-9]{1,3})\\b(?![A-Za-z])",
+                  lambda m: num2words(int(m.group(1)), lang=lang), text)
 
 async def main():
     semaphore = asyncio.Semaphore(6)
@@ -128,7 +146,8 @@ async def main():
                 try:
                     with tempfile.TemporaryDirectory(prefix="xsxvoice_") as tmp:
                         mp3 = Path(tmp) / "speech.mp3"
-                        comm = edge_tts.Communicate(text=text, voice=VOICE, rate="-6%", pitch="-10Hz")
+                        comm = edge_tts.Communicate(text=spell_numbers(text,lang), voice=VOICE,
+                                                    rate="-5%", pitch="-15Hz")
                         await asyncio.wait_for(comm.save(str(mp3)), timeout=50)
                         if not mp3.is_file() or mp3.stat().st_size < 200:
                             raise RuntimeError("empty TTS output")
@@ -158,7 +177,9 @@ async def main():
     assert (ROOT / "en" / "attack_on.wav").stat().st_size > 1000
     assert (ROOT / "de" / "recall.wav").stat().st_size > 1000
     assert (ROOT / "de" / "number_42.wav").stat().st_size > 1000
-    assert len(SPEECH) > 250 and count == len(SPEECH)
+    assert len(SPEECH) > 900 and count == len(SPEECH)
+    assert (ROOT / "en" / "startup_energy_50.wav").stat().st_size > 1000
+    assert (ROOT / "de" / "startup_paste_42.wav").stat().st_size > 1000
     print(f"V177_NATURAL_BILINGUAL_VOICE_BUNDLED: {count} WAV clips, voice={VOICE}, no narrator, no runtime downloads")
 
 if __name__ == "__main__":
