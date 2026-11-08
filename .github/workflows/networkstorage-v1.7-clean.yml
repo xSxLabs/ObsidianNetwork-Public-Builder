@@ -4341,6 +4341,12 @@ jobs:
             if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
               python3 features/v177/apply-v177-armor-integrity-repair.py
               python3 features/v177/apply-v177-jarvis-voice.py
+              # One-time BUILD-TIME voice rendering: the shipped mod is fully offline.
+              # Fail closed if neural assets are unavailable; NEVER package narrator
+              # as a substitute for the promised male DE/EN voice.
+              python3 -m pip install --user --quiet edge-tts num2words
+              python3 features/v177/generate-v177-natural-voice.py
+              test -s work/src/main/resources/assets/obsidiannetwork/jarvis_audio/catalog.tsv
             fi
             # B1234: audit ALL reconstructed mod command emitters; never relax the server spam guard.
             python3 features/v176/audit-v176-global-ticks-and-command-spam.py
@@ -4907,6 +4913,23 @@ jobs:
                        'blockentity/NetworkDeviceBlockEntity.class'):
             assert 'dev/obsidiannetwork/'+cls in members
           print('B514_POSTBUILD_3D_GUIDEME_UI_TELEMETRY_AND_MAP_GATE_PASS')
+          # v1.7.7 exact packaged audio checks; no silent or narrator-only artifact.
+          import os
+          if os.environ.get('GITHUB_REF_NAME') == '1.7.7':
+           with zipfile.ZipFile(jar) as z:
+            members=set(z.namelist())
+            root='assets/obsidiannetwork/jarvis_audio/'
+            assert 'dev/obsidiannetwork/client/V177JarvisAudio.class' in members
+            assert root+'catalog.tsv' in members
+            catalog=z.read(root+'catalog.tsv').decode('utf-8')
+            for lang in ('de','en'):
+             for clip in ('attack_on','attack_off','recall','morning','diagnostics_start','number_42'):
+              key=root+lang+'/'+clip+'.wav'
+              assert key in members, key
+              assert z.read(key)[:4] == b'RIFF', key
+            assert len([x for x in members if x.startswith(root) and x.endswith('.wav')]) >= 250
+            assert 'Angriffsmodus aktiviert.' in catalog and 'Attack mode activated.' in catalog
+           print('V177_OFFLINE_BILINGUAL_NEURAL_AUDIO_COMPILED_JAR_PASS')
           PY_B508_JAR
       - name: Save NeoForge dependencies even on red builds
         if: always() && steps.v174_gradle_cache.outputs.cache-hit != 'true' && hashFiles('work/build.gradle') != ''
