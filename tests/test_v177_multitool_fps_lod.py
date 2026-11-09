@@ -70,7 +70,7 @@ class MultitoolFpsLod(unittest.TestCase):
      and len(e["faces"])==6 for e in after["elements"]))
    self.assertLess(len(after["elements"])/len(before["elements"]),0.25)
  def test_pipeline_scoped_to_v177_after_legacy_model_position(self):
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then',FLOW)
   self.assertLess(FLOW.index("python3 features/v176/apply-v176-b1224-held-tools.py"),
                   FLOW.index("python3 features/v177/apply-v177-multitool-render-lod.py"))
   self.assertIn("test_v177_multitool_fps_lod.py",FLOW)
