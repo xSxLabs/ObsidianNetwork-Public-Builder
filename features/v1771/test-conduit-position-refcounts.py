@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory() as temp:
     assert "indexedPositions" not in result
     assert "positionCounts.containsKey(pos)" in result
     assert "if(nodes.remove(n))unindexPosition(n.pos());dirty=true;" in result
-    assert len(__import__("re").findall(r"(?<![A-Za-z])indexPosition\\(", result)) == 4
+    assert len(__import__("re").findall(r"(?<![A-Za-z])indexPosition\(", result)) == 4
     assert result.count("unindexPosition(") == 2
     # The patch must refuse source drift and repeated application.
     before = target.read_bytes()
