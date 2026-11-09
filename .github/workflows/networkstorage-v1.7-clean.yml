@@ -133,7 +133,7 @@ run-name: 'xSxLabs ${{ github.ref_name }} - ${{ github.event.head_commit.message
 'on':
   workflow_dispatch:
   push:
-    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4, v1.7.5, v1.7.6, 1.7.6-powerbank, 1.7.7, feature/v1.7.4-multiblock-recovery, feature/v1.7.4-machine-guis, feature/v1.7.4-multiblock-animations, feature/v1.7.4-nutrition, feature/v1.7.4-guidebook, feature/v1.7.4-guidebook-sizes, feature/v1.7.4-planter-mod-crops, feature/v1.7.4-batched-polish-461, hotfix/v1.7.4-cable-drops-facades, fix/v176-energy-accounting-conservation-after-b1292]
+    branches: [v1.7, v1.7.2, v1.7.3, v1.7.4, v1.7.5, v1.7.6, 1.7.6-powerbank, 1.7.7, 1.7.7.1-ultra-performance, feature/v1.7.4-multiblock-recovery, feature/v1.7.4-machine-guis, feature/v1.7.4-multiblock-animations, feature/v1.7.4-nutrition, feature/v1.7.4-guidebook, feature/v1.7.4-guidebook-sizes, feature/v1.7.4-planter-mod-crops, feature/v1.7.4-batched-polish-461, hotfix/v1.7.4-cable-drops-facades, fix/v176-energy-accounting-conservation-after-b1292]
 
 
 
