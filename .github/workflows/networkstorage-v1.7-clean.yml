@@ -4359,6 +4359,8 @@ jobs:
             # FE-powered Power Armor Station, isolated to the 1.7.7 branch.
             if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
               python3 features/v177/apply-v177-armor-integrity-repair.py
+              # Double FE capacity only for Power Armor; original consumption unchanged.
+              python3 features/v177/apply-v177-armor-double-fe.py
               # Held Multitool performance: 2318 -> 518 native 3D cuboids.
               # Preserve all 132 original Blockbench parts and 128x128 PNG.
               python3 features/v177/apply-v177-multitool-render-lod.py
