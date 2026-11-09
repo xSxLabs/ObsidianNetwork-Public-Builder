@@ -28,15 +28,16 @@ replace(
  "index field")
 replace("indexedPositions.add(first.pos().immutable());","indexPosition(first.pos());","first node")
 assert s.count("indexedPositions.add(n.pos().immutable());")==2, "Conduit source drift node add" 
-# Match the exact normal-add statement, not the split-rebuild statement.
-replace("nodes.add(n);indexedPositions.add(n.pos().immutable());n.network(this);dirty=true;",
-        "if(nodes.add(n))indexPosition(n.pos());n.network(this);dirty=true;","node add")
-replace("if(nodes.remove(n)){indexedPositions.clear();for(var current:nodes)indexedPositions.add(current.pos().immutable());}dirty=true;",
-        "if(nodes.remove(n))unindexPosition(n.pos());dirty=true;","node removal")
+# Transform the longer split-rebuild anchor FIRST. The shorter add expression
+# occurs twice in the predecessor patch, so it cannot be selected safely first.
 replace("nodes.clear();indexedPositions.clear();for(var n:copy)",
         "nodes.clear();positionCounts.clear();for(var n:copy)","split reset")
 replace("nodes.add(n);indexedPositions.add(n.pos().immutable());n.network(this);",
         "if(nodes.add(n))indexPosition(n.pos());n.network(this);","split rebuild")
+replace("nodes.add(n);indexedPositions.add(n.pos().immutable());",
+        "if(nodes.add(n))indexPosition(n.pos());","node add")
+replace("if(nodes.remove(n)){indexedPositions.clear();for(var current:nodes)indexedPositions.add(current.pos().immutable());}dirty=true;",
+        "if(nodes.remove(n))unindexPosition(n.pos());dirty=true;","node removal")
 replace("return indexedPositions.contains(pos);","return positionCounts.containsKey(pos);","membership")
 assert "indexedPositions" not in s
 assert len(__import__("re").findall(r"(?<![A-Za-z])indexPosition\(",s))==4
