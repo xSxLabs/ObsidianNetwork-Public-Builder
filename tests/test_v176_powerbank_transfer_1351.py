@@ -116,7 +116,7 @@ class B1351Powerbank(unittest.TestCase):
   i=s.index(patch)
   # v1.7.7 inherits the exact B1351 Powerbank patch; preserve its isolation
   # from old v1.7.6 and only permit these two explicitly selected branches.
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',s[i-300:i])
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then',s[i-300:i])
   self.assertIn("test_v176_powerbank_transfer_1351.py",s)
   self.assertIn("inject-v176-powerbank-gametest-1355.py",s)
   for marker in ("B1355_ONE_PHYSICAL_CELL_SEVEN_FACES_ROLLBACK_PASS",
