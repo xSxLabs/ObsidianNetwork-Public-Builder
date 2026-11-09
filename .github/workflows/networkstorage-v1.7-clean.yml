@@ -2206,6 +2206,7 @@ jobs:
           python3 patches/spark-conduit-topology-position-index.py
           # v1.7.7.1 only: keep 1.7.7 and other branches' behavior unchanged.
           if [[ "${GITHUB_REF_NAME}" == "1.7.7.1-ultra-performance" ]]; then
+            python3 features/v1771/test-conduit-position-refcounts.py
             python3 features/v1771/apply-conduit-position-refcounts.py
           fi
           # Spark: short-circuit non-energy/non-bundle neighbor block entities.
