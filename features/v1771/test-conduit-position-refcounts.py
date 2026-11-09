@@ -29,7 +29,9 @@ with tempfile.TemporaryDirectory() as temp:
     result = target.read_text()
     assert "indexedPositions" not in result
     assert "positionCounts.containsKey(pos)" in result
-    assert "new java.util.HashMap<>(64)" in result, "position index capacity optimization missing"
+    assert "new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>(64)" in result, "primitive position index missing"
+    assert "positionCounts.addTo(pos,1)" in result, "primitive increment missing"
+    assert "positionCounts.removeInt(pos)" in result, "primitive removal missing"
     assert "if(nodes.remove(n))unindexPosition(n.pos());dirty=true;" in result
     assert len(__import__("re").findall(r"(?<![A-Za-z])indexPosition\(", result)) == 4
     assert result.count("unindexPosition(") == 2
