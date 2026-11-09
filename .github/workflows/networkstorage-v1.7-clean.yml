@@ -2204,8 +2204,10 @@ jobs:
           python3 patches/spark-energy-ephemeral-endpoint-handlers.py
           # Spark: constant-time connected node membership on each physical topology check.
           python3 patches/spark-conduit-topology-position-index.py
-          # v1.7.7.1: avoid rebuilding the full conduit index for each node removal.
-          python3 features/v1771/apply-conduit-position-refcounts.py
+          # v1.7.7.1 only: keep 1.7.7 and other branches' behavior unchanged.
+          if [[ "${GITHUB_REF_NAME}" == "1.7.7.1-ultra-performance" ]]; then
+            python3 features/v1771/apply-conduit-position-refcounts.py
+          fi
           # Spark: short-circuit non-energy/non-bundle neighbor block entities.
           # Strict negative gate: bundled BE instanceof must remain authoritative.
           # Regex escape fix: require real instanceof, not literal backslash-s.
