@@ -14,10 +14,9 @@ source = """
 // XSXLABS_SPARK_CONDUIT_TOPOLOGY_POSITION_INDEX_V1
 private final java.util.HashSet<net.minecraft.core.BlockPos> indexedPositions=new java.util.HashSet<>();
 indexedPositions.add(first.pos().immutable());
-indexedPositions.add(n.pos().immutable());
+nodes.add(n);indexedPositions.add(n.pos().immutable());n.network(this);dirty=true;
 if(nodes.remove(n)){indexedPositions.clear();for(var current:nodes)indexedPositions.add(current.pos().immutable());}dirty=true;
-nodes.clear();indexedPositions.clear();for(var n:copy)
-nodes.add(n);indexedPositions.add(n.pos().immutable());n.network(this);
+nodes.clear();indexedPositions.clear();for(var n:copy){if(n.type()!=type)throw new IllegalArgumentException("type mismatch");nodes.add(n);indexedPositions.add(n.pos().immutable());n.network(this);}
 return indexedPositions.contains(pos);
 """
 with tempfile.TemporaryDirectory() as temp:
