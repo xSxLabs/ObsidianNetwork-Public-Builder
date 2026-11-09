@@ -29,10 +29,11 @@ with tempfile.TemporaryDirectory() as temp:
     result = target.read_text()
     assert "indexedPositions" not in result
     assert "positionCounts.containsKey(pos)" in result
+    assert "if(nodes.remove(n))unindexPosition(n.pos());dirty=true;" in result
     assert "new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>(64)" in result, "primitive position index missing"
     assert "positionCounts.addTo(pos,1)" in result, "primitive increment missing"
     assert "positionCounts.removeInt(pos)" in result, "primitive removal missing"
-    assert result.count("indexPosition(n.pos());") == 2, "node insertion and split rebuild must update index"
+    assert result.count("if(nodes.add(n))indexPosition(n.pos());") == 2, "duplicate insertion must not inflate refcounts"
     assert "Integer previous=" not in result and "Integer count=" not in result, "boxed refcount regression"
     assert "if(nodes.remove(n))unindexPosition(n.pos());dirty=true;" in result
     assert len(__import__("re").findall(r"(?<![A-Za-z])indexPosition\(", result)) == 4
