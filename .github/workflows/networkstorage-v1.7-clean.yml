@@ -141,8 +141,8 @@ run-name: 'xSxLabs ${{ github.ref_name }} - ${{ github.event.head_commit.message
 # Only the newest clean v1.7 candidate needs the long full 26.1 regression.
 # Cancel superseded runs, but NEVER touch the stable v1.6 build group.
 concurrency:
-  group: clean-v1.7-${{ github.ref }}-${{ github.sha }}
-  cancel-in-progress: false
+  group: clean-v1.7-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions: {contents: read, issues: write}
 # Build 214 energy API trigger
