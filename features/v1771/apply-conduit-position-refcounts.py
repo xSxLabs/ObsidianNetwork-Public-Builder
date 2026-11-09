@@ -32,8 +32,8 @@ assert s.count("indexedPositions.add(n.pos().immutable());")==2, "Conduit source
 # occurs twice in the predecessor patch, so it cannot be selected safely first.
 replace("nodes.clear();indexedPositions.clear();for(var n:copy)",
         "nodes.clear();positionCounts.clear();for(var n:copy)","split reset")
-replace("nodes.add(n);indexedPositions.add(n.pos().immutable());n.network(this);",
-        "if(nodes.add(n))indexPosition(n.pos());n.network(this);","split rebuild")
+replace("for(var n:copy){if(n.type()!=type)throw new IllegalArgumentException(\"type mismatch\");nodes.add(n);indexedPositions.add(n.pos().immutable());n.network(this);}",
+        "for(var n:copy){if(n.type()!=type)throw new IllegalArgumentException(\"type mismatch\");if(nodes.add(n))indexPosition(n.pos());n.network(this);}", "split rebuild")
 replace("nodes.add(n);indexedPositions.add(n.pos().immutable());",
         "if(nodes.add(n))indexPosition(n.pos());","node add")
 replace("if(nodes.remove(n)){indexedPositions.clear();for(var current:nodes)indexedPositions.add(current.pos().immutable());}dirty=true;",
