@@ -33,7 +33,8 @@ class ExitBackToPlayer633(unittest.TestCase):
         # retained explicit dispatch OR a user-authorized HEAD commit marker.
         self.assertIn("github.event_name == 'workflow_dispatch'", wf)
         self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')", wf)
-        self.assertIn("cancel-in-progress: false", wf)
+        self.assertIn("group: clean-v1.7-${{ github.ref }}", wf)
+        self.assertIn("cancel-in-progress: true", wf)
         self.assertIn("workflow_dispatch:", wf)
     def test_patch_only_yaw_and_keeps_front_placement(self):
         # Minimal generated Java fixture: match B117 source, and include
