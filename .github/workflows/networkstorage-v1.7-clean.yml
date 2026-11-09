@@ -167,7 +167,7 @@ jobs:
           # Build exactly the triggering revision, not a later branch HEAD.
           ref: ${{ github.sha }}
       - name: B663 v1.7.6 module fast preflight
-        if: github.ref == 'refs/heads/v1.7.6' || github.ref == 'refs/heads/1.7.6-powerbank' || github.ref == 'refs/heads/1.7.7' || github.ref == 'refs/heads/fix/v176-energy-accounting-conservation-after-b1292'
+        if: github.ref == 'refs/heads/v1.7.6' || github.ref == 'refs/heads/1.7.6-powerbank' || github.ref == 'refs/heads/1.7.7' || github.ref == 'refs/heads/fix/v176-energy-accounting-conservation-after-b1292' || github.ref == 'refs/heads/1.7.7.1-ultra-performance'
         run: |
           set -euo pipefail
           python3 -m py_compile features/v176/*.py tests/test_v176_micro_mg_module.py
@@ -5105,7 +5105,7 @@ jobs:
         if: github.ref != 'refs/heads/v1.7.6' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate') }}
+          name: ${{ github.ref == 'refs/heads/1.7.7.1-ultra-performance' && 'xsxlabs-network-storage-v1.7.7.1-ultra-performance-test-jar' || (github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate')) }}
           path: dist/
           if-no-files-found: error
           retention-days: 14
