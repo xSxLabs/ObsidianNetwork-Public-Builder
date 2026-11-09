@@ -3822,7 +3822,7 @@ jobs:
           assert 'XSXLABS_SPARK_CONDUIT_TOPOLOGY_POSITION_INDEX_V1' in network
           assert 'network.containsPosition(neighborPos)' in topology, 'position-index membership must use the precomputed neighbor' 
           assert 'ConduitRuntime.bundle(level,neighborPos,type)' in topology, 'physical connection must still be checked live'
-          assert 'return indexedPositions.contains(pos)' in network
+          assert (('return positionCounts.containsKey(pos)' in network and 'XSXLABS_V1771_CONDUIT_POSITION_REFCOUNTS_V1' in network) if __import__('os').environ.get('GITHUB_REF_NAME') == '1.7.7.1-ultra-performance' else ('return indexedPositions.contains(pos)' in network)), 'Conduit position-index implementation does not match branch'
           assert 'physicallyConnected!=cachedConnected' in topology
           print('SPARK_CONDUIT_TOPOLOGY_INDEX_POSTPATCH_GATE PASS')
           PY
