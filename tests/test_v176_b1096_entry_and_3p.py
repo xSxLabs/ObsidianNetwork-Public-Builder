@@ -60,6 +60,7 @@ class B1096FailedEntryAndPlayerMount(unittest.TestCase):
   self.assertIn("python3 features/v176/apply-v176-b1096-3p-forearm-mount.py", W)
   self.assertIn("python3 features/v176/apply-v176-b1103-all-mk-gametest.py", W)
   self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')",W)
-  self.assertIn("cancel-in-progress: false",W)
+  self.assertIn("group: clean-v1.7-${{ github.ref }}",W)
+  self.assertIn("cancel-in-progress: true",W)
   self.assertIn("xsxlabs-network-storage-v1.7.6-test-jar",W)
 if __name__ == "__main__":unittest.main()
