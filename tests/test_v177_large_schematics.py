@@ -87,7 +87,7 @@ class LargeSchematics(unittest.TestCase):
   end=FLOW.index('python3 features/v173/apply-blueprint-visible-392.py',base)
   task=FLOW.index('python3 features/v177/apply-v177-large-schematics.py')
   self.assertLess(end,task)
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then',FLOW)
   self.assertIn("python3 tests/test_v177_large_schematics.py",FLOW)
 
 if __name__=="__main__":
