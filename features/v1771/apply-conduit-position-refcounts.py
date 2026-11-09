@@ -2,7 +2,7 @@
 """Replace O(network-size) Conduit position-index rebuild on node removal.
 
 Preserve duplicate-position semantics using reference counts.
-Pre-size the position index to avoid early rehashing in typical conduit networks. All topology,
+Use a primitive-int fastutil index to avoid boxed Integer allocation in node mutations. All topology,
 live physical connectivity, and FE transactions remain unchanged.
 """
 import os
@@ -20,11 +20,11 @@ def replace(old,new,label):
 
 replace(
  "private final java.util.HashSet<net.minecraft.core.BlockPos> indexedPositions=new java.util.HashSet<>();",
- "// "+marker+"\n private final java.util.HashMap<net.minecraft.core.BlockPos,Integer> positionCounts=new java.util.HashMap<>(64);\n"
- " private void indexPosition(net.minecraft.core.BlockPos pos){pos=pos.immutable();Integer previous=positionCounts.get(pos);positionCounts.put(pos,previous==null?1:previous+1);}\n"
- " private void unindexPosition(net.minecraft.core.BlockPos pos){Integer count=positionCounts.get(pos);"
- "if(count==null)throw new IllegalStateException(\"Conduit position index desynchronized\");"
- "if(count==1)positionCounts.remove(pos);else positionCounts.put(pos,count-1);}",
+ "// "+marker+"\n private final it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<net.minecraft.core.BlockPos> positionCounts=new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>(64);\n"
+ " private void indexPosition(net.minecraft.core.BlockPos pos){pos=pos.immutable();positionCounts.addTo(pos,1);}\n"
+ " private void unindexPosition(net.minecraft.core.BlockPos pos){int count=positionCounts.getInt(pos);"
+ "if(count==0)throw new IllegalStateException(\"Conduit position index desynchronized\");"
+ "if(count==1)positionCounts.removeInt(pos);else positionCounts.put(pos,count-1);}",
  "index field")
 replace("indexedPositions.add(first.pos().immutable());","indexPosition(first.pos());","first node")
 assert s.count("indexedPositions.add(n.pos().immutable());")==2, "Conduit source drift node add" 
