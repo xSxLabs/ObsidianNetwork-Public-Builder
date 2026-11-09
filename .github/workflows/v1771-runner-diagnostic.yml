@@ -1,0 +1,17 @@
+name: v1771 Runner Diagnostic
+'on':
+  push:
+    branches:
+      - 1.7.7.1-ultra-performance
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  runner-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Verify GitHub-hosted runner can start
+        run: |
+          echo 'V1771_ACTIONS_RUNNER_AVAILABLE'
+          test "$GITHUB_REF_NAME" = '1.7.7.1-ultra-performance'
