@@ -46,7 +46,7 @@ class PowerArmorSleepPercentage(unittest.TestCase):
             "if(other.isAlive()&&!other.isSpectator()&&!SLEEPING.containsKey(other))",
             replacement)
     def test_build_pipeline_keeps_patch_on_v177_only(self):
-        self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
+        self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then',FLOW)
         self.assertIn("python3 features/v177/apply-v177-power-sleep-fix.py",FLOW)
 
 if __name__=="__main__":
