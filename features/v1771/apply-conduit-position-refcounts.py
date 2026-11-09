@@ -26,7 +26,8 @@ replace(
  "if(count==1)positionCounts.remove(pos);else positionCounts.put(pos,count-1);}",
  "index field")
 replace("indexedPositions.add(first.pos().immutable());","indexPosition(first.pos());","first node")
-replace("indexedPositions.add(n.pos().immutable());","indexPosition(n.pos());","node add")
+assert s.count("indexedPositions.add(n.pos().immutable());")==2, "Conduit source drift node add" 
+s=s.replace("indexedPositions.add(n.pos().immutable());","indexPosition(n.pos());")
 replace("if(nodes.remove(n)){indexedPositions.clear();for(var current:nodes)indexedPositions.add(current.pos().immutable());}dirty=true;",
         "if(nodes.remove(n))unindexPosition(n.pos());dirty=true;","node removal")
 replace("nodes.clear();indexedPositions.clear();for(var n:copy)",
@@ -35,7 +36,7 @@ replace("nodes.add(n);indexedPositions.add(n.pos().immutable());n.network(this);
         "nodes.add(n);indexPosition(n.pos());n.network(this);","split rebuild")
 replace("return indexedPositions.contains(pos);","return positionCounts.containsKey(pos);","membership")
 assert "indexedPositions" not in s
-assert len(__import__("re").findall(r"(?<![A-Za-z])indexPosition\(",s))==4
+assert len(__import__("re").findall(r"(?<![A-Za-z])indexPosition\(",s))==5
 assert s.count("unindexPosition(")==2
 p.write_text(s,encoding="utf-8")
 print("V1771_CONDUIT_POSITION_REFCOUNTS PASS: O(1) node removal, duplicate-safe position membership")
