@@ -66,6 +66,6 @@ assert '"en-GB-RyanNeural"' in tts
 assert '"de-DE-FlorianMultilingualNeural"' in tts
 
 # Everything belongs to branch 1.7.7, never the 1.7.6 freeze.
-assert 'if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then' in flow
+assert 'if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then' in flow
 assert 'python3 features/v177/apply-v177-power-sleep-fix.py' in flow
 print("V177_INTEGRITY_SLEEP_PAGED_JARVIS_VOICE_CONTRACT_PASS")
