@@ -32,7 +32,7 @@ with tempfile.TemporaryDirectory() as temp:
     assert "new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>(64)" in result, "primitive position index missing"
     assert "positionCounts.addTo(pos,1)" in result, "primitive increment missing"
     assert "positionCounts.removeInt(pos)" in result, "primitive removal missing"
-    assert result.count("if(nodes.add(n))indexPosition(n.pos());") == 2, "duplicate nodes must not increment position counts"
+    assert result.count("indexPosition(n.pos());") == 2, "node insertion and split rebuild must update index"
     assert "Integer previous=" not in result and "Integer count=" not in result, "boxed refcount regression"
     assert "if(nodes.remove(n))unindexPosition(n.pos());dirty=true;" in result
     assert len(__import__("re").findall(r"(?<![A-Za-z])indexPosition\(", result)) == 4
