@@ -57,7 +57,7 @@ class FastBackpackSearch(unittest.TestCase):
   self.assertIn("source.save(updated)",PATCH)
   self.assertIn("xsxShiftVisited.add(id)",PATCH)
   self.assertIn("xsxSyncServerScroll();",PATCH)
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then',FLOW)
   order=FLOW.index("python3 features/v176/apply-v176-b1304-backpack-sort-display-names.py")
   search=FLOW.index("python3 features/v177/apply-v177-backpack-search-fast.py")
   self.assertLess(order,search)
