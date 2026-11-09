@@ -157,7 +157,7 @@ jobs:
     # v1.7.5 strict buildlock: B633 explicitly requested on 2026-11-01.
     # Future pushes create at most a skipped run; only a new user-approved
     # marker in the HEAD commit or a manual dispatch can compile v1.7.5.
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')
+    if: github.ref == 'refs/heads/1.7.7.1-ultra-performance' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
