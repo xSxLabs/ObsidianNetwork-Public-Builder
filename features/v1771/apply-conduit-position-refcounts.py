@@ -20,7 +20,7 @@ def replace(old,new,label):
 replace(
  "private final java.util.HashSet<net.minecraft.core.BlockPos> indexedPositions=new java.util.HashSet<>();",
  "// "+marker+"\n private final java.util.HashMap<net.minecraft.core.BlockPos,Integer> positionCounts=new java.util.HashMap<>();\n"
- " private void indexPosition(net.minecraft.core.BlockPos pos){pos=pos.immutable();positionCounts.merge(pos,1,Integer::sum);}\n"
+ " private void indexPosition(net.minecraft.core.BlockPos pos){pos=pos.immutable();Integer previous=positionCounts.get(pos);positionCounts.put(pos,previous==null?1:previous+1);}\n"
  " private void unindexPosition(net.minecraft.core.BlockPos pos){Integer count=positionCounts.get(pos);"
  "if(count==null)throw new IllegalStateException(\"Conduit position index desynchronized\");"
  "if(count==1)positionCounts.remove(pos);else positionCounts.put(pos,count-1);}",
