@@ -61,7 +61,7 @@ class StationPaste(unittest.TestCase):
   target=FLOW.index("python3 features/v177/apply-v177-armor-station-nutripaste.py")
   self.assertLess(first,target)
   self.assertIn("test_v177_armor_station_paste.py",FLOW)
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then',FLOW)
 
 if __name__=="__main__":
  unittest.main()
