@@ -35,7 +35,7 @@ replace("nodes.add(n);indexedPositions.add(n.pos().immutable());n.network(this);
         "nodes.add(n);indexPosition(n.pos());n.network(this);","split rebuild")
 replace("return indexedPositions.contains(pos);","return positionCounts.containsKey(pos);","membership")
 assert "indexedPositions" not in s
-assert s.count("indexPosition(")==4
+assert len(__import__("re").findall(r"(?<![A-Za-z])indexPosition\\(",s))==4
 assert s.count("unindexPosition(")==2
 p.write_text(s,encoding="utf-8")
 print("V1771_CONDUIT_POSITION_REFCOUNTS PASS: O(1) node removal, duplicate-safe position membership")
