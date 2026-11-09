@@ -208,7 +208,7 @@ jobs:
           python3 -m py_compile features/v176/apply-v176-b1381-powerbank-output-slider.py features/v176/apply-v176-b1381-gametest-adapt.py
           python3 -m py_compile features/v176/apply-v176-b1383-reactor-double.py features/v176/apply-v176-b1384-wireless-500k-buffers.py features/v176/apply-v176-b1384-wireless-gametest.py
           # v1.7.7 feature injector syntax check; no alternate branches modified.
-          if ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ); then
+          if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then
             python3 -m py_compile features/v177/*.py tests/test_v177_sethome_bridge.py
             python3 -m unittest discover -s tests -p 'test_v177_sethome_bridge.py' -v
           fi
@@ -4133,7 +4133,7 @@ jobs:
           # Register the craftable Micro-MG via existing ArmorStation card storage.
           # Record REAL reconstructed APIs for future Attack/Follow/Turret,
           # backpack and power monitor integration, without guessing 26.1 APIs.
-          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ) || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
+          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
             python3 features/v176/apply-v176-micro-mg-module.py
             python3 features/v176/apply-v176-micro-mg-icon-728.py
             python3 features/v176/install-v176-java-rules.py
@@ -4313,7 +4313,7 @@ jobs:
             # Run after B1281 and BEFORE the final Java and server regression build.
             python3 features/v176/apply-v176-b1300-energy-conservation.py
             # Isolated audit: print reconstructed energy paths before changes.
-            if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ); then
+            if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then
               python3 - <<'PY_POWERBANK_1319_AUDIT'
           from pathlib import Path
           J=Path("work/src/main/java/dev/obsidiannetwork")
@@ -4351,7 +4351,7 @@ jobs:
             python3 features/v176/apply-v176-b1307-backpack-builder-tools-item-capability.py
             # B1351 isolated from frozen 1319: physical-cell shared journal,
             # real-consumer-first cable transfer, Powerbank input/relink.
-            if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ); then
+            if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then
               python3 features/v176/apply-v176-powerbank-transfer-1351.py
             fi
             # B1381: all OUTPUT ports share one server-tick budget; 2M default, configurable GUI.
@@ -4362,7 +4362,7 @@ jobs:
             python3 features/v176/apply-v176-b1392-deconstructor-stack.py
             # v1.7.7 user-authorized J.A.R.V.I.S. / nonbreaking Armor Integrity /
             # FE-powered Power Armor Station, isolated to the 1.7.7 branch.
-            if ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ); then
+            if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then
               python3 features/v177/apply-v177-armor-integrity-repair.py
               # Double FE capacity only for Power Armor; original consumption unchanged.
               python3 features/v177/apply-v177-armor-double-fe.py
@@ -4463,7 +4463,7 @@ jobs:
           python3 patches/inject-terminal-real-quickmove-burst-gametest.py
           # Validate live used/total menu sync on 50 real attached Drives.
           python3 patches/inject-terminal-meter-sync-gametest.py
-          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ) || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
+          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
             python3 features/v176/inject-v176-b1040-buffer-ticker-gametest.py
           fi
           # Build 293: repeatedly open REAL Controller and Autocrafter menus under 50-drive load.
@@ -4482,7 +4482,7 @@ jobs:
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
-          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ) || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
+          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
             grep -Fq 'V176_B1040_REAL_BUFFER_AUTOTICK_CABLE_DRIVE_PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           fi
           grep -Fq 'REAL_50_DRIVE_CONTROLLER_AUTOCRAFTER_GUI_OPEN_STRESS_V1 PASS' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
@@ -4557,7 +4557,7 @@ jobs:
           grep -Fq 'BlockPos wirelessSourcePos=' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           grep -Fq 'var wirelessSink=' work/src/main/java/dev/obsidiannetwork/build103/Build103GameTests.java
           # B1355: real FE tests on isolated Powerbank branch (removed before JAR).
-          if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ); then
+          if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then
             export V1_SOURCE_ROOT="$PWD/work/src/main/java"
             python3 features/v176/inject-v176-powerbank-gametest-1355.py
             python3 features/v176/inject-v176-real-reactor-gametest-1376.py
@@ -4573,7 +4573,7 @@ jobs:
           cat /tmp/build103-postpatch-gametest.log
           if [ "$POST_GT_RC" -ne 0 ]; then echo "Post-patch GameTest failed rc=$POST_GT_RC"; exit "$POST_GT_RC"; fi
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-postpatch-gametest.log
-          if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ); then
+          if [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then
             grep -Fq 'B1355_ONE_PHYSICAL_CELL_SEVEN_FACES_ROLLBACK_PASS' /tmp/build103-postpatch-gametest.log
             grep -Fq 'B1355_CELL_CABLE_POWERBANK_CABLE_LIVE_SINK_PASS' /tmp/build103-postpatch-gametest.log
             grep -Fq 'B1355_TWO_BILLION_FE_POWERBANK_SOURCE_OFF_FULL_SINK_PASS' /tmp/build103-postpatch-gametest.log
@@ -4602,7 +4602,7 @@ jobs:
           grep -Fq 'REAL_50_DRIVE_MENU_SERVER_READ_STRESS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_TERMINAL_CRAFT_SLOT_NOOP_TRANSACTION_STRESS_V1 PASS' /tmp/build103-postpatch-gametest.log
           grep -Fq 'REAL_CRAFTING_TERMINAL_QUICKMOVE_50DRIVE_BURST_V1 PASS' /tmp/build103-postpatch-gametest.log
-          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ) || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
+          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
             grep -Fq 'V176_B1040_REAL_BUFFER_AUTOTICK_CABLE_DRIVE_PASS' /tmp/build103-postpatch-gametest.log
             grep -Fq 'XSXLABS_B1045_PRISTINE_STORAGE_AND_EQUIPMENT_CELL_CANONICAL_AUTO_MOVE_PASS' /tmp/build103-postpatch-gametest.log
           fi
@@ -4643,7 +4643,7 @@ jobs:
           fi
           grep -Eq 'All [0-9]+ required tests passed' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'WIRELESS_CURIOS_INSTALLED_LINKAGE_V1 PASS' /tmp/build103-curios-installed-gametest.log
-          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ) || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
+          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
             grep -Fq 'V176_B1040_REAL_BUFFER_AUTOTICK_CABLE_DRIVE_PASS' /tmp/build103-curios-installed-gametest.log
             grep -Fq 'XSXLABS_B1045_PRISTINE_STORAGE_AND_EQUIPMENT_CELL_CANONICAL_AUTO_MOVE_PASS' /tmp/build103-curios-installed-gametest.log
           fi
@@ -4656,7 +4656,7 @@ jobs:
           grep -Fq 'NETWORK_ELYTRA_AND_LIVE_STORAGE_50_DRIVE_GAMETEST_V1 PASS' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'POWER_ARMOR_REAL_ROUNDTRIP_V69 PASS tier=MK1' /tmp/build103-curios-installed-gametest.log
           grep -Fq 'POWER_ARMOR_REAL_ROUNDTRIP_V69 PASS tier=MK2' /tmp/build103-curios-installed-gametest.log
-          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ) || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
+          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
             for mk in $(seq 1 24); do
               for testlog in /tmp/build103-postpatch-gametest.log /tmp/build103-curios-installed-gametest.log; do
                 grep -Fq "POWER_ARMOR_REAL_ROUNDTRIP_V69 PASS tier=MK${mk} " "$testlog" || { echo "Missing MK${mk} in $testlog"; exit 1; }
@@ -4817,7 +4817,7 @@ jobs:
 
           mkdir -p dist
           cp work/build/libs/*.jar dist/
-          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || ( [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] ) || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
+          if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ] || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
             python3 - <<'PY_V176_JAR'
           import json
           from pathlib import Path
