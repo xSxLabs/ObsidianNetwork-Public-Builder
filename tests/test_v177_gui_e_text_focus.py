@@ -56,7 +56,7 @@ class TextFieldInventoryKeyTests(unittest.TestCase):
         self.assertIn('event.setCanceled(true); // one close;',PATCH)
 
     def test_hook_applies_after_existing_v177_source_reconstruction(self):
-        self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
+        self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.7.1-ultra-performance" ]; then',FLOW)
         self.assertIn('python3 features/v177/apply-v177-gui-e-text-focus.py',FLOW)
         self.assertIn("test_v177_gui_e_text_focus.py",FLOW)
 
