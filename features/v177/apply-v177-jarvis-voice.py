@@ -84,6 +84,13 @@ public final class V177JarvisSettings {
  public static void language(boolean de){german=de;save();}
  public static void setVolume(int value){volume=Math.max(0,Math.min(100,value));save();}
  public static void enabled(boolean on){enabled=on;save();}
+ // Explicit local recovery for current player, never override other clients.
+ public static void restoreVoiceDefaults(){
+  for(String key:switches.keySet())switches.put(key,true);
+  enabled=true;
+  if(volume==0)volume=85;
+  save();
+ }
  private static Path file(){
   return Minecraft.getInstance().gameDirectory.toPath().resolve("config")
       .resolve("xsxlabs-jarvis-"+(owner==null?"default":owner)+".properties");
@@ -135,7 +142,8 @@ public final class V177JarvisSettingsScreen extends Screen {
     "evening|Good evening greeting","offline|Assistant OFF reply",
     "exit|Armor exit farewell"},
    {"startup_integrity|Entry integrity","startup_energy|Entry energy",
-    "startup_paste|Entry NutriPaste","startup_outcome|Entry systems ready/failed"}
+    "startup_paste|Entry NutriPaste","startup_outcome|Entry systems ready/failed"},
+    {} // VOICE recovery controls
   },
   { // SCAN
    {"scan|Mob scan summary","hostiles|Detect hostile mobs","passives|Detect passive mobs",
@@ -202,6 +210,11 @@ public final class V177JarvisSettingsScreen extends Screen {
     flag(x,y+i*23,entry[1],entry[0]);
    }
   }
+  // Only a voluntary click resets current player's voice flags.
+  if(page==0&&subpage==3){
+   button(x,y,238,"TEST QUEUED VOICE",V177JarvisClient::testQueue);
+   button(x,y+23,238,"RESET MY VOICE OPTIONS",V177JarvisSettings::restoreVoiceDefaults);
+  }
   // Navigation occupies its own row; DONE never overlaps any toggle.
   if(subpage>0)button(x,y+143,86,"< PREV",()->subpage--);
   if(subpage<FLAGS[page].length-1)button(x+152,y+143,86,"NEXT >",()->subpage++);
@@ -247,7 +260,7 @@ public final class V177JarvisClient {
  private static String subtitle="";
  private static int subtitleUntil;
  private static int lastTick=Integer.MIN_VALUE;
- private static int nextTalk=0;
+ private static int nextTalk=0; // reset on every session/outfit transition
  private static boolean wasInArmor=false,wasSleeping=false,wasFlying=false;
  private static boolean prevAttackMode=false;
  private static boolean nearHome=false;
@@ -258,6 +271,11 @@ public final class V177JarvisClient {
  private static int lastEnvironment=Integer.MIN_VALUE/2;
  private static boolean initial=true;
  public static boolean enabled(){return V177JarvisSettings.enabled;}
+ // Voice test follows same queued playback path as the normal announcements.
+ public static void testQueue(){
+  messages.clear();nextTalk=0;
+  enqueue(5,"At your service, sir.","Zu Ihren Diensten, Sir.");
+ }
  public static boolean available(){
   var mc=Minecraft.getInstance();
   return mc.player!=null&&full(mc.player);
@@ -323,11 +341,11 @@ public final class V177JarvisClient {
   if(!V177JarvisSettings.on("voice"))return;
   speak(V177JarvisSettings.german?de:en);
  }
- private static void speak(String text){
+ private static boolean speak(String text){
   subtitle=text;
   var mc=Minecraft.getInstance();
   subtitleUntil=(mc.player==null?0:mc.player.tickCount)+100;
-  V177JarvisAudio.enqueue(text,V177JarvisSettings.german,V177JarvisSettings.volume);
+  return V177JarvisAudio.enqueue(text,V177JarvisSettings.german,V177JarvisSettings.volume);
  }
  private static String number(int v){return String.valueOf(v);}
  private static int threshold(int current,int previous,int[] levels){
@@ -547,7 +565,10 @@ public final class V177JarvisClient {
  }
  public static void tick(){
   var mc=Minecraft.getInstance();
-  if(mc.player==null){wasInArmor=false;return;}
+  if(mc.player==null){
+   wasInArmor=false;messages.clear();nextTalk=0;lastTick=Integer.MIN_VALUE;
+   return;
+  }
   LocalPlayer p=mc.player;
   if(lastTick==p.tickCount)return;
   lastTick=p.tickCount;
@@ -557,10 +578,11 @@ public final class V177JarvisClient {
    if(wasInArmor&&enabled()&&V177JarvisSettings.on("exit"))
     directly("See you later, sir.","Bis später, Sir.");
    wasInArmor=false;wasSleeping=false;wasFlying=false;prevAttackMode=false;
-   messages.clear();initial=true;return;
+   messages.clear();nextTalk=0;initial=true;return;
   }
   if(!wasInArmor){
-   wasInArmor=true;initial=true;prevEnergy=101;prevPaste=101;prevIntegrity=101;
+   wasInArmor=true;messages.clear();nextTalk=0;
+    initial=true;prevEnergy=101;prevPaste=101;prevIntegrity=101;
    prevAttackMode=V176AttackModeClient.active();
    if(enabled())start(p);
   }
@@ -569,8 +591,8 @@ public final class V177JarvisClient {
   // Use the real synced armor upgrade state instead of guessing from the click.
   boolean attackMode=V176AttackModeClient.active();
   if(attackMode!=prevAttackMode&&V177JarvisSettings.on("actions")){
-   if(attackMode&&V177JarvisSettings.on("attack_on"))enqueue(3,"Attack mode activated.","Angriffsmodus aktiviert.");
-   else if(!attackMode&&V177JarvisSettings.on("attack_off"))enqueue(3,"Attack mode deactivated.","Angriffsmodus deaktiviert.");
+   if(attackMode&&V177JarvisSettings.on("attack_on"))enqueue(4,"Attack mode activated.","Angriffsmodus aktiviert.");
+   else if(!attackMode&&V177JarvisSettings.on("attack_off"))enqueue(4,"Attack mode deactivated.","Angriffsmodus deaktiviert.");
   }
   prevAttackMode=attackMode;
   boolean sleep=p.getPose()==Pose.SLEEPING;
@@ -591,8 +613,8 @@ public final class V177JarvisClient {
   if(!messages.isEmpty()&&p.tickCount>=nextTalk){
    Message chosen=messages.removeFirst();
    String line=V177JarvisSettings.german?chosen.deutsch():chosen.english();
-   speak(line);
-   nextTalk=p.tickCount+Math.max(50,line.split("\\s+").length*8);
+   if(speak(line))nextTalk=p.tickCount+Math.max(50,line.split("\\s+").length*8);
+   else nextTalk=p.tickCount+1;
   }
  }
  public static void draw(RenderGuiEvent.Post event){

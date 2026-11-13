@@ -141,8 +141,8 @@ run-name: 'xSxLabs ${{ github.ref_name }} - ${{ github.event.head_commit.message
 # Only the newest clean v1.7 candidate needs the long full 26.1 regression.
 # Cancel superseded runs, but NEVER touch the stable v1.6 build group.
 concurrency:
-  group: clean-v1.7-${{ github.ref }}-${{ github.sha }}
-  cancel-in-progress: false
+  group: clean-v1.7-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions: {contents: read, issues: write}
 # Build 214 energy API trigger
@@ -4391,6 +4391,7 @@ jobs:
               python3 tests/test_v177_large_schematics.py
               python3 -m unittest discover -s tests -p 'test_v177_gui_e_text_focus.py' -v
               python3 tests/test_v177_jarvis_voice_settings_layout.py
+              python3 -m unittest discover -s tests -p 'test_v177_jarvis_player_voice_recovery.py' -v
               # No duplicate NutriPaste warning on armor entry; keep live warnings.
               python3 -m unittest discover -s tests -p 'test_v177_jarvis_single_entry_status.py' -v
               python3 tests/test_v177_integrity_sleep_voice_contract.py
