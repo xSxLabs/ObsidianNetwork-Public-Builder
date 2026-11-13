@@ -44,6 +44,7 @@ class StationPaste(unittest.TestCase):
     'in.getLongOr("v177_armor_station_paste_mb",0L)',
     'Math.min(V177_PASTE_CAPACITY,',
     'v177_armor_station_fe',
+    'Math.min(400000,in.getIntOr("v177_armor_station_fe",0))',
     'V177ArmorIntegrity.repairNearby(server,pos,be)',
     "Paste refill does not consume FE",
   ):self.assertIn(token,PATCH,token)

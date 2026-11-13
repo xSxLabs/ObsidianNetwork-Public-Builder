@@ -2,7 +2,7 @@
 """v1.7.7: native Fluid Cable NutriPaste input, helmet-sized station buffer, worn helmet refill.
 
 Non-destructive addition after apply-v177-armor-integrity-repair.py. The station
-keeps its 200,000 FE buffer and energy-based integrity repair independent of
+keeps its 400,000 FE buffer and energy-based integrity repair independent of
 the paste buffer. Fluid transfer uses NeoForge transactional rollback.
 """
 import os
@@ -90,8 +90,8 @@ patch("powerarmor/ArmorStationBlockEntity.java",
   out.putLong("v177_armor_station_paste_mb",v177StoredPaste());''')
 
 patch("powerarmor/ArmorStationBlockEntity.java",
-'  v177Energy.set(Math.max(0,Math.min(200000,in.getIntOr("v177_armor_station_fe",0))));',
-'''  v177Energy.set(Math.max(0,Math.min(200000,in.getIntOr("v177_armor_station_fe",0))));
+'  v177Energy.set(Math.max(0,Math.min(400000,in.getIntOr("v177_armor_station_fe",0))));',
+'''  v177Energy.set(Math.max(0,Math.min(400000,in.getIntOr("v177_armor_station_fe",0))));
   v177Paste=Math.max(0L,Math.min(V177_PASTE_CAPACITY,
        in.getLongOr("v177_armor_station_paste_mb",0L)));''')
 

@@ -18,7 +18,7 @@ SUIT=(ROOT/"features/v17/apply-power-armor-stage1.py").read_text(encoding="utf-8
 NUTRITION=(ROOT/"features/v174/apply-nutrition-438.py").read_text(encoding="utf-8")
 WORKFLOW=(ROOT/".github/workflows/networkstorage-v1.7-clean.yml").read_text(encoding="utf-8")
 
-class ThirtySecondArmorStationService(unittest.TestCase):
+class SixtySecondArmorStationService(unittest.TestCase):
  def test_source_limits_match_actual_helmet_suit_and_station(self):
   for s in (ENERGY,PASTE,INTEGRITY):
    ast.parse(s)
@@ -51,7 +51,7 @@ class ThirtySecondArmorStationService(unittest.TestCase):
   station_paste=supplied_paste
   completed_on=None
   for service in range(1,cycles+1):
-   # The external FE source refills the real 200k station store BETWEEN
+   # The external FE source refills the real 400k station store BETWEEN
    # services; this is explicitly a supply assumption, not energy creation.
    incoming_fe=400_000
    supplied_fe+=incoming_fe
