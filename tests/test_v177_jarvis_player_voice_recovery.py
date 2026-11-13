@@ -34,7 +34,7 @@ class PlayerJarvisVoiceRecovery(unittest.TestCase):
 
  def test_ci_integration(self):
   self.assertIn('test_v177_jarvis_player_voice_recovery.py',FLOW)
-  self.assertIn('cancel-in-progress: true',FLOW)
+  self.assertIn('cancel-in-progress: false',FLOW)
 
 if __name__=="__main__":
  unittest.main()
