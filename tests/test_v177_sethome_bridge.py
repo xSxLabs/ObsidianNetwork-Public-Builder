@@ -60,6 +60,7 @@ class HomeBridgeTests(unittest.TestCase):
             else:
                 self.assertIn(text, s)
         self.assertIn('enqueue(2,"Welcome back, sir.","Willkommen zurück, Sir.")', s)
+        self.assertIn("messages.clear();nextTalk=0;lastTick=Integer.MIN_VALUE;", s)
 
     def test_play_to_client_only(self):
         s = self.patch

@@ -62,9 +62,14 @@ patch("client/V177JarvisClient.java",
   }else if(nearHome&&!nearCommandHome&&!atSpawn&&pastSpawn)nearHome=false;
  }''')
 
+# Preserve the player-local voice queue/session cleanup added earlier.
+# Augment its existing logout branch with the two home-proximity reset flags.
 patch("client/V177JarvisClient.java",
-      '  if(mc.player==null){wasInArmor=false;return;}',
-      '  if(mc.player==null){wasInArmor=false;nearHome=false;nearCommandHome=false;return;}')
+      '''   wasInArmor=false;messages.clear();nextTalk=0;lastTick=Integer.MIN_VALUE;
+   return;''',
+      '''   wasInArmor=false;nearHome=false;nearCommandHome=false;
+   messages.clear();nextTalk=0;lastTick=Integer.MIN_VALUE;
+   return;''')
 
 add("powerarmor/V177HomeIndex.java",r'''package dev.obsidiannetwork.powerarmor;
 
