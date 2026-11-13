@@ -16,7 +16,7 @@ class ArmorStationEnergyCharge(unittest.TestCase):
   for needle in (
       "V177ArmorStationPaste.fillHelmet(server,pos,be);",
       "V177ArmorStationCharge.chargeWornArmor(server,pos,be);",
-      "public static final int MAX_FE_PER_SERVICE=200_000;",
+      "public static final int MAX_FE_PER_SERVICE=400_000;",
       "station.v177StoredFe()",
       "station.v177ConsumeFe(offered)",
       "EnergyTool.energy(armor)",
@@ -48,7 +48,7 @@ class ArmorStationEnergyCharge(unittest.TestCase):
 
  def test_energy_distribution_math(self):
   def distribute(stock,parts,cap=100_000):
-   rest=min(200_000,stock)
+   rest=min(400_000,stock)
    original=sum(parts)
    step=max(1,rest//4)
    for pass_number in range(2):
@@ -57,8 +57,12 @@ class ArmorStationEnergyCharge(unittest.TestCase):
      take=min(absent,rest,step if pass_number==0 else rest)
      parts[i]+=take
      rest-=take
-   return stock-(min(200_000,stock)-rest),parts
+   return stock-(min(400_000,stock)-rest),parts
 
+  after,charged=distribute(400_000,[0,0,0,0])
+  self.assertEqual(after,0)
+  self.assertEqual(charged,[100_000,100_000,100_000,100_000])
+  # Older 200k input remains fully conserved after the upgraded buffer.
   after,charged=distribute(200_000,[0,0,0,0])
   self.assertEqual(after,0)
   self.assertEqual(charged,[50_000,50_000,50_000,50_000])

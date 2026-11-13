@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1.7.7 core: nonbreaking suit integrity, native 200k FE station and extra HUD.
+"""v1.7.7 core: nonbreaking suit integrity, native 400k FE station and extra HUD.
 
 Fail closed against final reconstructed 1.7.7 source; do not alter v1.7.6.
 Run near the END of the v1.7.6 reconstruction, before Gradle compilation.
@@ -25,9 +25,9 @@ def add(rel,source):
 replace("powerarmor/ArmorStationBlockEntity.java",
  "public final class ArmorStationBlockEntity extends BlockEntity {",
  """public final class ArmorStationBlockEntity extends BlockEntity {
- // V177_STATION_200000_FE: transaction-rollback-aware input-only handler.
+ // V177_STATION_400000_FE: transaction-rollback-aware input-only handler.
  private final net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler v177Energy =
-   new net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler(200000,200000,0){
+   new net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler(400000,400000,0){
     @Override protected void onEnergyChanged(int previous){ArmorStationBlockEntity.this.setChanged();}
    };
  public net.neoforged.neoforge.transfer.energy.EnergyHandler v177Energy(){return v177Energy;}
@@ -45,7 +45,7 @@ replace("powerarmor/ArmorStationBlockEntity.java",
 replace("powerarmor/ArmorStationBlockEntity.java",
  "  super.loadAdditional(in);",
  """  super.loadAdditional(in);
-  v177Energy.set(Math.max(0,Math.min(200000,in.getIntOr("v177_armor_station_fe",0))));""")
+  v177Energy.set(Math.max(0,Math.min(400000,in.getIntOr("v177_armor_station_fe",0))));""")
 replace("powerarmor/ArmorStationBlockEntity.java",
  " public static void serverTick(net.minecraft.world.level.Level level,BlockPos pos,BlockState state,ArmorStationBlockEntity be){",
  """ public static void serverTick(net.minecraft.world.level.Level level,BlockPos pos,BlockState state,ArmorStationBlockEntity be){
@@ -210,7 +210,7 @@ public final class V177ArmorIntegrity {
  }
  private static int repairOne(ItemStack stack,int availableFe){
   if(availableFe<=0||stack.isEmpty()||hitpoints(stack)>=SUIT_HITPOINTS)return 0;
-  // A full suit repair uses 100000 FE; max station buffer remains 200000 FE.
+  // A full suit repair uses 100000 FE; max station buffer is now 400000 FE.
   int restore=Math.min(SUIT_HITPOINTS-hitpoints(stack),Math.min(10,availableFe/25));
   if(restore<=0)return 0;
   int cost=restore*25; // exact finite energy cost

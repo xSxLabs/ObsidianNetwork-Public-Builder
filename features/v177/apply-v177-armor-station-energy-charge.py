@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """v1.7.7: station simultaneously repairs integrity, refills paste and recharges FE.
 
-Runs after apply-v177-armor-station-nutripaste.py. Reuses the real 200k-FE
+Runs after apply-v177-armor-station-nutripaste.py. Reuses the real 400k-FE
 station buffer and the real EnergyTool component/capacity of each worn piece.
 No additional FE storage, no wireless energy creation and no per-player ticker.
 """
@@ -32,13 +32,13 @@ import net.minecraft.world.item.ItemStack;
 
 /** Native FE charging for all four worn pieces while standing on the station.
  *
- *  Existing integrity repairs take precedence. The station has 200,000 FE
+ *  Existing integrity repairs take precedence. The station has 400,000 FE
  *  of *real* input-only storage; every charged FE is debited from that same
- *  tank. Maximum 200,000 FE per 5-tick cycle. With steady FE input, a 4x4M-FE suit charges within 30 seconds at 20 TPS; no extra ticker.
+ *  tank. Maximum 400,000 FE per 5-tick cycle. With steady FE input, a 4x16M-FE suit charges within 60 seconds at 20 TPS; no extra ticker.
  */
 public final class V177ArmorStationCharge {
  private V177ArmorStationCharge(){}
- public static final int MAX_FE_PER_SERVICE=200_000; // 30-second full-suit target with sufficient input
+ public static final int MAX_FE_PER_SERVICE=400_000; // 60-second 4x16M-FE target with sufficient real input
 
  public static void chargeWornArmor(ServerLevel level,BlockPos pos,
                                    ArmorStationBlockEntity station){
@@ -79,4 +79,4 @@ public final class V177ArmorStationCharge {
  }
 }
 ''',encoding="utf-8")
-print("V177_ARMOR_STATION_THREE_WAY_SERVICE_PASS: integrity + 200k-FE per-cycle suit recharge + helmet paste")
+print("V177_ARMOR_STATION_THREE_WAY_SERVICE_PASS: integrity + 400k-FE per-cycle suit recharge + helmet paste")
