@@ -4394,6 +4394,10 @@ jobs:
               # coalesce typed search to one latest query per tick, no ghost slots.
               python3 features/v177/apply-v177-backpack-search-fast.py
               python3 -m unittest discover -s tests -p 'test_v177_backpack_search_fast.py' -v
+              # Read-only exact Cell view cache for Construction Wands and Building Gadgets.
+              # Consumption remains through the ORIGINAL transactional ItemAccess.exchange.
+              python3 features/v177/apply-v177-backpack-builder-supply-performance.py
+              python3 -m unittest discover -s tests -p 'test_v177_backpack_builder_supply_performance.py' -v
               # WorldEdit .schem import lives on the SERVER; up to 30m voxels.
               python3 features/v177/apply-v177-large-schematics.py
               python3 tests/test_v177_large_schematics.py
