@@ -37,8 +37,8 @@ patch("powerarmor/PowerArmorSuitWorld.java",
  public static ArmorStand findNearby(Level level,BlockPos station,ServerPlayer player){''')
 
 # Reuse the existing 25-real-FE/HP, at most 10 HP per piece repair algorithm.
-# Called on copies of the stand's actual ItemStacks; install copies only after
-# the station energy debit succeeds.
+# Updates the ArmorStand's existing ItemStacks in-place AFTER real FE debit.
+# This prevents spamming the vanilla armor equipment-change sound.
 patch("powerarmor/V177ArmorIntegrity.java",
  ' private static int repairOne(ItemStack stack,int availableFe){',
  ' public static int repairOne(ItemStack stack,int availableFe){')
@@ -75,6 +75,10 @@ public final class V177ArmorStationDockService {
   if(station.v177StoredFe()<=0&&station.v177StoredPaste()<=0L)return;
   ArmorStand stand=PowerArmorSuitWorld.findDockedOnPad(level,pos);
   if(stand==null)return;
+  // Vanilla detects changing armor data components as equipment updates.
+  // Silence ONLY this docked protected ArmorStand while it is being serviced;
+  // never mute players or change the equipped armor's sound properties.
+  if(!stand.isSilent())stand.setSilent(true);
 
   // 1. Structural integrity comes first: exactly the original 10 HP
   // per piece / service, 25 FE per HP, 1000 real FE max per five ticks.
@@ -82,13 +86,15 @@ public final class V177ArmorStationDockService {
   for(int i=0;i<PowerArmorRuntime.SLOTS.length&&budget>0;i++){
    ItemStack original=stand.getItemBySlot(PowerArmorRuntime.SLOTS[i]);
    if(!V177ArmorIntegrity.piece(original,i))continue;
-   ItemStack changed=original.copy();
-   int cost=V177ArmorIntegrity.repairOne(changed,budget);
-   if(cost<=0)continue;
-   // Stage the modified copy and commit ONLY after actual FE debit.
-   if(station.v177ConsumeFe(cost)!=cost)return;
-   stand.setItemSlot(PowerArmorRuntime.SLOTS[i],changed);
-   budget-=cost;
+   int missing=Math.max(0,V177ArmorIntegrity.SUIT_HITPOINTS-
+                            V177ArmorIntegrity.hitpoints(original));
+   int offered=Math.min(budget,Math.min(10,missing)*25);
+   if(offered<=0)continue;
+   // Debit real FE FIRST; mutate the same real stack, without setItemSlot.
+   int drawn=station.v177ConsumeFe(offered);
+   if(drawn<=0)return;
+   V177ArmorIntegrity.repairOne(original,drawn);
+   budget-=drawn;
   }
 
   // 2. The actual helmet gets real, registered NutriPaste from the
@@ -96,11 +102,12 @@ public final class V177ArmorStationDockService {
   if(station.v177StoredPaste()>0L){
    ItemStack helmet=stand.getItemBySlot(PowerArmorRuntime.SLOTS[0]);
    if(V177ArmorIntegrity.piece(helmet,0)){
-    ItemStack changed=helmet.copy();
-    long inserted=NutriPaste.add(changed,station.v177StoredPaste());
-    if(inserted>0L){
-     if(station.v177TakePaste(inserted)!=inserted)return;
-     stand.setItemSlot(PowerArmorRuntime.SLOTS[0],changed);
+    long missing=Math.max(0L,NutriPaste.HELMET_CAPACITY-NutriPaste.stored(helmet));
+    long offered=Math.min(missing,station.v177StoredPaste());
+    if(offered>0L){
+     // Real liquid leaves the station before the EXISTING helmet is filled.
+     long drawn=station.v177TakePaste(offered);
+     if(drawn>0L)NutriPaste.add(helmet,drawn);
     }
    }
   }
@@ -123,13 +130,12 @@ public final class V177ArmorStationDockService {
     if(offered<=0)continue;
     int drawn=station.v177ConsumeFe(offered);
     if(drawn<=0)return;
-    ItemStack changed=armor.copy();
-    EnergyTool.setEnergy(changed,stored+drawn);
-    stand.setItemSlot(PowerArmorRuntime.SLOTS[i],changed);
+    // Keep the exact equipped stack instance; no repeated equip events.
+    EnergyTool.setEnergy(armor,stored+drawn);
     available-=drawn;
    }
   }
  }
 }
 ''',encoding="utf-8")
-print("V177_DOCKED_POWER_ARMOR_400K_FE_1000_HP_1M_PASTE_FRONT_PAD_PASS")
+print("V177_DOCKED_POWER_ARMOR_SILENT_IN_PLACE_REFILL_400K_FE_1000_HP_1M_PASTE_FRONT_PAD_PASS")

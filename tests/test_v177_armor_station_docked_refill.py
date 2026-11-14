@@ -23,6 +23,10 @@ class StationDockedArmorRefill(unittest.TestCase):
   self.assertIn('stand.addTag(MARKER);',STAND)
   self.assertIn('stand.addTag(owner(player));',STAND)
   self.assertIn('PowerArmorSuitWorld.findDockedOnPad(level,pos)',DOCK)
+  self.assertIn('if(!stand.isSilent())stand.setSilent(true);',DOCK)
+  # Never use empty/re-equipped slot transitions as a surrogate for charging.
+  self.assertNotIn('stand.setItemSlot(',DOCK)
+  self.assertNotIn('stand.getItemBySlot(PowerArmorRuntime.SLOTS[i]).copy()',DOCK)
   # No ServerPlayer arg: the displayed armor must refill even with owner offline.
   self.assertNotIn('findDockedOnPad(Level level,BlockPos station,ServerPlayer player)',DOCK)
   self.assertIn('if(station.v177StoredFe()<=0&&station.v177StoredPaste()<=0L)return;',DOCK)
@@ -35,24 +39,29 @@ class StationDockedArmorRefill(unittest.TestCase):
   self.assertIn('private static int repairOne(ItemStack stack,int availableFe)',DOCK)
   self.assertIn('public static int repairOne(ItemStack stack,int availableFe)',DOCK)
   self.assertIn('int budget=Math.min(1000,station.v177StoredFe());',DOCK)
-  self.assertIn('V177ArmorIntegrity.repairOne(changed,budget)',DOCK)
+  self.assertIn('V177ArmorIntegrity.repairOne(original,drawn)',DOCK)
   self.assertIn('int available=Math.min(V177ArmorStationCharge.MAX_FE_PER_SERVICE,',DOCK)
   self.assertIn('int perPiece=Math.max(1,available/PowerArmorRuntime.SLOTS.length);',DOCK)
 
- def test_all_resources_debited_before_equipment_changes(self):
+ def test_all_resources_debited_before_in_place_item_updates(self):
   for fragment in (
-   'if(station.v177ConsumeFe(cost)!=cost)return;',
-   'if(station.v177TakePaste(inserted)!=inserted)return;',
+   'if(!stand.isSilent())stand.setSilent(true);',
    'int drawn=station.v177ConsumeFe(offered);',
-   'EnergyTool.setEnergy(changed,stored+drawn);',
-   'NutriPaste.add(changed,station.v177StoredPaste())',
-   'stand.setItemSlot(PowerArmorRuntime.SLOTS[i],changed);',
-   'stand.setItemSlot(PowerArmorRuntime.SLOTS[0],changed);',
-  ):self.assertIn(fragment,DOCK)
-  self.assertLess(DOCK.index('if(station.v177ConsumeFe(cost)!=cost)return;'),
-                  DOCK.index('stand.setItemSlot(PowerArmorRuntime.SLOTS[i],changed);'))
-  self.assertLess(DOCK.index('if(station.v177TakePaste(inserted)!=inserted)return;'),
-                  DOCK.index('stand.setItemSlot(PowerArmorRuntime.SLOTS[0],changed);'))
+   'long drawn=station.v177TakePaste(offered);',
+   'V177ArmorIntegrity.repairOne(original,drawn);',
+   'NutriPaste.add(helmet,drawn);',
+   'EnergyTool.setEnergy(armor,stored+drawn);',
+   'V177ArmorIntegrity.hitpoints(original)',
+   'NutriPaste.stored(helmet)',
+  ):self.assertIn(fragment,DOCK,fragment)
+  self.assertLess(DOCK.index('int drawn=station.v177ConsumeFe(offered);'),
+                  DOCK.index('V177ArmorIntegrity.repairOne(original,drawn);'))
+  self.assertLess(DOCK.index('long drawn=station.v177TakePaste(offered);'),
+                  DOCK.index('NutriPaste.add(helmet,drawn);'))
+  self.assertLess(DOCK.rindex('int drawn=station.v177ConsumeFe(offered);'),
+                  DOCK.index('EnergyTool.setEnergy(armor,stored+drawn);'))
+  self.assertNotIn('stand.setItemSlot(',DOCK)
+  self.assertNotIn('ItemStack changed=',DOCK)
   self.assertNotIn('setItemSlot(PowerArmorRuntime.SLOTS[i],ItemStack.EMPTY)',DOCK)
 
  def test_fully_empty_docked_suit_with_real_sources_finishes_within_60_seconds(self):
