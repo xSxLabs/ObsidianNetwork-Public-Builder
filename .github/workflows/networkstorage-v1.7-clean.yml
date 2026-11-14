@@ -4380,6 +4380,10 @@ jobs:
               # Reuse the same tick and physical FE / NutriPaste buffers, including when owner is offline.
               python3 features/v177/apply-v177-armor-station-docked-refill.py
               python3 -m unittest discover -s tests -p 'test_v177_armor_station_docked_refill.py' -v
+              # B1559 v1.7.7: manual Attack Mode Micro-MG ~100+ block flight, 8 HP hit.
+              # Automatic turret/companion bullets retain original 8-tick lifetime and 4 HP.
+              python3 features/v177/apply-v177-attack-bullet-range-damage.py
+              python3 -m unittest discover -s tests -p 'test_v177_attack_bullet_range_damage.py' -v
               # All three services must refill a depleted suit within 30 seconds with adequate input.
               python3 -m unittest discover -s tests -p 'test_v177_armor_station_30s.py' -v
               # Power-sleep must use a stable Minecraft sleep state, not pose spam.
