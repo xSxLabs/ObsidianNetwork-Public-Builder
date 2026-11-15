@@ -34,7 +34,8 @@ class FtbStyleMap(unittest.TestCase):
    self.assertIn(marker,B)
   self.assertNotIn("world.getChunk(",B)
   self.assertNotIn("forceChunk(",B)
-  self.assertNotIn("sendCommand(",B)
+  # Claim actions still use the bounded batch payload; team trust is a command.
+  self.assertNotIn("sendCommand(",B.split("# B1624:")[0])
  def test_stale_claim_snapshot_retry_is_tick_bounded(self):
   # A map moved during server-side throttling must recover by retrying.
   for marker in ("pending.cx()!=screen.centerX()",
