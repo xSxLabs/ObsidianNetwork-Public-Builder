@@ -35,5 +35,5 @@ class B891ArmBackpack(unittest.TestCase):
   self.assertIn("if-no-files-found: error",w)
   # v1.7.8 cancels superseded same-branch runs, not any other release branch.
   self.assertIn('group: clean-v1.7-${{ github.ref }}',w)
-  self.assertIn('cancel-in-progress: ${{ github.ref == 'refs/heads/1.7.8' }}',w)
+  self.assertIn("cancel-in-progress: ${{ github.ref == 'refs/heads/1.7.8' }}",w)
 if __name__=="__main__":unittest.main()
