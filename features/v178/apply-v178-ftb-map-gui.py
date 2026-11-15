@@ -278,7 +278,7 @@ public final class V178ClaimsMapScreen extends Screen {
   if(map==null||map.cx()!=cx||map.cz()!=cz)return true;
   dragging=true;
   firstX=lastX=chunkX(e.x());firstZ=lastZ=chunkZ(e.y());
-  dragMode=(hasShiftDown()?2:0)+(e.button()==1?1:0);
+  dragMode=((e.modifiers()&GLFW.GLFW_MOD_SHIFT)!=0?2:0)+(e.button()==1?1:0);
   return true;
  }
  @Override public boolean mouseDragged(MouseButtonEvent e,double dx,double dy){

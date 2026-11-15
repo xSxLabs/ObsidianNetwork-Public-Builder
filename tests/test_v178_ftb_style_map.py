@@ -26,7 +26,7 @@ class FtbStyleMap(unittest.TestCase):
    self.assertIn(marker if marker!="GLOBAL" else "global=64",A)
   for marker in ("V178TerrainMap.java","world.hasChunk(cx,cz)",
                  "Heightmap.Types.WORLD_SURFACE","MAX_CACHED=1536",
-                 "RES=4","V178ClaimsBatch","hasShiftDown()",
+                 "RES=4","V178ClaimsBatch","e.modifiers()&GLFW.GLFW_MOD_SHIFT",
                  "mouseDragged(MouseButtonEvent","mouseReleased(MouseButtonEvent",
                  "mouseScrolled(double mx,double my,double horizontal,double vertical)",
                  "GLFW.GLFW_KEY_C","GLFW.GLFW_KEY_SPACE",
@@ -46,7 +46,7 @@ class FtbStyleMap(unittest.TestCase):
   self.assertIn("perPlayer++<8",claims)
   self.assertIn("global=64",claims)
   gui=(j/"client/V178ClaimsMapScreen.java").read_text()
-  self.assertIn("hasShiftDown()?2:0",gui)
+  self.assertIn("e.modifiers()&GLFW.GLFW_MOD_SHIFT",gui)
   self.assertIn("V178TerrainMap.draw(world,g",gui)
   terrain=(j/"client/V178TerrainMap.java").read_text()
   self.assertIn("world.hasChunk(cx,cz)",terrain)
