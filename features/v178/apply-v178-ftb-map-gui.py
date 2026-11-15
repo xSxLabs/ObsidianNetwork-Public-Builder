@@ -335,3 +335,325 @@ public final class V178ClaimsMapScreen extends Screen {
 }
 ''',encoding="utf8")
 print("V178_FTB_TERRAIN_MINIMAP_SCREEN_AND_DRAG_GUI_INSTALLED")
+
+
+# B1624: durable explored terrain, waypoints and deaths, team GUI.
+# This runs after the map implementation above and keeps the server packet
+# protocol, chunk tickets, the mining cursor, and legacy UI untouched.
+terrain=root/"client/V178TerrainMap.java"
+s=terrain.read_text(encoding="utf8")
+s=rep(s,''' private static int roundRobin;''',r''' private static int roundRobin;
+ private static String mapIdentity;
+ private static java.nio.file.Path mapFile;
+ private static String mapDimension;
+ private static boolean dirty;
+ private static long lastFlushTick=Long.MIN_VALUE;
+ private static void flush(){
+  if(!dirty||mapFile==null||mapDimension==null)return;
+  var data=COLORS.get(mapDimension);
+  if(data==null)return;
+  java.nio.file.Path tmp=null;
+  try{
+   java.nio.file.Files.createDirectories(mapFile.getParent());
+   tmp=java.nio.file.Files.createTempFile(mapFile.getParent(),"xsxlabs-explored-",".tmp");
+   try(var out=new java.io.DataOutputStream(new java.io.BufferedOutputStream(
+       java.nio.file.Files.newOutputStream(tmp)))){
+    out.writeInt(0x58535838);out.writeInt(data.size());
+    for(var e:data.entrySet()){
+     out.writeLong(e.getKey());
+     for(int pixel:e.getValue())out.writeInt(pixel);
+    }
+   }
+   try{java.nio.file.Files.move(tmp,mapFile,java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                                  java.nio.file.StandardCopyOption.REPLACE_EXISTING);}
+   catch(java.nio.file.AtomicMoveNotSupportedException unsupported){
+    java.nio.file.Files.move(tmp,mapFile,java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+   }
+   dirty=false;
+  }catch(java.io.IOException error){
+   System.err.println("[xSxLabs] explored map save failed: "+error);
+  }finally{
+   if(tmp!=null)try{java.nio.file.Files.deleteIfExists(tmp);}catch(java.io.IOException ignored){}
+  }
+ }
+ private static void ensureWorld(ClientLevel world){
+  var mc=Minecraft.getInstance();
+  if(mc.player==null)return;
+  String dim=world.dimension().identifier().toString();
+  String server=mc.getCurrentServer()==null?"singleplayer":mc.getCurrentServer().ip;
+  String next=server+"|"+mc.player.getUUID()+"|"+dim;
+  if(next.equals(mapIdentity))return;
+  flush();COLORS.clear();roundRobin=0;
+  dirty=false;mapIdentity=next;mapDimension=dim;lastFlushTick=Long.MIN_VALUE;
+  // One bounded 4x4-pixel file per player/server/dimension. No server packets.
+  mapFile=mc.gameDirectory.toPath().resolve("config").resolve("xsxlabs-worldmap")
+      .resolve("terrain-"+Integer.toHexString(next.hashCode())+".bin");
+  if(!java.nio.file.Files.isRegularFile(mapFile))return;
+  try(var in=new java.io.DataInputStream(new java.io.BufferedInputStream(
+      java.nio.file.Files.newInputStream(mapFile)))){
+   if(in.readInt()!=0x58535838)return;
+   int count=in.readInt();
+   if(count<0||count>MAX_CACHED)return;
+   var found=cache(dim);
+   for(int i=0;i<count;i++){
+    long pos=in.readLong();
+    int[] pixels=new int[RES*RES];
+    for(int j=0;j<pixels.length;j++)pixels[j]=in.readInt();
+    found.put(pos,pixels);
+   }
+  }catch(java.io.IOException error){
+   COLORS.remove(dim);
+   System.err.println("[xSxLabs] explored map read failed: "+error);
+  }
+ }
+''')
+s=rep(s,''' public static void clear(){COLORS.clear();roundRobin=0;}''',
+''' public static void clear(){
+  flush();COLORS.clear();roundRobin=0;
+  mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;
+ }''')
+s=rep(s,'''  map.put(key,colors);
+ }''','''  map.put(key,colors);dirty=true;
+ }''')
+s=rep(s,''' public static void tick(ClientLevel world,int cx,int cz){
+  if(world==null)return;
+  sample(world,cx,cz);''',''' public static void tick(ClientLevel world,int cx,int cz){
+  if(world==null)return;
+  ensureWorld(world);
+  long now=world.getGameTime();
+  if(dirty&&(lastFlushTick==Long.MIN_VALUE||now<lastFlushTick
+             ||now-lastFlushTick>=1200)){
+   flush();lastFlushTick=now;
+  }
+  sample(world,cx,cz);''')
+terrain.write_text(s,encoding="utf8")
+
+waypoints=root/"client/V178Waypoints.java"
+assert not waypoints.exists(),"V178_WAYPOINT_DUPLICATE"
+waypoints.write_text(r'''package dev.obsidiannetwork.client;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+
+/** Client-local, player/server-isolated markers. No world scans or packets.
+ * Snapshots are persisted on marker changes only. A falling health edge adds
+ * one death marker, never one every death-screen frame.
+ */
+public final class V178Waypoints {
+ private V178Waypoints(){}
+ private record Marker(String dim,int x,int y,int z,String label,boolean death){}
+ private static final int MAX=128;
+ private static final ArrayList<Marker> MARKERS=new ArrayList<>();
+ private static Path file;
+ private static String identity;
+ private static boolean deathLatch;
+ private static String dimension(ClientLevel w){return w.dimension().identifier().toString();}
+ private static void save(){
+  if(file==null)return;
+  Path tmp=null;
+  try{
+   Files.createDirectories(file.getParent());
+   tmp=Files.createTempFile(file.getParent(),"xsxlabs-waypoints-",".tmp");
+   try(var out=Files.newBufferedWriter(tmp)){
+    for(Marker m:MARKERS){
+     out.write(m.dim()+"\t"+m.x()+"\t"+m.y()+"\t"+m.z()+"\t"+
+               (m.death()?"1":"0")+"\t"+m.label()+"\n");
+    }
+   }
+   try{Files.move(tmp,file,StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);}
+   catch(AtomicMoveNotSupportedException noAtomic){
+    Files.move(tmp,file,StandardCopyOption.REPLACE_EXISTING);
+   }
+  }catch(IOException ex){System.err.println("[xSxLabs] marker save failed: "+ex);}
+  finally{if(tmp!=null)try{Files.deleteIfExists(tmp);}catch(IOException ignored){}}
+ }
+ private static void load(){
+  MARKERS.clear();
+  if(file==null||!Files.isRegularFile(file))return;
+  try(var in=Files.newBufferedReader(file)){
+   String line;
+   while((line=in.readLine())!=null&&MARKERS.size()<MAX){
+    String[] v=line.split("\t",6);
+    if(v.length!=6||v[0].length()>100||v[5].length()>32)continue;
+    try{
+     int x=Integer.parseInt(v[1]),y=Integer.parseInt(v[2]),z=Integer.parseInt(v[3]);
+     if(Math.abs((long)x)>30000000||Math.abs((long)z)>30000000)continue;
+     MARKERS.add(new Marker(v[0],x,y,z,v[5],v[4].equals("1")));
+    }catch(NumberFormatException ignored){}
+   }
+  }catch(IOException ex){System.err.println("[xSxLabs] marker read failed: "+ex);}
+ }
+ private static void initialize(LocalPlayer player){
+  var mc=Minecraft.getInstance();
+  String server=mc.getCurrentServer()==null?"singleplayer":mc.getCurrentServer().ip;
+  String id=server+"|"+player.getUUID();
+  if(id.equals(identity))return;
+  identity=id;deathLatch=false;
+  file=mc.gameDirectory.toPath().resolve("config").resolve("xsxlabs-worldmap")
+      .resolve("waypoints-"+Integer.toHexString(id.hashCode())+".tsv");
+  load();
+ }
+ public static void clear(){MARKERS.clear();identity=null;file=null;deathLatch=false;}
+ public static void tick(LocalPlayer player){
+  initialize(player);
+  boolean dead=player.isDeadOrDying();
+  if(dead&&!deathLatch){
+   BlockPos at=player.blockPosition();
+   // Keep old deaths available but bounded, like other waypoints.
+   append(new Marker(dimension(player.clientLevel()),at.getX(),at.getY(),
+       at.getZ(),"Death",true));
+  }
+  deathLatch=dead;
+ }
+ private static void append(Marker m){
+  if(MARKERS.size()>=MAX)MARKERS.remove(0);
+  MARKERS.add(m);save();
+ }
+ public static void add(ClientLevel w,int cx,int cz){
+  var mc=Minecraft.getInstance();
+  if(w==null||mc.player==null)return;
+  initialize(mc.player);
+  if(Math.abs((long)cx)>1875000||Math.abs((long)cz)>1875000)return;
+  String label="WP "+(MARKERS.size()+1);
+  append(new Marker(dimension(w),cx*16+8,mc.player.blockPosition().getY(),
+       cz*16+8,label,false));
+ }
+ public static void remove(ClientLevel w,int cx,int cz){
+  if(w==null)return;
+  String dim=dimension(w);
+  for(int i=MARKERS.size()-1;i>=0;i--){
+   Marker m=MARKERS.get(i);
+   if(m.dim().equals(dim)&&(m.x()>>4)==cx&&(m.z()>>4)==cz){
+    MARKERS.remove(i);save();return;
+   }
+  }
+ }
+ public static void drawMap(ClientLevel world,GuiGraphicsExtractor g,
+                            int cx,int cz,int x0,int y0,int tile){
+  if(world==null)return;
+  String dim=dimension(world);
+  for(Marker m:MARKERS){
+   if(!m.dim().equals(dim))continue;
+   int dx=(m.x()>>4)-cx+12,dz=(m.z()>>4)-cz+12;
+   if(dx<0||dx>=25||dz<0||dz>=25)continue;
+   int px=x0+dx*tile+tile/2,py=y0+dz*tile+tile/2;
+   g.fill(px-2,py-2,px+3,py+3,m.death()?0xffff5c63:0xffffff69);
+   if(tile>=9)g.text(Minecraft.getInstance().font,
+       m.death()?"X":m.label(),px+3,py-3,m.death()?0xffff898e:0xffffeaa0);
+  }
+ }
+ public static void drawMini(ClientLevel world,GuiGraphicsExtractor g,
+                             int cx,int cz,int ox,int oy){
+  if(world==null)return;
+  String dim=dimension(world);
+  for(Marker m:MARKERS){
+   if(!m.dim().equals(dim))continue;
+   int dx=(m.x()>>4)-cx,dz=(m.z()>>4)-cz;
+   if(dx< -3||dx>3||dz< -3||dz>3)continue;
+   int x=ox+(dx+3)*12+5,y=oy+(dz+3)*11+5;
+   g.fill(x-2,y-2,x+2,y+2,m.death()?0xffef485e:0xffffe764);
+  }
+ }
+}
+''',encoding="utf8")
+
+team=root/"client/V178ClaimsTeamScreen.java"
+assert not team.exists(),"V178_TEAM_DUPLICATE"
+team.write_text(r'''package dev.obsidiannetwork.client;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+/** Trust management backed by existing server-authoritative xsxchunks commands. */
+public final class V178ClaimsTeamScreen extends Screen {
+ private final Screen previous;
+ private EditBox name;
+ public V178ClaimsTeamScreen(Screen parent){
+  super(Component.literal("xSxLabs | Trusted Players"));previous=parent;
+ }
+ @Override protected void init(){
+  int x=width/2-114,y=height/2-45;
+  name=new EditBox(font,x,y,228,20,Component.literal("Player name"));
+  name.setMaxLength(16);
+  addRenderableWidget(name);
+  addRenderableWidget(Button.builder(Component.literal("Trust"),b->execute(true))
+      .bounds(x,y+27,110,20).build());
+  addRenderableWidget(Button.builder(Component.literal("Untrust"),b->execute(false))
+      .bounds(x+118,y+27,110,20).build());
+  addRenderableWidget(Button.builder(Component.literal("Back"),b->onClose())
+      .bounds(x,y+54,228,20).build());
+ }
+ private void execute(boolean trust){
+  String player=name.getValue().trim();
+  if(!player.matches("[A-Za-z0-9_]{3,16}"))return;
+  var me=Minecraft.getInstance().player;
+  if(me!=null&&me.connection!=null)
+   me.connection.sendCommand("xsxchunks "+(trust?"trust ":"untrust ")+player);
+ }
+ @Override public void extractBackground(GuiGraphicsExtractor g,int mx,int my,float delta){
+  super.extractBackground(g,mx,my,delta);
+  g.text(font,"TRUSTED PLAYERS",width/2-65,height/2-67,0xff9ce8f2);
+  g.text(font,"Enter an online player's name.",width/2-113,height/2+39,0xffbfd4e4);
+ }
+ @Override public void onClose(){Minecraft.getInstance().setScreen(previous);}
+ @Override public boolean isPauseScreen(){return false;}
+}
+''',encoding="utf8")
+
+client=root/"client/V178ClaimsClient.java"
+s=client.read_text(encoding="utf8")
+s=rep(s,'''   V178TerrainMap.clear();
+   return;''',
+'''   V178TerrainMap.clear();
+   V178Waypoints.clear();
+   return;''')
+s=rep(s,'''  while(WORLD_MAP.consumeClick()){''',
+'''  V178Waypoints.tick(mc.player);
+  while(WORLD_MAP.consumeClick()){''')
+s=rep(s,'''  g.fill(ox+43,oy+45,ox+48,oy+50,0xffffffff);''',
+'''  V178Waypoints.drawMini(mc.level,g,cx,cz,ox+4,oy+15);
+  g.fill(ox+43,oy+45,ox+48,oy+50,0xffffffff);''')
+client.write_text(s,encoding="utf8")
+
+screen=root/"client/V178ClaimsMapScreen.java"
+s=screen.read_text(encoding="utf8")
+s=rep(s,'''  addRenderableWidget(Button.builder(Component.literal("i"),b->help=!help)
+     .bounds(229,5,22,20).build());''',
+'''  addRenderableWidget(Button.builder(Component.literal("i"),b->help=!help)
+     .bounds(229,5,22,20).build());
+  addRenderableWidget(Button.builder(Component.literal("+WP"),b->
+      V178Waypoints.add(Minecraft.getInstance().level,centerX(),centerZ()))
+     .bounds(255,5,43,20).build());
+  addRenderableWidget(Button.builder(Component.literal("-WP"),b->
+      V178Waypoints.remove(Minecraft.getInstance().level,centerX(),centerZ()))
+     .bounds(301,5,43,20).build());
+  addRenderableWidget(Button.builder(Component.literal("Team"),b->
+      Minecraft.getInstance().setScreen(new V178ClaimsTeamScreen(this)))
+     .bounds(347,5,47,20).build());''')
+s=rep(s,'''  // Local position pointer (does not imply a chunk is loaded).''',
+'''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile);
+  // Local position pointer (does not imply a chunk is loaded).''')
+s=rep(s,'''  g.text(font,"C: mode  G: grid  N: minimap  H: help  Arrows: pan",''',
+'''  g.text(font,"C: mode  G: grid  N: minimap  Middle: waypoint  Shift+Middle: delete",''')
+s=rep(s,'''  if(!inside(e.x(),e.y())||(e.button()!=0&&e.button()!=1))return false;
+  if(!claiming){''',
+'''  if(!inside(e.x(),e.y()))return false;
+  if(e.button()==2){
+   int x=chunkX(e.x()),z=chunkZ(e.y());
+   if((e.modifiers()&GLFW.GLFW_MOD_SHIFT)!=0)
+    V178Waypoints.remove(Minecraft.getInstance().level,x,z);
+   else V178Waypoints.add(Minecraft.getInstance().level,x,z);
+   return true;
+  }
+  if(e.button()!=0&&e.button()!=1)return false;
+  if(!claiming){''')
+screen.write_text(s,encoding="utf8")
+print("V178_EXPLORED_PERSISTENCE_WAYPOINTS_DEATH_MARKERS_TRUST_GUI_INSTALLED")
