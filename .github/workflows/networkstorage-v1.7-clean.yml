@@ -212,6 +212,11 @@ jobs:
             python3 -m py_compile features/v177/*.py tests/test_v177_sethome_bridge.py
             python3 -m unittest discover -s tests -p 'test_v177_sethome_bridge.py' -v
           fi
+          # v1.7.8: parse and validate all dedicated extension patches.
+          if [ "$GITHUB_REF_NAME" = "1.7.8" ]; then
+            python3 -m py_compile features/v178/*.py tests/test_v178_hud_jei_perf.py
+            python3 -m unittest discover -s tests -p 'test_v178_hud_jei_perf.py' -v
+          fi
           # B1392: fail-closed Shift+Deconstruct stack source and conservation tests.
           python3 -m py_compile features/v176/apply-v176-b1392-deconstructor-stack.py tests/test_v176_b1392_deconstructor_stack.py
           python3 -m unittest discover -s tests -p 'test_v176_b1392_deconstructor_stack.py' -v
@@ -4417,6 +4422,12 @@ jobs:
               python3 features/v177/apply-v177-jarvis-voice.py
               # Observe successful /sethome from other mods; never replace command.
               python3 features/v177/apply-v177-jarvis-sethome-bridge.py
+              if [ "$GITHUB_REF_NAME" = "1.7.8" ]; then
+                python3 features/v178/apply-v178-jarvis-hud.py
+                python3 features/v178/apply-v178-jei-terminal-session.py
+                python3 features/v178/apply-v178-global-perf.py
+                python3 -m unittest discover -s tests -p 'test_v178_hud_jei_perf.py' -v
+              fi
               # One-time BUILD-TIME voice rendering: the shipped mod is fully offline.
               # Fail closed if neural assets are unavailable; NEVER package narrator
               # as a substitute for the promised male DE/EN voice.
@@ -5038,6 +5049,21 @@ jobs:
             assert 'dev/obsidiannetwork/client/V177JeiSearchFocusBridge.class' in members
            print('V177_INTEGRITY_1000_HP_2_10_5_AND_AUDIO_ONLY_HOME_SOURCE_GATE_PASS')
            print('V177_OFFLINE_BILINGUAL_NEURAL_AUDIO_COMPILED_JAR_PASS')
+          if os.environ.get('GITHUB_REF_NAME') == '1.7.8':
+           with zipfile.ZipFile(jar) as z:
+            members=set(z.namelist())
+            assert 'dev/obsidiannetwork/client/V178JarvisHud.class' in members
+            assert 'dev/obsidiannetwork/client/V177JeiSearchFocusBridge.class' in members
+           perf=VoicePath('work/src/main/java/dev/obsidiannetwork/power/V176PowerNetworkGraph.java').read_text()
+           assert 'V178_PERF_GRAPH_FACES' in perf and 'pathLoaded(world,adjoining)' in perf
+           station=VoicePath('work/src/main/java/dev/obsidiannetwork/powerarmor/V177ArmorStationCharge.java').read_text()
+           assert 'V178_PERF_STATION_PROXIMITY_FIRST' in station
+           voice=VoicePath('work/src/main/java/dev/obsidiannetwork/client/V177JarvisClient.java').read_text()
+           assert 'V178_PERF_IDLE_SCAN_SKIP' in voice
+           assert 'V178JarvisHud.draw(event)' in voice
+           jei=VoicePath('work/src/main/java/dev/obsidiannetwork/client/V177GuiInventoryKeyFocus.java').read_text()
+           assert 'V178_JEI_SESSION' in jei and 'xsxTerminalMenu=menu' in jei
+           print('V178_JEI_HUD_GLOBAL_HOTPATH_JAR_GATE_PASS')
           PY_B508_JAR
       - name: Save NeoForge dependencies even on red builds
         if: always() && steps.v174_gradle_cache.outputs.cache-hit != 'true' && hashFiles('work/build.gradle') != ''
