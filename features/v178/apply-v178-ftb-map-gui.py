@@ -1008,10 +1008,10 @@ s=rep(s,''' private static boolean minimap=true;''',
    OPTIONS.put(key,!OPTIONS.get(key));
    saveOptions();
   }''')
-s=rep(s,'''  public static boolean minimapEnabled(){return minimap;}
-  public static void toggleMinimap(){minimap=!minimap;}''',
+s=rep(s,'''  public static boolean option(String key){''',
 '''  public static boolean minimapEnabled(){return option("minimap");}
-  public static void toggleMinimap(){toggleOption("minimap");}''')
+  public static void toggleMinimap(){toggleOption("minimap");}
+  public static boolean option(String key){''')
 s=rep(s,'''   if(!minimap||mc.player==null||mc.screen!=null||last==null)return;''',
 '''   if(!option("minimap")||mc.player==null||mc.screen!=null||last==null)return;''')
 s=rep(s,'''   g.fill(ox-2,oy-2,ox+91,oy+97,0xc0081d2b);''',
