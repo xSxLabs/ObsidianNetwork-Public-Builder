@@ -8,6 +8,7 @@
 | v1.7.5 | `v1.7.5` | v1.7.4 frozen Build 617 |
 | v1.7.6 | `v1.7.6` (create **when starting** v1.7.6) | Frozen, accepted v1.7.5 |
 | v1.7.7 | `v1.7.7` (create **when starting** v1.7.7) | Frozen, accepted v1.7.6 |
+| v1.7.8 | `1.7.8` | Entire green v1.7.7 Build 1609, SHA `d3b33af72059924847509851422296bed232990f`; all prior fixes and functionality preserved |
 
 Each later version follows the same procedure: new branch `vMAJOR.MINOR.PATCH` from the previous accepted frozen version; never develop a new version on an older version's branch. When a version receives in-game acceptance, pin its exact successful commit in a separate immutable freeze branch. Never rewrite freeze branches or silently backport changes.
 

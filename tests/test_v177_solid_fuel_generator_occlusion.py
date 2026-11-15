@@ -52,7 +52,7 @@ class SolidFuelOcclusion(unittest.TestCase):
    self.assertEqual(main.read_text(encoding="utf-8"),before)
 
  def test_177_only_and_after_b609_existing_occlusion_fixes(self):
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',WORKFLOW)
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.8" ]; then',WORKFLOW)
   self.assertIn('python3 features/v177/apply-v177-solid-fuel-generator-occlusion.py',WORKFLOW)
   self.assertIn("test_v177_solid_fuel_generator_occlusion.py",WORKFLOW)
   self.assertLess(WORKFLOW.index("python3 features/v174/apply-v174-hotfix609-occlusion-and-facade-guard.py"),

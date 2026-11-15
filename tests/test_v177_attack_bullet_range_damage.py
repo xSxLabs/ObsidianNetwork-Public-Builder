@@ -54,7 +54,7 @@ class AttackModeExtendedBullets(unittest.TestCase):
    self.assertNotEqual(again.returncode,0,"Unsafe double injection")
 
  def test_1_7_7_only_workflow_after_base_projectile(self):
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.8" ]; then',FLOW)
   self.assertIn('python3 features/v177/apply-v177-attack-bullet-range-damage.py',FLOW)
   self.assertIn("test_v177_attack_bullet_range_damage.py",FLOW)
   self.assertLess(FLOW.index("python3 features/v176/apply-v176-projectile-effects-699.py"),

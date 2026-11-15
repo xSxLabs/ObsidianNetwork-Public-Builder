@@ -108,7 +108,7 @@ class StationDockedArmorRefill(unittest.TestCase):
   two=WORKFLOW.index('python3 features/v177/apply-v177-armor-station-docked-refill.py')
   self.assertLess(one,two)
   self.assertIn('test_v177_armor_station_docked_refill.py',WORKFLOW)
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',WORKFLOW)
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.8" ]; then',WORKFLOW)
 
 if __name__=="__main__":
  unittest.main()

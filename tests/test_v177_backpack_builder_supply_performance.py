@@ -65,7 +65,7 @@ class BuilderSupplyPerformance(unittest.TestCase):
   b=FLOW.index("python3 features/v177/apply-v177-backpack-builder-supply-performance.py")
   self.assertLess(a,b)
   self.assertIn("test_v177_backpack_builder_supply_performance.py",FLOW)
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.8" ]; then',FLOW)
 
  def test_read_cache_conservation_and_transaction_rollback_model(self):
   rng=random.Random(1617)

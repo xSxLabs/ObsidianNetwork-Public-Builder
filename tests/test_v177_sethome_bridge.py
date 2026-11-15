@@ -71,7 +71,7 @@ class HomeBridgeTests(unittest.TestCase):
 
     def test_build_injector_after_voice_stays_1_7_7_only(self):
         t = self.workflow
-        a = t.index('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then\n              python3 features/v177/apply-v177-armor-integrity-repair.py')
+        a = t.index('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.8" ]; then\n              python3 features/v177/apply-v177-armor-integrity-repair.py')
         b = t.index('              python3 features/v177/apply-v177-jarvis-voice.py', a)
         c = t.index('              python3 features/v177/apply-v177-jarvis-sethome-bridge.py', b)
         d = t.index('              python3 features/v177/generate-v177-natural-voice.py', c)

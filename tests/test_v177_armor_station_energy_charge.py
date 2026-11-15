@@ -91,7 +91,7 @@ class ArmorStationEnergyCharge(unittest.TestCase):
   self.assertLess(start,paste)
   self.assertLess(paste,charge)
   self.assertIn("test_v177_armor_station_energy_charge.py",FLOW)
-  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then',FLOW)
+  self.assertIn('if [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.8" ]; then',FLOW)
 
 if __name__=="__main__":
  unittest.main()
