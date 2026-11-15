@@ -1138,3 +1138,13 @@ public final class V178MapSettingsScreen extends Screen {
 }
 ''',encoding="utf8")
 print("V178_B1634_PERSISTENT_MINIMAP_AND_FULLSCREEN_INFO_OPTIONS_PASS")
+
+# B1635: coexist with the base source's dedicated N hotkey.
+# Raw minimap field was superseded by persisted client options in B1634.
+client=root/"client/V178ClaimsClient.java"
+s=client.read_text(encoding="utf8")
+s=rep(s,'''  while(TOGGLE_MINIMAP.consumeClick())minimap=!minimap;''',
+'''  while(TOGGLE_MINIMAP.consumeClick())toggleMinimap();''')
+assert "minimap=!minimap;" not in s,"V178_LEGACY_MINIMAP_REFERENCE"
+client.write_text(s,encoding="utf8")
+print("V178_B1635_PERSISTENT_MINIMAP_KEYBIND_COMPAT_PASS")

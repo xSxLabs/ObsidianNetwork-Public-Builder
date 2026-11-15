@@ -141,6 +141,8 @@ class FtbStyleMap(unittest.TestCase):
   self.assertIn("java.util.Properties",client)
   self.assertIn("java.nio.file.Files.move(tmp,path",client)
   self.assertIn('option("minimap")',client)
+  self.assertIn("while(TOGGLE_MINIMAP.consumeClick())toggleMinimap();",client)
+  self.assertNotIn("minimap=!minimap;",client)
   self.assertIn('new V178MapSettingsScreen(this)',screen)
  def test_compiled_source_contract(self):
   if not os.environ.get("V1_SOURCE_ROOT"):return
