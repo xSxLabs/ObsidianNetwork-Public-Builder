@@ -506,7 +506,7 @@ public final class V178Waypoints {
   if(dead&&!deathLatch){
    BlockPos at=player.blockPosition();
    // Keep old deaths available but bounded, like other waypoints.
-   append(new Marker(dimension(player.clientLevel()),at.getX(),at.getY(),
+   append(new Marker(dimension((ClientLevel)player.level()),at.getX(),at.getY(),
        at.getZ(),"Death",true));
   }
   deathLatch=dead;
