@@ -405,8 +405,19 @@ public final class V178ClaimsClient {
  private static int lastRequestX=Integer.MIN_VALUE,lastRequestZ=Integer.MIN_VALUE;
  private static long lastRequestTime=Long.MIN_VALUE;
  private static boolean minimap=true;
+ private static boolean showGrid=true,showForceLoaded=true,showCoordinates=true;
+ private static final KeyMapping TOGGLE_MINIMAP=new KeyMapping(
+   "key.obsidiannetwork.toggle_claim_minimap",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_N,
+     KeyMapping.Category.MISC);
+ public static void toggleGrid(){showGrid=!showGrid;}
+ public static void toggleForceLoaded(){showForceLoaded=!showForceLoaded;}
+ public static void toggleCoordinates(){showCoordinates=!showCoordinates;}
+ public static boolean gridEnabled(){return showGrid;}
+ public static boolean forceLoadedEnabled(){return showForceLoaded;}
+ public static boolean coordinatesEnabled(){return showCoordinates;}
  @SubscribeEvent public static void bindings(RegisterKeyMappingsEvent event){
   event.register(WORLD_MAP);
+  event.register(TOGGLE_MINIMAP);
  }
  @SubscribeEvent public static void payload(RegisterClientPayloadHandlersEvent event){
   event.register(V178ClaimsSnapshot.TYPE,(message,context)->last=message);
@@ -445,6 +456,7 @@ public final class V178ClaimsClient {
    last=null;lastRequestX=Integer.MIN_VALUE;lastRequestZ=Integer.MIN_VALUE;
    return;
   }
+  while(TOGGLE_MINIMAP.consumeClick())minimap=!minimap;
   while(WORLD_MAP.consumeClick()){
    if(mc.screen instanceof V178ClaimsMapScreen)mc.setScreen(null);
    else mc.setScreen(new V178ClaimsMapScreen());
@@ -465,13 +477,13 @@ public final class V178ClaimsClient {
   int ox=mc.getWindow().getGuiScaledWidth()-99,oy=9;
   GuiGraphicsExtractor g=event.getGuiGraphics();
   g.fill(ox-2,oy-2,ox+91,oy+97,0xc0081d2b);
-  g.text(mc.font,"CLAIMS M",ox+3,oy+2,0xffb2ecfa);
+  g.text(mc.font,showCoordinates?"CLAIMS "+(mc.player.blockPosition().getX()>>4)+","+(mc.player.blockPosition().getZ()>>4):"CLAIMS M",ox+3,oy+2,0xffb2ecfa);
   int cx=mc.player.blockPosition().getX()>>4,cz=mc.player.blockPosition().getZ()>>4;
   for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){
    int x=ox+4+(dx+3)*12,y=oy+15+(dz+3)*11;
    int s=Byte.toUnsignedInt(state(last,cx+dx,cz+dz));
-   g.fill(x,y,x+11,y+10,shade(s));
-   if((s&4)!=0)g.fill(x+7,y+1,x+10,y+4,0xffffff90);
+   g.fill(x,y,x+11,y+10,showGrid?shade(s):0xbb203545);
+   if(showForceLoaded&&(s&4)!=0)g.fill(x+7,y+1,x+10,y+4,0xffffff90);
   }
   g.fill(ox+43,oy+45,ox+48,oy+50,0xffffffff);
  }
@@ -511,12 +523,12 @@ public final class V178ClaimsMapScreen extends Screen {
    int cxWorld=cx+x-12,czWorld=cz+z-12;
    int state=good?Byte.toUnsignedInt(V178ClaimsClient.state(map,cxWorld,czWorld)):0;
    int px=x0+x*tile,py=y0+z*tile;
-   g.fill(px,py,px+tile-1,py+tile-1,V178ClaimsClient.shade(state));
-   if((state&4)!=0)g.fill(px+Math.max(1,tile-4),py+1,px+tile-1,py+4,0xffffe083);
+   g.fill(px,py,px+tile-1,py+tile-1,V178ClaimsClient.gridEnabled()?V178ClaimsClient.shade(state):0xbb203545);
+   if(V178ClaimsClient.forceLoadedEnabled()&&(state&4)!=0)g.fill(px+Math.max(1,tile-4),py+1,px+tile-1,py+4,0xffffe083);
   }
   g.fill(x0+12*tile+1,y0+12*tile+1,x0+13*tile-1,y0+13*tile-1,0xffffffff);
-  g.text(font,"L: claim/unclaim  R: force/unforce  Arrows: pan",x0,y0+w+7,0xffb7d1e4);
-  g.text(font,"Owner limits: 256 claims / 25 loaded (server configurable)",
+  g.text(font,"L: claim  R: force  Arrows: pan  1: grid  2: force  3: coords",x0,y0+w+7,0xffb7d1e4);
+  g.text(font,"N: minimap on/off | Overlay: "+(V178ClaimsClient.gridEnabled()?"grid ":"")+(V178ClaimsClient.forceLoadedEnabled()?"force ":"")+(V178ClaimsClient.coordinatesEnabled()?"coords":""),
       x0,y0+w+17,0xffb7d1e4);
   if(!good)g.text(font,"Loading 25x25 chunk ownership...",x0+2,y0+3,0xffffd38b);
  }
@@ -538,6 +550,9 @@ public final class V178ClaimsMapScreen extends Screen {
  }
  @Override public boolean keyPressed(net.minecraft.client.input.KeyEvent e){
   int key=e.key();
+  if(key==org.lwjgl.glfw.GLFW.GLFW_KEY_1){V178ClaimsClient.toggleGrid();return true;}
+  if(key==org.lwjgl.glfw.GLFW.GLFW_KEY_2){V178ClaimsClient.toggleForceLoaded();return true;}
+  if(key==org.lwjgl.glfw.GLFW.GLFW_KEY_3){V178ClaimsClient.toggleCoordinates();return true;}
   if(key==org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT)cx-=6;
   else if(key==org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT)cx+=6;
   else if(key==org.lwjgl.glfw.GLFW.GLFW_KEY_UP)cz-=6;
