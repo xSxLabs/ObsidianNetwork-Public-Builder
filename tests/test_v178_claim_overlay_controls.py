@@ -22,5 +22,9 @@ class ClaimOverlayControls(unittest.TestCase):
   client=(Path(root)/"dev/obsidiannetwork/client/V178ClaimsClient.java").read_text()
   screen=(Path(root)/"dev/obsidiannetwork/client/V178ClaimsMapScreen.java").read_text()
   self.assertIn('event.register(TOGGLE_MINIMAP)',client)
-  self.assertIn('toggleCoordinates()',screen)
+  # Base overlay shortcuts now map to persisted preferences.
+  self.assertIn('toggleOption("coords")',screen)
+  self.assertIn('toggleOption("loaded")',screen)
+  self.assertIn('toggleOption("map_claims")',screen)
+  self.assertIn('while(TOGGLE_MINIMAP.consumeClick())toggleMinimap();',client)
 if __name__=="__main__":unittest.main()

@@ -151,8 +151,8 @@ s=rep(s,
   }else V178TerrainMap.tick(mc.level,playerCx,playerCz);
   // Update ONLY on crossing a chunk boundary or every 100 ticks, and never''')
 s=rep(s,
-'''   g.fill(x,y,x+11,y+10,shade(s));
-   if((s&4)!=0)g.fill(x+7,y+1,x+10,y+4,0xffffff90);''',
+'''   g.fill(x,y,x+11,y+10,showGrid?shade(s):0xbb203545);
+   if(showForceLoaded&&(s&4)!=0)g.fill(x+7,y+1,x+10,y+4,0xffffff90);''',
 '''   V178TerrainMap.draw(mc.level,g,cx+dx,cz+dz,x,y,11);
    V178TerrainMap.drawClaim(g,x,y,11,s);''')
 client.write_text(s,encoding="utf8")
@@ -1087,7 +1087,11 @@ s=rep(s,'''   if(k==GLFW.GLFW_KEY_N){V178ClaimsClient.toggleMinimap();return tru
 '''   if(k==GLFW.GLFW_KEY_N){V178ClaimsClient.toggleMinimap();return true;}
    if(k==GLFW.GLFW_KEY_S){
     Minecraft.getInstance().setScreen(new V178MapSettingsScreen(this));return true;
-   }''')
+   }
+   // B1636_BASE_OVERLAY_SHORTCUTS: preserve the prior 1/2/3 UI hotkeys.
+   if(k==GLFW.GLFW_KEY_1){V178ClaimsClient.toggleOption("map_claims");return true;}
+   if(k==GLFW.GLFW_KEY_2){V178ClaimsClient.toggleOption("loaded");return true;}
+   if(k==GLFW.GLFW_KEY_3){V178ClaimsClient.toggleOption("coords");return true;}''')
 screen.write_text(s,encoding="utf8")
 
 settings=root/"client/V178MapSettingsScreen.java"
