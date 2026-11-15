@@ -27,6 +27,12 @@ class V178ClaimsMining(unittest.TestCase):
    self.assertIn(t,C)
   self.assertNotIn('sendCommand("xsxchunks view',C)
   self.assertNotIn("mouseClicked(double mx,double my,int button)",C)
+  self.assertIn("breakBlock(BreakBlockEvent event)",C)
+  self.assertIn("net.neoforged.neoforge.event.level.block.BreakBlockEvent",C)
+  self.assertIn("ClientPacketDistributor.sendToServer",C)
+  self.assertNotIn("BlockEvent.BreakEvent",C)
+  self.assertNotIn("PacketDistributor.sendToServer",C)
+  self.assertIn("REQUEST_CENTERS",C)
  def test_mining_resources_and_lag_bounds(self):
   for t in ("MAX_VISITS=8","MAX_BREAKS=2","GLOBAL_BLOCK_BUDGET",
             "if(!world.hasChunkAt(target))return",

@@ -36,6 +36,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import java.io.*;
@@ -64,6 +65,7 @@ public final class V178Claims {
  private static boolean dirty;
  private static final String FILE_NAME="xsxlabs-v178-claims.tsv";
  private static final Map<UUID,Long> REQUEST_TICKS=new HashMap<>();
+ private static final Map<UUID,Long> REQUEST_CENTERS=new HashMap<>();
  public static void handleRequest(ServerPlayer p,int x,int z){
   if(!(p.level() instanceof ServerLevel level))return;
   if(Math.abs((long)x)>1875000||Math.abs((long)z)>1875000)return;
@@ -73,6 +75,7 @@ public final class V178Claims {
   long prev=REQUEST_TICKS.getOrDefault(p.getUUID(),Long.MIN_VALUE);
   if(prev!=Long.MIN_VALUE&&now>=prev&&now-prev<20)return;
   REQUEST_TICKS.put(p.getUUID(),now);
+  REQUEST_CENTERS.put(p.getUUID(),key(x,z));
   send(p,x,z);
  }
 
@@ -94,7 +97,7 @@ public final class V178Claims {
  }
  private static void ensure(ServerLevel level){
   if(active==level.getServer())return;
-  CLAIMS.clear();TRUSTED.clear();OWNED_COUNT.clear();LOADED_COUNT.clear();REQUEST_TICKS.clear();
+  CLAIMS.clear();TRUSTED.clear();OWNED_COUNT.clear();LOADED_COUNT.clear();REQUEST_TICKS.clear();REQUEST_CENTERS.clear();
   active=level.getServer();dirty=false;
   Path source=path(active);
   if(!Files.isRegularFile(source))return;
@@ -183,9 +186,9 @@ public final class V178Claims {
  }
  @SubscribeEvent public static void stopped(ServerStoppedEvent event){
   if(active==event.getServer()){save();active=null;CLAIMS.clear();
-    TRUSTED.clear();OWNED_COUNT.clear();LOADED_COUNT.clear();REQUEST_TICKS.clear();dirty=false;}
+    TRUSTED.clear();OWNED_COUNT.clear();LOADED_COUNT.clear();REQUEST_TICKS.clear();REQUEST_CENTERS.clear();dirty=false;}
  }
- @SubscribeEvent public static void breakBlock(BlockEvent.BreakEvent event){
+ @SubscribeEvent public static void breakBlock(BreakBlockEvent event){
   if(event.getLevel() instanceof ServerLevel level
     &&event.getPlayer() instanceof ServerPlayer player
     &&!mayModify(level,event.getPos(),player.getUUID()))
@@ -243,7 +246,10 @@ public final class V178Claims {
   tell(player,action+" ["+cx+","+cz+"] | "+
      OWNED_COUNT.getOrDefault(id,0)+"/"+MAX_CLAIMS+" claimed, "+
      LOADED_COUNT.getOrDefault(id,0)+"/"+MAX_LOADED+" loaded.");
-  send(player,cx,cz);
+  // Keep the map centered after changing a cell at its border.
+  Long center=REQUEST_CENTERS.get(id);
+  if(center==null)send(player,cx,cz);
+  else send(player,(int)(center>>32),(int)(long)center);
   return true;
  }
  public static void send(ServerPlayer p,int cx,int cz){
@@ -412,7 +418,7 @@ public final class V178ClaimsClient {
   if(Math.abs((long)x)>1875000||Math.abs((long)z)>1875000)return;
   lastRequestX=x;lastRequestZ=z;
   lastRequestTime=mc.level==null?0:mc.level.getGameTime();
-  net.neoforged.neoforge.network.PacketDistributor.sendToServer(new dev.obsidiannetwork.claims.V178ClaimsRequest(x,z));
+  net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(new dev.obsidiannetwork.claims.V178ClaimsRequest(x,z));
  }
  public static void command(String action,int x,int z){
   Minecraft mc=Minecraft.getInstance();
