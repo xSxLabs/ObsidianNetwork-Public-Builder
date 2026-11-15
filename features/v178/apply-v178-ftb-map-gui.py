@@ -700,7 +700,7 @@ s=rep(s,''' public static void remove(ClientLevel w,int cx,int cz){''',
   if(w==null||text==null||text.isBlank()||text.length()>32
      ||Math.abs((long)cx)>1875000||Math.abs((long)cz)>1875000)return;
   // Never serialize tabs/newlines or path characters from GUI input.
-  String label=text.replace('\\t',' ').replace('\\n',' ').replace('\\r',' ');
+  String label=text.replace('\t',' ').replace('\n',' ').replace('\r',' ');
   if(label.isBlank())return;
   String d=dimension(w);
   for(int i=MARKERS.size()-1;i>=0;i--){
@@ -884,6 +884,10 @@ s=rep(s,'''  if(e.button()!=0&&e.button()!=1)return false;
   if(!claiming){dragging=true;panX=0;panY=0;return true;}''')
 # Keep owner snapshot centered at 25x25 even if fewer chunks fit on screen.
 for old,new in (
+ ("(a-cx+12)","(a-cx+DIAMETER/2)"),
+ ("(b-cx+13)","(b-cx+DIAMETER/2+1)"),
+ ("(c-cz+12)","(c-cz+DIAMETER/2)"),
+ ("(d-cz+13)","(d-cz+DIAMETER/2+1)"),
  ("cx+x-12","cx+x-DIAMETER/2"),
  ("cz+z-12","cz+z-DIAMETER/2"),
  ("-cx+12","-cx+DIAMETER/2"),
@@ -892,10 +896,6 @@ for old,new in (
  ("cz-12","cz-DIAMETER/2"),
  ("cx+12","cx+DIAMETER/2"),
  ("cz+12","cz+DIAMETER/2"),
- ("(a-cx+12)","(a-cx+DIAMETER/2)"),
- ("(b-cx+13)","(b-cx+DIAMETER/2+1)"),
- ("(c-cz+12)","(c-cz+DIAMETER/2)"),
- ("(d-cz+13)","(d-cz+DIAMETER/2+1)"),
  ("Math.min(24,((int)mouseX-left())/tile())","Math.min(DIAMETER-1,((int)mouseX-left())/tile())"),
  ("Math.min(24,((int)mouseY-top())/tile())","Math.min(DIAMETER-1,((int)mouseY-top())/tile())")
 ):
