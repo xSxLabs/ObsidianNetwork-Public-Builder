@@ -657,3 +657,260 @@ s=rep(s,'''  if(!inside(e.x(),e.y())||(e.button()!=0&&e.button()!=1))return fals
   if(!claiming){''')
 screen.write_text(s,encoding="utf8")
 print("V178_EXPLORED_PERSISTENCE_WAYPOINTS_DEATH_MARKERS_TRUST_GUI_INSTALLED")
+
+
+# B1628: editor/manager for named colored waypoints, real scalable map zoom,
+# and a minimap position that does not overlap an active JARVIS radar.
+waypoints=root/"client/V178Waypoints.java"
+s=waypoints.read_text(encoding="utf8")
+s=rep(s,''' private record Marker(String dim,int x,int y,int z,String label,boolean death){}''',
+''' public record Marker(String dim,int x,int y,int z,String label,boolean death,int color){}''')
+s=rep(s,'''               (m.death()?"1":"0")+"\t"+m.label()+"\n");''',
+'''               (m.death()?"1":"0")+"\t"+m.label()+"\t"+m.color()+"\n");''')
+s=rep(s,'''    String[] v=line.split("\t",6);
+    if(v.length!=6||v[0].length()>100||v[5].length()>32)continue;''',
+'''    String[] v=line.split("\t",7);
+    if((v.length!=6&&v.length!=7)||v[0].length()>100||v[5].length()>32)continue;''')
+s=rep(s,'''     MARKERS.add(new Marker(v[0],x,y,z,v[5],v[4].equals("1")));''',
+'''     int tint=v.length==7?Integer.parseInt(v[6]):
+          (v[4].equals("1")?0xffff5c63:0xffffff69);
+     MARKERS.add(new Marker(v[0],x,y,z,v[5],v[4].equals("1"),tint));''')
+s=rep(s,'''       at.getZ(),"Death",true));''',
+'''       at.getZ(),"Death",true,0xffff5c63));''')
+s=rep(s,'''       cz*16+8,label,false));''',
+'''       cz*16+8,label,false,0xffffff69));''')
+s=rep(s,''' public static void remove(ClientLevel w,int cx,int cz){''',
+''' public static java.util.List<Marker> list(ClientLevel w){
+  if(w==null)return java.util.List.of();
+  String d=dimension(w);
+  var list=new java.util.ArrayList<Marker>();
+  for(Marker m:MARKERS)if(m.dim().equals(d))list.add(m);
+  return java.util.List.copyOf(list);
+ }
+ public static Marker lookup(ClientLevel w,int cx,int cz){
+  if(w==null)return null;
+  String d=dimension(w);
+  for(int i=MARKERS.size()-1;i>=0;i--){
+   Marker m=MARKERS.get(i);
+   if(m.dim().equals(d)&&(m.x()>>4)==cx&&(m.z()>>4)==cz)return m;
+  }
+  return null;
+ }
+ public static void saveAt(ClientLevel w,int cx,int cz,String text,int y,int color){
+  if(w==null||text==null||text.isBlank()||text.length()>32
+     ||Math.abs((long)cx)>1875000||Math.abs((long)cz)>1875000)return;
+  // Never serialize tabs/newlines or path characters from GUI input.
+  String label=text.replace('\\t',' ').replace('\\n',' ').replace('\\r',' ');
+  if(label.isBlank())return;
+  String d=dimension(w);
+  for(int i=MARKERS.size()-1;i>=0;i--){
+   Marker old=MARKERS.get(i);
+   if(old.dim().equals(d)&&(old.x()>>4)==cx&&(old.z()>>4)==cz){
+    MARKERS.set(i,new Marker(d,cx*16+8,y,cz*16+8,label,old.death(),color));
+    save();return;
+   }
+  }
+  append(new Marker(d,cx*16+8,y,cz*16+8,label,false,color));
+ }
+ public static void remove(ClientLevel w,int cx,int cz){''')
+s=rep(s,'''   g.fill(px-2,py-2,px+3,py+3,m.death()?0xffff5c63:0xffffff69);''',
+'''   g.fill(px-2,py-2,px+3,py+3,m.color());''')
+s=rep(s,'''       m.death()?"X":m.label(),px+3,py-3,m.death()?0xffff898e:0xffffeaa0);''',
+'''       m.death()?"X":m.label(),px+3,py-3,m.color());''')
+s=rep(s,'''   g.fill(x-2,y-2,x+2,y+2,m.death()?0xffef485e:0xffffe764);''',
+'''   g.fill(x-2,y-2,x+2,y+2,m.color());''')
+waypoints.write_text(s,encoding="utf8")
+
+editor=root/"client/V178WaypointEditorScreen.java"
+assert not editor.exists(),"V178_WAYPOINT_EDITOR_DUPLICATE"
+editor.write_text(r'''package dev.obsidiannetwork.client;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+
+/** Named and color-selectable local marker editor; no server RPC. */
+public final class V178WaypointEditorScreen extends Screen {
+ private static final int[] PALETTE={
+  0xffffff69,0xff56e5a0,0xff65d7ff,0xffac91ff,0xffff8ec4,0xffff6b63
+ };
+ private final Screen previous;
+ private final int cx,cz;
+ private EditBox label,altitude;
+ private int tint=0;
+ public V178WaypointEditorScreen(Screen previous,int cx,int cz){
+  super(Component.literal("xSxLabs | Waypoint Editor"));
+  this.previous=previous;this.cx=cx;this.cz=cz;
+ }
+ private void save(){
+  var mc=Minecraft.getInstance();
+  if(mc.level==null||label==null||altitude==null)return;
+  int y;
+  try{y=Integer.parseInt(altitude.getValue().trim());}
+  catch(NumberFormatException invalid){return;}
+  if(y< -2048||y>4096)return;
+  V178Waypoints.saveAt(mc.level,cx,cz,label.getValue().trim(),y,PALETTE[tint]);
+  onClose();
+ }
+ @Override protected void init(){
+  var mc=Minecraft.getInstance();
+  V178Waypoints.Marker old=V178Waypoints.lookup(mc.level,cx,cz);
+  int x=width/2-105,y=height/2-58;
+  label=new EditBox(font,x,y,210,20,Component.literal("Waypoint name"));
+  label.setMaxLength(32);
+  label.setValue(old==null?"Waypoint":old.label());
+  addRenderableWidget(label);
+  altitude=new EditBox(font,x,y+26,210,20,Component.literal("Y coordinate"));
+  altitude.setMaxLength(6);
+  altitude.setValue(Integer.toString(old==null?
+    (mc.player==null?64:mc.player.blockPosition().getY()):old.y()));
+  addRenderableWidget(altitude);
+  if(old!=null)for(int i=0;i<PALETTE.length;i++)
+   if(old.color()==PALETTE[i])tint=i;
+  addRenderableWidget(Button.builder(Component.literal("Change Color"),
+      b->tint=(tint+1)%PALETTE.length).bounds(x,y+54,210,20).build());
+  addRenderableWidget(Button.builder(Component.literal("Save"),b->save())
+      .bounds(x,y+81,102,20).build());
+  addRenderableWidget(Button.builder(Component.literal("Cancel"),b->onClose())
+      .bounds(x+108,y+81,102,20).build());
+  if(old!=null)addRenderableWidget(Button.builder(Component.literal("Remove Marker"),b->{
+     V178Waypoints.remove(Minecraft.getInstance().level,cx,cz);onClose();
+  }).bounds(x,y+108,210,20).build());
+ }
+ @Override public void extractBackground(GuiGraphicsExtractor g,int mx,int my,float delta){
+  super.extractBackground(g,mx,my,delta);
+  int x=width/2-105,y=height/2-77;
+  g.text(font,"WAYPOINT | chunk "+cx+", "+cz,x,y,0xff96e3f1);
+  g.fill(x+186,y+62,x+210,y+78,PALETTE[tint]);
+ }
+ @Override public void onClose(){Minecraft.getInstance().setScreen(previous);}
+ @Override public boolean isPauseScreen(){return false;}
+}
+''',encoding="utf8")
+
+manager=root/"client/V178WaypointManagerScreen.java"
+assert not manager.exists(),"V178_WAYPOINT_MANAGER_DUPLICATE"
+manager.write_text(r'''package dev.obsidiannetwork.client;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+/** Paged per-dimension waypoint list; no per-tick scans or packets. */
+public final class V178WaypointManagerScreen extends Screen {
+ private final Screen previous;
+ private int page;
+ public V178WaypointManagerScreen(Screen previous){
+  super(Component.literal("xSxLabs | Waypoints"));this.previous=previous;
+ }
+ @Override protected void init(){
+  var mc=Minecraft.getInstance();
+  var marks=V178Waypoints.list(mc.level);
+  int pages=Math.max(1,(marks.size()+6)/7);
+  page=Math.max(0,Math.min(page,pages-1));
+  int x=width/2-140,y=Math.max(32,height/2-101);
+  for(int i=page*7;i<Math.min(marks.size(),page*7+7);i++){
+   var mark=marks.get(i);
+   int mx=mark.x()>>4,mz=mark.z()>>4,yy=y+((i-page*7)*24);
+   String name=mark.label()+" ["+mx+","+mz+"]";
+   addRenderableWidget(Button.builder(Component.literal(name),b->
+       mc.setScreen(new V178WaypointEditorScreen(this,mx,mz)))
+       .bounds(x,yy,234,20).build());
+   addRenderableWidget(Button.builder(Component.literal("X"),b->{
+       V178Waypoints.remove(mc.level,mx,mz);rebuildWidgets();
+   }).bounds(x+240,yy,35,20).build());
+  }
+  addRenderableWidget(Button.builder(Component.literal("<"),b->{
+    page=Math.max(0,page-1);rebuildWidgets();
+  }).bounds(x,y+176,38,20).build());
+  addRenderableWidget(Button.builder(Component.literal("Back"),b->onClose())
+      .bounds(x+43,y+176,185,20).build());
+  addRenderableWidget(Button.builder(Component.literal(">"),b->{
+    page=Math.min(pages-1,page+1);rebuildWidgets();
+  }).bounds(x+233,y+176,42,20).build());
+ }
+ @Override public void extractBackground(GuiGraphicsExtractor g,int mx,int my,float delta){
+  super.extractBackground(g,mx,my,delta);
+  g.text(font,"WAYPOINT MANAGER | click to edit",width/2-139,
+      Math.max(12,height/2-122),0xff9debf2);
+ }
+ @Override public void onClose(){Minecraft.getInstance().setScreen(previous);}
+ @Override public boolean isPauseScreen(){return false;}
+}
+''',encoding="utf8")
+
+screen=root/"client/V178ClaimsMapScreen.java"
+s=screen.read_text(encoding="utf8")
+s=rep(s,''' private static final int DIAMETER=25;''',
+''' private int DIAMETER=25;''')
+s=rep(s,''' private int tile(){return Math.min(zoom,Math.max(4,(Math.min(width,height)-MARGIN)/DIAMETER));}''',
+''' private int tile(){return zoom;}
+ private void adapt(){
+  DIAMETER=Math.max(5,Math.min(25,
+      (Math.min(width,height)-MARGIN)/Math.max(1,zoom)));
+ }''')
+s=rep(s,''' @Override protected void init(){
+  if(cx==Integer.MIN_VALUE)center();''',
+''' @Override protected void init(){
+  adapt();
+  if(cx==Integer.MIN_VALUE)center();''')
+s=rep(s,'''  zoom=Math.max(6,Math.min(18,zoom+(vertical>0?1:vertical<0?-1:0)));
+  return true;''',
+'''  zoom=Math.max(6,Math.min(18,zoom+(vertical>0?1:vertical<0?-1:0)));
+  adapt();
+  return true;''')
+s=rep(s,'''  addRenderableWidget(Button.builder(Component.literal("+WP"),b->
+      V178Waypoints.add(Minecraft.getInstance().level,centerX(),centerZ()))
+     .bounds(255,5,43,20).build());
+  addRenderableWidget(Button.builder(Component.literal("-WP"),b->
+      V178Waypoints.remove(Minecraft.getInstance().level,centerX(),centerZ()))
+     .bounds(301,5,43,20).build());''',
+'''  addRenderableWidget(Button.builder(Component.literal("+WP"),b->
+      Minecraft.getInstance().setScreen(new V178WaypointEditorScreen(this,centerX(),centerZ())))
+     .bounds(255,5,43,20).build());
+  addRenderableWidget(Button.builder(Component.literal("WPs"),b->
+      Minecraft.getInstance().setScreen(new V178WaypointManagerScreen(this)))
+     .bounds(301,5,43,20).build());''')
+s=rep(s,'''  if(e.button()!=0&&e.button()!=1)return false;
+  if(!claiming){dragging=true;panX=0;panY=0;return true;}''',
+'''  if(e.button()!=0&&e.button()!=1)return false;
+  if(!claiming&&e.button()==1){
+   Minecraft.getInstance().setScreen(new V178WaypointEditorScreen(this,chunkX(e.x()),chunkZ(e.y())));
+   return true;
+  }
+  if(!claiming){dragging=true;panX=0;panY=0;return true;}''')
+# Keep owner snapshot centered at 25x25 even if fewer chunks fit on screen.
+for old,new in (
+ ("cx+x-12","cx+x-DIAMETER/2"),
+ ("cz+z-12","cz+z-DIAMETER/2"),
+ ("-cx+12","-cx+DIAMETER/2"),
+ ("-cz+12","-cz+DIAMETER/2"),
+ ("cx-12","cx-DIAMETER/2"),
+ ("cz-12","cz-DIAMETER/2"),
+ ("cx+12","cx+DIAMETER/2"),
+ ("cz+12","cz+DIAMETER/2"),
+ ("(a-cx+12)","(a-cx+DIAMETER/2)"),
+ ("(b-cx+13)","(b-cx+DIAMETER/2+1)"),
+ ("(c-cz+12)","(c-cz+DIAMETER/2)"),
+ ("(d-cz+13)","(d-cz+DIAMETER/2+1)"),
+ ("Math.min(24,((int)mouseX-left())/tile())","Math.min(DIAMETER-1,((int)mouseX-left())/tile())"),
+ ("Math.min(24,((int)mouseY-top())/tile())","Math.min(DIAMETER-1,((int)mouseY-top())/tile())")
+):
+ assert old in s,("V178_DYNAMIC_ZOOM_DRIFT",old)
+ s=s.replace(old,new)
+screen.write_text(s,encoding="utf8")
+
+client=root/"client/V178ClaimsClient.java"
+s=client.read_text(encoding="utf8")
+s=rep(s,'''  int ox=mc.getWindow().getGuiScaledWidth()-99,oy=9;''',
+'''  int ox=mc.getWindow().getGuiScaledWidth()-99,oy=9;
+  // Avoid drawing the minimap over JARVIS radar/diagnostics.
+  if(V177JarvisClient.enabled()&&V177JarvisClient.available()
+      &&V177JarvisSettings.on("hud")&&V177JarvisSettings.on("hud_radar")){
+   ox=9;oy=Math.max(45,mc.getWindow().getGuiScaledHeight()-111);
+  }''')
+client.write_text(s,encoding="utf8")
+print("V178_WAYPOINT_EDITOR_MANAGER_DYNAMIC_ZOOM_HUD_MINIMAP_LAYOUT_PASS")
