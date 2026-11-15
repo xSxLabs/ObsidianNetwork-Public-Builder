@@ -35,6 +35,15 @@ class FtbStyleMap(unittest.TestCase):
   self.assertNotIn("world.getChunk(",B)
   self.assertNotIn("forceChunk(",B)
   self.assertNotIn("sendCommand(",B)
+ def test_stale_claim_snapshot_retry_is_tick_bounded(self):
+  # A map moved during server-side throttling must recover by retrying.
+  for marker in ("pending.cx()!=screen.centerX()",
+                 "pending.cz()!=screen.centerZ()",
+                 "!pending.dimension().equals",
+                 "now-lastRequestTime>=25",
+                 "request(screen.centerX(),screen.centerZ())"):
+   self.assertIn(marker,B)
+  self.assertIn("V178TerrainMap.tick(mc.level,playerCx,playerCz)",B)
  def test_compiled_source_contract(self):
   if not os.environ.get("V1_SOURCE_ROOT"):return
   j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"

@@ -136,9 +136,19 @@ s=rep(s,
 '''  // Update ONLY on crossing a chunk boundary or every 100 ticks, and never''',
 '''  int playerCx=mc.player.blockPosition().getX()>>4;
   int playerCz=mc.player.blockPosition().getZ()>>4;
-  if(mc.screen instanceof V178ClaimsMapScreen screen)
+  if(mc.screen instanceof V178ClaimsMapScreen screen){
    V178TerrainMap.tick(mc.level,screen.centerX(),screen.centerZ());
-  else V178TerrainMap.tick(mc.level,playerCx,playerCz);
+   // A quick drag can move the map while the server's 20-tick snapshot
+   // throttle rejects an earlier request. Retry only when the displayed
+   // snapshot is stale, at most once per 25 ticks (no request flood).
+   V178ClaimsSnapshot pending=last;
+   long now=mc.level.getGameTime();
+   if((pending==null||pending.cx()!=screen.centerX()||pending.cz()!=screen.centerZ()
+       ||!pending.dimension().equals(mc.level.dimension().identifier().toString()))
+       &&(lastRequestTime==Long.MIN_VALUE||now<lastRequestTime
+          ||now-lastRequestTime>=25))
+    request(screen.centerX(),screen.centerZ());
+  }else V178TerrainMap.tick(mc.level,playerCx,playerCz);
   // Update ONLY on crossing a chunk boundary or every 100 ticks, and never''')
 s=rep(s,
 '''   g.fill(x,y,x+11,y+10,shade(s));
