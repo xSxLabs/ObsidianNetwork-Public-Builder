@@ -4358,11 +4358,11 @@ jobs:
             # v1.7.7 user-authorized J.A.R.V.I.S. / nonbreaking Armor Integrity /
             # FE-powered Power Armor Station, isolated to the 1.7.7 branch.
             if [ "$GITHUB_REF_NAME" = "1.7.7" ]; then
+              python3 features/v177/apply-v177-armor-integrity-repair.py
               # Non-cubic Solid Fuel Generator must not occlude neighboring wall faces.
               # Keep its model, collision, FE, fuel and GUI untouched.
               python3 features/v177/apply-v177-solid-fuel-generator-occlusion.py
               python3 -m unittest discover -s tests -p 'test_v177_solid_fuel_generator_occlusion.py' -v
-              python3 features/v177/apply-v177-armor-integrity-repair.py
               # Double FE capacity only for Power Armor; original consumption unchanged.
               python3 features/v177/apply-v177-armor-double-fe.py
               # Held Multitool performance: 2318 -> 518 native 3D cuboids.
