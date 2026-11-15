@@ -700,7 +700,7 @@ s=rep(s,''' public static void remove(ClientLevel w,int cx,int cz){''',
   if(w==null||text==null||text.isBlank()||text.length()>32
      ||Math.abs((long)cx)>1875000||Math.abs((long)cz)>1875000)return;
   // Never serialize tabs/newlines or path characters from GUI input.
-  String label=text.replace('\t',' ').replace('\n',' ').replace('\r',' ');
+  String label=text.replace('\\t',' ').replace('\\n',' ').replace('\\r',' ');
   if(label.isBlank())return;
   String d=dimension(w);
   for(int i=MARKERS.size()-1;i>=0;i--){
