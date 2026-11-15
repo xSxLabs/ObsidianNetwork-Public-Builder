@@ -73,6 +73,28 @@ class FtbStyleMap(unittest.TestCase):
   self.assertIn("private static final int MAX=128",w)
   self.assertIn("deathLatch=dead",w)
   self.assertIn("java.nio",w)
+ def test_b1628_waypoint_editor_manager_and_zoom(self):
+  for marker in ("client/V178WaypointEditorScreen.java",
+                 "client/V178WaypointManagerScreen.java",
+                 "public record Marker","Integer.parseInt(v[6])",
+                 "V178Waypoints.saveAt","new V178WaypointEditorScreen(this",
+                 "new V178WaypointManagerScreen(this)",
+                 "private void adapt()","DIAMETER/2",
+                 "Math.min(DIAMETER-1","V177JarvisSettings.on(\"hud_radar\")",
+                 "V178_WAYPOINT_EDITOR_MANAGER_DYNAMIC_ZOOM_HUD_MINIMAP_LAYOUT_PASS"):
+   self.assertIn(marker,B)
+  self.assertIn("java.util.List.copyOf(list)",B)
+ def test_b1628_generated_screen_and_markers(self):
+  if not os.environ.get("V1_SOURCE_ROOT"):return
+  d=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client"
+  for name in ("V178WaypointEditorScreen","V178WaypointManagerScreen"):
+   self.assertTrue((d/(name+".java")).is_file(),name)
+  map_java=(d/"V178ClaimsMapScreen.java").read_text()
+  self.assertIn("private void adapt()",map_java)
+  self.assertIn("V178WaypointEditorScreen(this",map_java)
+  waypoint_java=(d/"V178Waypoints.java").read_text()
+  self.assertIn("public record Marker",waypoint_java)
+  self.assertIn("public static void saveAt(",waypoint_java)
  def test_compiled_source_contract(self):
   if not os.environ.get("V1_SOURCE_ROOT"):return
   j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
