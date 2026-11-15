@@ -665,11 +665,11 @@ waypoints=root/"client/V178Waypoints.java"
 s=waypoints.read_text(encoding="utf8")
 s=rep(s,''' private record Marker(String dim,int x,int y,int z,String label,boolean death){}''',
 ''' public record Marker(String dim,int x,int y,int z,String label,boolean death,int color){}''')
-s=rep(s,'''               (m.death()?"1":"0")+"\t"+m.label()+"\n");''',
-'''               (m.death()?"1":"0")+"\t"+m.label()+"\t"+m.color()+"\n");''')
-s=rep(s,'''    String[] v=line.split("\t",6);
+s=rep(s,r'''               (m.death()?"1":"0")+"\t"+m.label()+"\n");''',
+r'''               (m.death()?"1":"0")+"\t"+m.label()+"\t"+m.color()+"\n");''')
+s=rep(s,r'''    String[] v=line.split("\t",6);
     if(v.length!=6||v[0].length()>100||v[5].length()>32)continue;''',
-'''    String[] v=line.split("\t",7);
+r'''    String[] v=line.split("\t",7);
     if((v.length!=6&&v.length!=7)||v[0].length()>100||v[5].length()>32)continue;''')
 s=rep(s,'''     MARKERS.add(new Marker(v[0],x,y,z,v[5],v[4].equals("1")));''',
 '''     int tint=v.length==7?Integer.parseInt(v[6]):
