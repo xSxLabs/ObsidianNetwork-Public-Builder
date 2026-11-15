@@ -95,6 +95,27 @@ class FtbStyleMap(unittest.TestCase):
   waypoint_java=(d/"V178Waypoints.java").read_text()
   self.assertIn("public record Marker",waypoint_java)
   self.assertIn("public static void saveAt(",waypoint_java)
+ def test_b1633_waypoints_follow_actual_map_viewport(self):
+   self.assertIn("B1633_VIEWPORT_MARKER_PARITY",B)
+   self.assertIn("int half=diameter/2",B)
+   self.assertIn("dx>=diameter||dz<0||dz>=diameter",B)
+   self.assertIn("V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER)",B)
+   for diameter in range(5,26):
+    center_x,center_z=171,-93
+    half=diameter//2
+    for column in range(diameter):
+     for row in range(diameter):
+      world_x=center_x+column-half
+      world_z=center_z+row-half
+      self.assertEqual((world_x-center_x+half,world_z-center_z+half),(column,row))
+   if not os.environ.get("V1_SOURCE_ROOT"):return
+   d=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client"
+   waypoint=(d/"V178Waypoints.java").read_text()
+   gui=(d/"V178ClaimsMapScreen.java").read_text()
+   self.assertIn("int cx,int cz,int x0,int y0,int tile,int diameter",waypoint)
+   self.assertIn("if(dx<0||dx>=diameter||dz<0||dz>=diameter)continue",waypoint)
+   self.assertNotIn("int dx=(m.x()>>4)-cx+12,dz=(m.z()>>4)-cz+12",waypoint)
+   self.assertIn("V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER)",gui)
  def test_compiled_source_contract(self):
   if not os.environ.get("V1_SOURCE_ROOT"):return
   j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"

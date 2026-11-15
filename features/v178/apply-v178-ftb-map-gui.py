@@ -914,3 +914,25 @@ s=rep(s,'''  int ox=mc.getWindow().getGuiScaledWidth()-99,oy=9;''',
   }''')
 client.write_text(s,encoding="utf8")
 print("V178_WAYPOINT_EDITOR_MANAGER_DYNAMIC_ZOOM_HUD_MINIMAP_LAYOUT_PASS")
+
+# B1633: dynamic 5..25 tile viewport must align waypoint markers.
+# No network traffic, no new render scanning, no changes to persisted data.
+waypoints=root/"client/V178Waypoints.java"
+s=waypoints.read_text(encoding="utf8")
+s=rep(s,''' public static void drawMap(ClientLevel world,GuiGraphicsExtractor g,
+                            int cx,int cz,int x0,int y0,int tile){''',
+''' public static void drawMap(ClientLevel world,GuiGraphicsExtractor g,
+                            int cx,int cz,int x0,int y0,int tile,int diameter){''')
+s=rep(s,'''   int dx=(m.x()>>4)-cx+12,dz=(m.z()>>4)-cz+12;
+   if(dx<0||dx>=25||dz<0||dz>=25)continue;''',
+'''   // B1633_VIEWPORT_MARKER_PARITY: same grid as terrain and claims.
+   int half=diameter/2;
+   int dx=(m.x()>>4)-cx+half,dz=(m.z()>>4)-cz+half;
+   if(dx<0||dx>=diameter||dz<0||dz>=diameter)continue;''')
+waypoints.write_text(s,encoding="utf8")
+screen=root/"client/V178ClaimsMapScreen.java"
+s=screen.read_text(encoding="utf8")
+s=rep(s,'''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile);''',
+'''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER);''')
+screen.write_text(s,encoding="utf8")
+print("V178_B1633_RESPONSIVE_WAYPOINT_MAP_PARITY_PASS")
