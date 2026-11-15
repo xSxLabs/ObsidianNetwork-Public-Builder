@@ -1168,6 +1168,12 @@ client=root/"client/V178ClaimsClient.java"
 s=client.read_text(encoding="utf8")
 s=rep_indent(s,'''  while(TOGGLE_MINIMAP.consumeClick())minimap=!minimap;''',
 '''  while(TOGGLE_MINIMAP.consumeClick())toggleMinimap();''')
+# B1640: B1621 inserted a legacy toggle method; remove it after installing
+# the persisted implementation, otherwise Java has duplicate toggleMinimap().
+s=rep_indent(s,''' public static boolean toggleMinimapLegacyUnused(){minimap=!minimap;}''',
+''' public static boolean toggleMinimapLegacyUnused(){toggleOption("minimap");}''') if False else s
+s=rep_indent(s,''' public static void toggleMinimap(){minimap=!minimap;}''','')
+assert s.count('public static void toggleMinimap(){toggleOption("minimap");}')==1,"V178_PERSISTED_TOGGLE_MISSING_OR_DUPLICATED"
 assert "minimap=!minimap;" not in s,"V178_LEGACY_MINIMAP_REFERENCE"
 client.write_text(s,encoding="utf8")
 print("V178_B1635_PERSISTENT_MINIMAP_KEYBIND_COMPAT_PASS")
