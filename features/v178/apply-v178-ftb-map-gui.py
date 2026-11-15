@@ -936,11 +936,30 @@ s=rep(s,'''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile);''',
 '''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER);''')
 screen.write_text(s,encoding="utf8")
 print("V178_B1633_RESPONSIVE_WAYPOINT_MAP_PARITY_PASS")
+# B1639: tolerate a single indentation-level difference in generated Java
+# while retaining strict one-and-only-one exact source matching.
+def rep_indent(source,old,new):
+ if source.count(old)==1:return source.replace(old,new,1)
+ for delta in (-1,1,-2,2):
+  def shift(text):
+   lines=text.split("\n")
+   adjusted=[]
+   for line in lines:
+    if not line.strip():adjusted.append(line);continue
+    lead=len(line)-len(line.lstrip(" "))
+    if lead+delta<0:return None
+    adjusted.append(" "*(lead+delta)+line[lead:])
+   return "\n".join(adjusted)
+  anchor=shift(old)
+  replacement=shift(new)
+  if anchor is not None and source.count(anchor)==1:
+   return source.replace(anchor,replacement,1)
+ raise AssertionError(("V178_FTB_GUI_INDENT_OR_SOURCE_DRIFT",old[:120]))
 # B1634: independent and persisted FTB-style map / minimap / info preferences.
 # No per-tick disk IO, no new server packets, and no chunk access in rendering.
 client=root/"client/V178ClaimsClient.java"
 s=client.read_text(encoding="utf8")
-s=rep(s,''' private static boolean minimap=true;''',
+s=rep_indent(s,''' private static boolean minimap=true;''',
 ''' // B1634_INFO_OPTIONS: client-wide user preferences, loaded once, saved on click.
   private static boolean optionsLoaded;
   private static final java.util.Map<String,Boolean> OPTIONS=new java.util.HashMap<>();
@@ -1008,17 +1027,17 @@ s=rep(s,''' private static boolean minimap=true;''',
    OPTIONS.put(key,!OPTIONS.get(key));
    saveOptions();
   }''')
-s=rep(s,'''  public static boolean option(String key){''',
+s=rep_indent(s,'''  public static boolean option(String key){''',
 '''  public static boolean minimapEnabled(){return option("minimap");}
   public static void toggleMinimap(){toggleOption("minimap");}
   public static boolean option(String key){''')
-s=rep(s,'''   if(!minimap||mc.player==null||mc.screen!=null||last==null)return;''',
+s=rep_indent(s,'''   if(!minimap||mc.player==null||mc.screen!=null||last==null)return;''',
 '''   if(!option("minimap")||mc.player==null||mc.screen!=null||last==null)return;''')
-s=rep(s,'''   g.fill(ox-2,oy-2,ox+91,oy+97,0xc0081d2b);''',
+s=rep_indent(s,'''   g.fill(ox-2,oy-2,ox+91,oy+97,0xc0081d2b);''',
 '''   int infoRows=(option("coords")?2:0)+(option("chunk")?1:0)
       +(option("daytime")?1:0);
    g.fill(ox-2,oy-2,ox+91,oy+97+infoRows*10,0xc0081d2b);''')
-s=rep(s,'''   for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){
+s=rep_indent(s,'''   for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){
     int x=ox+4+(dx+3)*12,y=oy+15+(dz+3)*11;
     int s=Byte.toUnsignedInt(state(last,cx+dx,cz+dz));
     V178TerrainMap.draw(mc.level,g,cx+dx,cz+dz,x,y,11);
@@ -1059,17 +1078,17 @@ client.write_text(s,encoding="utf8")
 
 screen=root/"client/V178ClaimsMapScreen.java"
 s=screen.read_text(encoding="utf8")
-s=rep(s,'''      .bounds(347,5,47,20).build());''',
+s=rep_indent(s,'''      .bounds(347,5,47,20).build());''',
 '''      .bounds(347,5,47,20).build());
    addRenderableWidget(Button.builder(Component.literal("Settings"),b->
        Minecraft.getInstance().setScreen(new V178MapSettingsScreen(this)))
       .bounds(Math.max(5,width-82),5,77,20).build());''')
-s=rep(s,'''   int tile=tile(),x0=left(),y0=top(),w=DIAMETER*tile;''',
+s=rep_indent(s,'''   int tile=tile(),x0=left(),y0=top(),w=DIAMETER*tile;''',
 '''   int tile=tile(),x0=left(),y0=top(),w=DIAMETER*tile;
    boolean showTerrain=V178ClaimsClient.option("map_terrain"),
       showClaims=V178ClaimsClient.option("map_claims"),
       showLoaded=V178ClaimsClient.option("loaded");''')
-s=rep(s,'''    V178TerrainMap.draw(world,g,cxWorld,czWorld,px,py,tile);
+s=rep_indent(s,'''    V178TerrainMap.draw(world,g,cxWorld,czWorld,px,py,tile);
     if(!grid)continue;
     int state=good?Byte.toUnsignedInt(V178ClaimsClient.state(map,cxWorld,czWorld)):0;''',
 '''    if(showTerrain)V178TerrainMap.draw(world,g,cxWorld,czWorld,px,py,tile);
@@ -1077,13 +1096,13 @@ s=rep(s,'''    V178TerrainMap.draw(world,g,cxWorld,czWorld,px,py,tile);
     if(!grid||!showClaims)continue;
     int state=good?Byte.toUnsignedInt(V178ClaimsClient.state(map,cxWorld,czWorld)):0;
     if(!showLoaded)state&=~4;''')
-s=rep(s,'''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER);''',
+s=rep_indent(s,'''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER);''',
 '''  if(V178ClaimsClient.option("map_waypoints"))
     V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER);''')
-s=rep(s,'''  if(world!=null&&Minecraft.getInstance().player!=null){''',
+s=rep_indent(s,'''  if(world!=null&&Minecraft.getInstance().player!=null){''',
 '''  if(V178ClaimsClient.option("map_player")
        &&world!=null&&Minecraft.getInstance().player!=null){''')
-s=rep(s,'''   if(k==GLFW.GLFW_KEY_N){V178ClaimsClient.toggleMinimap();return true;}''',
+s=rep_indent(s,'''   if(k==GLFW.GLFW_KEY_N){V178ClaimsClient.toggleMinimap();return true;}''',
 '''   if(k==GLFW.GLFW_KEY_N){V178ClaimsClient.toggleMinimap();return true;}
    if(k==GLFW.GLFW_KEY_S){
     Minecraft.getInstance().setScreen(new V178MapSettingsScreen(this));return true;
@@ -1147,7 +1166,7 @@ print("V178_B1634_PERSISTENT_MINIMAP_AND_FULLSCREEN_INFO_OPTIONS_PASS")
 # Raw minimap field was superseded by persisted client options in B1634.
 client=root/"client/V178ClaimsClient.java"
 s=client.read_text(encoding="utf8")
-s=rep(s,'''  while(TOGGLE_MINIMAP.consumeClick())minimap=!minimap;''',
+s=rep_indent(s,'''  while(TOGGLE_MINIMAP.consumeClick())minimap=!minimap;''',
 '''  while(TOGGLE_MINIMAP.consumeClick())toggleMinimap();''')
 assert "minimap=!minimap;" not in s,"V178_LEGACY_MINIMAP_REFERENCE"
 client.write_text(s,encoding="utf8")
