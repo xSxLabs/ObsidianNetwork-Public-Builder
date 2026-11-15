@@ -216,9 +216,10 @@ jobs:
           fi
           # v1.7.8: parse and validate all dedicated extension patches.
           if [ "$GITHUB_REF_NAME" = "1.7.8" ]; then
-            python3 -m py_compile features/v178/*.py tests/test_v178_hud_jei_perf.py tests/test_v178_mining_claims.py
+            python3 -m py_compile features/v178/*.py tests/test_v178_hud_jei_perf.py tests/test_v178_mining_claims.py tests/test_v178_ftb_style_map.py
             python3 -m unittest discover -s tests -p 'test_v178_hud_jei_perf.py' -v
             python3 -m unittest discover -s tests -p 'test_v178_mining_claims.py' -v
+            python3 -m unittest discover -s tests -p 'test_v178_ftb_style_map.py' -v
           fi
           # B1392: fail-closed Shift+Deconstruct stack source and conservation tests.
           python3 -m py_compile features/v176/apply-v176-b1392-deconstructor-stack.py tests/test_v176_b1392_deconstructor_stack.py
@@ -4433,6 +4434,11 @@ jobs:
                 # Mining-only FE Builder uses owned claims, never forces terrain generation.
                 python3 features/v178/apply-v178-claims.py
                 python3 features/v178/apply-v178-mining-builder.py
+                # B1621: FTB-style original map / claim GUI: drag, modifier force-load,
+                # local loaded-only topographic terrain, bounded server queue.
+                python3 features/v178/apply-v178-ftb-batch.py
+                python3 features/v178/apply-v178-ftb-map-gui.py
+                python3 -m unittest discover -s tests -p 'test_v178_ftb_style_map.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_hud_jei_perf.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_mining_claims.py' -v
               fi
