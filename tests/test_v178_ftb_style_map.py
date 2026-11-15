@@ -44,6 +44,34 @@ class FtbStyleMap(unittest.TestCase):
                  "request(screen.centerX(),screen.centerZ())"):
    self.assertIn(marker,B)
   self.assertIn("V178TerrainMap.tick(mc.level,playerCx,playerCz)",B)
+ def test_b1624_explored_waypoints_and_team_are_bounded(self):
+  import re
+  for marker in ("MAX_CACHED=1536","lastFlushTick","now-lastFlushTick>=1200",
+                 "java.io.DataOutputStream","java.io.DataInputStream",
+                 "java.nio.file.StandardCopyOption.ATOMIC_MOVE",
+                 "client/V178Waypoints.java","client/V178ClaimsTeamScreen.java",
+                 "V178Waypoints.tick(mc.player)","V178Waypoints.drawMap",
+                 "V178Waypoints.drawMini","GLFW.GLFW_MOD_SHIFT",
+                 "V178Waypoints.remove","V178Waypoints.add",
+                 'me.connection.sendCommand("xsxchunks "',
+                 "getCurrentServer()","isDeadOrDying()",
+                 "while((line=in.readLine())!=null&&MARKERS.size()<MAX)"):
+   self.assertIn(marker,B)
+  self.assertNotIn("world.getChunk(",B)
+  self.assertNotIn("ClientPacketDistributor.sendToServer", B.split('waypoints=root/')[1])
+ def test_b1624_generated_java_contract(self):
+  if not os.environ.get("V1_SOURCE_ROOT"):return
+  j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
+  for name in ("V178Waypoints","V178ClaimsTeamScreen","V178TerrainMap",
+               "V178ClaimsMapScreen","V178ClaimsClient"):
+   self.assertTrue((j/"client"/(name+".java")).is_file(),name)
+  m=(j/"client/V178TerrainMap.java").read_text()
+  self.assertIn("MAX_CACHED=1536",m)
+  self.assertIn("now-lastFlushTick>=1200",m)
+  w=(j/"client/V178Waypoints.java").read_text()
+  self.assertIn("private static final int MAX=128",w)
+  self.assertIn("deathLatch=dead",w)
+  self.assertIn("java.nio",w)
  def test_compiled_source_contract(self):
   if not os.environ.get("V1_SOURCE_ROOT"):return
   j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
