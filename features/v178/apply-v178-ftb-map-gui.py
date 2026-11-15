@@ -936,3 +936,205 @@ s=rep(s,'''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile);''',
 '''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER);''')
 screen.write_text(s,encoding="utf8")
 print("V178_B1633_RESPONSIVE_WAYPOINT_MAP_PARITY_PASS")
+# B1634: independent and persisted FTB-style map / minimap / info preferences.
+# No per-tick disk IO, no new server packets, and no chunk access in rendering.
+client=root/"client/V178ClaimsClient.java"
+s=client.read_text(encoding="utf8")
+s=rep(s,''' private static boolean minimap=true;''',
+''' // B1634_INFO_OPTIONS: client-wide user preferences, loaded once, saved on click.
+  private static boolean optionsLoaded;
+  private static final java.util.Map<String,Boolean> OPTIONS=new java.util.HashMap<>();
+  private static final String[] OPTION_KEYS={
+    "minimap","terrain","claims","loaded","waypoints","player",
+    "coords","chunk","daytime","map_terrain","map_claims",
+    "map_waypoints","map_player"
+  };
+  private static java.nio.file.Path optionFile(){
+   return Minecraft.getInstance().gameDirectory.toPath().resolve("config")
+       .resolve("xsxlabs-worldmap").resolve("client-options.properties");
+  }
+  private static void loadOptions(){
+   if(optionsLoaded)return;
+   optionsLoaded=true;
+   for(String key:OPTION_KEYS)
+    OPTIONS.put(key,!key.equals("coords")&&!key.equals("chunk")&&!key.equals("daytime"));
+   var path=optionFile();
+   if(!java.nio.file.Files.isRegularFile(path))return;
+   try(var in=java.nio.file.Files.newInputStream(path)){
+    var props=new java.util.Properties();
+    props.load(in);
+    for(String key:OPTION_KEYS){
+     String value=props.getProperty(key);
+     if("true".equals(value)||"false".equals(value))
+      OPTIONS.put(key,Boolean.parseBoolean(value));
+    }
+   }catch(java.io.IOException ex){
+    System.err.println("[xSxLabs] minimap preferences read failed: "+ex);
+   }
+  }
+  private static void saveOptions(){
+   var path=optionFile();
+   java.nio.file.Path tmp=null;
+   try{
+    java.nio.file.Files.createDirectories(path.getParent());
+    tmp=java.nio.file.Files.createTempFile(path.getParent(),"xsx-map-opt-",".tmp");
+    var props=new java.util.Properties();
+    for(String key:OPTION_KEYS)
+     props.setProperty(key,Boolean.toString(OPTIONS.getOrDefault(key,false)));
+    try(var out=java.nio.file.Files.newOutputStream(tmp)){
+     props.store(out,"xSxLabs map and minimap options");
+    }
+    try{java.nio.file.Files.move(tmp,path,
+      java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+      java.nio.file.StandardCopyOption.REPLACE_EXISTING);}
+    catch(java.nio.file.AtomicMoveNotSupportedException ex){
+     java.nio.file.Files.move(tmp,path,
+      java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+    }
+   }catch(java.io.IOException ex){
+    System.err.println("[xSxLabs] minimap preferences save failed: "+ex);
+   }finally{
+    if(tmp!=null)try{java.nio.file.Files.deleteIfExists(tmp);}
+      catch(java.io.IOException ignored){}
+   }
+  }
+  public static boolean option(String key){
+   loadOptions();
+   return OPTIONS.getOrDefault(key,false);
+  }
+  public static void toggleOption(String key){
+   loadOptions();
+   if(!OPTIONS.containsKey(key))return;
+   OPTIONS.put(key,!OPTIONS.get(key));
+   saveOptions();
+  }''')
+s=rep(s,'''  public static boolean minimapEnabled(){return minimap;}
+  public static void toggleMinimap(){minimap=!minimap;}''',
+'''  public static boolean minimapEnabled(){return option("minimap");}
+  public static void toggleMinimap(){toggleOption("minimap");}''')
+s=rep(s,'''   if(!minimap||mc.player==null||mc.screen!=null||last==null)return;''',
+'''   if(!option("minimap")||mc.player==null||mc.screen!=null||last==null)return;''')
+s=rep(s,'''   g.fill(ox-2,oy-2,ox+91,oy+97,0xc0081d2b);''',
+'''   int infoRows=(option("coords")?2:0)+(option("chunk")?1:0)
+      +(option("daytime")?1:0);
+   g.fill(ox-2,oy-2,ox+91,oy+97+infoRows*10,0xc0081d2b);''')
+s=rep(s,'''   for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){
+    int x=ox+4+(dx+3)*12,y=oy+15+(dz+3)*11;
+    int s=Byte.toUnsignedInt(state(last,cx+dx,cz+dz));
+    V178TerrainMap.draw(mc.level,g,cx+dx,cz+dz,x,y,11);
+    V178TerrainMap.drawClaim(g,x,y,11,s);
+   }
+   V178Waypoints.drawMini(mc.level,g,cx,cz,ox+4,oy+15);
+   g.fill(ox+43,oy+45,ox+48,oy+50,0xffffffff);''',
+'''   boolean drawTerrain=option("terrain"),drawClaims=option("claims"),
+      drawLoaded=option("loaded");
+   for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){
+    int x=ox+4+(dx+3)*12,y=oy+15+(dz+3)*11;
+    int state=Byte.toUnsignedInt(state(last,cx+dx,cz+dz));
+    if(drawTerrain)V178TerrainMap.draw(mc.level,g,cx+dx,cz+dz,x,y,11);
+    else g.fill(x,y,x+11,y+11,0xff1c2530);
+    if(drawClaims)V178TerrainMap.drawClaim(g,x,y,11,
+       drawLoaded?state:state&~4);
+    else if(drawLoaded&&(state&4)!=0)
+     g.fill(x+7,y+8,x+10,y+10,0xff66ee71);
+   }
+   if(option("waypoints"))V178Waypoints.drawMini(mc.level,g,cx,cz,ox+4,oy+15);
+   if(option("player"))g.fill(ox+43,oy+45,ox+48,oy+50,0xffffffff);
+   int infoY=oy+99;
+   var pos=mc.player.blockPosition();
+   if(option("coords")){
+    g.text(mc.font,"X "+pos.getX()+" Y "+pos.getY(),ox+3,infoY,0xffcce8f6);
+    infoY+=10;
+    g.text(mc.font,"Z "+pos.getZ(),ox+3,infoY,0xffcce8f6);
+    infoY+=10;
+   }
+   if(option("chunk")){
+    g.text(mc.font,"Chunk "+cx+", "+cz,ox+3,infoY,0xffcce8f6);
+    infoY+=10;
+   }
+   if(option("daytime")){
+    g.text(mc.font,"Day "+(mc.level.getDayTime()/24000L),ox+3,infoY,0xffcce8f6);
+   }''')
+client.write_text(s,encoding="utf8")
+
+screen=root/"client/V178ClaimsMapScreen.java"
+s=screen.read_text(encoding="utf8")
+s=rep(s,'''      .bounds(347,5,47,20).build());''',
+'''      .bounds(347,5,47,20).build());
+   addRenderableWidget(Button.builder(Component.literal("Settings"),b->
+       Minecraft.getInstance().setScreen(new V178MapSettingsScreen(this)))
+      .bounds(Math.max(5,width-82),5,77,20).build());''')
+s=rep(s,'''   int tile=tile(),x0=left(),y0=top(),w=DIAMETER*tile;''',
+'''   int tile=tile(),x0=left(),y0=top(),w=DIAMETER*tile;
+   boolean showTerrain=V178ClaimsClient.option("map_terrain"),
+      showClaims=V178ClaimsClient.option("map_claims"),
+      showLoaded=V178ClaimsClient.option("loaded");''')
+s=rep(s,'''    V178TerrainMap.draw(world,g,cxWorld,czWorld,px,py,tile);
+    if(!grid)continue;
+    int state=good?Byte.toUnsignedInt(V178ClaimsClient.state(map,cxWorld,czWorld)):0;''',
+'''    if(showTerrain)V178TerrainMap.draw(world,g,cxWorld,czWorld,px,py,tile);
+    else g.fill(px,py,px+tile,py+tile,0xff1c2530);
+    if(!grid||!showClaims)continue;
+    int state=good?Byte.toUnsignedInt(V178ClaimsClient.state(map,cxWorld,czWorld)):0;
+    if(!showLoaded)state&=~4;''')
+s=rep(s,'''  V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER);''',
+'''  if(V178ClaimsClient.option("map_waypoints"))
+    V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER);''')
+s=rep(s,'''  if(world!=null&&Minecraft.getInstance().player!=null){''',
+'''  if(V178ClaimsClient.option("map_player")
+       &&world!=null&&Minecraft.getInstance().player!=null){''')
+s=rep(s,'''   if(k==GLFW.GLFW_KEY_N){V178ClaimsClient.toggleMinimap();return true;}''',
+'''   if(k==GLFW.GLFW_KEY_N){V178ClaimsClient.toggleMinimap();return true;}
+   if(k==GLFW.GLFW_KEY_S){
+    Minecraft.getInstance().setScreen(new V178MapSettingsScreen(this));return true;
+   }''')
+screen.write_text(s,encoding="utf8")
+
+settings=root/"client/V178MapSettingsScreen.java"
+assert not settings.exists(),"V178_MAP_SETTINGS_DUPLICATE"
+settings.write_text(r'''package dev.obsidiannetwork.client;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+
+/** Persistent, independent info and overlay controls; no packets or tick IO. */
+public final class V178MapSettingsScreen extends Screen {
+ private final Screen previous;
+ private static final String[] KEYS={
+   "minimap","terrain","claims","loaded","waypoints","player","coords",
+   "chunk","daytime","map_terrain","map_claims","map_waypoints","map_player"
+ };
+ private static final String[] LABELS={
+   "Minimap","Mini Terrain","Mini Claims","Loaded Chunks",
+   "Mini Waypoints","Mini Player","XYZ Position","Chunk Position",
+   "Game Day","Map Terrain","Map Claims","Map Waypoints","Map Player"
+ };
+ public V178MapSettingsScreen(Screen previous){
+  super(Component.literal("xSxLabs | Map Settings"));this.previous=previous;
+ }
+ @Override protected void init(){
+  int y=Math.max(20,height/2-96),left=width/2-156;
+  for(int i=0;i<KEYS.length;i++){
+   String key=KEYS[i],label=LABELS[i];
+   int col=i/7,row=i%7;
+   String title=label+": "+(V178ClaimsClient.option(key)?"ON":"OFF");
+   addRenderableWidget(Button.builder(Component.literal(title),button->{
+     V178ClaimsClient.toggleOption(key);
+     rebuildWidgets();
+   }).bounds(left+col*158,y+row*22,152,20).build());
+  }
+  addRenderableWidget(Button.builder(Component.literal("Back to Map"),button->onClose())
+      .bounds(width/2-75,y+162,150,20).build());
+ }
+ @Override public void extractBackground(GuiGraphicsExtractor g,int mx,int my,float delta){
+  super.extractBackground(g,mx,my,delta);
+  g.text(font,"MINIMAP + INFO",width/2-153,Math.max(5,height/2-113),0xff9debf2);
+  g.text(font,"FULL MAP",width/2+5,Math.max(5,height/2-113),0xff9debf2);
+ }
+ @Override public void onClose(){Minecraft.getInstance().setScreen(previous);}
+ @Override public boolean isPauseScreen(){return false;}
+}
+''',encoding="utf8")
+print("V178_B1634_PERSISTENT_MINIMAP_AND_FULLSCREEN_INFO_OPTIONS_PASS")

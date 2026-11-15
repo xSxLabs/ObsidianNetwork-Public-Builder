@@ -116,6 +116,32 @@ class FtbStyleMap(unittest.TestCase):
    self.assertIn("if(dx<0||dx>=diameter||dz<0||dz>=diameter)continue",waypoint)
    self.assertNotIn("int dx=(m.x()>>4)-cx+12,dz=(m.z()>>4)-cz+12",waypoint)
    self.assertIn("V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER)",gui)
+ def test_b1634_ftb_style_persistent_map_info_options(self):
+  self.assertIn("B1634_INFO_OPTIONS",B)
+  self.assertIn("V178MapSettingsScreen.java",B)
+  self.assertIn("client-options.properties",B)
+  self.assertIn("StandardCopyOption.ATOMIC_MOVE",B)
+  for key in ("minimap","terrain","claims","loaded","waypoints","player",
+              "coords","chunk","daytime","map_terrain","map_claims",
+              "map_waypoints","map_player"):
+   self.assertIn('"'+key+'"',B)
+  self.assertIn('if(option("waypoints"))V178Waypoints.drawMini',B)
+  self.assertIn('if(V178ClaimsClient.option("map_waypoints"))',B)
+  self.assertIn('if(!showLoaded)state&=~4;',B)
+  self.assertIn('if(k==GLFW.GLFW_KEY_S)',B)
+  self.assertIn('if(!option("minimap")',B)
+  self.assertIn('rebuildWidgets();',B)
+  if not os.environ.get("V1_SOURCE_ROOT"):return
+  d=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client"
+  self.assertTrue((d/"V178MapSettingsScreen.java").is_file())
+  settings=(d/"V178MapSettingsScreen.java").read_text()
+  client=(d/"V178ClaimsClient.java").read_text()
+  screen=(d/"V178ClaimsMapScreen.java").read_text()
+  self.assertIn("V178ClaimsClient.toggleOption(key)",settings)
+  self.assertIn("java.util.Properties",client)
+  self.assertIn("java.nio.file.Files.move(tmp,path",client)
+  self.assertIn('option("minimap")',client)
+  self.assertIn('new V178MapSettingsScreen(this)',screen)
  def test_compiled_source_contract(self):
   if not os.environ.get("V1_SOURCE_ROOT"):return
   j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
