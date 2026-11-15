@@ -33,5 +33,7 @@ class B891ArmBackpack(unittest.TestCase):
   self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')",w)
   self.assertIn("xsxlabs-network-storage-v1.7.6-test-jar",w)
   self.assertIn("if-no-files-found: error",w)
-  self.assertIn('cancel-in-progress: false',w)
+  # v1.7.8 cancels superseded same-branch runs, not any other release branch.
+  self.assertIn('group: clean-v1.7-${{ github.ref }}',w)
+  self.assertIn('cancel-in-progress: true',w)
 if __name__=="__main__":unittest.main()
