@@ -582,7 +582,7 @@ public final class V178ClaimsTeamScreen extends Screen {
  @Override protected void init(){
   int x=width/2-114,y=height/2-45;
   name=new EditBox(font,x,y,228,20,Component.literal("Player name"));
-  name.setMaxLength(16);
+  name.setMaxLength(36);
   addRenderableWidget(name);
   addRenderableWidget(Button.builder(Component.literal("Trust"),b->execute(true))
       .bounds(x,y+27,110,20).build());
@@ -593,7 +593,8 @@ public final class V178ClaimsTeamScreen extends Screen {
  }
  private void execute(boolean trust){
   String player=name.getValue().trim();
-  if(!player.matches("[A-Za-z0-9_]{3,16}"))return;
+  if(!player.matches("[A-Za-z0-9_]{3,16}")
+      &&(trust||!player.matches("[0-9a-fA-F-]{36}")))return;
   var me=Minecraft.getInstance().player;
   if(me!=null&&me.connection!=null)
    me.connection.sendCommand("xsxchunks "+(trust?"trust ":"untrust ")+player);
@@ -601,7 +602,7 @@ public final class V178ClaimsTeamScreen extends Screen {
  @Override public void extractBackground(GuiGraphicsExtractor g,int mx,int my,float delta){
   super.extractBackground(g,mx,my,delta);
   g.text(font,"TRUSTED PLAYERS",width/2-65,height/2-67,0xff9ce8f2);
-  g.text(font,"Enter an online player's name.",width/2-113,height/2+39,0xffbfd4e4);
+  g.text(font,"Trust: online name. Untrust: name or UUID.",width/2-113,height/2+39,0xffbfd4e4);
  }
  @Override public void onClose(){Minecraft.getInstance().setScreen(previous);}
  @Override public boolean isPauseScreen(){return false;}

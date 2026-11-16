@@ -15,7 +15,9 @@ class Limits(unittest.TestCase):
   for marker in ("readLimits(active);","serverconfig","xsxlabs-chunks.properties",
       "Files.isRegularFile(path)","Math.min(2048","Math.min(256",
       "activeMaxLoaded=Math.min(activeMaxLoaded,activeMaxClaims)",
-      ">=activeMaxClaims",">=activeMaxLoaded"):
+      ">=activeMaxClaims",">=activeMaxLoaded","max_team_members",
+      "activeMaxTeamMembers=MAX_TEAM_SIZE","V178_TEAM_LIMIT_DRIFT",
+      ">=activeMaxTeamMembers","<activeMaxTeamMembers"):
    self.assertIn(marker,SOURCE)
   self.assertNotIn("event.getServer().getTickCount()",SOURCE)
  def test_generated(self):
@@ -27,4 +29,7 @@ class Limits(unittest.TestCase):
   self.assertIn("max_force_loaded_chunks",s)
   self.assertIn(">=activeMaxClaims",s)
   self.assertIn(">=activeMaxLoaded",s)
+  self.assertIn("max_team_members",s)
+  self.assertIn(">=activeMaxTeamMembers",s)
+  self.assertIn("<activeMaxTeamMembers",s)
 if __name__=="__main__":unittest.main()

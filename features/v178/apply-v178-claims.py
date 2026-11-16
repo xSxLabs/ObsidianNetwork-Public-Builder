@@ -311,12 +311,29 @@ public final class V178Claims {
   return run(p,action,p.blockPosition().getX()>>4,p.blockPosition().getZ()>>4);
  }
  private static int trust(ServerPlayer p,String name,boolean trust){
-  ServerPlayer other=p.level().getServer().getPlayerList().getPlayerByName(name);
-  if(other==null||other.getUUID().equals(p.getUUID())){tell(p,"Player must be online.");return 0;}
   ensure((ServerLevel)p.level());
-  var trusted=TRUSTED.computeIfAbsent(p.getUUID(),k->new HashSet<>());
-  if(trust)trusted.add(other.getUUID());else trusted.remove(other.getUUID());
-  dirty=true;tell(p,(trust?"Trusted ":"Untrusted ")+other.getGameProfile().name());return 1;
+  ServerPlayer other=p.level().getServer().getPlayerList().getPlayerByName(name);
+  UUID target=other==null?null:other.getUUID();
+  // B1655: Offline removal accepts a previously trusted UUID; grants still
+  // require an online player to avoid granting a mistyped identity.
+  if(!trust&&target==null){
+   try{target=UUID.fromString(name);}catch(IllegalArgumentException ignored){}
+  }
+  if(target==null||target.equals(p.getUUID())){
+   tell(p,trust?"Player must be online.":"Enter an online player or trusted UUID.");
+   return 0;
+  }
+  var trusted=TRUSTED.get(p.getUUID());
+  if(!trust&&(trusted==null||!trusted.contains(target))){
+   tell(p,"Player is not trusted.");return 0;
+  }
+  if(trusted==null)trusted=TRUSTED.computeIfAbsent(p.getUUID(),k->new HashSet<>());
+  boolean changed=trust?trusted.add(target):trusted.remove(target);
+  if(trusted.isEmpty())TRUSTED.remove(p.getUUID());
+  if(!changed){tell(p,"Trust permissions already match.");return 0;}
+  dirty=true;
+  tell(p,(trust?"Trusted ":"Untrusted ")+(other!=null?other.getGameProfile().name():target));
+  return 1;
  }
  @SubscribeEvent public static void commands(RegisterCommandsEvent event){
   var root=Commands.literal("xsxchunks");

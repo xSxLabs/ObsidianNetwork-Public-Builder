@@ -52,6 +52,15 @@ class V178ClaimsMining(unittest.TestCase):
    self.assertIn("protectExplosion(ExplosionEvent.Detonate event)",generated)
    self.assertIn("protectPiston(PistonEvent.Pre event)",generated)
    self.assertIn("for(int distance=-12;distance<=12;distance++)",generated)
+ def test_offline_trust_revoke_contract(self):
+  for token in ("B1655: Offline removal","UUID.fromString(name)",
+                "if(!trust&&target==null)",
+                "if(!trust&&(trusted==null||!trusted.contains(target)))",
+                "if(trusted.isEmpty())TRUSTED.remove(p.getUUID())"):
+   self.assertIn(token,C)
+  gui=(R/"features/v178/apply-v178-ftb-map-gui.py").read_text()
+  self.assertIn("name.setMaxLength(36)",gui)
+  self.assertIn('trust||!player.matches("[0-9a-fA-F-]{36}")',gui)
  def test_mining_resources_and_lag_bounds(self):
   for t in ("MAX_VISITS=8","MAX_BREAKS=2","GLOBAL_BLOCK_BUDGET",
             "if(!world.hasChunkAt(target))return",
