@@ -4437,10 +4437,12 @@ jobs:
                 # B1621: FTB-style original map / claim GUI: drag, modifier force-load,
                 # local loaded-only topographic terrain, bounded server queue.
                 python3 features/v178/apply-v178-ftb-batch.py
+                python3 features/v178/apply-v178-teams.py
                 python3 features/v178/apply-v178-ftb-map-gui.py
                 python3 -m unittest discover -s tests -p 'test_v178_ftb_style_map.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_hud_jei_perf.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_mining_claims.py' -v
+                python3 -m unittest discover -s tests -p 'test_v178_claim_teams.py' -v
               fi
               # One-time BUILD-TIME voice rendering: the shipped mod is fully offline.
               # Fail closed if neural assets are unavailable; NEVER package narrator
