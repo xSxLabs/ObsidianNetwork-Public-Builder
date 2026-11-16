@@ -141,6 +141,27 @@ rep(''' @SubscribeEvent public static void commands(RegisterCommandsEvent event)
   if(target!=null)tell(target,"You were removed from the claim team.");
   return 1;
  }
+ // Only the actual owner may dissolve their team. Revoke all permissions.
+ private static int teamDisband(ServerPlayer p){
+  ensure((ServerLevel)p.level());
+  UUID owner=p.getUUID();
+  if(MEMBER_TEAM.containsKey(owner)){
+   tell(p,"Only a team owner can disband their team.");return 0;
+  }
+  Set<UUID> members=TEAM_MEMBERS.remove(owner);
+  if(members==null||members.isEmpty()){
+   tell(p,"You have no claim team to disband.");return 0;
+  }
+  for(UUID member:members){
+   MEMBER_TEAM.remove(member,owner);
+   ServerPlayer online=p.level().getServer().getPlayerList().getPlayer(member);
+   if(online!=null)tell(online,"Your claim team was disbanded; shared permissions revoked.");
+  }
+  TEAM_INVITES.entrySet().removeIf(e->e.getValue().owner().equals(owner));
+  dirty=true;
+  tell(p,"Claim team disbanded; all member permissions revoked.");
+  return 1;
+ }
  private static int teamList(ServerPlayer p){
   ensure((ServerLevel)p.level());
   UUID leader=MEMBER_TEAM.getOrDefault(p.getUUID(),p.getUUID());
@@ -161,6 +182,8 @@ rep('''  event.getDispatcher().register(root);''',
         .executes(c->teamAccept(c.getSource().getPlayerOrException())))
     .then(Commands.literal("leave")
         .executes(c->teamLeave(c.getSource().getPlayerOrException())))
+    .then(Commands.literal("disband")
+        .executes(c->teamDisband(c.getSource().getPlayerOrException())))
     .then(Commands.literal("kick")
       .then(Commands.argument("player",StringArgumentType.word())
         .executes(c->teamKick(c.getSource().getPlayerOrException(),
@@ -171,7 +194,8 @@ rep('''  event.getDispatcher().register(root);''',
 
 for token in ("TEAM_MEMBERS", "MEMBER_TEAM", "TEAM_INVITES", 'data.append("M\\t")',
               "teamInvite(ServerPlayer", "teamAccept(ServerPlayer", "teamLeave(ServerPlayer",
-              "teamKick(ServerPlayer", 'Commands.literal("team")'):
+              "teamKick(ServerPlayer", "teamDisband(ServerPlayer",
+              'Commands.literal("disband")', 'Commands.literal("team")'):
  assert token in source,("V178_TEAM_GENERATION_GATE_MISSING",token)
 path.write_text(source,encoding="utf-8")
 print("V178_CLAIM_TEAMS_INVITE_ACCEPT_LEAVE_KICK_PERSISTED_PASS")

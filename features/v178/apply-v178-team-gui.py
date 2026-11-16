@@ -126,6 +126,8 @@ public final class V178ClaimTeamScreen extends Screen {
      b->send("accept")).bounds(x+120,y+53,56,20).build());
    addRenderableWidget(Button.builder(Component.literal("Leave"),
      b->send("leave")).bounds(x+180,y+53,56,20).build());
+   addRenderableWidget(Button.builder(Component.literal("Disband team"),
+     btn->send("disband")).bounds(x,y+107,112,20).build());
    addRenderableWidget(Button.builder(Component.literal("Refresh list"),
      b->send("list")).bounds(x,y+80,112,20).build());
    addRenderableWidget(Button.builder(Component.literal("Back to map"),
@@ -138,19 +140,19 @@ public final class V178ClaimTeamScreen extends Screen {
    g.fill(x-6,y-22,x+247,y+258,0xe70c2230);
    g.text(font,"CHUNK TEAM MANAGEMENT",x,y-15,0xff91e8f8);
    g.text(font,"Player / UUID",x,y+12,0xffe3f4fc);
-   g.text(font,status,x,y+108,0xffc5e9dd);
+   g.text(font,status,x,y+132,0xffc5e9dd);
    V178TeamSnapshot data=snapshot;
    if(data==null){
-     g.text(font,"Requesting team membership...",x,y+129,0xffefcf8e);
+     g.text(font,"Requesting team membership...",x,y+153,0xffefcf8e);
      return;
    }
-   g.text(font,"Owner: "+data.leader(),x,y+127,0xff93e8a8);
+   g.text(font,"Owner: "+data.leader(),x,y+151,0xff93e8a8);
    if(data.members().isEmpty()){
-     g.text(font,"No members in this team.",x,y+142,0xffd6e2ef);
+     g.text(font,"No members in this team.",x,y+166,0xffd6e2ef);
    }else{
      String[] members=data.members().split(";");
      for(int i=0;i<Math.min(16,members.length);i++)
-       g.text(font,(i+1)+". "+members[i],x,y+142+i*8,0xffd6e2ef);
+       g.text(font,(i+1)+". "+members[i],x,y+166+i*8,0xffd6e2ef);
    }
  }
  @Override public void onClose(){Minecraft.getInstance().setScreen(parent);}
