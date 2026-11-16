@@ -1072,7 +1072,7 @@ s=rep_indent(s,'''   for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){
     infoY+=10;
    }
    if(option("daytime")){
-    g.text(mc.font,"Day "+(mc.level.getDayTime()/24000L),ox+3,infoY,0xffcce8f6);
+    g.text(mc.font,"Day "+(mc.level.getLevelData().getDayTime()/24000L),ox+3,infoY,0xffcce8f6);
    }''')
 client.write_text(s,encoding="utf8")
 
@@ -1173,6 +1173,11 @@ s=rep_indent(s,'''  while(TOGGLE_MINIMAP.consumeClick())minimap=!minimap;''',
 s=rep_indent(s,''' public static boolean toggleMinimapLegacyUnused(){minimap=!minimap;}''',
 ''' public static boolean toggleMinimapLegacyUnused(){toggleOption("minimap");}''') if False else s
 s=rep_indent(s,''' public static void toggleMinimap(){minimap=!minimap;}''','')
+# B1641: B1621 also generated minimapEnabled(), which collides with the
+# persisted implementation inserted above. Remove the legacy declaration.
+s=rep_indent(s,''' public static boolean minimapEnabled(){return minimap;}''','')
+assert s.count('public static boolean minimapEnabled(){return option("minimap");}')==1,"V178_PERSISTED_MINIMAP_ENABLED_MISSING_OR_DUPLICATED"
+assert "public static boolean minimapEnabled(){return minimap;}" not in s,"V178_LEGACY_MINIMAP_ENABLED_REFERENCE"
 assert s.count('public static void toggleMinimap(){toggleOption("minimap");}')==1,"V178_PERSISTED_TOGGLE_MISSING_OR_DUPLICATED"
 assert "minimap=!minimap;" not in s,"V178_LEGACY_MINIMAP_REFERENCE"
 client.write_text(s,encoding="utf8")

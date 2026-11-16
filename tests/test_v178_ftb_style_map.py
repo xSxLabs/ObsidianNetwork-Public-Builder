@@ -143,6 +143,10 @@ class FtbStyleMap(unittest.TestCase):
   self.assertIn('option("minimap")',client)
   self.assertIn("while(TOGGLE_MINIMAP.consumeClick())toggleMinimap();",client)
   self.assertNotIn("minimap=!minimap;",client)
+  self.assertEqual(client.count('public static boolean minimapEnabled(){return option("minimap");}'),1)
+  self.assertNotIn('public static boolean minimapEnabled(){return minimap;}',client)
+  self.assertIn('mc.level.getLevelData().getDayTime()',client)
+  self.assertNotIn('mc.level.getDayTime()',client)
   self.assertEqual(client.count('public static void toggleMinimap(){toggleOption("minimap");}'),1)
   self.assertIn('new V178MapSettingsScreen(this)',screen)
  def test_compiled_source_contract(self):
