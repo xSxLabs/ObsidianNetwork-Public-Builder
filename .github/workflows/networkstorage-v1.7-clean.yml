@@ -4438,6 +4438,8 @@ jobs:
                 # local loaded-only topographic terrain, bounded server queue.
                 python3 features/v178/apply-v178-ftb-batch.py
                 python3 features/v178/apply-v178-teams.py
+                python3 features/v178/apply-v178-server-config.py
+                python3 features/v178/apply-v178-fluid-boundary.py
                 python3 features/v178/apply-v178-ftb-map-gui.py
                 python3 features/v178/apply-v178-mining-map-gui.py
                 python3 -m unittest discover -s tests -p 'test_v178_ftb_style_map.py' -v
@@ -4445,6 +4447,8 @@ jobs:
                 python3 -m unittest discover -s tests -p 'test_v178_mining_claims.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_claim_teams.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_mining_map_gui.py' -v
+                python3 -m unittest discover -s tests -p 'test_v178_server_config.py' -v
+                python3 -m unittest discover -s tests -p 'test_v178_fluid_boundary.py' -v
               fi
               # One-time BUILD-TIME voice rendering: the shipped mod is fully offline.
               # Fail closed if neural assets are unavailable; NEVER package narrator
