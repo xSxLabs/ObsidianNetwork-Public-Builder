@@ -116,10 +116,10 @@ patch(terrain,''' private static int roundRobin;''',r''' private static int roun
  }
 ''')
 patch(terrain,''' private static void flush(){
-   if(!dirty||mapFile==null||mapDimension==null)return;''',
+  if(!dirty||mapFile==null||mapDimension==null)return;''',
 ''' private static void flush(){
-   flushRegions();
-   if(!dirty||mapFile==null||mapDimension==null)return;''')
+  flushRegions();
+  if(!dirty||mapFile==null||mapDimension==null)return;''')
 patch(terrain,'''  if(map.containsKey(key)||!world.hasChunk(cx,cz))return;''',
 '''  if(map.containsKey(key))return;
   // B1657: restore previously explored tiles even when the chunk is unloaded.
@@ -128,19 +128,19 @@ patch(terrain,'''  if(map.containsKey(key)||!world.hasChunk(cx,cz))return;''',
   if(!world.hasChunk(cx,cz))return;''')
 patch(terrain,'''  map.put(key,colors);dirty=true;''',
 '''  map.put(key,colors);archiveStore(cx,cz,colors);dirty=true;''')
-patch(terrain,'''   flush();COLORS.clear();roundRobin=0;
-   dirty=false;mapIdentity=next;''',
-'''   flush();REGIONS.clear();COLORS.clear();roundRobin=0;
-   dirty=false;mapIdentity=next;''')
+patch(terrain,'''  flush();COLORS.clear();roundRobin=0;
+  dirty=false;mapIdentity=next;''',
+'''  flush();REGIONS.clear();COLORS.clear();roundRobin=0;
+  dirty=false;mapIdentity=next;''')
 # clear() still owns its own lifecycle; match its unique tail independently.
-patch(terrain,'''   flush();COLORS.clear();roundRobin=0;
-   mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;''',
-'''   flush();REGIONS.clear();COLORS.clear();roundRobin=0;
-   mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;''')
-patch(terrain,'''     found.put(pos,pixels);''',
-'''     found.put(pos,pixels);
-     // One-time migration of old bounded explored cache into region files.
-     archiveStore((int)(pos>>32),(int)pos,pixels);''')
+patch(terrain,'''  flush();COLORS.clear();roundRobin=0;
+  mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;''',
+'''  flush();REGIONS.clear();COLORS.clear();roundRobin=0;
+  mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;''')
+patch(terrain,'''    found.put(pos,pixels);''',
+'''    found.put(pos,pixels);
+    // One-time migration of old bounded explored cache into region files.
+    archiveStore((int)(pos>>32),(int)pos,pixels);''')
 # Verify core contract and do not allow disk access on rendering.
 generated=terrain.read_text(encoding="utf-8")
 for marker in ("B1657_REGION_ARCHIVE","archiveLookup(cx,cz)",
