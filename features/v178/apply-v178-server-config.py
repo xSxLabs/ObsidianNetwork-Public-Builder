@@ -71,7 +71,7 @@ s=s.replace(">=MAX_CLAIMS",">=activeMaxClaims").replace(">=MAX_LOADED",">=active
 nt1=s.count(">=MAX_TEAM_SIZE")
 nt2=s.count("<MAX_TEAM_SIZE")
 nd=s.count('"+MAX_TEAM_SIZE+"')
-assert nt1==2 and nt2==1 and nd==2,("V178_TEAM_LIMIT_DRIFT",nt1,nt2,nd)
+assert nt1==2 and nt2==1 and nd==1,("V178_TEAM_LIMIT_DRIFT",nt1,nt2,nd)
 s=s.replace(">=MAX_TEAM_SIZE",">=activeMaxTeamMembers")
 s=s.replace("<MAX_TEAM_SIZE","<activeMaxTeamMembers")
 s=s.replace('"+MAX_TEAM_SIZE+"','"+activeMaxTeamMembers+"')
