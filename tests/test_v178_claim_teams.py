@@ -20,6 +20,21 @@ class ClaimTeams(unittest.TestCase):
    self.assertIn(token,PATCH)
   self.assertNotIn("TICKETS.forceChunk(",PATCH)
   self.assertNotIn("CLAIMS.put(",PATCH)
+ def test_invite_only_team_disband_revokes_pending_invitations(self):
+  # The owner may disband even before anyone accepts an invite. The
+  # remaining invites must be discarded before the no-team early return.
+  start=PATCH.index("private static int teamDisband(ServerPlayer p)")
+  end=PATCH.index("private static int teamList(ServerPlayer p)",start)
+  disband=PATCH[start:end]
+  self.assertIn("boolean revokedInvites=TEAM_INVITES.entrySet().removeIf",disband)
+  self.assertIn("if((members==null||members.isEmpty())&&!revokedInvites)",disband)
+  self.assertLess(disband.index("boolean revokedInvites="),
+                  disband.index("if((members==null||members.isEmpty())&&!revokedInvites)"))
+  self.assertNotIn("if(members==null||members.isEmpty())",disband)
+  self.assertIn("if(members!=null)for(UUID member:members)",disband)
+  self.assertIn("if(members!=null&&!members.isEmpty())dirty=true;",disband)
+  self.assertIn("MEMBER_TEAM.remove(member,owner)",disband)
+  self.assertIn('Commands.literal("disband")',PATCH)
  def test_generated_backend(self):
   root=os.environ.get("V1_SOURCE_ROOT")
   if not root:return

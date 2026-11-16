@@ -149,17 +149,22 @@ rep(''' @SubscribeEvent public static void commands(RegisterCommandsEvent event)
    tell(p,"Only a team owner can disband their team.");return 0;
   }
   Set<UUID> members=TEAM_MEMBERS.remove(owner);
-  if(members==null||members.isEmpty()){
-   tell(p,"You have no claim team to disband.");return 0;
+  // B1654: an invitation-only team must also be disbandable. Otherwise
+  // pending invitations could still be accepted after the owner's disband.
+  // Remove pending invitations first, including when the team has no members.
+  boolean revokedInvites=TEAM_INVITES.entrySet().removeIf(e->e.getValue().owner().equals(owner));
+  if((members==null||members.isEmpty())&&!revokedInvites){
+   tell(p,"You have no claim team or pending invitations to disband.");return 0;
   }
-  for(UUID member:members){
+  if(members!=null)for(UUID member:members){
    MEMBER_TEAM.remove(member,owner);
    ServerPlayer online=p.level().getServer().getPlayerList().getPlayer(member);
    if(online!=null)tell(online,"Your claim team was disbanded; shared permissions revoked.");
   }
-  TEAM_INVITES.entrySet().removeIf(e->e.getValue().owner().equals(owner));
-  dirty=true;
-  tell(p,"Claim team disbanded; all member permissions revoked.");
+  // Invite records are intentionally transient. Only persisted membership
+  // changes need to trigger a world-save, avoiding unnecessary disk I/O.
+  if(members!=null&&!members.isEmpty())dirty=true;
+  tell(p,"Claim team disbanded; all member permissions and pending invitations revoked.");
   return 1;
  }
  private static int teamList(ServerPlayer p){
