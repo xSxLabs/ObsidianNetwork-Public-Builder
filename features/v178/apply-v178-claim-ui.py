@@ -8,6 +8,25 @@ ROOT=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 def patch(rel,old,new):
  path=ROOT/rel;s=path.read_text(encoding="utf-8")
  count=s.count(old)
+ if count!=1:
+  # B1663: downstream generators produce equivalent Java with either
+  # two or three leading spaces. Shift all lines together, not substrings.
+  def indent_shift(value,delta):
+   result=[]
+   for line in value.split("\n"):
+    if not line.strip():
+     result.append(line);continue
+    spaces=len(line)-len(line.lstrip(" "))
+    if spaces+delta<0:return None
+    result.append(" "*(spaces+delta)+line[spaces:])
+   return "\n".join(result)
+  for delta in (-1,1,-2,2):
+   candidate=indent_shift(old,delta)
+   replacement=indent_shift(new,delta)
+   if candidate is not None and s.count(candidate)==1:
+    old,new=candidate,replacement
+    count=1
+    break
  assert count==1,("B1662_GUI_SOURCE_DRIFT",rel,count,old[:120])
  path.write_text(s.replace(old,new,1),encoding="utf-8")
 
