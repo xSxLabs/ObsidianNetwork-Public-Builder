@@ -1072,7 +1072,7 @@ s=rep_indent(s,'''   for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){
     infoY+=10;
    }
    if(option("daytime")){
-    g.text(mc.font,"Day "+(mc.level.getLevelData().getDayTime()/24000L),ox+3,infoY,0xffcce8f6);
+    g.text(mc.font,"Day "+(mc.level.getGameTime()/24000L),ox+3,infoY,0xffcce8f6);
    }''')
 client.write_text(s,encoding="utf8")
 
@@ -1182,3 +1182,6 @@ assert s.count('public static void toggleMinimap(){toggleOption("minimap");}')==
 assert "minimap=!minimap;" not in s,"V178_LEGACY_MINIMAP_REFERENCE"
 client.write_text(s,encoding="utf8")
 print("V178_B1635_PERSISTENT_MINIMAP_KEYBIND_COMPAT_PASS")
+
+# B1642: use the client-level game tick counter for the optional elapsed-day HUD.
+# ClientLevelData has no getDayTime() in the current mappings.
