@@ -604,7 +604,7 @@ print("V178_CLAIMS_SERVER_TICKETS_CLAIM_QUOTA_MINIMAP_WORLDMAP_INSTALLED")
 # protection task requiring a verified flow hook.
 claim_path=J/"claims/V178Claims.java"
 fluid_source=claim_path.read_text(encoding="utf8")
-fluid_anchor='''  // B1643: server-authoritative explosion block protection. No chunk loading,'''
+fluid_anchor=''' // B1643: server-authoritative explosion block protection. No chunk loading,'''
 fluid_guard='''  // B1646_FLUID_FORMATION_GUARD: block formation caused by fluids has no
   // accountable player. Cancel only if the destination belongs to a claim;
   // unclaimed cobblestone/obsidian formation remains unchanged.
