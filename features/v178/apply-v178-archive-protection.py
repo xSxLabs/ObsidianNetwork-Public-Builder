@@ -128,12 +128,10 @@ patch(terrain,'''  if(map.containsKey(key)||!world.hasChunk(cx,cz))return;''',
   if(!world.hasChunk(cx,cz))return;''')
 patch(terrain,'''  map.put(key,colors);dirty=true;''',
 '''  map.put(key,colors);archiveStore(cx,cz,colors);dirty=true;''')
-patch(terrain,'''   flush();COLORS.clear();roundRobin=0;''',
-'''   flush();REGIONS.clear();COLORS.clear();roundRobin=0;''')
 patch(terrain,'''   flush();COLORS.clear();roundRobin=0;
-   mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;''',
+   dirty=false;mapIdentity=next;''',
 '''   flush();REGIONS.clear();COLORS.clear();roundRobin=0;
-   mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;''') if False else None
+   dirty=false;mapIdentity=next;''')
 # clear() still owns its own lifecycle; match its unique tail independently.
 patch(terrain,'''   flush();COLORS.clear();roundRobin=0;
    mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;''',

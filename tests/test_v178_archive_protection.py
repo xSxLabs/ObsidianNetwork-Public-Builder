@@ -48,5 +48,4 @@ class B1657ArchiveAndProtection(unittest.TestCase):
   self.assertEqual(terrain.count("archiveStore((int)(pos>>32),(int)pos,pixels)"),1)
   self.assertIn("getAffectedBlocks().removeIf",claims)
   self.assertIn("PlayerInteractEvent.EntityInteractSpecific event)",claims)
-  self.assertIn("protected", "protected")
 if __name__=="__main__":unittest.main()
