@@ -36,6 +36,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -208,6 +209,29 @@ public final class V178Claims {
   if(event.getLevel() instanceof ServerLevel level
      &&event.getEntity() instanceof ServerPlayer player
      &&!mayModify(level,event.getPos(),player.getUUID()))
+   event.setCanceled(true);
+ }
+ // B1643: server-authoritative explosion block protection. No chunk loading,
+ // no event cancellation affecting the rest of the explosion or unclaimed blocks.
+ @SubscribeEvent public static void protectExplosion(ExplosionEvent.Detonate event){
+  if(!(event.getLevel() instanceof ServerLevel level))return;
+  ensure(level);
+  Map<Long,Claim> claims=map(level);
+  if(claims.isEmpty())return;
+  event.getAffectedBlocks().removeIf(pos->
+    claims.containsKey(key(pos.getX()>>4,pos.getZ()>>4)));
+ }
+ // B1643: fail-closed at piston claim borders; a moving piston must not
+ // move blocks into or out of a claimed cell without an accountable player.
+ @SubscribeEvent public static void protectPiston(BlockEvent.PistonEvent.Pre event){
+  if(!(event.getLevel() instanceof ServerLevel level))return;
+  ensure(level);
+  Map<Long,Claim> claims=map(level);
+  if(claims.isEmpty())return;
+  BlockPos piston=event.getPos();
+  BlockPos facing=piston.relative(event.getDirection());
+  if(claims.containsKey(key(piston.getX()>>4,piston.getZ()>>4))
+     ||claims.containsKey(key(facing.getX()>>4,facing.getZ()>>4)))
    event.setCanceled(true);
  }
  private static void tell(ServerPlayer p,String msg){

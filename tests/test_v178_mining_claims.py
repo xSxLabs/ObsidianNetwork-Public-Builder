@@ -33,6 +33,18 @@ class V178ClaimsMining(unittest.TestCase):
   self.assertNotIn("BlockEvent.BreakEvent",C)
   self.assertNotIn("net.neoforged.neoforge.network.PacketDistributor.sendToServer",C)
   self.assertIn("REQUEST_CENTERS",C)
+ def test_explosion_and_piston_claim_border_protection(self):
+  self.assertIn("protectExplosion(ExplosionEvent.Detonate event)",C)
+  self.assertIn("event.getAffectedBlocks().removeIf",C)
+  self.assertIn("claims.containsKey(key(pos.getX()>>4,pos.getZ()>>4))",C)
+  self.assertIn("protectPiston(BlockEvent.PistonEvent.Pre event)",C)
+  self.assertIn("piston.relative(event.getDirection())",C)
+  self.assertIn("event.setCanceled(true);",C)
+  self.assertNotIn("getChunk(",C[C.index(" // B1643:"):C.index(" private static void tell(")])
+  if os.environ.get("V1_SOURCE_ROOT"):
+   generated=(Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/claims/V178Claims.java").read_text()
+   self.assertIn("protectExplosion(ExplosionEvent.Detonate event)",generated)
+   self.assertIn("protectPiston(BlockEvent.PistonEvent.Pre event)",generated)
  def test_mining_resources_and_lag_bounds(self):
   for t in ("MAX_VISITS=8","MAX_BREAKS=2","GLOBAL_BLOCK_BUDGET",
             "if(!world.hasChunkAt(target))return",
