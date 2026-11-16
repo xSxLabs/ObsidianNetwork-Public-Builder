@@ -596,3 +596,31 @@ public final class V178ClaimsMapScreen extends Screen {
 }
 ''')
 print("V178_CLAIMS_SERVER_TICKETS_CLAIM_QUOTA_MINIMAP_WORLDMAP_INSTALLED")
+
+
+# B1646: fluid-triggered block formation (lava/water cobblestone, obsidian,
+# lava ignition) must not mutate a claimed destination without a player.
+# This event does not cover ordinary fluid spread; that remains a separate
+# protection task requiring a verified flow hook.
+claim_path=root/"claims/V178Claims.java"
+fluid_source=claim_path.read_text(encoding="utf8")
+fluid_anchor='''  // B1643: server-authoritative explosion block protection. No chunk loading,'''
+fluid_guard='''  // B1646_FLUID_FORMATION_GUARD: block formation caused by fluids has no
+  // accountable player. Cancel only if the destination belongs to a claim;
+  // unclaimed cobblestone/obsidian formation remains unchanged.
+  @SubscribeEvent public static void protectFluidFormation(BlockEvent.FluidPlaceBlockEvent event){
+   if(!(event.getLevel() instanceof ServerLevel level))return;
+   ensure(level);
+   BlockPos destination=event.getPos();
+   if(map(level).containsKey(key(destination.getX()>>4,destination.getZ()>>4)))
+    event.setCanceled(true);
+  }
+'''
+assert fluid_source.count(fluid_anchor)==1,"V178_FLUID_FORMATION_ANCHOR_MISSING_OR_DUPLICATED"
+assert "protectFluidFormation(" not in fluid_source,"V178_FLUID_FORMATION_ALREADY_PRESENT"
+fluid_source=fluid_source.replace(fluid_anchor,fluid_guard+fluid_anchor,1)
+assert fluid_source.count("BlockEvent.FluidPlaceBlockEvent event")==1,"V178_FLUID_FORMATION_DUPLICATE"
+assert "if(map(level).containsKey(key(destination.getX()>>4,destination.getZ()>>4)))" in fluid_source,"V178_FLUID_FORMATION_CLAIM_CHECK_MISSING"
+assert "event.setCanceled(true);" in fluid_guard,"V178_FLUID_FORMATION_CANCEL_MISSING"
+claim_path.write_text(fluid_source,encoding="utf8")
+print("V178_B1646_FLUID_FORMATION_GUARD_PASS")
