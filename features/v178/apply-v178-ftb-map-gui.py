@@ -590,6 +590,13 @@ public final class V178ClaimsTeamScreen extends Screen {
       .bounds(x+118,y+27,110,20).build());
   addRenderableWidget(Button.builder(Component.literal("Back"),b->onClose())
       .bounds(x,y+54,228,20).build());
+  addRenderableWidget(Button.builder(Component.literal("List trusted UUIDs"),b->{
+    var me=Minecraft.getInstance().player;
+    if(me!=null&&me.connection!=null){
+      me.connection.sendCommand("xsxchunks trusted");
+      onClose(); // Server response is readable in chat, not hidden behind GUI.
+    }
+  }).bounds(x,y+81,228,20).build());
  }
  private void execute(boolean trust){
   String player=name.getValue().trim();

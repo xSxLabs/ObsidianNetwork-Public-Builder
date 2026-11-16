@@ -41,6 +41,10 @@ class V178ClaimsMining(unittest.TestCase):
   self.assertIn("claims.containsKey(key(pos.getX()>>4,pos.getZ()>>4))",C)
   self.assertIn("protectPiston(PistonEvent.Pre event)",C)
   self.assertIn("B1645_PISTON_CHAIN_GUARD",C)
+  self.assertIn("B1661_PISTON_SAME_OWNER",C)
+  self.assertIn("UUID sourceOwner=source==null?null:source.owner();",C)
+  self.assertIn("UUID affectedOwner=touched==null?null:touched.owner();",C)
+  self.assertIn("if(!Objects.equals(sourceOwner,affectedOwner))",C)
   self.assertIn("for(int distance=-12;distance<=12;distance++)",C)
   self.assertIn("piston.relative(event.getDirection(),distance)",C)
   self.assertNotIn("piston.relative(event.getDirection());",C)
@@ -52,6 +56,31 @@ class V178ClaimsMining(unittest.TestCase):
    self.assertIn("protectExplosion(ExplosionEvent.Detonate event)",generated)
    self.assertIn("protectPiston(PistonEvent.Pre event)",generated)
    self.assertIn("for(int distance=-12;distance<=12;distance++)",generated)
+ def test_piston_same_owner_and_cross_owner_cases(self):
+  # A piston in the same owner's claimed chunk should not be blocked just
+  # for being claimed. Both unclaimed and other-owner boundaries deny movement.
+  import uuid
+  alpha=str(uuid.UUID(int=1));beta=str(uuid.UUID(int=2))
+  pairs=[(None,None,False),(alpha,alpha,False),(None,alpha,True),
+         (alpha,None,True),(alpha,beta,True),(beta,alpha,True)]
+  for source,touched,should_cancel in pairs:
+   self.assertEqual(source!=touched,should_cancel)
+  self.assertNotIn("if(claims.containsKey(key(affected.getX()>>4,affected.getZ()>>4)))",C)
+  if os.environ.get("V1_SOURCE_ROOT"):
+   src=(Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/claims/V178Claims.java").read_text()
+   self.assertIn("B1661_PISTON_SAME_OWNER",src)
+   self.assertIn("Objects.equals(sourceOwner,affectedOwner)",src)
+ def test_trust_roster_is_server_owned_bounded_and_gui_accessible(self):
+  for token in ("B1661_TRUST_ROSTER","Set<UUID> trusted=TRUSTED.getOrDefault",
+                "if(displayed++>=64)break","Commands.literal(\"trusted\")",
+                "listTrust(c.getSource().getPlayerOrException())"):
+   self.assertIn(token,C)
+  gui=(R/"features/v178/apply-v178-ftb-map-gui.py").read_text()
+  self.assertIn('sendCommand("xsxchunks trusted")',gui)
+  self.assertIn('Component.literal("List trusted UUIDs")',gui)
+  if os.environ.get("V1_SOURCE_ROOT"):
+   src=(Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/claims/V178Claims.java").read_text()
+   self.assertIn('Commands.literal("trusted")',src)
  def test_offline_trust_revoke_contract(self):
   for token in ("B1655: Offline removal","UUID.fromString(name)",
                 "if(!trust&&target==null)",

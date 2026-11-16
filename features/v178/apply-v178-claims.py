@@ -232,11 +232,18 @@ public final class V178Claims {
   // B1645_PISTON_CHAIN_GUARD: a piston can move a chain of up to 12
   // blocks. Checking only the adjacent block leaves protected chunks open
   // to long pushes. Check both directions to cover sticky retraction too.
-  // O(25) hash lookups, no block reads or chunk loading.
+  // B1661_PISTON_SAME_OWNER: previous code canceled every piston wholly
+  // inside a claimed area. Allow same-owner piston lines but fail closed if
+  // any possible moved block crosses an owner/unclaimed claim boundary.
+  // Conservative 25 hash lookups, no block reads and no chunk loading.
   BlockPos piston=event.getPos();
+  Claim source=claims.get(key(piston.getX()>>4,piston.getZ()>>4));
+  UUID sourceOwner=source==null?null:source.owner();
   for(int distance=-12;distance<=12;distance++){
    BlockPos affected=piston.relative(event.getDirection(),distance);
-   if(claims.containsKey(key(affected.getX()>>4,affected.getZ()>>4))){
+   Claim touched=claims.get(key(affected.getX()>>4,affected.getZ()>>4));
+   UUID affectedOwner=touched==null?null:touched.owner();
+   if(!Objects.equals(sourceOwner,affectedOwner)){
     event.setCanceled(true);
     return;
    }
@@ -335,6 +342,20 @@ public final class V178Claims {
   tell(p,(trust?"Trusted ":"Untrusted ")+(other!=null?other.getGameProfile().name():target));
   return 1;
  }
+ // B1661_TRUST_ROSTER: owner-only, bounded audit of trusted UUIDs.
+ // Members can be revoked offline using /xsxchunks untrust UUID.
+ private static int listTrust(ServerPlayer p){
+  ensure((ServerLevel)p.level());
+  Set<UUID> trusted=TRUSTED.getOrDefault(p.getUUID(),Set.of());
+  tell(p,"Trusted players: "+trusted.size());
+  int displayed=0;
+  for(UUID member:trusted){
+   if(displayed++>=64)break;
+   tell(p,"Trusted UUID: "+member);
+  }
+  if(trusted.size()>64)tell(p,"Showing first 64; untrust by UUID.");
+  return 1;
+ }
  @SubscribeEvent public static void commands(RegisterCommandsEvent event){
   var root=Commands.literal("xsxchunks");
   for(String action:new String[]{"claim","unclaim","load","unload","view"}){
@@ -352,6 +373,8 @@ public final class V178Claims {
   root.then(Commands.literal("untrust").then(Commands.argument("player",StringArgumentType.word())
       .executes(c->trust(c.getSource().getPlayerOrException(),
           StringArgumentType.getString(c,"player"),false))));
+  root.then(Commands.literal("trusted")
+      .executes(c->listTrust(c.getSource().getPlayerOrException())));
   event.getDispatcher().register(root);
  }
 }
