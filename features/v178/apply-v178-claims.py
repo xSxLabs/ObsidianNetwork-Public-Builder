@@ -602,7 +602,7 @@ print("V178_CLAIMS_SERVER_TICKETS_CLAIM_QUOTA_MINIMAP_WORLDMAP_INSTALLED")
 # lava ignition) must not mutate a claimed destination without a player.
 # This event does not cover ordinary fluid spread; that remains a separate
 # protection task requiring a verified flow hook.
-claim_path=root/"claims/V178Claims.java"
+claim_path=J/"claims/V178Claims.java"
 fluid_source=claim_path.read_text(encoding="utf8")
 fluid_anchor='''  // B1643: server-authoritative explosion block protection. No chunk loading,'''
 fluid_guard='''  // B1646_FLUID_FORMATION_GUARD: block formation caused by fluids has no
