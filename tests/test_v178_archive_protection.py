@@ -37,6 +37,22 @@ class B1657ArchiveAndProtection(unittest.TestCase):
                  "!mayModify(level,event.getPos(),player.getUUID())",
                  "event.setCanceled(true);"):
    self.assertIn(marker,SCRIPT)
+ def test_b1660_full_map_scan_and_entity_protection(self):
+  for marker in ("B1660_VIEWPORT_SCAN", "fullMap?12:5", "fullMap?6:1",
+                 "V178MiningAreaScreen","V178ClaimsMapScreen",
+                 "roundRobin++%(side*side)", "B1660_PROTECTED_ENTITIES",
+                 "AttackEntityEvent event", "event.getTarget().blockPosition()",
+                 "getAffectedEntities().removeIf(entity->",
+                 "if(entity instanceof ServerPlayer)return false;"):
+   self.assertIn(marker,SCRIPT)
+  self.assertIn("if(!world.hasChunk(cx,cz))return;",SCRIPT)
+  self.assertNotIn("level.getChunk(",SCRIPT)
+  for radius in (5,12):
+   side=2*radius+1
+   visited={(i%side-radius,i//side-radius) for i in range(side*side)}
+   self.assertEqual(len(visited),side*side)
+   self.assertIn((-radius,-radius),visited)
+   self.assertIn((radius,radius),visited)
  def test_compiled_java_source_guards(self):
   root=os.environ.get("V1_SOURCE_ROOT")
   if not root:return
@@ -50,5 +66,8 @@ class B1657ArchiveAndProtection(unittest.TestCase):
   self.assertEqual(terrain.count("private static void flushRegions()"),1)
   self.assertEqual(terrain.count("archiveStore((int)(pos>>32),(int)pos,pixels)"),1)
   self.assertIn("getAffectedBlocks().removeIf",claims)
+  self.assertIn("getAffectedEntities().removeIf",claims)
+  self.assertIn("protectEntityAttack(AttackEntityEvent event)",claims)
+  self.assertIn("int attempts=fullMap?6:1;",terrain)
   self.assertIn("PlayerInteractEvent.EntityInteractSpecific event)",claims)
 if __name__=="__main__":unittest.main()

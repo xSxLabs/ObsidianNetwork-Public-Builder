@@ -126,6 +126,19 @@ patch(terrain,'''  if(map.containsKey(key)||!world.hasChunk(cx,cz))return;''',
   int[] explored=archiveLookup(cx,cz);
   if(explored!=null){map.put(key,explored);return;}
   if(!world.hasChunk(cx,cz))return;''')
+patch(terrain,'''  int index=roundRobin++%121;
+  sample(world,cx+(index%11)-5,cz+(index/11)-5);''',
+'''  // B1660_VIEWPORT_SCAN: the full 25x25 claims/mining map needs its
+  // whole viewport explored; formerly only the central 11x11 was scanned.
+  // Six bounded client-tick samples, zero terrain reads in rendering.
+  boolean fullMap=Minecraft.getInstance().screen instanceof V178ClaimsMapScreen
+    ||Minecraft.getInstance().screen instanceof V178MiningAreaScreen;
+  int radius=fullMap?12:5,side=2*radius+1;
+  int attempts=fullMap?6:1;
+  for(int i=0;i<attempts;i++){
+   int index=roundRobin++%(side*side);
+   sample(world,cx+(index%side)-radius,cz+(index/side)-radius);
+  }''')
 patch(terrain,'''  map.put(key,colors);dirty=true;''',
 '''  map.put(key,colors);archiveStore(cx,cz,colors);dirty=true;''')
 patch(terrain,'''  flush();COLORS.clear();roundRobin=0;
@@ -152,6 +165,9 @@ render=generated[generated.index(" public static void draw(ClientLevel world"):g
 assert "region(" not in render and "java.nio.file.Files" not in render
 
 claims=root/"claims/V178Claims.java"
+patch(claims,'''import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;''',
+'''import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;''')
 patch(claims,''' // B1643: server-authoritative explosion block protection.''',
 ''' // B1657: intercept attack hooks and both 26.1 entity interaction stages
  // before tools can operate on protected blocks/animals/vehicles. These
@@ -176,6 +192,30 @@ patch(claims,''' // B1643: server-authoritative explosion block protection.''',
    event.setCanceled(true);
  }
  // B1643: server-authoritative explosion block protection.''')
+# B1660_PROTECTED_ENTITIES: server-only direct-attack guard and
+# explosion entity filtering. Vanilla player explosion damage stays intact.
+patch(claims,''' // B1643: server-authoritative explosion block protection.''',
+''' // Protect entities at their actual position, not the attacker's chunk.
+ @SubscribeEvent public static void protectEntityAttack(AttackEntityEvent event){
+  if(event.getEntity() instanceof ServerPlayer player
+     &&player.level() instanceof ServerLevel level
+     &&!mayModify(level,event.getTarget().blockPosition(),player.getUUID()))
+   event.setCanceled(true);
+ }
+ // B1643: server-authoritative explosion block protection.''')
+patch(claims,'''  event.getAffectedBlocks().removeIf(pos->
+    claims.containsKey(key(pos.getX()>>4,pos.getZ()>>4)));
+ }''',
+'''  event.getAffectedBlocks().removeIf(pos->
+    claims.containsKey(key(pos.getX()>>4,pos.getZ()>>4)));
+  // Protect animals, dropped items and decorative entities in claimed
+  // chunks, without changing player damage or PvP explosion behavior.
+  event.getAffectedEntities().removeIf(entity->{
+   if(entity instanceof ServerPlayer)return false;
+   BlockPos affected=entity.blockPosition();
+   return claims.containsKey(key(affected.getX()>>4,affected.getZ()>>4));
+  });
+ }''')
 generated=claims.read_text(encoding="utf-8")
 for marker in ("leftClickClaim(PlayerInteractEvent.LeftClickBlock",
                "entityClickClaim(PlayerInteractEvent.EntityInteract event)",
