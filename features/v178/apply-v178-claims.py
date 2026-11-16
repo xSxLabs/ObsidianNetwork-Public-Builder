@@ -229,11 +229,18 @@ public final class V178Claims {
   ensure(level);
   Map<Long,Claim> claims=map(level);
   if(claims.isEmpty())return;
+  // B1645_PISTON_CHAIN_GUARD: a piston can move a chain of up to 12
+  // blocks. Checking only the adjacent block leaves protected chunks open
+  // to long pushes. Check both directions to cover sticky retraction too.
+  // O(25) hash lookups, no block reads or chunk loading.
   BlockPos piston=event.getPos();
-  BlockPos facing=piston.relative(event.getDirection());
-  if(claims.containsKey(key(piston.getX()>>4,piston.getZ()>>4))
-     ||claims.containsKey(key(facing.getX()>>4,facing.getZ()>>4)))
-   event.setCanceled(true);
+  for(int distance=-12;distance<=12;distance++){
+   BlockPos affected=piston.relative(event.getDirection(),distance);
+   if(claims.containsKey(key(affected.getX()>>4,affected.getZ()>>4))){
+    event.setCanceled(true);
+    return;
+   }
+  }
  }
  private static void tell(ServerPlayer p,String msg){
   p.sendSystemMessage(Component.literal("[xSxLabs Chunks] "+msg));

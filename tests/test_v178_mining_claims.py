@@ -40,13 +40,18 @@ class V178ClaimsMining(unittest.TestCase):
   self.assertIn("event.getAffectedBlocks().removeIf",C)
   self.assertIn("claims.containsKey(key(pos.getX()>>4,pos.getZ()>>4))",C)
   self.assertIn("protectPiston(PistonEvent.Pre event)",C)
-  self.assertIn("piston.relative(event.getDirection())",C)
+  self.assertIn("B1645_PISTON_CHAIN_GUARD",C)
+  self.assertIn("for(int distance=-12;distance<=12;distance++)",C)
+  self.assertIn("piston.relative(event.getDirection(),distance)",C)
+  self.assertNotIn("piston.relative(event.getDirection());",C)
+  self.assertIn("event.setCanceled(true);",C)
   self.assertIn("event.setCanceled(true);",C)
   self.assertNotIn("getChunk(",C[C.index(" // B1643:"):C.index(" private static void tell(")])
   if os.environ.get("V1_SOURCE_ROOT"):
    generated=(Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/claims/V178Claims.java").read_text()
    self.assertIn("protectExplosion(ExplosionEvent.Detonate event)",generated)
    self.assertIn("protectPiston(PistonEvent.Pre event)",generated)
+   self.assertIn("for(int distance=-12;distance<=12;distance++)",generated)
  def test_mining_resources_and_lag_bounds(self):
   for t in ("MAX_VISITS=8","MAX_BREAKS=2","GLOBAL_BLOCK_BUDGET",
             "if(!world.hasChunkAt(target))return",
