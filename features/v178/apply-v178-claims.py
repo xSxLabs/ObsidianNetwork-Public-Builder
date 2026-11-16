@@ -37,6 +37,7 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
+import net.neoforged.neoforge.event.level.PistonEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -223,7 +224,7 @@ public final class V178Claims {
  }
  // B1643: fail-closed at piston claim borders; a moving piston must not
  // move blocks into or out of a claimed cell without an accountable player.
- @SubscribeEvent public static void protectPiston(BlockEvent.PistonEvent.Pre event){
+ @SubscribeEvent public static void protectPiston(PistonEvent.Pre event){
   if(!(event.getLevel() instanceof ServerLevel level))return;
   ensure(level);
   Map<Long,Claim> claims=map(level);
