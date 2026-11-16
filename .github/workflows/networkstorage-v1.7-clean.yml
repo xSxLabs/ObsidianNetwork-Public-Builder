@@ -4444,6 +4444,10 @@ jobs:
                 python3 features/v178/apply-v178-archive-protection.py
                 python3 features/v178/apply-v178-team-gui.py
                 python3 features/v178/apply-v178-mining-map-gui.py
+                python3 features/v178/apply-v178-mining-builder-model.py
+                python3 features/v178/apply-v178-hud-corners.py
+                python3 features/v178/apply-v178-claim-ui.py
+                python3 -m unittest discover -s tests -p 'test_v178_visual_refresh.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_ftb_style_map.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_hud_jei_perf.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_mining_claims.py' -v
