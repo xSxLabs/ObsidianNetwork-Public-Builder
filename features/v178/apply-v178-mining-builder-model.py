@@ -22,11 +22,11 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;''')
+import net.minecraft.world.level.block.state.properties.EnumProperty;''')
 once(''' private static final MapCodec<V178MiningBuilderBlock> CODEC=simpleCodec(V178MiningBuilderBlock::new);
  public V178MiningBuilderBlock(Properties p){super(p);}''',
 ''' private static final MapCodec<V178MiningBuilderBlock> CODEC=simpleCodec(V178MiningBuilderBlock::new);
- public static final DirectionProperty FACING=BlockStateProperties.HORIZONTAL_FACING;
+ public static final EnumProperty<Direction> FACING=BlockStateProperties.HORIZONTAL_FACING;
  public V178MiningBuilderBlock(Properties p){
   super(p);
   registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH));
