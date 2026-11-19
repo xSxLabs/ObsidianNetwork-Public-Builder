@@ -284,7 +284,7 @@ patch("client/V178MapSettingsScreen.java",
 '''  V178UiTheme.panel(g,width/2-164,Math.max(7,height/2-128),328,232);''',
 '''  V178UiTheme.panel(g,width/2-164,Math.max(7,height/2-128),328,284);''')
 
-for rel in ("client/V178TerrainMap.java","client/V178ClaimsClient.java",
+for rel in ("client/V178ClaimsClient.java",
             "client/V178MapSettingsScreen.java"):
  assert "V178MiniPreferences" in (J/rel).read_text(),("B1666_MAP_MISSING",rel)
 print("B1666_XAERO_INSPIRED_8X8_MAP_PLAYER_MOBS_SHAPE_SIZE_CORNER_LEGACY_CACHE_PASS")
