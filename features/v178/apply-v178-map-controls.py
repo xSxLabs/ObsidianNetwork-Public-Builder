@@ -40,16 +40,22 @@ patch("client/V178TerrainMap.java",
     int east=world.getHeight(Heightmap.Types.WORLD_SURFACE,wx+1,wz)-1;
     int south=world.getHeight(Heightmap.Types.WORLD_SURFACE,wx,wz+1)-1;
     double shade=Math.max(.69,Math.min(1.11,.97+(y-east)*.045+(y-south)*.045));''')
+# Preserve the original established tick loop; add a separate bounded viewport
+# sampler, active only while the full map GUI is open.
 patch("client/V178TerrainMap.java",
-'''  int index=roundRobin++%121;''',
-'''  // Explore the entire visible viewport, never loading absent chunks.
-  // Bounded at three already-loaded chunks per tick, never in render.
+''' public static void draw(ClientLevel world,GuiGraphicsExtractor g,''',
+''' public static void exploreViewport(ClientLevel world,int cx,int cz){
+  if(world==null)return;
   for(int n=0;n<2;n++){
    int index=roundRobin++%625;
    sample(world,cx+(index%25)-12,cz+(index/25)-12);
-  }''')
-patch("client/V178TerrainMap.java",
-'''  sample(world,cx+(index%11)-5,cz+(index/11)-5);''','')
+  }
+ }
+ public static void draw(ClientLevel world,GuiGraphicsExtractor g,''')
+patch("client/V178ClaimsClient.java",
+'''   V178TerrainMap.tick(mc.level,screen.centerX(),screen.centerZ());''',
+'''   V178TerrainMap.tick(mc.level,screen.centerX(),screen.centerZ());
+   V178TerrainMap.exploreViewport(mc.level,screen.centerX(),screen.centerZ());''')
 patch("client/V178TerrainMap.java",
 '''     out.writeInt(0x58535838);out.writeInt(data.size());''',
 '''     out.writeInt(0x58535839);out.writeInt(data.size());''')
