@@ -41,15 +41,15 @@ patch("client/V178TerrainMap.java",
     int south=world.getHeight(Heightmap.Types.WORLD_SURFACE,wx,wz+1)-1;
     double shade=Math.max(.69,Math.min(1.11,.97+(y-east)*.045+(y-south)*.045));''')
 patch("client/V178TerrainMap.java",
-'''  // Scan a radius of 5 (121 chunks) across 121 client ticks.
-  int index=roundRobin++%121;
-  sample(world,cx+(index%11)-5,cz+(index/11)-5);''',
-'''  // Explore the ENTIRE visible 25x25 viewport, never loading absent chunks.
-  // Bounded at three chunks per tick including the focus, never in render.
+'''  int index=roundRobin++%121;''',
+'''  // Explore the entire visible viewport, never loading absent chunks.
+  // Bounded at three already-loaded chunks per tick, never in render.
   for(int n=0;n<2;n++){
    int index=roundRobin++%625;
    sample(world,cx+(index%25)-12,cz+(index/25)-12);
   }''')
+patch("client/V178TerrainMap.java",
+'''  sample(world,cx+(index%11)-5,cz+(index/11)-5);''','')
 patch("client/V178TerrainMap.java",
 '''     out.writeInt(0x58535838);out.writeInt(data.size());''',
 '''     out.writeInt(0x58535839);out.writeInt(data.size());''')
