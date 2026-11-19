@@ -9,6 +9,20 @@ J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 def patch(rel,old,new):
  p=J/rel
  s=p.read_text(encoding="utf-8")
+ if s.count(old)!=1:
+  def shifted(value,delta):
+   result=[]
+   for line in value.split("\n"):
+    if not line.strip():result.append(line);continue
+    spaces=len(line)-len(line.lstrip(" "))
+    if spaces+delta<0:return None
+    result.append(" "*(spaces+delta)+line[spaces:])
+   return "\n".join(result)
+  for delta in (-1,1,-2,2,-3,3,-4,4):
+   candidate=shifted(old,delta)
+   replacement=shifted(new,delta)
+   if candidate is not None and s.count(candidate)==1:
+    old,new=candidate,replacement;break
  assert s.count(old)==1,("B1666_BUILDER_SOURCE_DRIFT",rel,s.count(old),old[:90])
  p.write_text(s.replace(old,new,1),encoding="utf-8")
 def emit(rel,content):
