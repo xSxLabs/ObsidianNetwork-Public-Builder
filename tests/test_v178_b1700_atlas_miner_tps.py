@@ -28,6 +28,8 @@ class AtlasAndMiningRegression(unittest.TestCase):
    'ATLAS_UPDATE_TICKS=4',
    'updateAtlas(world,cx,cz);',
    'B1707_FULL_PATCH_SOURCE_AUDIT',
+   'int offset=(25/2-diameter/2)*RES;',
+   'diameter*RES,diameter*RES,a.side,a.side',
    'GUI_TEXTURED',
    'void drawViewport(',
    'drawViewport(mc.level,g,cx,cz,',
