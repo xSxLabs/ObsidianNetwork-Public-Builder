@@ -31,7 +31,7 @@ class AtlasAndMiningRegression(unittest.TestCase):
    'drawViewport(mc.level,g,cx,cz,',
    'drawViewport(world,g,cx,cz,',
    'resetAtlas();',
-   'atlasRevision++',
+   'if(x==RES-1&&z==RES-1)atlasRevision++;',
    'radius2',
    'case 0->12;case 2->20;default->16;',
   ):self.assertIn(marker,SOURCE,marker)
