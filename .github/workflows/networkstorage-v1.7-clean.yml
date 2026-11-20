@@ -4454,6 +4454,8 @@ jobs:
                 python3 features/v178/apply-v178-b1677-map-detail.py
                 python3 features/v178/apply-v178-b1677-miner-style.py
                 python3 features/v178/apply-v178-b1687-fly-wheel.py
+                python3 features/v178/apply-v178-b1692-miner-cards-flight-cost.py
+                python3 -m unittest discover -s tests -p 'test_v178_b1692_cards_flight.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1687_fly_wheel.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_xaero_builder.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1677_miner_map.py' -v
