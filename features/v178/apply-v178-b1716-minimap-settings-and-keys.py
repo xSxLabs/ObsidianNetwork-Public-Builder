@@ -16,8 +16,22 @@ R=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
 def patch(rel,old,new):
     p=J/rel
     s=p.read_text(encoding="utf-8")
-    assert s.count(old)==1,("B1716_ANCHOR_DRIFT",rel,old[:90],s.count(old))
-    p.write_text(s.replace(old,new,1),encoding="utf-8")
+    count=s.count(old)
+    if count==1:
+        updated=s.replace(old,new,1)
+    else:
+        # Only ignore INDENTATION differences, never source tokens. Other
+        # overlays reformat generated methods after their own patch phases.
+        # If content actually drifted, still fail closed with a useful error.
+        rows=[line.strip() for line in old.splitlines()]
+        pattern=r"(?m)^[ \\t]*"+r"[ \\t]*\\r?\\n[ \\t]*".join(
+            re.escape(line) for line in rows)
+        hits=list(re.finditer(pattern,s))
+        assert count==0 and len(hits)==1,(
+            "B1716_ANCHOR_DRIFT",rel,old[:90],count,len(hits))
+        hit=hits[0]
+        updated=s[:hit.start()]+new+s[hit.end():]
+    p.write_text(updated,encoding="utf-8")
 
 # Keep the existing persisted set of options and add real zoom (7/5/3 chunk
 # viewport) and configurable Mob range (32/64/96/128 blocks).
