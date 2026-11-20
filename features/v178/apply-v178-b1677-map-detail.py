@@ -14,7 +14,7 @@ def patch(rel,old,new):
     out=[]
     for line in val.split("\n"):
      if not line.strip():out.append(line);continue
-     n=len(line)-len(line.lstrip(" ")
+     n=len(line)-len(line.lstrip(" "))
      if n+d<0:return None
      out.append(" "*(n+d)+line[n:])
     return "\n".join(out)
