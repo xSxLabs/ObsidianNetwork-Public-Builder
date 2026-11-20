@@ -146,8 +146,8 @@ public final class V178FlyModuleClient {
 # Original JARVIS actions remain, append module sector on installed-card suits.
 wheel="client/NetworkActionWheelClient.java"
 patch(wheel,
-'''   return V177JarvisClient.withJarvis(base);''',
-'''   return V178FlyModuleClient.withFly(V177JarvisClient.withJarvis(base));''')
+'return V177JarvisClient.withJarvis(base);',
+'return V178FlyModuleClient.withFly(V177JarvisClient.withJarvis(base));')
 wheelFile=J/wheel
 s=wheelFile.read_text(encoding="utf8")
 matcher=re.search(r'private\s+static\s+void\s+activate\(\s*int\s+([A-Za-z_]\w*)\s*\)\s*\{',s)
