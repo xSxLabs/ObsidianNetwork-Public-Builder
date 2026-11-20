@@ -220,6 +220,7 @@ jobs:
             python3 -m unittest discover -s tests -p 'test_v178_hud_jei_perf.py' -v
             python3 -m unittest discover -s tests -p 'test_v178_mining_claims.py' -v
             python3 -m unittest discover -s tests -p 'test_v178_ftb_style_map.py' -v
+            python3 -m unittest discover -s tests -p 'test_v178_b1711_4m_storage_cell_balance.py' -v
           fi
           # B1392: fail-closed Shift+Deconstruct stack source and conservation tests.
           python3 -m py_compile features/v176/apply-v176-b1392-deconstructor-stack.py tests/test_v176_b1392_deconstructor_stack.py
@@ -4503,6 +4504,10 @@ jobs:
             python3 features/v176/resolve-normal-glass-recipe-conflicts.py work/src/main/resources --apply
             python3 features/v176/replace-tinted-glass-crafting-recipes.py work/src/main/resources
             python3 features/v176/resolve-normal-glass-recipe-conflicts.py work/src/main/resources
+            # B1711: only 1.7.8 gets the expensive 4M Storage Cell progression.
+            if [ "$GITHUB_REF_NAME" = "1.7.8" ]; then
+              python3 features/v178/apply-v178-b1711-4m-storage-cell-balance.py work/src/main/resources
+            fi
             # Existing exhaustive recipe overlap gate must remain green.
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
             python3 features/v176/verify-v176-cobble-obsidian-818.py
