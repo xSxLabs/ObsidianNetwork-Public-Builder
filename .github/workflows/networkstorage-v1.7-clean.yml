@@ -4450,7 +4450,11 @@ jobs:
                 python3 features/v178/apply-v178-builder-control-gui.py
                 python3 features/v178/apply-v178-map-controls.py
                 python3 features/v178/apply-v178-card-builder-visuals.py
+                python3 features/v178/apply-v178-b1677-miner-functional.py
+                python3 features/v178/apply-v178-b1677-map-detail.py
+                python3 features/v178/apply-v178-b1677-miner-style.py
                 python3 -m unittest discover -s tests -p 'test_v178_xaero_builder.py' -v
+                python3 -m unittest discover -s tests -p 'test_v178_b1677_miner_map.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_visual_refresh.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_ftb_style_map.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_hud_jei_perf.py' -v
