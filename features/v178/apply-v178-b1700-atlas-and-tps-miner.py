@@ -18,13 +18,13 @@ def patch(rel,old,new):
   # the exact Java statements with a uniform indentation offset only.
   def moved(text,d):
    out=[]
-   for line in text.split("\\n"):
+   for line in text.splitlines():
     if not line.strip():
      out.append(line);continue
     pad=len(line)-len(line.lstrip(" "))
     if pad+d<0:return None
     out.append(" "*(pad+d)+line.lstrip(" "))
-   return "\\n".join(out)
+   return chr(10).join(out)
   for d in (-1,1,-2,2,-3,3,-4,4,-5,5,-6,6):
    a,b=moved(old,d),moved(new,d)
    if a is not None and b is not None and src.count(a)==1:
