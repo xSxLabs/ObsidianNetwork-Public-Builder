@@ -54,7 +54,8 @@ class MinimapConfiguration1716(unittest.TestCase):
   self.assertIn("V178MiniPreferences::cycleCorner",settings)
   self.assertIn("V178MiniPreferences::toggleMobs",settings)
   self.assertIn("V178UiTheme.panel",settings)
-  self.assertIn("PowerArmorExitKeyClient.CATEGORY",category)\n  self.assertNotIn("registerCategory(",category)
+  self.assertIn("PowerArmorExitKeyClient.CATEGORY",category)
+  self.assertNotIn("registerCategory(",category)
   for path in ("en_us","de_de"):
    lang=json.loads((Path(res)/f"assets/obsidiannetwork/lang/{path}.json").read_text())
    self.assertEqual(lang["key.category.obsidiannetwork.network_storage"],

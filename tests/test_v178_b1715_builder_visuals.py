@@ -22,7 +22,7 @@ class MechanicalMiningBuilder1715(unittest.TestCase):
                         WF.index("python3 "+PATH))
         self.assertIn("B1715_PART_BUDGET",SRC)
         self.assertIn("B1715_MINIMAP_TITLE_SOURCE_DRIFT",SRC)
-        self.assertIn("if(showCoordinates)g.text(mc.font",SRC)
+        self.assertIn("head=\'\"CLAIMS \"+\'",SRC)
         self.assertNotIn("BlockEntityRenderer",SRC)
         self.assertNotIn("world.getChunk(",SRC)
         self.assertNotIn("texture.upload()",SRC)
