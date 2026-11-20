@@ -24,6 +24,23 @@ class B1692CardFlightContract(unittest.TestCase):
             WORKFLOW.index("python3 " + SCRIPT))
         self.assertEqual(WORKFLOW.count("python3 -m unittest discover -s tests -p 'test_v178_b1692_cards_flight.py' -v"),1)
 
+    def test_patch_anchors_match_original_generators(self):
+        # Avoid reintroducing B1697: the base generator uses inconsistent
+        # indentation; patch source by unique Java fragments instead.
+        builder = (ROOT/"features/v178/apply-v178-mining-builder.py").read_text()
+        for anchor in (
+            'ITEMS.registerItem("mining_shape_card",dev.obsidiannetwork.mining.V178MiningShapeCard::new);',
+            'output.accept((ItemLike)V178_SHAPE_CARD.get());',
+            'public SimpleEnergyHandler energy(){return energy;}',
+            'var drops=Block.getDrops(current,world,target,null,null,new ItemStack(Items.NETHERITE_PICKAXE));',
+        ):
+            self.assertEqual(builder.count(anchor),1,anchor)
+            self.assertIn(anchor,SOURCE)
+        armor = (ROOT/"features/v17/apply-power-armor-stage1.py").read_text()
+        flight_anchor = 'for(EquipmentSlot slot:SLOTS)EnergyTool.consume(p.getItemBySlot(slot),20L);'
+        self.assertEqual(armor.count(flight_anchor),1)
+        self.assertIn(flight_anchor,SOURCE)
+
     def test_single_vanilla_loot_path_and_cards(self):
         for required in (
             "V178_SHAPE_CARD_FORTUNE_3", "V178_SHAPE_CARD_SILK_TOUCH",
