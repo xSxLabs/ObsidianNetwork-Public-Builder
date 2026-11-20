@@ -57,9 +57,12 @@ patch("client/V178TerrainMap.java",
  ''' private static int roundRobin;
  // Revision only changes when new 16x16 explored terrain becomes available.
  private static int atlasRevision;''')
+# Revision updates at the rasterized final pixel, not a map.put() anchor
+# that previous persistence patches rewrite in different forms.
 patch("client/V178TerrainMap.java",
- '''  map.put(key,colors);dirty=true;''',
- '''  map.put(key,colors);dirty=true;atlasRevision++;''')
+ '''    colors[z*RES+x]=0xff000000|(red<<16)|(green<<8)|blue;''',
+ '''    colors[z*RES+x]=0xff000000|(red<<16)|(green<<8)|blue;
+    if(x==RES-1&&z==RES-1)atlasRevision++;''')
 
 # Only one background raster sample per tick while the large map is open.
 # Every sampled region remains full 1-block-per-pixel detail.
