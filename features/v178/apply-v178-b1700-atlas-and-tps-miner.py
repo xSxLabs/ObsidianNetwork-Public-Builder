@@ -33,6 +33,45 @@ def patch(rel,old,new):
  assert src.count(old)==1,("B1700_SOURCE_DRIFT",rel,old[:125],src.count(old))
  p.write_text(src.replace(old,new,1),encoding="utf8")
 
+# Diagnose all subsequent source anchors at once rather than one rebuild per
+# incompatibility. Original generators are run first by the workflow.
+checks={
+ "client/V178TerrainMap.java":(
+  "ensureWorld(world);",
+  "mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;",
+  "dirty=false;mapIdentity=next;mapDimension=dim;lastFlushTick=Long.MIN_VALUE;",
+  "for(int n=0;n<2;n++){",
+  "public static void draw(ClientLevel world,GuiGraphicsExtractor g,",
+ ),
+ "client/V178ClaimsClient.java":(
+  "for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){",
+  "if(drawTerrain)V178TerrainMap.draw(mc.level,g,cx+dx,cz+dz,x,y,step);",
+ ),
+ "client/V178ClaimsMapScreen.java":(
+  "for(int z=0;z<DIAMETER;z++)for(int x=0;x<DIAMETER;x++){",
+  "if(showTerrain)V178TerrainMap.draw(world,g,cxWorld,czWorld,px,py,tile);",
+ ),
+ "client/V178MiningAreaScreen.java":(
+  "V178TerrainMap.draw(mc.level,g,wx,wz,px,py,t);",
+ ),
+ "client/V178MiniPreferences.java":(
+  "case 0->10;case 2->16;default->12;",
+ ),
+ "mining/V178MiningBuilderBE.java":(
+  "MAX_VISITS=8,MAX_BREAKS=2;",
+  "int remain=GLOBAL_BLOCK_BUDGET;",
+  "private static boolean budget(ServerLevel world){",
+ ),
+}
+missing=[]
+for rel,anchors in checks.items():
+ source=(J/rel).read_text(encoding="utf8")
+ for anchor in anchors:
+  count=source.count(anchor)
+  if count!=1:missing.append((rel,anchor,count))
+print("B1707_FULL_PATCH_SOURCE_AUDIT",repr(missing))
+# Preserve the source-drift assertions in the real patch helper below.
+
 # Prior 16x16 slope raster used THREE getHeight calls PER pixel. Cache a
 # 17x17 height grid; 289 calls, not 768, for the exact same colors and relief.
 patch("client/V178TerrainMap.java",
