@@ -261,8 +261,8 @@ public final class V178MiningBuilderOperationsScreen extends ContainerScreen{
   }).bounds(x+7,y+125,235,20).build();
   addRenderableWidget(redstone);
  }
- @Override public void tick(){
-  super.tick();
+ @Override protected void containerTick(){
+  super.containerTick();
   var mc=Minecraft.getInstance();
   if(mc.level==null||mc.player==null)return;
   if(mc.level.getGameTime()%10==0)
