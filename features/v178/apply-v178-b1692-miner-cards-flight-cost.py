@@ -31,17 +31,15 @@ def jsonfile(path, obj):
 # existing item class and per-stack two-corner selection DataComponent, so
 # every slot/interaction/dimension validation remains exactly unchanged.
 patch("ObsidianNetwork.java",
-'''   public static final DeferredItem<dev.obsidiannetwork.mining.V178MiningShapeCard> V178_SHAPE_CARD =
-      ITEMS.registerItem("mining_shape_card",dev.obsidiannetwork.mining.V178MiningShapeCard::new);''',
-'''   public static final DeferredItem<dev.obsidiannetwork.mining.V178MiningShapeCard> V178_SHAPE_CARD =
-      ITEMS.registerItem("mining_shape_card",dev.obsidiannetwork.mining.V178MiningShapeCard::new);
+'''ITEMS.registerItem("mining_shape_card",dev.obsidiannetwork.mining.V178MiningShapeCard::new);''',
+'''ITEMS.registerItem("mining_shape_card",dev.obsidiannetwork.mining.V178MiningShapeCard::new);
     public static final DeferredItem<dev.obsidiannetwork.mining.V178MiningShapeCard> V178_SHAPE_CARD_FORTUNE_3 =
       ITEMS.registerItem("mining_shape_card_fortune_3",dev.obsidiannetwork.mining.V178MiningShapeCard::new);
     public static final DeferredItem<dev.obsidiannetwork.mining.V178MiningShapeCard> V178_SHAPE_CARD_SILK_TOUCH =
       ITEMS.registerItem("mining_shape_card_silk_touch",dev.obsidiannetwork.mining.V178MiningShapeCard::new);''')
 patch("ObsidianNetwork.java",
-'''             output.accept((ItemLike)V178_SHAPE_CARD.get());''',
-'''             output.accept((ItemLike)V178_SHAPE_CARD.get());
+'''output.accept((ItemLike)V178_SHAPE_CARD.get());''',
+'''output.accept((ItemLike)V178_SHAPE_CARD.get());
              output.accept((ItemLike)V178_SHAPE_CARD_FORTUNE_3.get());
              output.accept((ItemLike)V178_SHAPE_CARD_SILK_TOUCH.get());''')
 
@@ -55,8 +53,8 @@ import dev.obsidiannetwork.ObsidianNetwork;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.enchantment.Enchantments;''')
 patch("mining/V178MiningBuilderBE.java",
-'''  public SimpleEnergyHandler energy(){return energy;}''',
-'''  private ItemStack effectivePickaxe(ServerLevel world){
+'''public SimpleEnergyHandler energy(){return energy;}''',
+'''private ItemStack effectivePickaxe(ServerLevel world){
    ItemStack tool=new ItemStack(Items.NETHERITE_PICKAXE);
    if(card.is(ObsidianNetwork.V178_SHAPE_CARD_FORTUNE_3.get())){
     tool.enchant(world.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
@@ -69,26 +67,20 @@ patch("mining/V178MiningBuilderBE.java",
   }
   public SimpleEnergyHandler energy(){return energy;}''')
 patch("mining/V178MiningBuilderBE.java",
-'''    // Read-only loot calculation. Ordinary drops, no silk/fortune duplication.
-    var drops=Block.getDrops(current,world,target,null,null,new ItemStack(Items.NETHERITE_PICKAXE));''',
-'''    // Vanilla loot calculations with the selected card's effective pickaxe.
-    // Transactions still preflight the ENTIRE loot result before destroying
-    // the block. No item entities, extra drops or Fortune/Silk combinations.
+'''var drops=Block.getDrops(current,world,target,null,null,new ItemStack(Items.NETHERITE_PICKAXE));''',
+'''// Loot uses the installed Shape Card's effective pickaxe.
+    // Transactions still preflight every stack before world destruction.
     var drops=Block.getDrops(current,world,target,null,null,machine.effectivePickaxe(world));''')
 
 # 4x is charged ONLY for actual powered FlyModule flight. Standing, walking
 # and Fly OFF keep the previous 20 FE/part per 5 ticks unchanged. No second
 # tick handler: avoid double draining and keep existing anti-regress behavior.
 patch("powerarmor/PowerArmorRuntime.java",
-'''   if(powered(p)){
-    for(EquipmentSlot slot:SLOTS)EnergyTool.consume(p.getItemBySlot(slot),20L);
-   }''',
-'''   if(powered(p)){
-    // B1692: real, server-authoritative FlyModule use costs 4x base suit FE.
-    // No premium when merely carrying a card or after Jarvis Fly OFF.
+'''for(EquipmentSlot slot:SLOTS)EnergyTool.consume(p.getItemBySlot(slot),20L);''',
+'''// B1692: fourfold FE only during active FlyModule flight.
+    // Walking, hovering permission alone, and Fly OFF retain base drain.
     long suitDrain=canFly&&p.getAbilities().flying?80L:20L;
-    for(EquipmentSlot slot:SLOTS)EnergyTool.consume(p.getItemBySlot(slot),suitDrain);
-   }''')
+    for(EquipmentSlot slot:SLOTS)EnergyTool.consume(p.getItemBySlot(slot),suitDrain);''')
 
 # Existing card art is generated earlier in B1666 and is 64x64 filter-0 RGBA.
 # Keep the familiar titanium blueprint design, but recolor illuminated pixels
