@@ -37,7 +37,10 @@ class B1692CardFlightContract(unittest.TestCase):
             self.assertIn(required,SOURCE)
         self.assertNotIn("new ItemStack(Items.DIAMOND", SOURCE)
         self.assertIn("Transactions still preflight",SOURCE)
-        self.assertIn("fortune_3"," ".join(["fortune_3","silk_touch"])) # distinct variant contract
+        # Fortune and Silk are exclusive, with an untouched plain-tool fallback.
+        self.assertIn('}else if(card.is(ObsidianNetwork.V178_SHAPE_CARD_SILK_TOUCH.get()))',SOURCE)
+        self.assertIn('return tool;',SOURCE)
+        self.assertIn("if(!fits)return", (Path(os.getenv("V1_SOURCE_ROOT"))/"dev/obsidiannetwork/mining/V178MiningBuilderBE.java").read_text() if os.getenv("V1_SOURCE_ROOT") else "if(!fits)return")
 
     def test_four_times_only_while_flying(self):
         self.assertIn("canFly&&p.getAbilities().flying?80L:20L",SOURCE)
