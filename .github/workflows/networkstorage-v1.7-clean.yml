@@ -4457,6 +4457,8 @@ jobs:
                 python3 features/v178/apply-v178-b1687-fly-wheel.py
                 python3 features/v178/apply-v178-b1692-miner-cards-flight-cost.py
                 python3 features/v178/apply-v178-b1700-atlas-and-tps-miner.py
+                python3 features/v178/apply-v178-b1715-miner-visuals.py
+                python3 -m unittest discover -s tests -p 'test_v178_b1715_builder_visuals.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1700_atlas_miner_tps.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1692_cards_flight.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1687_fly_wheel.py' -v
