@@ -180,7 +180,7 @@ atlas=r"""
     return;
    }
    g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
-        id,ox,oy,0.0f,0.0f,width,width,side,side);
+        id,ox,oy,0.0f,0.0f,width,width,side,side,side,side);
   }
  }
  private static final Atlas MINI_ATLAS=new Atlas(7,"minimap_gpu_atlas");
@@ -197,8 +197,23 @@ atlas=r"""
  public static void drawViewport(ClientLevel world,GuiGraphicsExtractor g,
       int cx,int cz,int ox,int oy,int step,int diameter,boolean circular){
   if(world==null)return;
-  if(diameter==7)MINI_ATLAS.draw(g,cx,cz,ox,oy,step,circular);
-  else if(diameter==25)WORLD_ATLAS.draw(g,cx,cz,ox,oy,step,false);
+  if(diameter==7&&!(Minecraft.getInstance().screen instanceof V178ClaimsMapScreen)
+       &&!(Minecraft.getInstance().screen instanceof V178MiningAreaScreen)){
+   MINI_ATLAS.draw(g,cx,cz,ox,oy,step,circular);
+  }else if(diameter>=5&&diameter<=25){
+   // Maps adapt to smaller windows; crop the CENTER of the 25x25 atlas.
+   // Chunk outlines and player markers retain the exact same world positions.
+   Atlas a=WORLD_ATLAS;
+   int width=diameter*step;
+   if(a.texture==null||a.cx!=cx||a.cz!=cz){
+    g.fill(ox,oy,ox+width,oy+width,UNKNOWN_PIXEL);
+    return;
+   }
+   int offset=(25/2-diameter/2)*RES;
+   g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
+       a.id,ox,oy,(float)offset,(float)offset,width,width,
+       diameter*RES,diameter*RES,a.side,a.side);
+  }
  }
 """
 patch("client/V178TerrainMap.java",
