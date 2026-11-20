@@ -162,7 +162,10 @@ class FtbStyleMap(unittest.TestCase):
   self.assertIn("global=64",claims)
   gui=(j/"client/V178ClaimsMapScreen.java").read_text()
   self.assertIn("e.modifiers()&GLFW.GLFW_MOD_SHIFT",gui)
-  self.assertIn("V178TerrainMap.draw(world,g",gui)
+  # B1710: map terrain is a cached GPU atlas; claim overlays still render.
+  self.assertIn("V178TerrainMap.drawViewport(world,g",gui)
+  self.assertIn("V178TerrainMap.drawClaim(g",gui)
+  self.assertNotIn("V178TerrainMap.draw(world,g",gui)
   terrain=(j/"client/V178TerrainMap.java").read_text()
   self.assertIn("world.hasChunk(cx,cz)",terrain)
   self.assertNotIn("loadChunk(",terrain)
