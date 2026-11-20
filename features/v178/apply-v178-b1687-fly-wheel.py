@@ -40,11 +40,13 @@ runtime.write_text(s,encoding="utf8")
 # Existing PowerArmorCommands root command already contains the Attack toggle.
 commands=J/"powerarmor/PowerArmorCommands.java"
 s=commands.read_text(encoding="utf8")
-needle='   .then(Commands.literal("attack").executes(c->V176AttackModeServer.toggle(c.getSource().getPlayerOrException()))));'
-assert s.count(needle)==1,("B1687_COMMAND_ANCHOR_DRIFT",s.count(needle))
-s=s.replace(needle,
-'''   .then(Commands.literal("attack").executes(c->V176AttackModeServer.toggle(c.getSource().getPlayerOrException())))
-   .then(Commands.literal("flymodule").executes(c->V178FlyModuleSwitch.toggle(c.getSource().getPlayerOrException()))));''',1)
+needle='e.getDispatcher().register(Commands.literal("powerarmor")'
+assert s.count(needle)==1,("B1687_COMMAND_ROOT_DRIFT",s.count(needle))
+# Add an independent child to the existing literal command chain. Never
+# replace the previous final .then(attack/nightvision/other) child or change
+# its parentheses, which vary with the restored baseline patches.
+s=s.replace(needle,needle+
+ '\n    .then(Commands.literal("flymodule").executes(c->V178FlyModuleSwitch.toggle(c.getSource().getPlayerOrException())))',1)
 commands.write_text(s,encoding="utf8")
 
 emit("powerarmor/V178FlyModuleSwitch.java",r'''package dev.obsidiannetwork.powerarmor;
