@@ -13,6 +13,23 @@ J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 def patch(rel,old,new):
  p=J/rel
  src=p.read_text(encoding="utf8")
+ if src.count(old)!=1:
+  # Prior source generators use inconsistent indentation (B1697). Match
+  # the exact Java statements with a uniform indentation offset only.
+  def moved(text,d):
+   out=[]
+   for line in text.split("\\n"):
+    if not line.strip():
+     out.append(line);continue
+    pad=len(line)-len(line.lstrip(" "))
+    if pad+d<0:return None
+    out.append(" "*(pad+d)+line.lstrip(" "))
+   return "\\n".join(out)
+  for d in (-1,1,-2,2,-3,3,-4,4,-5,5,-6,6):
+   a,b=moved(old,d),moved(new,d)
+   if a is not None and b is not None and src.count(a)==1:
+    old,new=a,b
+    break
  assert src.count(old)==1,("B1700_SOURCE_DRIFT",rel,old[:125],src.count(old))
  p.write_text(src.replace(old,new,1),encoding="utf8")
 
