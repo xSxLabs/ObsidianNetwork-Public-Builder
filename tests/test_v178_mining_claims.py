@@ -108,6 +108,6 @@ class V178ClaimsMining(unittest.TestCase):
             "mining/V178MiningBuilderBE.java","mining/V178MiningShapeCard.java",
             "mining/V178MiningBuilderBlock.java","mining/V178MiningBuilderCapabilities.java"):
    self.assertTrue((base/f).exists(),f)
-  self.assertIn("machine.owner.equals(V178Claims.owner",
+  self.assertIn("V178Claims.mayMachineMine(world,target,machine.owner)",
       (base/"mining/V178MiningBuilderBE.java").read_text())
 if __name__=="__main__":unittest.main()
