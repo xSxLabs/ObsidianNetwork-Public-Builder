@@ -28,11 +28,17 @@ def emit(rel,src):
  p.parent.mkdir(parents=True,exist_ok=True)
  p.write_text(src,encoding="utf8")
 
-# Preserve deterministic X then Y then Z iteration and persisted cursor, but
-# reverse only the Y axis of the actual mining target. First target = maxY.
+# Traverse every X/Z block of the highest layer BEFORE descending by one Y:
+# actual global top-down mining, not one vertical column at a time.
 patch("mining/V178MiningShapeCard.java",
-'''        minY+(int)((index/width())%height()),''',
-'''        maxY-(int)((index/width())%height()),''')
+'''    long plane=(long)width()*height();
+    return new BlockPos(minX+(int)(index%width()),
+        minY+(int)((index/width())%height()),
+        minZ+(int)(index/plane));''',
+'''    long layer=(long)width()*depth();
+    return new BlockPos(minX+(int)(index%width()),
+        maxY-(int)(index/layer),
+        minZ+(int)((index/width())%depth()));''')
 # The public claim API already supports wilderness + owner + trusted permissions.
 # Do not bypass any claimed area owned by another player.
 patch("mining/V178MiningBuilderBE.java",
