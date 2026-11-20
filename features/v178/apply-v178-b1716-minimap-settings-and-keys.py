@@ -237,17 +237,17 @@ assert mappingfiles and sum(n for _,n in mappingfiles)>=3,("B1716_NO_MAPPING_REA
 # UNBOUND by default to avoid stealing existing keyboard combinations.
 client=J/"client/V178ClaimsClient.java"
 s=client.read_text(encoding="utf-8")
-needle='''  @SubscribeEvent public static void bindings(RegisterKeyMappingsEvent event){'''
+needle='''@SubscribeEvent public static void bindings(RegisterKeyMappingsEvent event){'''
 assert s.count(needle)==1,"B1716_BINDINGS_REGISTER_DRIFT"
 s=s.replace(needle,'''  private static final KeyMapping MINIMAP_SETTINGS=new KeyMapping(
     "key.obsidiannetwork.minimap_settings",InputConstants.Type.KEYSYM,
     GLFW.GLFW_KEY_UNKNOWN,V178KeybindCategory.XSXLABS);
 '''+needle,1)
-needle='''   event.register(TOGGLE_MINIMAP);'''
+needle='''event.register(TOGGLE_MINIMAP);'''
 assert s.count(needle)==1,"B1716_BINDINGS_TOGGLE_DRIFT"
 s=s.replace(needle,needle+'''
    event.register(MINIMAP_SETTINGS);''',1)
-needle='''  while(TOGGLE_MINIMAP.consumeClick())toggleMinimap();'''
+needle='''while(TOGGLE_MINIMAP.consumeClick())toggleMinimap();'''
 assert s.count(needle)==1,"B1716_MINIMAP_KEY_DRIFT"
 s=s.replace(needle,needle+'''
   while(MINIMAP_SETTINGS.consumeClick()){
