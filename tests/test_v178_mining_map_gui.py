@@ -30,5 +30,6 @@ class MiningMapGui(unittest.TestCase):
   self.assertIn("V178MiningShapeCard.valid(b)",packet)
   self.assertIn('NetworkBlueprintItem.write(card,"xsxlabs_mining_bounds"',packet)
   gui=(root/"client/V178MiningAreaScreen.java").read_text()
-  self.assertIn("V178TerrainMap.draw(mc.level,g",gui)
+  self.assertIn("V178TerrainMap.drawViewport(mc.level,g",gui)
+  self.assertNotIn("V178TerrainMap.draw(mc.level,g",gui)
 if __name__=="__main__":unittest.main()
