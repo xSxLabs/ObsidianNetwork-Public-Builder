@@ -191,24 +191,17 @@ public final class V178MapSettingsScreen extends Screen {
 # Register the category through NeoForge's MOD-BUS event (26.1 API).
 category=J/"client/V178KeybindCategory.java"
 assert not category.exists(),"B1716_CATEGORY_DUPLICATE"
+# B964 already registers obsidiannetwork:network_storage once. Creating
+# a second Category and registering it crashes the client on startup.
+# Reuse the exact established CATEGORY instance for every mapped key.
 category.write_text(r'''package dev.obsidiannetwork.client;
 
 import net.minecraft.client.KeyMapping;
-import net.minecraft.resources.Identifier;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 
-@EventBusSubscriber(modid="obsidiannetwork",value=Dist.CLIENT)
 public final class V178KeybindCategory {
  private V178KeybindCategory(){}
  public static final KeyMapping.Category XSXLABS =
-     new KeyMapping.Category(Identifier.fromNamespaceAndPath(
-        "obsidiannetwork","network_storage"));
- @SubscribeEvent public static void register(RegisterKeyMappingsEvent event){
-  event.registerCategory(XSXLABS);
- }
+     dev.obsidiannetwork.powerarmor.PowerArmorExitKeyClient.CATEGORY;
 }
 ''',encoding="utf-8")
 mappingfiles=[]
@@ -260,7 +253,8 @@ for language,display in (("en_us","xSxLabs Network Storage"),
 
 # Source-only contracts; no extra render loops, no new network payloads.
 assert "V178MiniPreferences.visibleChunks()" in (J/terrain).read_text()
-assert "event.registerCategory(XSXLABS)" in category.read_text()
+assert "PowerArmorExitKeyClient.CATEGORY" in category.read_text()
+assert "registerCategory(" not in category.read_text()
 assert 'MINIMAP_SETTINGS.consumeClick()' in client.read_text()
 assert "V178ClaimsClient.toggleOption(key)" in settings.read_text()
 print("B1716_MINIMAP_ALL_SETTINGS_PERSISTED_GPU_CROP_ZOOM_MOB_RANGE_PASS",

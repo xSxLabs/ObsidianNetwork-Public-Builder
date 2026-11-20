@@ -21,7 +21,7 @@ class MinimapConfiguration1716(unittest.TestCase):
     "V178MiniPreferences.java","V178ClaimsClient.java","V178MapMobCache.java",
     "V178Waypoints.java","V178TerrainMap.java","V178KeybindCategory.java",
     "V178MapSettingsScreen.java","visibleChunks()","mobRange()",
-    "registerCategory(XSXLABS)","MINIMAP_SETTINGS.consumeClick()",
+    "PowerArmorExitKeyClient.CATEGORY","MINIMAP_SETTINGS.consumeClick()",
     "KeyMapping.Category", "V178ClaimsClient.toggleOption(key)"
   ):
    self.assertIn(token,SCRIPT)
@@ -54,7 +54,7 @@ class MinimapConfiguration1716(unittest.TestCase):
   self.assertIn("V178MiniPreferences::cycleCorner",settings)
   self.assertIn("V178MiniPreferences::toggleMobs",settings)
   self.assertIn("V178UiTheme.panel",settings)
-  self.assertIn("event.registerCategory(XSXLABS)",category)
+  self.assertIn("PowerArmorExitKeyClient.CATEGORY",category)\n  self.assertNotIn("registerCategory(",category)
   for path in ("en_us","de_de"):
    lang=json.loads((Path(res)/f"assets/obsidiannetwork/lang/{path}.json").read_text())
    self.assertEqual(lang["key.category.obsidiannetwork.network_storage"],

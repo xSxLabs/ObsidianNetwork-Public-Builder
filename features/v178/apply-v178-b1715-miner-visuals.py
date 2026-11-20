@@ -225,12 +225,20 @@ for name in textures:
 # If coordinates are enabled, show coordinates without a forced "CLAIMS" tag.
 java=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork/client/V178ClaimsClient.java"
 current=java.read_text(encoding="utf-8")
-oldtitle='''   g.text(mc.font,showCoordinates?"CLAIMS "+(mc.player.blockPosition().getX()>>4)+","+(mc.player.blockPosition().getZ()>>4):"CLAIMS M",ox+3,oy+2,0xffb2ecfa);'''
-newtitle='''   if(showCoordinates)g.text(mc.font,
-       (mc.player.blockPosition().getX()>>4)+","+(mc.player.blockPosition().getZ()>>4),
-       ox+3,oy+2,0xffb2ecfa);'''
-assert current.count(oldtitle)==1,("B1715_MINIMAP_TITLE_SOURCE_DRIFT",current.count(oldtitle))
-java.write_text(current.replace(oldtitle,newtitle,1),encoding="utf-8")
-assert '"CLAIMS M"' not in java.read_text()
+# The base minimap can be re-indented by later claim overlays, and future
+# patch stages may already have removed the caption. Work on the exact two
+# untranslated text literals instead of matching a whole indent-sensitive line.
+# Both on/off arms are removed; preserve optional chunk-coordinate display.
+head='"CLAIMS "+'
+empty=':"CLAIMS M"'
+if head in current or empty in current:
+    assert current.count(head)==1 and current.count(empty)==1,(
+        "B1715_MINIMAP_TITLE_SOURCE_DRIFT",current.count(head),current.count(empty))
+    current=current.replace(head,'',1).replace(empty,':""',1)
+# If another display overlay has already removed the caption, it is safe
+# and necessary to keep that version rather than fail on text spacing.
+assert head not in current and '"CLAIMS M"' not in current,(
+    "B1715_MINIMAP_TITLE_SOURCE_DRIFT","caption remains")
+java.write_text(current,encoding="utf-8")
 print("B1715_MECHANICAL_DIAMOND_DRILL_BUILDER_STATIC_"+str(len(parts))+
       "_PARTS_64PX_ART_MINIMAP_CLAIMS_TITLE_REMOVED_PASS")

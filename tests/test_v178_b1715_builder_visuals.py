@@ -65,7 +65,8 @@ class MechanicalMiningBuilder1715(unittest.TestCase):
         java=(Path(j)/"dev/obsidiannetwork/client/V178ClaimsClient.java").read_text()
         self.assertNotIn('"CLAIMS "',java)
         self.assertNotIn('"CLAIMS M"',java)
-        self.assertIn("if(showCoordinates)g.text(mc.font",java)
+        self.assertIn("showCoordinates",java)
+        self.assertNotIn(':"CLAIMS M"',java)
 
 if __name__=="__main__":
     unittest.main()
