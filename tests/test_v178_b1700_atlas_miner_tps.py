@@ -26,6 +26,8 @@ class AtlasAndMiningRegression(unittest.TestCase):
    'new com.mojang.blaze3d.platform.NativeImage',
    'texture.upload();',
    'ATLAS_UPDATE_TICKS=4',
+   'updateAtlas(world,cx,cz);',
+   'B1707_FULL_PATCH_SOURCE_AUDIT',
    'GUI_TEXTURED',
    'void drawViewport(',
    'drawViewport(mc.level,g,cx,cz,',
