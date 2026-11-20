@@ -165,9 +165,12 @@ atlas=r"""
 patch("client/V178TerrainMap.java",
  ''' public static void draw(ClientLevel world,GuiGraphicsExtractor g,''',
  atlas+''' public static void draw(ClientLevel world,GuiGraphicsExtractor g,''')
+# The scan loop is dynamically rewritten by prior viewport patches.
+# Hook after the stable world identity initialization, before sampling; the
+# current atlas revision catches any new samples at the next bounded tick.
 patch("client/V178TerrainMap.java",
- '''   sample(world,cx+(index%11)-5,cz+(index/11)-5);''',
- '''   sample(world,cx+(index%11)-5,cz+(index/11)-5);
+ '''   ensureWorld(world);''',
+ '''   ensureWorld(world);
    updateAtlas(world,cx,cz);''')
 patch("client/V178TerrainMap.java",
  '''  mapIdentity=null;mapFile=null;mapDimension=null;dirty=false;''',
