@@ -4511,6 +4511,8 @@ jobs:
             # B1711: only 1.7.8 gets the expensive 4M Storage Cell progression.
             if [ "$GITHUB_REF_NAME" = "1.7.8" ]; then
               python3 features/v178/apply-v178-b1711-4m-storage-cell-balance.py work/src/main/resources
+              python3 features/v178/apply-v178-b1724-4m-cell-jei-visibility.py
+              python3 -m unittest discover -s tests -p 'test_v178_b1724_cell_jei_visibility.py' -v
             fi
             # Existing exhaustive recipe overlap gate must remain green.
             python3 features/v175/apply-v175-recipe-collisions-659.py work/src/main/resources
