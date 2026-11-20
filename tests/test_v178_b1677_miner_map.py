@@ -43,7 +43,7 @@ class MiningAndMap1677(unittest.TestCase):
   java=Path(j)/"dev/obsidiannetwork"
   assets=Path(r)/"assets/obsidiannetwork"
   shape=(java/"mining/V178MiningShapeCard.java").read_text()
-  self.assertIn("maxY-(int)((index/width())%height())",shape)
+  self.assertIn("maxY-(int)(index/layer)",shape)
   be=(java/"mining/V178MiningBuilderBE.java").read_text()
   self.assertIn("V178Claims.mayMachineMine(world,target,machine.owner)",be)
   self.assertIn("V178Claims.mayMachineMine(world,target,owner)",be)
