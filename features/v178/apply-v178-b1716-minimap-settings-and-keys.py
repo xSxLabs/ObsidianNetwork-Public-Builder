@@ -70,12 +70,13 @@ patch(mini,'''  int step=V178MiniPreferences.step();
   int view=V178MiniPreferences.visibleChunks(),radius=view/2;
   int markerStep=7*step/view;
   int miniWidth=7*step+7,miniHeight=7*step+20+infoRows*10,miniCorner=1;''')
-patch(mini,'''   for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){
-     if(!V178MiniPreferences.visible(dx,dz))continue;
-     int x=ox+4+(dx+3)*step,y=oy+15+(dz+3)*step;''',
-'''   for(int dz=-radius;dz<=radius;dz++)for(int dx=-radius;dx<=radius;dx++){
-     if(!V178MiniPreferences.visible(dx,dz))continue;
-     int x=ox+4+(dx+radius)*markerStep,y=oy+15+(dz+radius)*markerStep;''')
+# B1700 prepends its GPU draw call and different revisions reindent the
+# loop body. Replace only the actual single-line loop and coordinate math;
+# do not depend on a fragile four-line exact string.
+patch(mini,"for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){",
+      "for(int dz=-radius;dz<=radius;dz++)for(int dx=-radius;dx<=radius;dx++){")
+patch(mini,"int x=ox+4+(dx+3)*step,y=oy+15+(dz+3)*step;",
+      "int x=ox+4+(dx+radius)*markerStep,y=oy+15+(dz+radius)*markerStep;")
 patch(mini,'''else g.fill(x,y,x+step,y+step,0xff1c2530);''',
       '''else g.fill(x,y,x+markerStep,y+markerStep,0xff1c2530);''')
 patch(mini,'''if(drawClaims)V178TerrainMap.drawClaim(g,x,y,step,''',
