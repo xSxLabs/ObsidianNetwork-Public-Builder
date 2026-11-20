@@ -28,6 +28,10 @@ class MiningAndMap1677(unittest.TestCase):
    self.assertIn(tok,src)
   self.assertNotIn("forceChunk(",src)
   self.assertNotIn("world.getChunk(",src)
+  # Minecraft 26.1 AbstractContainerScreen.tick() is final; use containerTick.
+  self.assertIn("@Override protected void containerTick(){",src)
+  self.assertIn("super.containerTick();",src)
+  self.assertNotIn("@Override public void tick(){",src)
  def test_terrain_and_bounded_render(self):
   src=(ROOT/FILES[1]).read_text()
   for tok in ("RES=16","0x58535838","0x58535839","0x5853583a",
