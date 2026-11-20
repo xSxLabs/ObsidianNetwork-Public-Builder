@@ -66,5 +66,5 @@ class MiningAndMap1677(unittest.TestCase):
   self.assertGreaterEqual(len(model["elements"]),48)
   for name in ("shell","panel","front","display","sensor"):
    png=(assets/"textures/block"/f"mining_builder_{name}.png").read_bytes()
-   self.assertEqual(struct.unpack(">II",png[16:24]),(32,32))
+   self.assertEqual(struct.unpack(">II",png[16:24]),(64,64))
 if __name__=="__main__":unittest.main()

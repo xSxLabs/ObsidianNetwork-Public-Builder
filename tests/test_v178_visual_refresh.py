@@ -92,7 +92,7 @@ class VisualRefresh1662(unittest.TestCase):
      "obsidiannetwork:block/mining_builder_"+name)
    png=(assets/"textures/block"/("mining_builder_"+name+".png")).read_bytes()
    self.assertEqual(png[:8],b"\x89PNG\r\n\x1a\n")
-   self.assertEqual(struct.unpack(">II",png[16:24]),(32,32))
+   self.assertEqual(struct.unpack(">II",png[16:24]),(64,64))
    self.assertEqual(png[25],6) # RGBA 8-bit
    self.assertGreater(len(zlib.decompress(png[41:-16])),4096)
   hud=(j/"client/V178JarvisHud.java").read_text()
