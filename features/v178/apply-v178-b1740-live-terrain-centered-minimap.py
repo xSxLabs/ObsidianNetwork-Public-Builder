@@ -328,7 +328,7 @@ patch(client,'''   if(option("coords")){
     infoY+=lineHeight;
    }
    if(option("daytime")){
-    V178MapInfo.line(g,"Day: "+(mc.level.getDayTime()/24000L),ox+4,infoY);
+    V178MapInfo.line(g,"Day: "+(mc.level.getGameTime()/24000L),ox+4,infoY);
    }''')
 # Player-follow marker projections: server snapshot stays chunk-oriented, but
 # mob/waypoint HUD icons must share the same player-following local origin.
