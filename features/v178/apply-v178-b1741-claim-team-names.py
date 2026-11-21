@@ -29,7 +29,7 @@ patch(claim,'''     }else if(s.length==4&&s[0].equals("M")){''',
       if(name.matches("[A-Za-z0-9 _-]{3,24}"))TEAM_NAMES.put(leader,name);
      }else if(s.length==4&&s[0].equals("M")){''')
 patch(claim,'''  for(var team:TEAM_MEMBERS.entrySet())for(UUID member:team.getValue())''',
-'''  for(var entry:TEAM_NAMES.entrySet())
+r'''  for(var entry:TEAM_NAMES.entrySet())
    data.append("N\t").append(entry.getKey()).append('\t')
        .append(entry.getValue()).append("\t-\n");
   for(var team:TEAM_MEMBERS.entrySet())for(UUID member:team.getValue())''')
