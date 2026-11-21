@@ -27,6 +27,62 @@ def emit(rel,s):
     p.parent.mkdir(parents=True,exist_ok=True)
     p.write_text(s,encoding="utf-8")
 
+# B1734: audit source fingerprints once before mutation, emitting ONLY counts.
+# Drift is visible for every subsection even when the first patch fails.
+AUDIT={
+ "client/V178TerrainMap.java":[
+  " private static int atlasRevision;",
+  "  var map=cache(dim);long key=pos(cx,cz);",
+  "  resetAtlas();atlasRevision=0;",
+  "   int color=world.getBlockState(block).getMapColor(world,block).col;",
+  "    if(y>world.getSeaLevel()+15)shade*=.985;",
+  "  boolean round;\n  long lastUpload=Long.MIN_VALUE;",
+  "   cx=Integer.MIN_VALUE;revision=Integer.MIN_VALUE;\n   lastUpload=Long.MIN_VALUE;dimension=\"\";",
+  "   if(texture!=null&&cx==centerX&&cz==centerZ&&revision==atlasRevision\n      &&round==circle)return;",
+  "   int radius=side/2;\n   long radius2=(long)(radius-1)*(radius-1);",
+  "     if(circle){\n      long xx2=(long)(2*xx+1-side),yy2=(long)(2*yy+1-side);",
+  "   round=circle;lastUpload=tick;",
+  "   int source=diameter==7 ? V178MiniPreferences.visibleChunks()*RES : side;"
+ ],
+ "client/V178ClaimsClient.java":[
+  "showCoordinates?",
+  "int markerStep=7*step/view;",
+  "int x=ox+4+(dx+radius)*markerStep,y=oy+15+(dz+radius)*markerStep;",
+  "if(drawClaims)V178TerrainMap.drawClaim(g,x,y,markerStep,",
+  "V178UiTheme.miniFrame(g,ox-3,oy-4,miniWidth+3,miniHeight+8);",
+  "if(option(\"waypoints\"))V178Waypoints.drawMini",
+  "event.register(MINIMAP_SETTINGS);",
+  "while(MINIMAP_SETTINGS.consumeClick()){"
+ ],
+ "client/V178MapSettingsScreen.java":[
+  "String label,Runnable toggle){",
+  "           V178MiniPreferences::cycleZoom);",
+  "top+134,2*w+6,20",
+  "V178UiTheme.panel(g,left,top-48,panelWidth,216);",
+  "int top=Math.max(51,(height-210)/2);"
+ ],
+ "client/V178ClaimsMapScreen.java":[
+  "if(!grid||!showClaims)continue;",
+  "// Local position pointer (does not imply a chunk is loaded).",
+  "nav(\"Minimap-Optionen\"",
+  "g.fill(hx-1,hz-1,hx+2,hz+2,0xffffffff);"
+ ],
+ "client/V178MapMobCache.java":[
+  "int tile=7*step/(2*r+1);"
+ ],
+ "client/V178Waypoints.java":[
+  "int tile=7*step/(2*r+1);"
+ ],
+ "client/NetworkActionWheelClient.java":[
+  "return V178FlyModuleClient.withFly(V177JarvisClient.withJarvis(base));",
+  "i==11?(V178FlyModuleClient.active()?\"FLY OFF\":\"FLY ON\"):ACTIONS[i];"
+ ]
+}
+for rel,fingerprints in AUDIT.items():
+    body=(J/rel).read_text(encoding="utf-8")
+    print("B1734_ANCHORS",rel,[body.count(f) for f in fingerprints])
+print("B1734_ANCHORS_DONE")
+
 # Personalization is independent of resource packs and never changes ticks.
 def prefs(s):
     s=replace(s,"private static int size=1,corner=-1,zoom=0,mobRange=2;",
@@ -80,11 +136,7 @@ def detail(s):
     s=replace(s,'''  var map=cache(dim);long key=pos(cx,cz);''',
        '''  var map=cache(dim);long key=pos(cx,cz);
   var refreshed=RECOLORED.computeIfAbsent(dim,k->new HashSet<>());
-  if(map.containsKey(key)&&!refreshed.contains(key)&&world.hasChunk(cx,cz))
-   map.remove(key);''')
-    s=replace(s,'''  map.put(key,colors);dirty=true;''',
-       '''  map.put(key,colors);dirty=true;
-  refreshed.add(key);''')
+  if(world.hasChunk(cx,cz)&&refreshed.add(key))map.remove(key);''')
     s=replace(s,'''  resetAtlas();atlasRevision=0;''',
        '''  resetAtlas();atlasRevision=0;RECOLORED.clear();''',number=2)
     s=replace(s,
