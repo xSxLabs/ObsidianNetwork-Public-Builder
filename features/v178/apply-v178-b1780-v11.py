@@ -347,13 +347,23 @@ settings=J/"client/V178MapSettingsScreen.java"
 src=settings.read_text(encoding="utf-8")
 # Split the existing full-width Back row into two guaranteed non-overlapping
 # buttons and keep the same page-switching and all existing options.
-match=re.search(r'(?m)^  addRenderableWidget\(Button\.builder\(Component\.literal\("Back to Map"\),\s*\n\s*b->onClose\(\)\)\.bounds\(left,top\+155,2\*w\+6,20\)\.build\(\);',src)
-assert match,("B1780_SETTINGS_NAV","back button layout changed")
-src=src[:match.start()]+'''  addRenderableWidget(Button.builder(Component.literal("HUD EDITOR"),
-       b->Minecraft.getInstance().setScreen(new V178HudEditorScreen(this)))
-       .bounds(left,top+155,w,20).build());
-  addRenderableWidget(Button.builder(Component.literal("Back to Map"),
-       b->onClose()).bounds(left+w+6,top+155,w,20).build());'''+src[match.end():]
+# Preserve the existing Back button whatever its formatting. Insert the
+# editor as its own row immediately before init() ends.
+pattern=r"(?m)^([ \t]*)\}\r?\n([ \t]*)@Override public void extractBackground"
+found=list(re.finditer(pattern,src))
+assert len(found)==1,("B1780_SETTINGS_NAV",len(found))
+match=found[0]
+indent=match.group(1)
+editor=('  addRenderableWidget(Button.builder(Component.literal("HUD EDITOR"),\n'
+        '    b->Minecraft.getInstance().setScreen(new V178HudEditorScreen(this)))\n'
+        '    .bounds(left,top+183,2*w+6,20).build());\n')
+src=src[:match.start()]+editor+src[match.start():]
+assert 'Component.literal("HUD EDITOR")' in src
+# The extra row must fit inside the theme panel rather than overlap the help text.
+src=src.replace('V178UiTheme.panel(g,left,top-48,panelWidth,241);',
+                'V178UiTheme.panel(g,left,top-48,panelWidth,284);',1)
+src=src.replace('left+12,top+161,0xffaecdda',
+                'left+12,top+215,0xffaecdda',1)
 settings.write_text(src,encoding="utf-8")
 
 # Original futuristic mining machine: fewer readable armored pieces, a large
