@@ -4,14 +4,33 @@ world-scoped team/claims file. Rename is server-authorized, bounded, and visible
 through the existing on-demand team GUI snapshot (no polling).
 Apply after B1740 and B1730.
 """
-import os
+import os,re
 from pathlib import Path
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 def patch(rel,old,new,n=1):
     p=J/rel
     s=p.read_text("utf8")
-    assert s.count(old)==n,("B1741_ANCHOR",rel,old[:100],s.count(old))
-    p.write_text(s.replace(old,new,n),"utf8")
+    count=s.count(old)
+    if count==n:
+        s=s.replace(old,new,n)
+    else:
+        # B1652 generated Java uses varying indentation in different GUI
+        # screens. Refuse changed Java statements, accept whitespace only.
+        rows=old.splitlines()
+        assert rows and all(x.strip() for x in rows)
+        pattern=r"(?m)^[ \t]*"+r"[ \t]*\r?\n[ \t]*".join(
+            re.escape(x.strip()) for x in rows)
+        hits=list(re.finditer(pattern,s))
+        assert len(hits)==n,("B1741_ANCHOR",rel,old[:100],count,len(hits))
+        for hit in reversed(hits):
+            first=hit.group().splitlines()[0]
+            delta=len(first)-len(first.lstrip(" "))-(len(rows[0])-len(rows[0].lstrip(" ")))
+            replacement=[]
+            for line in new.splitlines():
+                indent=len(line)-len(line.lstrip(" "))
+                replacement.append(" "*max(0,indent+delta)+line.lstrip(" "))
+            s=s[:hit.start()]+"\n".join(replacement)+s[hit.end():]
+    p.write_text(s,"utf8")
 
 claim="claims/V178Claims.java"
 patch(claim,''' private static final Map<UUID,TeamInvite> TEAM_INVITES=new HashMap<>();''',
