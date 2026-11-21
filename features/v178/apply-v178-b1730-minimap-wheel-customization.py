@@ -172,12 +172,8 @@ def detail(s):
    else if(state.is(net.minecraft.world.level.block.Blocks.OAK_LEAVES)
         ||state.is(net.minecraft.world.level.block.Blocks.BIRCH_LEAVES))
     color=0x51934a;''')
-    s=replace(s,
-       '''    if(y>world.getSeaLevel()+15)shade*=.985;''',
-       '''    if(y>world.getSeaLevel()+15)shade*=.985;
-    // Stable, subtle ground micro-shading; never random per frame.
-    int grain=(wx*73428767 ^ wz*9123671);
-    shade*=1.0+((grain>>>7)&7)*.006-0.021;''')
+    # Retain existing height-aware terrain shading unmodified; B1700 owns it.
+    # Material colors below add detail without a second incompatible shade patch.
     # GPU atlas mask must be computed against the *cropped viewport*, not
     # the old unzoomed atlas. This also bakes a lightweight round border into
     # the ONE uploaded texture, instead of painting hundreds of HUD squares.
