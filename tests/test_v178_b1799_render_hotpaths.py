@@ -54,13 +54,13 @@ class B1799ExactOutput(unittest.TestCase):
                 firstcz=startz>>4
                 cols=[]
                 for px in range(side):
-                    wx=startx+px*crop//side
+                    wx=startx+(px*crop//side)
                     cols.append(((wx>>4)-firstcx,wx&15))
                 for py in range(side):
-                    wz=startz+py*crop//side
+                    wz=startz+(py*crop//side)
                     row=((wz>>4)-firstcz,wz&15)
                     for px in range(side):
-                        wx=startx+px*crop//side
+                        wx=startx+(px*crop//side)
                         old=((wx>>4)-firstcx,(wz>>4)-firstcz,(wz&15)*16+(wx&15))
                         new=(cols[px][0],row[0],row[1]*16+cols[px][1])
                         self.assertEqual(old,new)
