@@ -103,7 +103,7 @@ s=p.read_text(encoding="utf-8")
 head="  public static void player(GuiGraphicsExtractor g,int x,int y,float yaw){"
 assert s.count(head)==1,("B1765_MARKER_START_DRIFT",s.count(head))
 a=s.index(head)
-b=s.index("\n }\n}",a)
+b=s.index("\n  }\n}",a)
 new=r'''  public static void player(GuiGraphicsExtractor g,int x,int y,float yaw){
    // B1765_DIRECTION_ARROW: small directional triangle, dark outlined,
    // cyan core + white centre. Scales independently of terrain zoom.
@@ -122,7 +122,7 @@ new=r'''  public static void player(GuiGraphicsExtractor g,int x,int y,float yaw
    }
    g.fill(x-1,y-1,x+2,y+2,0xffffffff);
   }'''
-s=s[:a]+new+s[b+3:]
+s=s[:a]+new+s[b+4:]
 assert "B1765_DIRECTION_ARROW" in s and "PlayerFaceExtractor.extractRenderState(" not in s
 p.write_text(s,encoding="utf-8")
 
