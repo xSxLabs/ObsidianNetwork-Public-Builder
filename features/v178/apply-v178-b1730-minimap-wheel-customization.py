@@ -73,9 +73,15 @@ def detail(s):
     s=replace(s,''' private static int atlasRevision;''',
        ''' private static int atlasRevision;
  private static final Map<String,Set<Long>> RECOLORED=new HashMap<>();''')
-    s=replace(s,'''  if(map.containsKey(key)||!world.hasChunk(cx,cz))return;''',
-       '''  var refreshed=RECOLORED.computeIfAbsent(dim,k->new HashSet<>());
-  if(!world.hasChunk(cx,cz)||(map.containsKey(key)&&refreshed.contains(key)))return;''')
+    # The earlier map layers can reorder their cache/loaded guard. Rather
+    # than matching that generated condition, evict ONLY loaded old-palette
+    # chunks immediately before the unchanged guard and regenerate using the
+    # already bounded client tick sampler. Unloaded exploration is untouched.
+    s=replace(s,'''  var map=cache(dim);long key=pos(cx,cz);''',
+       '''  var map=cache(dim);long key=pos(cx,cz);
+  var refreshed=RECOLORED.computeIfAbsent(dim,k->new HashSet<>());
+  if(map.containsKey(key)&&!refreshed.contains(key)&&world.hasChunk(cx,cz))
+   map.remove(key);''')
     s=replace(s,'''  map.put(key,colors);dirty=true;''',
        '''  map.put(key,colors);dirty=true;
   refreshed.add(key);''')
