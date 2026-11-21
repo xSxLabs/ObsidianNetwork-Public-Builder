@@ -19,7 +19,7 @@ def patch(rel,old,new):
   # whitespace at line boundaries, never the asserted code expressions.
   rows=[line.strip() for line in old.splitlines()]
   assert rows and all(rows),("B1780_EMPTY_ANCHOR",rel)
-  pattern=r"(?m)^[ \\t]*"+r"[ \\t]*\\r?\\n[ \\t]*".join(re.escape(row) for row in rows)
+  pattern=r"(?m)^[ \t]*"+r"[ \t]*\r?\n[ \t]*".join(re.escape(row) for row in rows)
   matches=list(re.finditer(pattern,s))
   assert len(matches)==1,("B1780_ANCHOR",rel,old[:110],count,len(matches))
   match=matches[0]
