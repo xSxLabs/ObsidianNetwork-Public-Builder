@@ -203,13 +203,12 @@ original=body[lo:last]
 assert original.count("getBrightness(")==2,("B1792_FACADE_LIGHT_SAMPLE_DRIFT",)
 replacement=f"""long xsxNow={be}.getLevel()==null?Long.MIN_VALUE:{be}.getLevel().getGameTime();
    B1792Light cached=B1792_LIGHTS.get({be});
-   if(cached!=null&&cached.level=={be}.getLevel()
-       &&xsxNow>=cached.tick&&xsxNow-cached.tick<5L){{
+   if(cached!=null&&xsxNow>=cached.tick&&xsxNow-cached.tick<5L){{
     {state}.lightCoords=cached.packed;
    }}else{{
     {original}
     if(xsxNow!=Long.MIN_VALUE)
-     B1792_LIGHTS.put({be},new B1792Light({be}.getLevel(),xsxNow,{state}.lightCoords));
+     B1792_LIGHTS.put({be},new B1792Light(xsxNow,{state}.lightCoords));
    }}"""
 body=body[:lo]+replacement+body[last:]
 source=source[:start]+body+source[end:]
@@ -218,8 +217,8 @@ assert cls
 fields="""
  // B1792_FACADE_LIGHT_CACHE: exact legacy neighbor blend, only once per 5 ticks.
  private static final class B1792Light{
-  final net.minecraft.world.level.Level level;final long tick;final int packed;
-  B1792Light(net.minecraft.world.level.Level l,long t,int p){level=l;tick=t;packed=p;}
+  final long tick;final int packed;
+  B1792Light(long t,int p){tick=t;packed=p;}
  }
  private static final java.util.Map<net.minecraft.world.level.block.entity.BlockEntity,B1792Light>
    B1792_LIGHTS=new java.util.WeakHashMap<>();
