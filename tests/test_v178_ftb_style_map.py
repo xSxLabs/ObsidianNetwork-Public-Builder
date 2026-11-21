@@ -118,6 +118,9 @@ class FtbStyleMap(unittest.TestCase):
    self.assertIn("V178Waypoints.drawMap(world,g,cx,cz,x0,y0,tile,DIAMETER)",gui)
  def test_b1634_ftb_style_persistent_map_info_options(self):
   self.assertIn("B1634_INFO_OPTIONS",B)
+  # B1762: later map generation must not restore the unsupported day-time API.
+  later=(R/"features/v178/apply-v178-b1740-live-terrain-centered-minimap.py").read_text()
+  self.assertNotIn("mc.level.getDayTime()",later)
   self.assertIn("V178MapSettingsScreen.java",B)
   self.assertIn("client-options.properties",B)
   self.assertIn("StandardCopyOption.ATOMIC_MOVE",B)
