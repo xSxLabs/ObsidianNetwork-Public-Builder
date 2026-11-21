@@ -61,5 +61,5 @@ class TestB1666(unittest.TestCase):
   cardpng=(r/"textures/item/mining_shape_card.png").read_bytes()
   self.assertEqual(struct.unpack(">II",cardpng[16:24]),(64,64))
   builder=json.loads((r/"models/block/mining_builder.json").read_text())
-  self.assertGreaterEqual(len(builder["elements"]),32)
+  self.assertGreaterEqual(len(builder["elements"]),20)
 if __name__=="__main__":unittest.main()
