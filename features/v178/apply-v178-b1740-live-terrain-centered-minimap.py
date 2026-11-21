@@ -218,6 +218,8 @@ public final class V178MapInfo{
  public static void line(GuiGraphicsExtractor g,String value,int x,int y){
   var mc=Minecraft.getInstance();
   float scale=Math.max(.65f,Math.min(1.6f,V178MiniPreferences.step()/24.0f));
+  scale=Math.min(scale,Math.max(.35f,
+      (7f*V178MiniPreferences.step()-8f)/Math.max(1,mc.font.width(value))));
   g.pose().pushMatrix();
   g.pose().translate(x,y);
   g.pose().scale(scale,scale);
@@ -255,11 +257,8 @@ s=s[:a]+r'''  public static void player(GuiGraphicsExtractor g,int x,int y,float
     g.fill(x-4,y-4,x+4,y+4,0xffffffff);
     return;
    }
-   var skin=mc.player.getSkin().texture();
-   g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
-      skin,x-4,y-4,8.0f,8.0f,8,8,8,8,64,64);
-   g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
-      skin,x-4,y-4,40.0f,8.0f,8,8,8,8,64,64);
+   net.minecraft.client.gui.components.PlayerFaceExtractor.extractRenderState(
+       g,mc.player.getSkin(),x-4,y-4,8);
   }'''+s[b+3:]
 p.write_text(s,"utf8")
 
