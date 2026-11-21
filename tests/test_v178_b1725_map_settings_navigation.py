@@ -53,7 +53,7 @@ class MapOptionsNavigation1725(unittest.TestCase):
   java=Path(root)/"dev/obsidiannetwork/client"
   world=(java/"V178ClaimsMapScreen.java").read_text()
   settings=(java/"V178MapSettingsScreen.java").read_text()
-  self.assertIn('nav("Minimap-Optionen",154',world)
+  self.assertIn('nav("Map Settings",154',world)
   self.assertIn('new V178MapSettingsScreen(this)',world)
   self.assertIn("toolbarBottom=Math.max(toolbarBottom",world)
   self.assertIn("Math.max(toolbarBottom+27",world)
@@ -70,7 +70,7 @@ class MapOptionsNavigation1725(unittest.TestCase):
                 "V178MiniPreferences::toggleMobs",
                 "V178MiniPreferences::cycleMobRange","V178MiniPreferences::toggleShape",
                 "V178MiniPreferences::cycleSize",
-                "V178UiTheme.panel","Zurueck zur Karte"):
+                "V178UiTheme.panel","Back to Map"):
    self.assertIn(token,settings)
   self.assertIn("Minecraft.getInstance().setScreen(previous)",settings)
   self.assertIn('{"minimap","terrain","player"}',settings)
