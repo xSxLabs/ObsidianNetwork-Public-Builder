@@ -89,6 +89,8 @@ class MapAndSpeedUpgrades(unittest.TestCase):
   self.assertIn("for(int py=0;py<SIDE;py++)",raster)
   self.assertIn("int crop=SIDE;",raster)
   self.assertIn("refreshSurface(world,cx,cz)",terrain)
+  self.assertIn("java.util.Arrays.equals(before,after)",terrain)
+  self.assertNotIn("Arrays.equals(previous,refreshed)",terrain)
   self.assertIn("farRefreshCursor++%625",terrain)
   self.assertIn("B1765_DIRECTION_ARROW",markers)
   self.assertNotIn("PlayerFaceExtractor.extractRenderState(",markers)
