@@ -358,12 +358,18 @@ patch(client,'''!key.equals("coords")&&!key.equals("chunk")&&!key.equals("daytim
             '''!key.equals("coords")&&!key.equals("chunk")&&!key.equals("daytime")''')
 # Default biome on, no extra packet or server work.
 settings="client/V178MapSettingsScreen.java"
-patch(settings,'''{"minimap","terrain","claims","loaded","waypoints","player","coords","chunk","daytime"},''',
-'''{"minimap","terrain","claims","loaded","waypoints","player","coords","biome","chunk","daytime"},''')
-patch(settings,''' "Waypoints","Player Arrow","XYZ Coordinates","Chunk Coordinates","Game Day"},''',
-''' "Waypoints","Player Arrow","XYZ Coordinates","Biome","Chunk Coordinates","Game Day"},''')
-# Dynamic settings layout was previously fixed to 9 rows; 10 toggles are two
-# columns x five rows, same height. The existing 4 size/zoom controls remain.
+patch(settings,'''{"claims","loaded","waypoints","coords","chunk","daytime"},''',
+'''{"claims","loaded","waypoints","coords","biome","chunk","daytime"},''')
+patch(settings,''' "Chunk Coordinates","Game Day"},''',
+''' "Biome","Chunk Coordinates","Game Day"},''')
+# The display tab now has 7 options rather than 6. Move the three
+# adjustable mob controls below the added Biome option (no GUI overlap).
+patch(settings,'''display(left,top,w,6,"Mobs: "''',
+                '''display(left,top,w,8,"Mobs: "''')
+patch(settings,'''display(left,top,w,7,"Hostile Only: "''',
+                '''display(left,top,w,9,"Hostile Only: "''')
+patch(settings,'''display(left,top,w,8,"Mob Range: "''',
+                '''display(left,top,w,10,"Mob Range: "''')
 
 assert "V178MiniRaster.draw" in (J/terrain).read_text()
 assert "V178MapInfo.line" in (J/client).read_text()
