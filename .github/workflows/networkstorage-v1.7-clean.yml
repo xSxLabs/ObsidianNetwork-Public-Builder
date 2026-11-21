@@ -4482,9 +4482,12 @@ jobs:
                 python3 features/v178/apply-v178-b1780-v11.py
                 # B1792: v11 FPS-only: opaque model occlusion + cached facade lighting + hidden bundles.
                 python3 features/v178/apply-v178-b1792-render-fps.py
+                # B1799: keep v11; exact minimap pixels with less CPU and world-safe facade light cache.
+                python3 features/v178/apply-v178-b1799-render-hotpaths.py
                 python3 -m unittest discover -s tests -p 'test_v178_b1765_map_builder.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1780_v11.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1792_render_fps.py' -v
+                python3 -m unittest discover -s tests -p 'test_v178_b1799_render_hotpaths.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1740_live_map_team_names.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1730_minimap_wheel_customization.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1725_map_settings_navigation.py' -v
