@@ -44,6 +44,8 @@ class MapAndSpeedUpgrades(unittest.TestCase):
  def test_clean_direction_marker(self):
   s=SOURCE.read_text()
   self.assertIn("B1765_DIRECTION_ARROW",s)
+  self.assertIn('b=s.index("\\n  }\\n}",a)',s)
+  self.assertIn("s=s[:a]+new+s[b+4:]",s)
   self.assertIn("double angle=Math.toRadians(yaw)",s)
   self.assertIn("0xff54e8f5",s)
   self.assertIn("PlayerFaceExtractor.extractRenderState(",s)
