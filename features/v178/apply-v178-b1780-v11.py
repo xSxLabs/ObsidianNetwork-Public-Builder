@@ -29,7 +29,7 @@ assert s.count(head)==1 and "B1775_WHITE_HEAD_POINTER" in s
 a=s.index(head)
 b=s.index("\n  }\n}",a)
 new=r'''  public static void player(GuiGraphicsExtractor g,int x,int y,float yaw){
-   // B1775_WHITE_HEAD_POINTER / B1780_COMPACT_SKIN_ARROW
+   // B1765_DIRECTION_ARROW / B1775_WHITE_HEAD_POINTER / B1780_COMPACT_SKIN_ARROW
    double angle=Math.toRadians(yaw);
    double dx=-Math.sin(angle),dy=Math.cos(angle),ax=-dy,ay=dx;
    for(int t=5;t<=9;t++){
@@ -61,7 +61,7 @@ m.write_text(s,encoding="utf-8")
 # visualize the exposed ground, not speckle the biome with decorative plants.
 # Keep snow layers, fluids, leaves, structures and ALL solid modded blocks.
 patch("client/V178TerrainMap.java",
-'''    var state=world.getBlockState(block);''',
+'''   var state=world.getBlockState(block);''',
 '''    var state=world.getBlockState(block);
     int vegetation=0;
     while(vegetation<4&&y>world.getMinY()
