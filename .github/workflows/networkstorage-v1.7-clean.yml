@@ -4478,7 +4478,10 @@ jobs:
                 python3 features/v178/apply-v178-b1741-claim-team-names.py
                 # B1768: Xaero-style sampled map refresh, 39-chunk zoom and builder speed slot.
                 python3 features/v178/apply-v178-b1765-map-builder.py
+                # B1780: 1.7.8 v11 terrain, builder, minimap marker, freely editable HUD.
+                python3 features/v178/apply-v178-b1780-v11.py
                 python3 -m unittest discover -s tests -p 'test_v178_b1765_map_builder.py' -v
+                python3 -m unittest discover -s tests -p 'test_v178_b1780_v11.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1740_live_map_team_names.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1730_minimap_wheel_customization.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1725_map_settings_navigation.py' -v
@@ -4917,7 +4920,11 @@ jobs:
           echo '===== BUILD 101 ALL AUTOMATABLE GATES PASS ====='
 
           mkdir -p dist
-          cp work/build/libs/*.jar dist/
+          if [ "$GITHUB_REF_NAME" = "1.7.8" ]; then
+            cp work/build/libs/*.jar dist/xSxLabs-Network-Storage-1.7.8-v11.jar
+          else
+            cp work/build/libs/*.jar dist/
+          fi
           if [ "$GITHUB_REF_NAME" = "v1.7.6" ] || [ "$GITHUB_REF_NAME" = "1.7.6-powerbank" ] || [ "$GITHUB_REF_NAME" = "1.7.7" ] || [ "$GITHUB_REF_NAME" = "1.7.8" ] || [ "$GITHUB_REF_NAME" = "fix/v176-energy-accounting-conservation-after-b1292" ]; then
             python3 - <<'PY_V176_JAR'
           import json
@@ -5221,7 +5228,7 @@ jobs:
         if: github.ref != 'refs/heads/v1.7.6' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref == 'refs/heads/1.7.8' && 'xsxlabs-network-storage-v1.7.8-test-jar' || (github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate')) }}
+          name: ${{ github.ref == 'refs/heads/1.7.8' && 'xsxlabs-network-storage-1.7.8-v11' || (github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate')) }}
           path: dist/
           if-no-files-found: error
           retention-days: 14
