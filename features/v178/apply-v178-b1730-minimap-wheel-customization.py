@@ -15,8 +15,30 @@ def update(rel, transform):
     assert new!=old,("B1730_UNCHANGED",rel)
     p.write_text(new,encoding="utf-8")
 def replace(s,a,b,number=1):
-    assert s.count(a)==number,("B1730_ANCHOR_DRIFT",a[:140],s.count(a))
-    return s.replace(a,b,number)
+    count=s.count(a)
+    if count==number:return s.replace(a,b,number)
+    # Earlier source generators use differing Java indentation. Accept ONLY
+    # indentation drift while refusing altered statements or ambiguous matches.
+    if number==1:
+        lines=a.splitlines()
+        if lines and all(line.strip() for line in lines):
+            pattern=r"(?m)^[ \t]*"+r"[ \t]*\r?\n[ \t]*".join(
+                re.escape(line.strip()) for line in lines)
+            hits=list(re.finditer(pattern,s))
+            if len(hits)==1:
+                found=hits[0]
+                actual=found.group().splitlines()[0]
+                delta=(len(actual)-len(actual.lstrip(" "))) - (
+                    len(lines[0])-len(lines[0].lstrip(" ")))
+                adjusted=[]
+                for line in b.splitlines():
+                    if not line.strip():
+                        adjusted.append("")
+                        continue
+                    pad=len(line)-len(line.lstrip(" "))
+                    adjusted.append(" "*max(0,pad+delta)+line.lstrip(" "))
+                return s[:found.start()]+"\n".join(adjusted)+s[found.end():]
+    raise AssertionError(("B1730_ANCHOR_DRIFT",a[:140],count))
 def regex(s,pattern,repl):
     out,n=re.subn(pattern,repl,s,flags=re.S)
     assert n==1,("B1730_REGEX_DRIFT",pattern[:100],n)
@@ -251,7 +273,7 @@ public final class V178MapMarkers {
 
 def mini(s):
     # Replace the obsolete chunk-coordinate title with exact live block XYZ.
-    s=regex(s,r'g\.text\(mc\.font,showCoordinates\?.*?,ox\+3,oy\+2,0xffb2ecfa\);',
+    s=regex(s,r'g\.text\(mc\.font,showCoordinates\?[^;]*?,ox\+3,oy\+2,0xffb2ecfa\);',
         '''g.text(mc.font,option("coords")?
      "X: "+mc.player.blockPosition().getX()+" Y: "+mc.player.blockPosition().getY()+
      " Z: "+mc.player.blockPosition().getZ():"xSxLabs MAP",
