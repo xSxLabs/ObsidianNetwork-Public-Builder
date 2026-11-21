@@ -74,7 +74,15 @@ class LiveMapAndTeamNames(unittest.TestCase):
   self.assertIn("V178MiniRaster.tick(world)",terrain)
   self.assertIn("V178MapInfo.tick(world)",terrain)
   self.assertIn("cropPixels()",raster)
-  self.assertIn("if(distance>outer2)color=0;",raster)
+  # B1799 preserves the same circular mask; the old per-pixel distance check
+  # is now precomputed once and applied by mask byte without changing pixels.
+  self.assertTrue(
+   "if(distance>outer2)color=0;" in raster or
+   (all(token in raster for token in (
+    "B1799_CIRCLE_MASK=b1799CircleMask()",
+    "byte mask=B1799_CIRCLE_MASK[maskRow+px];",
+    "if(mask==2)color=0;",
+    "else if(mask==1)color=0xff95adbc;"))))
   self.assertNotIn("getHeight(",raster)
   self.assertIn("V178MapInfo.line",java)
   self.assertNotIn('"X: "+mc.player.blockPosition().getX()',java)
