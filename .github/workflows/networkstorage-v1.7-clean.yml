@@ -1,3 +1,4 @@
+# B1734: Source-anchor diagnostic and safe cache refresh before one-pass full build.
 # B1732: Fix terrain recolor overlay anchor; explicit full 1.7.8 build requested.
 # B1731: Recolor saved 16px terrain on bounded revisit; preserve both claim layers and show minimap compass.
 # B1511 armor station triple-service: integrity repair, all-four-piece FE recharge and helmet NutriPaste refill.
