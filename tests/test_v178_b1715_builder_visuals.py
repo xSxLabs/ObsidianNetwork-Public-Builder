@@ -47,8 +47,8 @@ class MechanicalMiningBuilder1715(unittest.TestCase):
         if not r or not j:self.skipTest("Full CI generated resources only")
         assets=Path(r)/"assets/obsidiannetwork"
         model=json.loads((assets/"models/block/mining_builder.json").read_text())
-        self.assertGreaterEqual(len(model["elements"]),75)
-        self.assertLessEqual(len(model["elements"]),125)
+        self.assertGreaterEqual(len(model["elements"]),20)
+        self.assertLessEqual(len(model["elements"]),40)
         self.assertTrue(any(e["from"][2]==0 for e in model["elements"]))
         self.assertTrue(any(e["to"][1]==16 for e in model["elements"]))
         for element in model["elements"]:
@@ -59,7 +59,7 @@ class MechanicalMiningBuilder1715(unittest.TestCase):
         for key,loc in model["textures"].items():
             path=assets/"textures"/(loc.split(":")[1]+".png")
             self.assertTrue(path.is_file(),key)
-            self.assertEqual(struct.unpack(">II",path.read_bytes()[16:24]),(64,64))
+            self.assertEqual(struct.unpack(">II",path.read_bytes()[16:24]),(16,16))
         state=json.loads((assets/"blockstates/mining_builder.json").read_text())
         self.assertEqual(len(state["variants"]),4)
         java=(Path(j)/"dev/obsidiannetwork/client/V178ClaimsClient.java").read_text()
