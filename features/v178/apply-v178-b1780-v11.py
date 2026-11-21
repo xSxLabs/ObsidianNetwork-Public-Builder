@@ -335,14 +335,13 @@ settings=J/"client/V178MapSettingsScreen.java"
 src=settings.read_text(encoding="utf-8")
 # Split the existing full-width Back row into two guaranteed non-overlapping
 # buttons and keep the same page-switching and all existing options.
-needle='''  addRenderableWidget(Button.builder(Component.literal("Back to Map"),
-       b->onClose()).bounds(left,top+155,2*w+6,20).build());'''
-assert src.count(needle)==1,("B1780_SETTINGS_NAV",src.count(needle))
-src=src.replace(needle,'''  addRenderableWidget(Button.builder(Component.literal("HUD EDITOR"),
+match=re.search(r'(?m)^  addRenderableWidget\(Button\.builder\(Component\.literal\("Back to Map"\),\s*\n\s*b->onClose\(\)\)\.bounds\(left,top\+155,2\*w\+6,20\)\.build\(\);',src)
+assert match,("B1780_SETTINGS_NAV","back button layout changed")
+src=src[:match.start()]+'''  addRenderableWidget(Button.builder(Component.literal("HUD EDITOR"),
        b->Minecraft.getInstance().setScreen(new V178HudEditorScreen(this)))
        .bounds(left,top+155,w,20).build());
   addRenderableWidget(Button.builder(Component.literal("Back to Map"),
-       b->onClose()).bounds(left+w+6,top+155,w,20).build());''',1)
+       b->onClose()).bounds(left+w+6,top+155,w,20).build());'''+src[match.end():]
 settings.write_text(src,encoding="utf-8")
 
 # Original futuristic mining machine: fewer readable armored pieces, a large
