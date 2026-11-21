@@ -11,8 +11,20 @@ R=Path(os.environ["V1_RESOURCE_ROOT"])/"assets/obsidiannetwork"
 def patch(rel,old,new):
  p=J/rel
  s=p.read_text(encoding="utf-8")
- assert s.count(old)==1,("B1780_ANCHOR",rel,old[:110],s.count(old))
- p.write_text(s.replace(old,new,1),encoding="utf-8")
+ count=s.count(old)
+ if count==1:
+  updated=s.replace(old,new,1)
+ else:
+  # Previous generators may uniformly reindent their Java. Ignore only
+  # whitespace at line boundaries, never the asserted code expressions.
+  rows=[line.strip() for line in old.splitlines()]
+  assert rows and all(rows),("B1780_EMPTY_ANCHOR",rel)
+  pattern=r"(?m)^[ \\t]*"+r"[ \\t]*\\r?\\n[ \\t]*".join(re.escape(row) for row in rows)
+  matches=list(re.finditer(pattern,s))
+  assert len(matches)==1,("B1780_ANCHOR",rel,old[:110],count,len(matches))
+  match=matches[0]
+  updated=s[:match.start()]+new+s[match.end():]
+ p.write_text(updated,encoding="utf-8")
 
 def emit(rel,content):
  p=J/rel
