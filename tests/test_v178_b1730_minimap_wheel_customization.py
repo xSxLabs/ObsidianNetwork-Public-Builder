@@ -49,7 +49,9 @@ class MinimapWheelCustomizationB1730(unittest.TestCase):
   names=("V178WheelSettingsScreen","V178WheelPreferences","V178MapMarkers")
   for name in names:self.assertTrue((c/(name+".java")).is_file(),name)
   mini=(c/"V178ClaimsClient.java").read_text()
-  self.assertIn('"X: "+mc.player.blockPosition().getX()',mini)
+  # B1740 displays compact scaled XYZ once in the appropriate corner.
+  self.assertIn('V178MapInfo.line(g,"Player Pos: "',mini)
+  self.assertNotIn('"X: "+mc.player.blockPosition().getX()',mini)
   self.assertNotIn('"CLAIMS "',mini)
   self.assertIn("V178MapMarkers.player(g,px,py",mini)
   self.assertIn("WHEEL_SETTINGS.consumeClick()",mini)
