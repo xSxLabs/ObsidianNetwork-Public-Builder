@@ -234,9 +234,11 @@ public final class V178MapInfo{
 markers="client/V178MapMarkers.java"
 p=J/markers
 s=p.read_text("utf8")
-a=s.index("  public static void player(")
+method=re.search(r'(?m)^[ \\t]*public static void player\\(',s)
+assert method,("B1740_MARKER_METHOD_MISSING",)
+a=method.start()
 b=s.index("\n }\n}",a)
-assert a>0 and b>a,("B1740_MARKER_METHOD",a,b)
+assert b>a,("B1740_MARKER_METHOD_END",a,b)
 s=s[:a]+r'''  public static void player(GuiGraphicsExtractor g,int x,int y,float yaw){
    double heading=Math.toRadians(yaw);
    double dx=-Math.sin(heading),dy=Math.cos(heading);
