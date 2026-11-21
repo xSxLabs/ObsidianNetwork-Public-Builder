@@ -67,6 +67,20 @@ update("client/V178MiniPreferences.java",prefs)
 # world column already performed by 16x16 client tick sampling. Cached colors
 # drive both minimap and world map. Modded terrain retains Minecraft map colors.
 def detail(s):
+    # Recolor already explored chunks once when loaded in this session.
+    # Preserve old cached imagery until each chunk is refreshed at the
+    # existing bounded sampler rate (not during GPU or GUI rendering).
+    s=replace(s,''' private static int atlasRevision;''',
+       ''' private static int atlasRevision;
+ private static final Map<String,Set<Long>> RECOLORED=new HashMap<>();''')
+    s=replace(s,'''  if(map.containsKey(key)||!world.hasChunk(cx,cz))return;''',
+       '''  var refreshed=RECOLORED.computeIfAbsent(dim,k->new HashSet<>());
+  if(!world.hasChunk(cx,cz)||(map.containsKey(key)&&refreshed.contains(key)))return;''')
+    s=replace(s,'''  map.put(key,colors);dirty=true;''',
+       '''  map.put(key,colors);dirty=true;
+  refreshed.add(key);''')
+    s=replace(s,'''  resetAtlas();atlasRevision=0;''',
+       '''  resetAtlas();atlasRevision=0;RECOLORED.clear();''',number=2)
     s=replace(s,
        '   int color=world.getBlockState(block).getMapColor(world,block).col;',
        '''   var state=world.getBlockState(block);
@@ -204,11 +218,11 @@ def mini(s):
      int y=oy+15+7*step/2+dz*markerStep-markerStep/2;
      if(x>=ox+4+7*step||y>=oy+15+7*step
         ||x+markerStep<=ox+4||y+markerStep<=oy+15)continue;''')
-    # Prevent square claim tint/grid from filling the round minimap: still
-    # show claimed chunks, but only on the dedicated claim map.
+    # The minimap's existing claim overlay toggle remains functional.
+    # Only the full-screen claim mode receives the explicit chunk grid.
     s=replace(s,
       '''if(drawClaims)V178TerrainMap.drawClaim(g,x,y,markerStep,''',
-      '''if(false&&drawClaims)V178TerrainMap.drawClaim(g,x,y,markerStep,''')
+      '''if(drawClaims)V178TerrainMap.drawClaim(g,x,y,markerStep,''')
     s=replace(s,
       '''     int px=ox+4+radius*markerStep+
          Math.floorMod(mc.player.blockPosition().getX(),16)*markerStep/16;
@@ -225,6 +239,16 @@ def mini(s):
     s=replace(s,
        '''V178UiTheme.miniFrame(g,ox-3,oy-4,miniWidth+3,miniHeight+8);''',
        '''// Circular border is baked into the cached GPU texture; no box frame.''')
+    # Compass labels are cheap constant-screen overlays, not terrain samples.
+    s=replace(s,'''    if(option("waypoints"))V178Waypoints.drawMini''',
+       '''    if(V178MiniPreferences.circle()){
+     int mid=7*step/2;
+     g.text(mc.font,"N",ox+4+mid-2,oy+17,0xfff4f8fb);
+     g.text(mc.font,"S",ox+4+mid-2,oy+15+7*step-11,0xfff4f8fb);
+     g.text(mc.font,"W",ox+6,oy+15+mid-4,0xfff4f8fb);
+     g.text(mc.font,"E",ox+4+7*step-10,oy+15+mid-4,0xfff4f8fb);
+    }
+    if(option("waypoints"))V178Waypoints.drawMini''')
     # Keep other text rows and settings fully intact.
     return s
 update("client/V178ClaimsClient.java",mini)
@@ -260,7 +284,7 @@ def map_screen(s):
        'V178MapMarkers.player(g,px,py,p.getYRot());')
     # Terrain without grid in World Map mode, explicit grid ONLY in claims.
     s=replace(s,'if(!grid||!showClaims)continue;',
-       '''if(!claiming||!showClaims)continue;''')
+       '''if(!showClaims)continue;''')
     s=replace(s,'  // Local position pointer (does not imply a chunk is loaded).',
        '''  // One lightweight 16x16 chunk line grid, ONLY when claiming.
   // No per-cell world lookup and fewer GUI calls than per-cell outlines.
