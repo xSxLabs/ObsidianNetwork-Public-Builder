@@ -234,7 +234,7 @@ public final class V178MapInfo{
 markers="client/V178MapMarkers.java"
 p=J/markers
 s=p.read_text("utf8")
-method=re.search(r'(?m)^[ \\t]*public static void player\\(',s)
+method=re.search(r'(?m)^[ \t]*public static void player\(',s)
 assert method,("B1740_MARKER_METHOD_MISSING",)
 a=method.start()
 b=s.index("\n }\n}",a)
