@@ -122,25 +122,41 @@ assert s.count(head)==1,("B1765_MARKER_START_DRIFT",s.count(head))
 a=s.index(head)
 b=s.index("\n  }\n}",a)
 new=r'''  public static void player(GuiGraphicsExtractor g,int x,int y,float yaw){
-   // B1765_DIRECTION_ARROW: small directional triangle, dark outlined,
-   // cyan core + white centre. Scales independently of terrain zoom.
+   // B1765_DIRECTION_ARROW / B1775_WHITE_HEAD_POINTER:
+   // Real 8px Minecraft player face, overlaid on a readable white yaw arrow.
+   // No world reads or skin reuploads here: native face extractor is cached.
    double angle=Math.toRadians(yaw);
    double forwardX=-Math.sin(angle),forwardY=Math.cos(angle);
    double acrossX=-forwardY,acrossY=forwardX;
-   for(int row=0;row<=9;row++){
-    double forward=6.0-row*1.15;
-    int halfWidth=row<3?0:(row-2)/2;
+   // First draw a dark border for every arrow pixel, then fill it white.
+   for(int forward=5;forward<=14;forward++){
+    int halfWidth=(14-forward)/2;
     for(int wing=-halfWidth;wing<=halfWidth;wing++){
      int px=x+(int)Math.round(forwardX*forward+acrossX*wing);
      int py=y+(int)Math.round(forwardY*forward+acrossY*wing);
-     g.fill(px-1,py-1,px+2,py+2,0xff10202b);
-     g.fill(px,py,px+1,py+1,0xff54e8f5);
+     g.fill(px-1,py-1,px+3,py+3,0xff081722);
     }
    }
-   g.fill(x-1,y-1,x+2,y+2,0xffffffff);
+   for(int forward=5;forward<=14;forward++){
+    int halfWidth=(14-forward)/2;
+    for(int wing=-halfWidth;wing<=halfWidth;wing++){
+     int px=x+(int)Math.round(forwardX*forward+acrossX*wing);
+     int py=y+(int)Math.round(forwardY*forward+acrossY*wing);
+     g.fill(px,py,px+2,py+2,0xffffffff);
+    }
+   }
+   // The player's skin face stays centered; the white tip remains visible.
+   g.fill(x-5,y-5,x+5,y+5,0xff081722);
+   var mc=net.minecraft.client.Minecraft.getInstance();
+   if(mc.player==null){
+    g.fill(x-4,y-4,x+4,y+4,0xffffffff);
+    return;
+   }
+   net.minecraft.client.gui.components.PlayerFaceExtractor.extractRenderState(
+      g,mc.player.getSkin(),x-4,y-4,8);
   }'''
 s=s[:a]+new+s[b+4:]
-assert "B1765_DIRECTION_ARROW" in s and "PlayerFaceExtractor.extractRenderState(" not in s
+assert "B1775_WHITE_HEAD_POINTER" in s and "PlayerFaceExtractor.extractRenderState(" in s
 p.write_text(s,encoding="utf-8")
 
 # Existing pump accepts the mod's own speed_upgrade item. Reuse the exact
