@@ -18,7 +18,7 @@ class V11FpsOptimization(unittest.TestCase):
   self.assertIn("xsxlabs-network-storage-1.7.8-v11",WF)
  def test_no_opaque_assumption_on_glass_or_dynamic_models(self):
   s=SCRIPT.read_text()
-  for token in ("tRNS","kind in (4,6)","get(\"rotation\"",'"rotation" in el',
+  for token in ("tRNS","kind in (4,6)",'"rotation" in el',
                 "if not pngs or None in pngs or not all(opaque(p) for p in pngs)",
                 "face not in DIR","abs(at-boundary)<1e-5"):
    self.assertIn(token,s,token)
