@@ -83,9 +83,9 @@ patch("client/V178TerrainMap.java",
 
 # Registry reference is authoritative, not a substring guess.
 patch("mining/V178MiningBuilderBE.java",
-'''    var key=net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
-    return key!=null&&"obsidiannetwork".equals(key.getNamespace())
-      &&key.getPath().contains("speed_upgrade");''',
+'''   var key=net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
+   return key!=null&&"obsidiannetwork".equals(key.getNamespace())
+     &&key.getPath().contains("speed_upgrade");''',
 '''    return stack.is(dev.obsidiannetwork.ObsidianNetwork.SPEED_UPGRADE.get());''')
 # Native shift-click support for the ONE speed slot. Chest indices are
 # 0..26 machine, 27..62 actual player inventory, with card slot 0 untouched.
