@@ -29,7 +29,7 @@ class V11FpsOptimization(unittest.TestCase):
   for token in ("B1792_SKIP_HIDDEN_BUNDLE_RENDER_WORK",
                 "B1792_FACADE_LIGHT_CACHE",
                 "B1792_LIGHTS=new java.util.WeakHashMap",
-                "xsxNow-cached.tick<5L","cached.level==",
+                "xsxNow-cached.tick<5L",
                 "new B1792Light(","getBrightness(",
                 "B1792_DIRECTIONS","B1792_LAYERS"):
    self.assertIn(token,s,token)
@@ -44,6 +44,7 @@ class V11FpsOptimization(unittest.TestCase):
   self.assertIn("B1792_SKIP_HIDDEN_BUNDLE_RENDER_WORK",conduit)
   self.assertIn("B1792_FACADE_LIGHT_CACHE",facade)
   self.assertIn("WeakHashMap",facade)
+  self.assertNotIn("final net.minecraft.world.level.Level level;",facade)
   model=lambda name:json.loads((r/"models/block"/(name+".json")).read_text())
   wc=model("wireless_charger")
   self.assertEqual(len(wc["elements"]),116)
