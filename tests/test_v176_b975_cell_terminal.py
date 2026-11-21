@@ -68,6 +68,20 @@ class CellTerminalContracts(unittest.TestCase):
   self.assertIn('assert \'"cullface"\' not in',s)
   self.assertIn("textures[\"north\"]=\"obsidiannetwork:block/cell_terminal_front\"",s)
 
+ def test_survival_pickaxe_mining_and_block_drop(self):
+  s=self.source
+  # B1764: a block requiring the correct tool needs the vanilla pickaxe
+  # tag; the block's own loot table must return its own registered item.
+  self.assertIn(".requiresCorrectToolForDrops()",s)
+  self.assertIn('pickaxe_tag=R/"data/minecraft/tags/block/mineable/pickaxe.json"',s)
+  self.assertIn('pickaxe_data.setdefault("values",[])',s)
+  self.assertIn('values.append("obsidiannetwork:cell_terminal")',s)
+  self.assertIn('assert values.count("obsidiannetwork:cell_terminal")==1',s)
+  self.assertIn('pickaxe_tag.write_text(',s)
+  self.assertIn('data/obsidiannetwork/loot_table/blocks/cell_terminal.json',s)
+  self.assertIn('"name":"obsidiannetwork:cell_terminal"',s)
+  self.assertIn('"B975_CELL_TERMINAL_SELF_DROP_MISSING"',s)
+
  def test_gui_inventory_slots_unaffected(self):
   s=self.source
   self.assertIn("for(int i=0;i<54;i++)",s)
