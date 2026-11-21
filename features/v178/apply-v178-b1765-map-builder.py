@@ -12,6 +12,23 @@ def patch(rel,old,new):
     p=J/rel
     s=p.read_text(encoding="utf-8")
     n=s.count(old)
+    if n!=1:
+        # Earlier generators may uniformly shift Java indentation. Accept
+        # formatting-only drift; exact expressions and one match remain required.
+        def shift(text,delta):
+            out=[]
+            for line in text.split("\n"):
+                if not line.strip():
+                    out.append(line);continue
+                spaces=len(line)-len(line.lstrip(" "))
+                if spaces+delta<0:return None
+                out.append(" "*(spaces+delta)+line[spaces:])
+            return "\n".join(out)
+        for delta in (-1,1,-2,2,-3,3,-4,4):
+            a,b=shift(old,delta),shift(new,delta)
+            if a is not None and s.count(a)==1:
+                old,new,n=a,b,1
+                break
     assert n==1,("B1765_SOURCE_DRIFT",rel,n,old[:120])
     p.write_text(s.replace(old,new,1),encoding="utf-8")
 
