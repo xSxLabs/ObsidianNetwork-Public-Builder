@@ -52,7 +52,8 @@ class MapAndSpeedUpgrades(unittest.TestCase):
   self.assertIn('b=s.index("\\n  }\\n}",a)',s)
   self.assertIn("s=s[:a]+new+s[b+4:]",s)
   self.assertIn("double angle=Math.toRadians(yaw)",s)
-  self.assertIn("0xff54e8f5",s)
+  self.assertIn("0xffffffff",s)
+  self.assertNotIn("0xff54e8f5",s)
   self.assertIn("PlayerFaceExtractor.extractRenderState(",s)
 
  def test_builder_real_slot_ownership_persistence_and_safe_break(self):
