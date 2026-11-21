@@ -1,3 +1,4 @@
+# B1760: B1758 overlays pass; fix B1725 test indentation and build Java.
 # B1758: B1740/1741 generation passed, B1725 regression updated for biome toggle.
 # B1756: B1741 claim-team-name GUI patches now tolerate formatting-only drift.
 # B1754: fix current three-tab biome settings and marker extraction.
