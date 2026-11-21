@@ -529,6 +529,28 @@ asset("data/obsidiannetwork/loot_table/blocks/cell_terminal.json",{
  "type":"minecraft:block","pools":[{"rolls":1,
    "entries":[{"type":"minecraft:item","name":"obsidiannetwork:cell_terminal"}]}]
 })
+# The Cell Terminal requires the right tool for drops: tag it as pickaxe
+# mineable so normal survival mining is fast and drops its own block item.
+# Keep existing vanilla / modded pickaxe-tag entries intact.
+pickaxe_tag=R/"data/minecraft/tags/block/mineable/pickaxe.json"
+pickaxe_tag.parent.mkdir(parents=True,exist_ok=True)
+if pickaxe_tag.exists():
+    pickaxe_data=json.loads(pickaxe_tag.read_text(encoding="utf-8"))
+else:
+    pickaxe_data={"replace":False,"values":[]}
+assert pickaxe_data.get("replace",False) is False, "B975_PICKAXE_TAG_MUST_MERGE"
+values=pickaxe_data.setdefault("values",[])
+assert isinstance(values,list), "B975_PICKAXE_TAG_VALUES_INVALID"
+if "obsidiannetwork:cell_terminal" not in values:
+    values.append("obsidiannetwork:cell_terminal")
+pickaxe_tag.write_text(json.dumps(pickaxe_data,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+assert values.count("obsidiannetwork:cell_terminal")==1, "B975_PICKAXE_TAG_MISSING"
+loot=json.loads((D/"loot_table/blocks/cell_terminal.json").read_text(encoding="utf-8"))
+assert loot["type"]=="minecraft:block" and any(
+    entry.get("name")=="obsidiannetwork:cell_terminal"
+    for pool in loot.get("pools",[]) for entry in pool.get("entries",[])
+), "B975_CELL_TERMINAL_SELF_DROP_MISSING"
+
 asset("data/obsidiannetwork/recipe/cell_terminal.json",{
  "type":"minecraft:crafting_shaped","pattern":["IRI","GCG","IEI"],
  "key":{"I":"minecraft:iron_ingot","R":"minecraft:redstone",
