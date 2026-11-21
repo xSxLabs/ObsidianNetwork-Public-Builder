@@ -75,7 +75,7 @@ class MapOptionsNavigation1725(unittest.TestCase):
   self.assertIn("Minecraft.getInstance().setScreen(previous)",settings)
   self.assertIn('{"minimap","terrain","player"}',settings)
   self.assertIn('{"claims","loaded","waypoints","coords","biome","chunk","daytime"}',settings)
-   self.assertIn('"Biome","Chunk Coordinates","Game Day"',settings)
+  self.assertIn('"Biome","Chunk Coordinates","Game Day"',settings)
   self.assertIn('{"map_terrain","map_claims","map_waypoints","map_player"}',settings)
 
 if __name__=="__main__":unittest.main()
