@@ -18,8 +18,8 @@ class B1799ExactOutput(unittest.TestCase):
         self.assertIn(earlier,WORKFLOW)
         self.assertIn(later,WORKFLOW)
         self.assertLess(WORKFLOW.index(earlier),WORKFLOW.index(later))
-        self.assertIn('xSxLabs-Network-Storage-1.7.8-v11.jar',WORKFLOW)
-        self.assertIn('xsxlabs-network-storage-1.7.8-v11',WORKFLOW)
+        self.assertIn('xSxLabs-Network-Storage-1.7.8-v12.jar',WORKFLOW)
+        self.assertIn('xsxlabs-network-storage-1.7.8-v12',WORKFLOW)
         self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')",WORKFLOW)
 
     def test_mask_equivalent_to_per_pixel_original_for_every_pixel(self):
