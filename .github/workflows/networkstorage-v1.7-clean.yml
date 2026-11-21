@@ -1,3 +1,4 @@
+# B1738: tolerate source indentation changes safely in minimap overlay.
 # B1736: avoid nonessential shade-source drift; preserve existing height shading.
 # B1734: Source-anchor diagnostic and safe cache refresh before one-pass full build.
 # B1732: Fix terrain recolor overlay anchor; explicit full 1.7.8 build requested.
