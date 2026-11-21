@@ -4460,6 +4460,8 @@ jobs:
                 python3 features/v178/apply-v178-b1715-miner-visuals.py
                 python3 features/v178/apply-v178-b1716-minimap-settings-and-keys.py
                 python3 features/v178/apply-v178-b1725-map-settings-navigation.py
+                python3 features/v178/apply-v178-b1730-minimap-wheel-customization.py
+                python3 -m unittest discover -s tests -p 'test_v178_b1730_minimap_wheel_customization.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1725_map_settings_navigation.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1716_minimap_settings_keys.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1715_builder_visuals.py' -v
