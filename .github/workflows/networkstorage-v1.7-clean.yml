@@ -4476,6 +4476,9 @@ jobs:
                 python3 features/v178/apply-v178-b1730-minimap-wheel-customization.py
                 python3 features/v178/apply-v178-b1740-live-terrain-centered-minimap.py
                 python3 features/v178/apply-v178-b1741-claim-team-names.py
+                # B1768: Xaero-style sampled map refresh, 39-chunk zoom and builder speed slot.
+                python3 features/v178/apply-v178-b1765-map-builder.py
+                python3 -m unittest discover -s tests -p 'test_v178_b1765_map_builder.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1740_live_map_team_names.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1730_minimap_wheel_customization.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1725_map_settings_navigation.py' -v
