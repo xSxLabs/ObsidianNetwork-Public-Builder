@@ -1,3 +1,4 @@
+# B1740/B1741: _EXPLICIT_BUILD_ live terrain & player-centred map, named teams.
 # B1738: tolerate source indentation changes safely in minimap overlay.
 # B1736: avoid nonessential shade-source drift; preserve existing height shading.
 # B1734: Source-anchor diagnostic and safe cache refresh before one-pass full build.
@@ -4466,6 +4467,9 @@ jobs:
                 python3 features/v178/apply-v178-b1716-minimap-settings-and-keys.py
                 python3 features/v178/apply-v178-b1725-map-settings-navigation.py
                 python3 features/v178/apply-v178-b1730-minimap-wheel-customization.py
+                python3 features/v178/apply-v178-b1740-live-terrain-centered-minimap.py
+                python3 features/v178/apply-v178-b1741-claim-team-names.py
+                python3 -m unittest discover -s tests -p 'test_v178_b1740_live_map_team_names.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1730_minimap_wheel_customization.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1725_map_settings_navigation.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1716_minimap_settings_keys.py' -v
