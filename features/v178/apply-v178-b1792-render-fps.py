@@ -155,9 +155,12 @@ state=match.group(1)
 target=re.search(r"(?:java\.util\.)?Arrays\.fill\s*\(\s*"+re.escape(state)+r"\.sideLayers\s*,",body)
 assert target and "blockResolver.update(" in body and body.index("blockResolver.update(")<target.start(),("B1792_CONDUIT_SOURCE_DRIFT",)
 body=body[:target.start()]+f"if({state}.facaded) return; // B1792_SKIP_HIDDEN_BUNDLE_RENDER_WORK\n   "+body[target.start():]
-dirs=body.count("Direction.values()")
-layers=body.count("Layer.values()")
-body=body.replace("Direction.values()","B1792_DIRECTIONS").replace("Layer.values()","B1792_LAYERS")
+# Do not leave a qualified prefix such as ConduitBundleBlockEntity.
+# before the replacement; that would compile to a nonexistent field.
+direction_rx=r"(?<![\w.])(?:(?:net\.minecraft\.core\.)?Direction\.values\(\))"
+layer_rx=r"(?<![\w.])(?:(?:(?:dev\.obsidiannetwork\.blockentity\.)?ConduitBundleBlockEntity\.)?Layer\.values\(\))"
+body,dirs=re.subn(direction_rx,"B1792_DIRECTIONS",body)
+body,layers=re.subn(layer_rx,"B1792_LAYERS",body)
 source=source[:start]+body+source[end:]
 if dirs+layers:
  cls=re.search(r"\bclass\s+ConduitBundleRenderer\b[^{]*\{",source)
