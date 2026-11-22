@@ -163,17 +163,19 @@ assert (R/"textures/block/wireless_charger.png").read_bytes().startswith(b"\x89P
 screen="client/V178ClaimsMapScreen.java"
 patch(screen,
  """ private int tile(){return zoom;}""",
- """ private int mapSide(){return Math.max(110,Math.min(325,Math.min(width,height)-MARGIN));}
+ """ private int mapSide(){return Math.max(110,Math.min(325,Math.min(width-35,height-toolbarBottom-66)));}
  private int tile(){return Math.max(1,mapSide()/Math.max(1,DIAMETER));}""")
 patch(screen,
  """ private int left(){return (width-DIAMETER*tile())/2;}""",
  """ private int left(){return (width-mapSide())/2;}""")
 patch(screen,
- """ private int top(){return (height-DIAMETER*tile())/2;}""",
- """ private int top(){return (height-mapSide())/2;}""")
+ """ private int top(){return Math.max(toolbarBottom+27,(height-DIAMETER*tile())/2);}""",
+ """ private int top(){return Math.max(toolbarBottom+27,(height-mapSide())/2);}""")
 patch(screen,
- """  DIAMETER=Math.max(5,Math.min(25,
-      (Math.min(width,height)-MARGIN)/Math.max(1,zoom)));""",
+ """  int availableHeight=Math.max(5*zoom,height-toolbarBottom-66);
+  int availableWidth=Math.max(5*zoom,width-35);
+  DIAMETER=Math.max(5,Math.min(25,
+      Math.min(availableHeight,availableWidth)/Math.max(1,zoom)));""",
  """  // B1810: zoom only the map source, never the worldmap panel dimensions.
   DIAMETER=Math.max(7,Math.min(25,25-(zoom-13)*2));""")
 patch(screen,
