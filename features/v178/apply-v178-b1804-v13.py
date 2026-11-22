@@ -145,11 +145,7 @@ patch(fly,
 patch(fly,
  "if(available()&&mc.player!=null&&mc.player.connection!=null)",
  """if(mc.player==null||mc.player.connection==null)return;
-   if(!available()){
-    mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(
-      "FlyModule unavailable: install flight upgrade and equip a full suit."),true);
-    return;
-   }""")
+   if(!available())return; // Wheel says FLY LOCKED; no unauthorized command.""")
 wheel="client/NetworkActionWheelClient.java"
 patch(wheel,
 '''i==11?(V178FlyModuleClient.active()?"FLY OFF":"FLY ON"):i==12?"WHEEL SETTINGS":ACTIONS[i];''',
