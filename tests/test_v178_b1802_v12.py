@@ -14,8 +14,8 @@ class V12Fixes(unittest.TestCase):
   ast.parse(P.read_text())
   self.assertLess(WF.index("python3 features/v178/apply-v178-b1799-render-hotpaths.py"),
                   WF.index("python3 features/v178/apply-v178-b1802-v12.py"))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v14.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v14",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v15.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v15",WF)
   self.assertIn("_EXPLICIT_BUILD_",WF)
 
  def test_fast_map_and_no_render_world_sampling(self):
@@ -56,7 +56,7 @@ class V12Fixes(unittest.TestCase):
   assert "GLOBAL_MINER_TIME_BUDGET_NS" in be
   assert "GLOBAL_BLOCK_BUDGET" in be
   m=json.loads((Path(resource)/"assets/obsidiannetwork/models/block/mining_builder.json").read_text())
-  self.assertGreaterEqual(len(m["elements"]),20)
+  self.assertEqual(len(m["elements"]),1)
   self.assertLessEqual(len(m["elements"]),40)
   for e in m["elements"]:
    for face in e["faces"].values():

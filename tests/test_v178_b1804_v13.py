@@ -13,8 +13,8 @@ class V13MapBuilderWheel(unittest.TestCase):
   b="python3 features/v178/apply-v178-b1804-v13.py"
   self.assertIn(a,W);self.assertIn(b,W)
   self.assertLess(W.index(a),W.index(b))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v14.jar",W)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v14",W)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v15.jar",W)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v15",W)
   self.assertIn("contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')",W)
 
  def test_no_forced_world_loads_or_frame_sampling(self):
@@ -55,8 +55,8 @@ class V13MapBuilderWheel(unittest.TestCase):
   self.assertIn("FLY LOCKED",wheel)
   self.assertIn("refreshSurface(world,cx,cz);",t)
   model=json.loads((a/"models/block/mining_builder.json").read_text())
-  self.assertEqual(len(model["elements"]),26)
-  self.assertEqual(sum(len(el["faces"]) for el in model["elements"]),156)
+  self.assertEqual(len(model["elements"]),1)
+  self.assertEqual(sum(len(el["faces"]) for el in model["elements"]),6)
   for el in model["elements"]:
    self.assertEqual(set(el["faces"]),{"north","south","east","west","up","down"})
    for face in el["faces"].values():

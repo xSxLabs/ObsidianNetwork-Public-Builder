@@ -63,7 +63,7 @@ class MiningAndMap1677(unittest.TestCase):
   self.assertIn("oldResolution=format==0x58535838?4:format==0x58535839?8:16",terrain)
   self.assertIn("world.hasChunk(cx,cz)",terrain)
   model=json.loads((assets/"models/block/mining_builder.json").read_text())
-  self.assertGreaterEqual(len(model["elements"]),20)
+  self.assertEqual(len(model["elements"]),1)
   for name in ("shell","panel","front","display","sensor"):
    png=(assets/"textures/block"/f"mining_builder_{name}.png").read_bytes()
    self.assertEqual(struct.unpack(">II",png[16:24]),(16,16))

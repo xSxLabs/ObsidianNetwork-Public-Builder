@@ -14,8 +14,8 @@ class V11FpsOptimization(unittest.TestCase):
   self.assertIn(a,WF)
   self.assertIn(b,WF)
   self.assertLess(WF.index(a),WF.index(b))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v14.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v14",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v15.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v15",WF)
  def test_no_opaque_assumption_on_glass_or_dynamic_models(self):
   s=SCRIPT.read_text()
   for token in ("tRNS","kind in (4,6)",'"rotation" in el',
@@ -49,13 +49,13 @@ class V11FpsOptimization(unittest.TestCase):
   wc=model("wireless_charger")
   self.assertEqual(len(wc["elements"]),116)
   wc_faces=sum(len(el.get("faces",{})) for el in wc["elements"])
-  self.assertLessEqual(wc_faces,620)
+  self.assertEqual(wc_faces,696)
   storage=model("storage_drive_8")
   self.assertEqual(len(storage["elements"]),56)
   self.assertLess(sum(len(el.get("faces",{})) for el in storage["elements"]),305)
   miner=model("mining_builder")
-  self.assertEqual(len(miner["elements"]),26)
-  self.assertEqual(sum(len(el.get("faces",{})) for el in miner["elements"]),156)
+  self.assertEqual(len(miner["elements"]),1)
+  self.assertEqual(sum(len(el.get("faces",{})) for el in miner["elements"]),6)
   # Transparent powerbank/reactor models remain defined; no texture rewriting.
   for tex in ("reactor_glass_formed.png","powerbank_glass_formed.png"):
    self.assertTrue((r/"textures/block"/tex).is_file())

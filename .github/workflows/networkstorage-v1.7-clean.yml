@@ -4490,6 +4490,8 @@ jobs:
                 python3 features/v178/apply-v178-b1804-v13.py
                 # B1807 v14: loaded terrain outranks stale archive, correct inventory indices and fast output.
                 python3 features/v178/apply-v178-b1807-v14.py
+                # B1810 v15: seven user-requested fixes while retaining v14 live terrain.
+                python3 features/v178/apply-v178-b1810-v15.py
                 python3 -m unittest discover -s tests -p 'test_v178_b1765_map_builder.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1780_v11.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1792_render_fps.py' -v
@@ -4497,6 +4499,7 @@ jobs:
                 python3 -m unittest discover -s tests -p 'test_v178_b1802_v12.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1804_v13.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1807_v14.py' -v
+                python3 -m unittest discover -s tests -p 'test_v178_b1810_v15.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1740_live_map_team_names.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1730_minimap_wheel_customization.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1725_map_settings_navigation.py' -v
@@ -4936,7 +4939,7 @@ jobs:
 
           mkdir -p dist
           if [ "$GITHUB_REF_NAME" = "1.7.8" ]; then
-            cp work/build/libs/*.jar dist/xSxLabs-Network-Storage-1.7.8-v14.jar
+            cp work/build/libs/*.jar dist/xSxLabs-Network-Storage-1.7.8-v15.jar
           else
             cp work/build/libs/*.jar dist/
           fi
@@ -5243,7 +5246,7 @@ jobs:
         if: github.ref != 'refs/heads/v1.7.6' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref == 'refs/heads/1.7.8' && 'xsxlabs-network-storage-1.7.8-v14' || (github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate')) }}
+          name: ${{ github.ref == 'refs/heads/1.7.8' && 'xsxlabs-network-storage-1.7.8-v15' || (github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate')) }}
           path: dist/
           if-no-files-found: error
           retention-days: 14

@@ -47,7 +47,7 @@ class MechanicalMiningBuilder1715(unittest.TestCase):
         if not r or not j:self.skipTest("Full CI generated resources only")
         assets=Path(r)/"assets/obsidiannetwork"
         model=json.loads((assets/"models/block/mining_builder.json").read_text())
-        self.assertGreaterEqual(len(model["elements"]),20)
+        self.assertEqual(len(model["elements"]),1)
         self.assertLessEqual(len(model["elements"]),40)
         self.assertTrue(any(e["from"][2]==0 for e in model["elements"]))
         self.assertTrue(any(e["to"][1]==16 for e in model["elements"]))
