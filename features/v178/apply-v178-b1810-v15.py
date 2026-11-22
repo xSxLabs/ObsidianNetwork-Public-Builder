@@ -177,8 +177,11 @@ patch(screen,
  """  // B1810: zoom only the map source, never the worldmap panel dimensions.
   DIAMETER=Math.max(7,Math.min(25,25-(zoom-13)*2));""")
 patch(screen,
- """  g.fill(x0-4,y0-5,x0+w+4,y0+w+34,0xe8081a28);""",
- """  g.fill(x0-4,y0-5,x0+mapSide()+4,y0+mapSide()+34,0xe8081a28);""")
+ """  V178UiTheme.panel(g,x0-8,y0-27,w+16,w+75);""",
+ """  V178UiTheme.panel(g,x0-8,y0-27,mapSide()+16,mapSide()+75);""")
+patch(screen,
+ """   int legendY=y0+w+34;""",
+ """   int legendY=y0+mapSide()+34;""")
 patch(screen,
  """return mx>=left()&&mx<left()+DIAMETER*tile()
      &&my>=top()&&my<top()+DIAMETER*tile();""",
