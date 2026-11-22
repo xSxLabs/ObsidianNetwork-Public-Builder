@@ -63,6 +63,6 @@ class V11MapBuilderHud(unittest.TestCase):
   self.assertIn("setInfo(int x,int y",java("client/V178HudPlacement.java"))
   self.assertIn("mouseDragged(MouseButtonEvent",java("client/V178HudEditorScreen.java"))
   model=json.loads((Path(resource)/"assets/obsidiannetwork/models/block/mining_builder.json").read_text())
-  self.assertGreaterEqual(len(model["elements"]),20)
+  self.assertEqual(len(model["elements"]),1)
   self.assertLessEqual(len(model["elements"]),40)
 if __name__=="__main__":unittest.main()

@@ -85,12 +85,15 @@ class VisualRefresh1662(unittest.TestCase):
   state=json.loads((assets/"blockstates/mining_builder.json").read_text())
   self.assertEqual(set(state["variants"]),{
    "facing=north","facing=south","facing=west","facing=east"})
-  self.assertGreaterEqual(len(model["elements"]),16)
-  texture_names=("shell","panel","trim","core","front","vent")
+  self.assertEqual(len(model["elements"]),1)
+  # B1810 v15 intentionally replaces the older multi-part model and
+  # its material dictionary with one baked cube and two original materials.
+  self.assertEqual(set(model["textures"]),{"case","front","particle"})
+  texture_names=("case","front")
   for name in texture_names:
    self.assertEqual(model["textures"][name],
-     "obsidiannetwork:block/mining_builder_"+name)
-   png=(assets/"textures/block"/("mining_builder_"+name+".png")).read_bytes()
+     "obsidiannetwork:block/mining_builder_"+name+"_v15")
+   png=(assets/"textures/block"/("mining_builder_"+name+"_v15.png")).read_bytes()
    self.assertEqual(png[:8],b"\x89PNG\r\n\x1a\n")
    self.assertEqual(struct.unpack(">II",png[16:24]),(16,16))
    self.assertEqual(png[25],6) # RGBA 8-bit
