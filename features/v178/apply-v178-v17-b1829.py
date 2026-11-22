@@ -59,21 +59,17 @@ change("mining/V178MiningBuilderControl.java",
    }else if(msg.mode>=0&&!be.setRedstoneMode(player,msg.mode))return;
    V178MiningBuilderStatus.send(player,be,false);""")
 change("client/V178MiningBuilderOperationsScreen.java",
-    """   addRenderableWidget(redstone);
-  }
-  @Override protected void containerTick(){""",
-    """   addRenderableWidget(redstone);
+    """addRenderableWidget(redstone);""",
+    """addRenderableWidget(redstone);
    addRenderableWidget(Button.builder(Component.literal("SPEED-UPGRADES ENTNEHMEN"),b->{
      ClientPacketDistributor.sendToServer(new V178MiningBuilderControl(machine,-2));
-   }).bounds(x+7,y+149,235,20).build());
-  }
-  @Override protected void containerTick(){""")
+   }).bounds(x+7,y+149,235,20).build());""")
 change("client/V178MiningBuilderOperationsScreen.java",
     """   V178UiTheme.panel(g,xx,y-4,252,h+8);""",
     """   V178UiTheme.panel(g,xx,y-4,252,h+33);""")
 change("client/V178MiningBuilderOperationsScreen.java",
-    """     xx+9,y+153,0xff8aabba);""",
-    """     xx+9,y+178,0xff8aabba);""")
+    """xx+9,y+153,0xff8aabba);""",
+    """xx+9,y+178,0xff8aabba);""")
 
 # B1831: only the real player head, yaw-rotated 360 degrees. A single skin
 # face extraction inside a 2D pose (no second compass pointer or world reads).
