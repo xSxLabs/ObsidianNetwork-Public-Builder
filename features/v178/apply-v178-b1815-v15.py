@@ -168,11 +168,15 @@ verifier=Path("tests/verify_v174_reference_visuals_558.py")
 v=verifier.read_text(encoding="utf8")
 old="assert glass.size==(32,32) and glass.getpixel((16,16))==(250,250,250,20),n"
 if old in v:
-    new="""expected=(31,169,201,176) if n.startswith("powerbank_glass_formed_lit_detail") else (
-     (32,112,154,164) if n=="powerbank_glass_formed" else (250,250,250,20))
-    assert glass.size==(32,32) and glass.getpixel((16,16))==expected,n"""
     assert v.count(old)==1
-    v=v.replace(old,new,1)
+    # Preserve EXACT surrounding indent from whichever historical verifier
+    # version was reconstructed by the earlier workflow steps.
+    first=v.rfind("\n",0,v.index(old))+1
+    indent=v[first:v.index(old)]
+    new="""expected=(31,169,201,176) if n.startswith("powerbank_glass_formed_lit_detail") else (
+ (32,112,154,164) if n=="powerbank_glass_formed" else (250,250,250,20))
+assert glass.size==(32,32) and glass.getpixel((16,16))==expected,n"""
+    v=v.replace(old,new.replace("\n","\n"+indent),1)
 else:
     # Public B558's earlier verifier variant uses ranged opacity/reflection
     # assertions rather than the later exact-white compatibility override.
@@ -181,6 +185,8 @@ else:
     assert v.count(old1)==1 and v.count(old2)==1, "B1815_BANK_BINARY_GATE_DRIFT"
     v=v.replace(old1,"assert glass2.getpixel((12,12))==(32,112,154,164)")
     v=v.replace(old2,"assert core.getpixel((10,14))==(31,169,201,176)")
+# Fail immediately on malformed compatibility checks, before the expensive Gradle build.
+compile(v,str(verifier),"exec")
 verifier.write_text(v,encoding="utf8")
 assert "(31,169,201,176)" in v
 
