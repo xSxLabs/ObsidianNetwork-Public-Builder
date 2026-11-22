@@ -34,7 +34,7 @@ class B1810V15(unittest.TestCase):
    self.assertIn(t,s)
  def test_screen_zoom_and_popup(self):
   s=P.read_text()
-  for t in ("mapSide()","25-(zoom-13)*2","V178ClaimAreaNotice",
+  for t in ("mapSide()","25-(zoom-6)*3/2","V178ClaimAreaNotice",
             "B1810_LAST_AREAS","teamName(leader)","Claim-Popup:",
             "Gebiet von: ","cycleDuration","cyclePosition"):
    self.assertIn(t,s)
@@ -63,7 +63,7 @@ class B1810V15(unittest.TestCase):
   self.assertEqual(wc["textures"]["main"],"obsidiannetwork:block/wireless_charger")
   map_screen=(j/"client/V178ClaimsMapScreen.java").read_text()
   self.assertIn("mapSide()",map_screen)
-  self.assertIn("25-(zoom-13)*2",map_screen)
+  self.assertIn("25-(zoom-6)*3/2",map_screen)
   self.assertIn("V178ClaimAreaNotice", (j/"claims/V178Claims.java").read_text())
   self.assertIn("playToClient(TYPE,CODEC)",
    (j/"claims/V178ClaimAreaNotice.java").read_text())

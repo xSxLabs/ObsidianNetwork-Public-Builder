@@ -177,7 +177,8 @@ patch(screen,
   DIAMETER=Math.max(5,Math.min(25,
       Math.min(availableHeight,availableWidth)/Math.max(1,zoom)));""",
  """  // B1810: zoom only the map source, never the worldmap panel dimensions.
-  DIAMETER=Math.max(7,Math.min(25,25-(zoom-13)*2));""")
+  DIAMETER=Math.max(7,Math.min(25,25-(zoom-6)*3/2));
+  if((DIAMETER&1)==0)DIAMETER--;""")
 patch(screen,
  """  V178UiTheme.panel(g,x0-8,y0-27,w+16,w+75);""",
  """  V178UiTheme.panel(g,x0-8,y0-27,mapSide()+16,mapSide()+75);""")
@@ -192,7 +193,7 @@ patch(screen,
 patch(screen,"x0,y0+w+6,0xffc3d5e9","x0,y0+mapSide()+6,0xffc3d5e9")
 patch(screen,"x0,y0+w+18,0xff9baec4","x0,y0+mapSide()+18,0xff9baec4")
 s=(J/screen).read_text("utf8")
-assert "mapSide()" in s and "25-(zoom-13)*2" in s
+assert "mapSide()" in s and "25-(zoom-6)*3/2" in s
 
 # 7: Native claim-zone popup, using the server's persisted team names. The
 # server checks one  O(1) chunk hash per player every five ticks and sends
@@ -339,7 +340,7 @@ public final class V178ClaimAreaHud {
 ''')
 settings="client/V178MapSettingsScreen.java"
 patch(settings,
- """  addRenderableWidget(Button.builder(Component.literal("Zurueck zur Karte"),""",
+ """  addRenderableWidget(Button.builder(Component.literal("Back to Map"),""",
  """  if(page==2){
    button(left,top+72,w,"Claim-Popup: "+V178ClaimAreaHud.enabledLabel(),
       V178ClaimAreaHud::toggle);
@@ -348,6 +349,6 @@ patch(settings,
    button(left,top+97,w,"Position: "+V178ClaimAreaHud.positionLabel(),
       V178ClaimAreaHud::cyclePosition);
   }
-  addRenderableWidget(Button.builder(Component.literal("Zurueck zur Karte"),""")
+  addRenderableWidget(Button.builder(Component.literal("Back to Map"),""")
 
 print("B1810_V15_ALL_SEVEN_PATCHES_PASS")
