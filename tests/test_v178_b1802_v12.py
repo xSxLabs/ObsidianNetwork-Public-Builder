@@ -14,8 +14,8 @@ class V12Fixes(unittest.TestCase):
   ast.parse(P.read_text())
   self.assertLess(WF.index("python3 features/v178/apply-v178-b1799-render-hotpaths.py"),
                   WF.index("python3 features/v178/apply-v178-b1802-v12.py"))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v13.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v13",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v14.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v14",WF)
   self.assertIn("_EXPLICIT_BUILD_",WF)
 
  def test_fast_map_and_no_render_world_sampling(self):
@@ -48,7 +48,7 @@ class V12Fixes(unittest.TestCase):
   terrain=(src/"client/V178TerrainMap.java").read_text()
   mini=(src/"client/V178MiniRaster.java").read_text()
   for text,frag in ((be,"3*MAX_BREAKS*speedUpgradeCount()/16"),
-                    (ui,"new Slot(speedSlot.container,0,143,27)"),
+                    (ui,"new Slot(speedSlot.container,1,143,27)"),
                     (terrain,"b1802RefreshTravel(world,cx,cz)"),
                     (mini,"getGameTimeDeltaPartialTick(false)"),
                     (mini,"g.pose().translate(offsetX,offsetZ)")):
