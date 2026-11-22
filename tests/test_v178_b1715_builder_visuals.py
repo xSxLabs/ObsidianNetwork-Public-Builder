@@ -59,7 +59,8 @@ class MechanicalMiningBuilder1715(unittest.TestCase):
         for key,loc in model["textures"].items():
             path=assets/"textures"/(loc.split(":")[1]+".png")
             self.assertTrue(path.is_file(),key)
-            self.assertEqual(struct.unpack(">II",path.read_bytes()[16:24]),(16,16))
+            self.assertEqual(struct.unpack(">II",path.read_bytes()[16:24]),
+                             (32,32) if key=="front" else (16,16))
         state=json.loads((assets/"blockstates/mining_builder.json").read_text())
         self.assertEqual(len(state["variants"]),4)
         java=(Path(j)/"dev/obsidiannetwork/client/V178ClaimsClient.java").read_text()
