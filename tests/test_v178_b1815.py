@@ -29,8 +29,7 @@ class B1815(unittest.TestCase):
                 "menu.slots.get(1).index=1;",
                 "slots.get(0).index=0;",
                 "menu.slots.get(0).index=0;",
-                "slots.get(i).index=i;",
-                "menu.slots.get(i).index=i;",
+                ".get(i).index=i;",
                 "return be.installedSpeedUpgrades().copy();",
                 "source.setByPlayer(held)",
                 "moveItemStackTo(held,27,63,true)"):
