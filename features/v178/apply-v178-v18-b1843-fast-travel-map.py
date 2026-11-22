@@ -13,7 +13,7 @@ import os
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 terrain=J/"client/V178TerrainMap.java"
 s=terrain.read_text("utf-8")
-method="  private static void b1802RefreshTravel(ClientLevel world,int cx,int cz){"
+method="private static void b1802RefreshTravel(ClientLevel world,int cx,int cz){"
 assert s.count(method)==1,("B1843_MISSING_TRAVEL_METHOD",s.count(method))
 assert "V178MiniRaster.tick(world);" in s
 assert "b1810WideCursor++%169" in s
@@ -79,7 +79,7 @@ fastpath=r'''  // B1843: pending live tiles, not stale snapshots, determine trav
 '''
 s=s.replace(method,fastpath+method,1)
 start=s.index(method)
-stop=s.index("  private static void refreshSurface(ClientLevel world,int cx,int cz){",start)
+stop=s.index("private static void refreshSurface(ClientLevel world,int cx,int cz){",start)
 travel=s[start:stop]
 needle="long start=System.nanoTime();"
 assert travel.count(needle)==1,("B1843_TIME_BUDGET_ANCHOR",travel.count(needle))
