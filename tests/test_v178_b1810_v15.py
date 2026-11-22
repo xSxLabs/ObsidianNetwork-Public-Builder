@@ -56,7 +56,8 @@ class B1810V15(unittest.TestCase):
   for tex in ("mining_builder_case_v15.png","mining_builder_front_v15.png"):
    raw=(a/"textures/block"/tex).read_bytes()
    self.assertEqual(raw[:8],b"\x89PNG\r\n\x1a\n")
-   self.assertEqual(struct.unpack(">II",raw[16:24]),\n   (32,32) if tex.endswith("front_v15.png") else (16,16))
+   self.assertEqual(struct.unpack(">II",raw[16:24]),
+   (32,32) if tex.endswith("front_v15.png") else (16,16))
   wc=json.loads((a/"models/block/wireless_charger.json").read_text())
   self.assertEqual(len(wc["elements"]),116)
   self.assertEqual(sum(len(e["faces"]) for e in wc["elements"]),696)
