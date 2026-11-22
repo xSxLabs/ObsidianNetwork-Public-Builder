@@ -41,8 +41,8 @@ class V11MapBuilderHud(unittest.TestCase):
               "V178HudPlacement.changeInfoSize(delta*5)"):
    self.assertIn(key,source,key)
  def test_artifact_version(self):
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v12.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v12",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v13.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v13",WF)
  def test_generated_java_and_model(self):
   root=os.getenv("V1_SOURCE_ROOT")
   resource=os.getenv("V1_RESOURCE_ROOT")
@@ -51,7 +51,7 @@ class V11MapBuilderHud(unittest.TestCase):
   java=lambda rel:(j/rel).read_text()
   markers=java("client/V178MapMarkers.java")
   self.assertIn("B1780_COMPACT_SKIN_ARROW",markers)
-  self.assertIn("g,mc.player.getSkin(),x-3,y-3,6",markers)
+  self.assertIn("g,mc.player.getSkin(),x-2,y-2,4",markers)
   terrain=java("client/V178TerrainMap.java")
   self.assertIn("while(vegetation<4",terrain)
   menu=java("mining/V178MiningBuilderMenu.java")
