@@ -72,8 +72,8 @@ change("client/V178MiningBuilderOperationsScreen.java",
     """   V178UiTheme.panel(g,xx,y-4,252,h+8);""",
     """   V178UiTheme.panel(g,xx,y-4,252,h+33);""")
 change("client/V178MiningBuilderOperationsScreen.java",
-    """   g.text(font,"Top-down scan | mining only",xx+9,y+153,0xff8aabba);""",
-    """   g.text(font,"Top-down scan | mining only",xx+9,y+178,0xff8aabba);""")
+    """     xx+9,y+153,0xff8aabba);""",
+    """     xx+9,y+178,0xff8aabba);""")
 
 # B1831: only the real player head, yaw-rotated 360 degrees. A single skin
 # face extraction inside a 2D pose (no second compass pointer or world reads).
