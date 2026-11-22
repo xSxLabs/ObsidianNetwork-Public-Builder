@@ -41,8 +41,8 @@ class V11MapBuilderHud(unittest.TestCase):
               "V178HudPlacement.changeInfoSize(delta*5)"):
    self.assertIn(key,source,key)
  def test_artifact_version(self):
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v15.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v15",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v17.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v17",WF)
  def test_generated_java_and_model(self):
   root=os.getenv("V1_SOURCE_ROOT")
   resource=os.getenv("V1_RESOURCE_ROOT")
