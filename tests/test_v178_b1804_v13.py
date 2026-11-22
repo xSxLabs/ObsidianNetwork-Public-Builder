@@ -64,7 +64,8 @@ class V13MapBuilderWheel(unittest.TestCase):
   for key,loc in model["textures"].items():
    png=(a/"textures"/(loc.split(":",1)[1]+".png")).read_bytes()
    self.assertEqual(png[:8],b"\x89PNG\r\n\x1a\n")
-   self.assertEqual(struct.unpack(">II",png[16:24]),(16,16))
+   self.assertEqual(struct.unpack(">II",png[16:24]),
+    (32,32) if key=="front" else (16,16))
   states=json.loads((a/"blockstates/mining_builder.json").read_text())
   self.assertEqual(len(states["variants"]),4)
 
