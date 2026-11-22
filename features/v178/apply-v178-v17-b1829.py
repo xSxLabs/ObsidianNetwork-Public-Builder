@@ -65,8 +65,8 @@ change("client/V178MiningBuilderOperationsScreen.java",
      ClientPacketDistributor.sendToServer(new V178MiningBuilderControl(machine,-2));
    }).bounds(x+7,y+149,235,20).build());""")
 change("client/V178MiningBuilderOperationsScreen.java",
-    """   V178UiTheme.panel(g,xx,y-4,252,h+8);""",
-    """   V178UiTheme.panel(g,xx,y-4,252,h+33);""")
+    """V178UiTheme.panel(g,xx,y-4,252,h+8);""",
+    """V178UiTheme.panel(g,xx,y-4,252,h+33);""")
 change("client/V178MiningBuilderOperationsScreen.java",
     """xx+9,y+153,0xff8aabba);""",
     """xx+9,y+178,0xff8aabba);""")
