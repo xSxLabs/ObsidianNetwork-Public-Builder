@@ -65,8 +65,8 @@ patch(menu,
   return original;""")
 be="mining/V178MiningBuilderBE.java"
 patch(be,
- """   ItemStack taken=speedUpgrades.split(amount);""",
- """   ItemStack taken=speedUpgrades.split(Math.min(16,amount));""")
+ """ItemStack taken=speedUpgrades.split(amount);""",
+ """ItemStack taken=speedUpgrades.split(Math.min(16,amount));""")
 # Preserve the existing 16-cap, owner validation, ShapeCard and drop behavior.
 m=(J/menu).read_text("utf8")
 assert "moveItemStackTo(held,0,1,false)" in m
