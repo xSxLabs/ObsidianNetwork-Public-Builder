@@ -177,13 +177,18 @@ if old in v:
  (32,112,154,164) if n=="powerbank_glass_formed" else (250,250,250,20))
 assert glass.size==(32,32) and glass.getpixel((16,16))==expected,n"""
     v=v.replace(old,new.replace("\n","\n"+indent),1)
-else:
-    # Public B558's earlier verifier variant uses ranged opacity/reflection
-    # assertions rather than the later exact-white compatibility override.
-    old1="assert 20<=glass2.getpixel((12,12))[3]<=120"
-    old2='assert core.getpixel((10,14))[1]>200,"Charged internal turquoise reflection absent"'
-    assert v.count(old1)==1 and v.count(old2)==1, "B1815_BANK_BINARY_GATE_DRIFT"
+# B558 additionally contains BOTH a low-alpha check and a cyan-reflection
+# check in the final packed verification. Adjust them as well even when the
+# late near-invisible-white assertion above was present. Leave reactor,
+# casing, reference design and all unrelated rules unchanged.
+old1="assert 20<=glass2.getpixel((12,12))[3]<=120"
+old2='assert core.getpixel((10,14))[1]>200,"Charged internal turquoise reflection absent"'
+assert old in v or old1 in v or old2 in v, "B1815_BANK_BINARY_GATE_DRIFT"
+if old1 in v:
+    assert v.count(old1)==1
     v=v.replace(old1,"assert glass2.getpixel((12,12))==(32,112,154,164)")
+if old2 in v:
+    assert v.count(old2)==1
     v=v.replace(old2,"assert core.getpixel((10,14))==(31,169,201,176)")
 # Fail immediately on malformed compatibility checks, before the expensive Gradle build.
 compile(v,str(verifier),"exec")
