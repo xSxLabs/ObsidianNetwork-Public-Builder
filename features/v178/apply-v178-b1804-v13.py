@@ -140,23 +140,16 @@ src=src[:i]+new+src[j+4:]
 # add the item; the existing customize() removes it only when HIDE was chosen.
 fly="client/V178FlyModuleClient.java"
 patch(fly,
-'''  public static int[] withFly(int[] wheel){
-   if(!available())return wheel;
-   int[] extended=java.util.Arrays.copyOf(wheel,wheel.length+1);''',
-'''  public static int[] withFly(int[] wheel){
-   // Availability is independent from user-configured wheel visibility.
-   // The server still authorizes every attempted flight-toggle command.
-   int[] extended=java.util.Arrays.copyOf(wheel,wheel.length+1);''')
+ "if(!available())return wheel;",
+ "// B1804: wheel visibility is user-controlled; server still authorizes flight.")
 patch(fly,
-'''  if(available()&&mc.player!=null&&mc.player.connection!=null)
-     mc.player.connection.sendCommand("powerarmor flymodule");''',
-'''  if(mc.player==null||mc.player.connection==null)return;
+ "if(available()&&mc.player!=null&&mc.player.connection!=null)",
+ """if(mc.player==null||mc.player.connection==null)return;
    if(!available()){
     mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(
       "FlyModule unavailable: install flight upgrade and equip a full suit."),true);
     return;
-   }
-   mc.player.connection.sendCommand("powerarmor flymodule");''')
+   }""")
 wheel="client/NetworkActionWheelClient.java"
 patch(wheel,
 '''i==11?(V178FlyModuleClient.active()?"FLY OFF":"FLY ON"):i==12?"WHEEL SETTINGS":ACTIONS[i];''',
