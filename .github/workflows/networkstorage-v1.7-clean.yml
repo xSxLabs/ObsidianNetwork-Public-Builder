@@ -4492,6 +4492,8 @@ jobs:
                 python3 features/v178/apply-v178-b1807-v14.py
                 # B1810 v15: seven user-requested fixes while retaining v14 live terrain.
                 python3 features/v178/apply-v178-b1810-v15.py
+                # B1815: restore replaced slot IDs, full-size powerbank glass and 32px miner icon.
+                python3 features/v178/apply-v178-b1815-v15.py
                 python3 -m unittest discover -s tests -p 'test_v178_b1765_map_builder.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1780_v11.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1792_render_fps.py' -v
@@ -4500,6 +4502,7 @@ jobs:
                 python3 -m unittest discover -s tests -p 'test_v178_b1804_v13.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1807_v14.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1810_v15.py' -v
+                python3 -m unittest discover -s tests -p 'test_v178_b1815.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1740_live_map_team_names.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1730_minimap_wheel_customization.py' -v
                 python3 -m unittest discover -s tests -p 'test_v178_b1725_map_settings_navigation.py' -v
