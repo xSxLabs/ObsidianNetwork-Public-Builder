@@ -15,6 +15,10 @@ class MiningFluidContainersV20(unittest.TestCase):
   self.assertIn(earlier,WF)
   self.assertLess(WF.index(earlier),WF.index(newer))
   self.assertIn("xSxLabs-Network-Storage-1.7.8-v20.jar",WF)
+  self.assertIn("exactly(old,new)",s)
+  self.assertIn("exactly(old2,new2)",s)
+  self.assertNotIn("assert s.count(old)==1",s)
+  self.assertNotIn("assert s.count(old2)==1",s)
   self.assertIn("xsxlabs-network-storage-1.7.8-v20",WF)
  def test_transaction_holds_all_loot_before_removal(self):
   s=SCRIPT.read_text("utf-8")
