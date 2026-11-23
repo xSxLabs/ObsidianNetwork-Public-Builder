@@ -27,16 +27,13 @@ public abstract class SignRendererMixin {
 
     private record TextContext(WallSignGroup group, boolean front, float scale, double verticalOffset) {}
 
-    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "render", at = @At("HEAD"))
     private void connectedWallSigns$start(SignBlockEntity sign, float partialTick,
             PoseStack pose, MultiBufferSource buffers, int light, int overlay, CallbackInfo ci) {
         if (sign.getLevel() == null) return;
         WallSignGroup group = WallSignGroupResolver.resolve(sign.getLevel(), sign.getBlockPos());
         if (!group.connected()) return;
-        if (!sign.getBlockPos().equals(group.anchor())) {
-            ci.cancel();
-            return;
-        }
+        // Preserve the board model for every sign; only the text is shared.
         GROUP.set(group);
     }
 
@@ -52,6 +49,11 @@ public abstract class SignRendererMixin {
             boolean front, CallbackInfo ci) {
         WallSignGroup group = GROUP.get();
         if (group == null || !group.connected()) return;
+        if (!pos.equals(group.anchor())) {
+            // Suppress duplicate text without cancelling the wooden board.
+            ci.cancel();
+            return;
+        }
         pose.pushPose();
         CanvasTextLayout.Result layout = CanvasTextLayout.calculate(
                 text, Minecraft.getInstance().font, lineSpacing, maxWidth * group.width());
