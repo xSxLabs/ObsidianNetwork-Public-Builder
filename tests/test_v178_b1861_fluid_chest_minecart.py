@@ -24,7 +24,7 @@ class MiningFluidContainersV20(unittest.TestCase):
       "if(!world.destroyBlock(target,false)){",
       "inventory.setItem(i,contents[i]);",
       "cart.getPickResult()","b1861StoreAll(saved,tx)",
-      "cart.discard();","cart.getPassengers().isEmpty()"):
+      "cart.discard();","!cart.getPassengers().isEmpty()"):
    self.assertIn(key,s,key)
   self.assertLess(s.index("if(fits)fits=machine.b1861StoreAll(contents,tx);"),
                   s.index("if(inventory!=null)inventory.clearContent()"))
