@@ -88,7 +88,8 @@ new="""    if(target.equals(at)){++machine.cursor;continue;}
     if(machine.energy.getAmountAsLong()<ENERGY_PER_BLOCK)return;
     int cartResult=machine.b1861Minecart(world,target);
     if(cartResult!=0)return; // retry this voxel; other carts may be present
-    if(current.isAir()||current.getDestroySpeed(world,target)<0){
+    if(current.isAir()||(current.getDestroySpeed(world,target)<0
+        &&!(current.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock))){
      ++machine.cursor;continue;
     }
     // Avoid silently voiding arbitrary tile inventories in third-party mods.
