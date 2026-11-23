@@ -4534,6 +4534,9 @@ jobs:
                 # B1861 / v20: remove water/lava; collect minecarts and chest contents without losing or duplicating stacks.
                 python3 features/v178/apply-v178-v20-b1861-fluid-container-minecarts.py
                 python3 -m unittest discover -s tests -p 'test_v178_b1861_fluid_chest_minecart.py' -v
+                # B1883: FTB-style retained chunk ownership, pixel-aligned blue claims during motion.
+                python3 features/v178/apply-v178-v20-b1883-stable-claim-map.py
+                python3 -m unittest discover -s tests -p 'test_v178_b1883_stable_claim_map.py' -v
                 # B1870: explicit red-build retry after updating stale v18 artifact tests and fluid hardness guard.
                 # B1878: corrected mixed-indentation patch anchors, lossless fluid/cart/container feature retained.
                 # B1881: red patch source assertion repaired; normalized line replacements enforce unique miner anchors.
