@@ -4,6 +4,9 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.HashMap;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,9 +22,35 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
  */
 public final class WallSignGroupResolver {
     private static final int MAX_GROUP_SIZE = 64;
+    private static final Map<Level, TickCache> CACHES = new WeakHashMap<>();
+
+    private static final class TickCache {
+        long tick = Long.MIN_VALUE;
+        final Map<BlockPos, WallSignGroup> byPosition = new HashMap<>();
+    }
     private WallSignGroupResolver() {}
 
     public static WallSignGroup resolve(Level level, BlockPos pos) {
+        if (level == null || !level.hasChunkAt(pos)) return singleton(pos, Direction.NORTH);
+        TickCache cache;
+        synchronized (CACHES) {
+            cache = CACHES.computeIfAbsent(level, unused -> new TickCache());
+        }
+        synchronized (cache) {
+            long tick = level.getGameTime();
+            if (cache.tick != tick) {
+                cache.tick = tick;
+                cache.byPosition.clear();
+            }
+            WallSignGroup cached = cache.byPosition.get(pos);
+            if (cached != null) return cached;
+            WallSignGroup group = compute(level, pos);
+            for (BlockPos member : group.members()) cache.byPosition.put(member, group);
+            return group;
+        }
+    }
+
+    private static WallSignGroup compute(Level level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof WallSignBlock)
                 || !state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
