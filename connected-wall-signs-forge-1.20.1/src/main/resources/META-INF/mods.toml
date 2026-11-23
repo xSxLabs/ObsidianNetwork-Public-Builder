@@ -1,0 +1,21 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+[[mods]]
+modId="connected_wall_signs"
+version="${file.jarVersion}"
+displayName="Connected Wall Signs"
+authors="xSxLabs"
+description='''Connects adjacent vanilla wall signs into one shared text canvas.'''
+[[dependencies.connected_wall_signs]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.connected_wall_signs]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1]"
+ordering="NONE"
+side="BOTH"
