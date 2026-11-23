@@ -22,8 +22,8 @@ def replace(rel,old,new):
     # Generators use mixed Java indentation. Match complete statements,
     # never partial tokens or a second unrelated block.
     lines=old.splitlines()
-    pattern=r"(?m)^[ \\t]*"+r"\\n".join(
-        r"[ \\t]*"+re.escape(line.lstrip()) for line in lines)
+    pattern=r"(?m)^[ \t]*"+r"\n".join(
+        r"[ \t]*"+re.escape(line.lstrip()) for line in lines)
     matches=list(re.finditer(pattern,s))
     assert len(matches)==1,("B1883_SOURCE_DRIFT",rel,old[:130],len(matches))
     a=matches[0]
