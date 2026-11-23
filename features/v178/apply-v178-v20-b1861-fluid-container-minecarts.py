@@ -8,16 +8,29 @@ are left untouched.
 """
 from pathlib import Path
 import os
+import re
 
 j=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 p=j/"mining/V178MiningBuilderBE.java"
 s=p.read_text("utf-8")
 
 def exactly(old,new):
+    """Anchor each *complete* Java line, preserving original statements.
+
+    Historical B1677 and B1692 injectors use different whitespace widths
+    within the same method, so a uniform indentation delta is insufficient.
+    Always require one exact (whitespace-normalized) occurrence and fail closed.
+    """
     global s
-    n=s.count(old)
-    assert n==1,("B1861_SOURCE_DRIFT",old[:100],n)
-    s=s.replace(old,new,1)
+    if s.count(old)==1:
+        s=s.replace(old,new,1)
+        return
+    lines=old.splitlines()
+    pattern=r"(?m)^"+r"\n".join(r"[ \t]*"+re.escape(line.lstrip()) for line in lines)
+    matches=list(re.finditer(pattern,s))
+    assert len(matches)==1,("B1861_SOURCE_DRIFT",old[:100],len(matches))
+    match=matches[0]
+    s=s[:match.start()]+new+s[match.end():]
 
 # Small, owner-checked minecart helper: no tick-world scans, only the target
 # voxel already inside the region. Each cart occupies one budgeted mining op.
