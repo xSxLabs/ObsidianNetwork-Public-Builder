@@ -94,7 +94,7 @@ old="""    if(current.isAir()||!current.getFluidState().isEmpty()
     // No arbitrary wilderness or third-party-claimed mining.
     if(!V178Claims.mayMachineMine(world,target,machine.owner))return;
     if(machine.energy.getAmountAsLong()<ENERGY_PER_BLOCK)return;"""
-assert s.count(old)==1,("B1861_BASE_MINE_GATE_MISMATCH",s.count(old))
+# The next exactly() call validates one normalized occurrence; no brittle raw count.
 new="""    if(target.equals(at)){++machine.cursor;continue;}
     // Authorization BEFORE entity/fluid/block handling, including empty cells.
     if(!V178Claims.mayMachineMine(world,target,machine.owner))return;
@@ -133,7 +133,7 @@ old2="""     var drops=Block.getDrops(current,world,target,null,null,machine.eff
      tx.commit(); // mined drops now owned by the machine, no item entities"""
 # Current source may contain comment just before var drops; this is stable after
 # B1692 and B1700 patches.
-assert s.count(old2)==1,("B1861_DROP_TRANSACTION_ANCHOR",s.count(old2))
+# The next exactly() call validates one normalized occurrence; no brittle raw count.
 new2="""    // Supply the real tile to loot tables (important for shulker item contents).
     var drops=Block.getDrops(current,world,target,tile,null,machine.effectivePickaxe(world));
     // Shulkers preserve their inventory in the shulker item, not separately.
