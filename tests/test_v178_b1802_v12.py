@@ -14,8 +14,8 @@ class V12Fixes(unittest.TestCase):
   ast.parse(P.read_text())
   self.assertLess(WF.index("python3 features/v178/apply-v178-b1799-render-hotpaths.py"),
                   WF.index("python3 features/v178/apply-v178-b1802-v12.py"))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v18.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v18",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v20.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v20",WF)
   self.assertIn("_EXPLICIT_BUILD_",WF)
 
  def test_fast_map_and_no_render_world_sampling(self):
