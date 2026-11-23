@@ -65,9 +65,12 @@ public abstract class SignRendererMixin {
             CallbackInfo ci) {
         TextContext context = TEXT.get();
         if (context == null || context.front() != front) return;
-        // Keep text inside the vanilla sign's safe text rectangle.
-        // Expanding the width without updating vanilla's line layout made
-        // long lines spill far outside the physical sign model.
+        // The shared text width is supplied by SignBlockEntityMixin:
+        // getMaxTextLineWidth() already grows with the number of connected signs.
+        // Move the text origin from the anchor sign to the center of the group.
+        // Vanilla's sign text transform uses 1/64 block per text unit.
+        double offsetPixels = context.group().centerHorizontalOffsetBlocks() * 64.0;
+        pose.translate(front ? offsetPixels : -offsetPixels, 0, 0);
         pose.scale(context.scale(), context.scale(), context.scale());
         pose.translate(0, context.verticalOffset(), 0);
     }
