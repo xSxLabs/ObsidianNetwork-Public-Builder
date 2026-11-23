@@ -116,8 +116,9 @@ replace(raster,
    boolean claimOption=V178ClaimsClient.option("claims");''')
 replace(raster,
     'if(valid&&x==lastX&&z==lastZ&&crop==lastCrop&&rev==lastRevision',
-    'if(valid&&x==lastX&&z==lastZ&&crop==lastCrop&&rev==lastRevision\n      &&claimRev==b1883LastClaimRevision
-      &&claimOption==b1883LastClaimsOption')
+    '''if(valid&&x==lastX&&z==lastZ&&crop==lastCrop&&rev==lastRevision
+      &&claimRev==b1883LastClaimRevision
+      &&claimOption==b1883LastClaimsOption''')
 replace(raster,
     '''  int[][] tiles=new int[chunksX*chunksZ][];
    for(int zz=0;zz<chunksZ;zz++)for(int xx=0;xx<chunksX;xx++)
