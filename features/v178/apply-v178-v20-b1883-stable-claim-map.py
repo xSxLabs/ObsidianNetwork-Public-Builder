@@ -104,24 +104,27 @@ raster="client/V178MiniRaster.java"
 replace(raster,
     ' private static int lastX=Integer.MIN_VALUE,lastZ,lastCrop,lastRevision=-1;',
     ''' private static int lastX=Integer.MIN_VALUE,lastZ,lastCrop,lastRevision=-1;
- private static int b1883LastClaimRevision=-1;''')
+ private static int b1883LastClaimRevision=-1;
+ private static boolean b1883LastClaimsOption;''')
 replace(raster,
     'dimension="";valid=false;lastX=Integer.MIN_VALUE;lastRevision=-1;',
     'dimension="";valid=false;lastX=Integer.MIN_VALUE;lastRevision=-1;b1883LastClaimRevision=-1;')
 replace(raster,
     'int crop=V178MiniPreferences.cropPixels(),rev=V178TerrainMap.terrainRevision();',
     '''int crop=V178MiniPreferences.cropPixels(),rev=V178TerrainMap.terrainRevision();
-   int claimRev=V178ClaimsClient.claimRevision();''')
+   int claimRev=V178ClaimsClient.claimRevision();
+   boolean claimOption=V178ClaimsClient.option("claims");''')
 replace(raster,
     'if(valid&&x==lastX&&z==lastZ&&crop==lastCrop&&rev==lastRevision',
-    'if(valid&&x==lastX&&z==lastZ&&crop==lastCrop&&rev==lastRevision\n      &&claimRev==b1883LastClaimRevision')
+    'if(valid&&x==lastX&&z==lastZ&&crop==lastCrop&&rev==lastRevision\n      &&claimRev==b1883LastClaimRevision
+      &&claimOption==b1883LastClaimsOption')
 replace(raster,
     '''  int[][] tiles=new int[chunksX*chunksZ][];
    for(int zz=0;zz<chunksZ;zz++)for(int xx=0;xx<chunksX;xx++)
     tiles[zz*chunksX+xx]=V178TerrainMap.pixels(world,firstCX+xx,firstCZ+zz);''',
     '''  int[][] tiles=new int[chunksX*chunksZ][];
    byte[] b1883Claims=new byte[chunksX*chunksZ];
-   boolean b1883ShowClaims=V178ClaimsClient.option("claims");
+   boolean b1883ShowClaims=claimOption;
    for(int zz=0;zz<chunksZ;zz++)for(int xx=0;xx<chunksX;xx++){
     int index=zz*chunksX+xx;
     tiles[index]=V178TerrainMap.pixels(world,firstCX+xx,firstCZ+zz);
@@ -168,7 +171,7 @@ replace(raster,
  public static void draw(GuiGraphicsExtractor g,int x,int y,int width){''')
 replace(raster,
     'valid=true;lastX=x;lastZ=z;lastCrop=crop;lastRevision=rev;',
-    'valid=true;lastX=x;lastZ=z;lastCrop=crop;lastRevision=rev;b1883LastClaimRevision=claimRev;')
+    'valid=true;lastX=x;lastZ=z;lastCrop=crop;lastRevision=rev;b1883LastClaimRevision=claimRev;b1883LastClaimsOption=claimOption;')
 
 # Verify the texture path, client status cache, shared worldmap status and old
 # authority/permission boundaries. This never reimplements the claim server.
