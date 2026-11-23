@@ -96,9 +96,16 @@ screen="client/V178ClaimsMapScreen.java"
 replace(screen,
     'int state=good?Byte.toUnsignedInt(V178ClaimsClient.state(map,cxWorld,czWorld)):0;',
     'int state=Byte.toUnsignedInt(V178ClaimsClient.claimStatus(world,cxWorld,czWorld));')
-replace(screen,
-    'if(!grid||!showClaims)continue;',
-    'if(!showClaims)continue; // grid toggle never hides ownership tint')
+# Older versions coupled grid display to ownership. Later worldmap renderers
+# may have already separated these toggles; handle both safely.
+screen_path=J/screen
+screen_src=screen_path.read_text("utf-8")
+for grid_gate in ("if(!grid||!showClaims)continue;",
+                  "if(!grid || !showClaims)continue;"):
+    if grid_gate in screen_src:
+        screen_src=screen_src.replace(grid_gate,
+             "if(!showClaims)continue; // grid toggle never hides ownership tint",1)
+screen_path.write_text(screen_src,"utf-8")
 
 raster="client/V178MiniRaster.java"
 replace(raster,
