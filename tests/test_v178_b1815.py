@@ -22,7 +22,7 @@ class B1815(unittest.TestCase):
   self.assertIn(old,WF)
   self.assertIn(new,WF)
   self.assertLess(WF.index(old),WF.index(new))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v18.jar",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v19.jar",WF)
  def test_minecraft_click_slot_index_contract(self):
   src=SCRIPT.read_text("utf8")
   for token in ("slots.get(1).index=1;",
