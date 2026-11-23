@@ -13,8 +13,8 @@ class B1843(unittest.TestCase):
   self.assertIn("python3 features/v178/apply-v178-v18-b1843-fast-travel-map.py",WORKFLOW)
   self.assertLess(WORKFLOW.index("python3 features/v178/apply-v178-v17-b1829.py"),
                   WORKFLOW.index("python3 features/v178/apply-v178-v18-b1843-fast-travel-map.py"))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v19.jar",WORKFLOW)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v19",WORKFLOW)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v20.jar",WORKFLOW)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v20",WORKFLOW)
  def test_only_loaded_missing_chunks_and_bounded_client_tick(self):
   src=SCRIPT.read_text("utf-8")
   for token in ("b1843FillVisible(world,cx,cz,start);",
