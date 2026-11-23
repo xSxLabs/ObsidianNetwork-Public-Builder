@@ -4536,6 +4536,7 @@ jobs:
                 python3 -m unittest discover -s tests -p 'test_v178_b1861_fluid_chest_minecart.py' -v
                 # B1870: explicit red-build retry after updating stale v18 artifact tests and fluid hardness guard.
                 # B1878: corrected mixed-indentation patch anchors, lossless fluid/cart/container feature retained.
+                # B1881: red patch source assertion repaired; normalized line replacements enforce unique miner anchors.
               fi
               # One-time BUILD-TIME voice rendering: the shipped mod is fully offline.
               # Fail closed if neural assets are unavailable; NEVER package narrator
