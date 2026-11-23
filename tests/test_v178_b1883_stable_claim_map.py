@@ -17,6 +17,7 @@ class StableClaimProjection(unittest.TestCase):
  def test_minimap_tint_is_pixel_aligned_with_moving_gpu_terrain(self):
   for text in ("byte[] b1883Claims", "V178ClaimsClient.claimStatus(",
                "claimRev==b1883LastClaimRevision",
+               "claimOption==b1883LastClaimsOption",
                "b1883Tint(color,claim,b1883ZBorder||b1883XBorder[px])",
                "img.setPixel(px,py,color)",
                "if(drawClaims&&!drawTerrain)V178TerrainMap.drawClaim"):
