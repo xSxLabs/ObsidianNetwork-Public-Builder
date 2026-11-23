@@ -4528,6 +4528,9 @@ jobs:
                 # v18: prioritize newly available live terrain on flight/travel, bounded CPU budget.
                 python3 features/v178/apply-v178-v18-b1843-fast-travel-map.py
                 python3 -m unittest discover -s tests -p 'test_v178_b1843_fast_travel_map.py' -v
+                # B1855 / v19: light-blue transparent 16x16 claims on BOTH cached maps.
+                python3 features/v178/apply-v178-v19-b1855-claim-overlay.py
+                python3 -m unittest discover -s tests -p 'test_v178_b1855_claim_overlay.py' -v
               fi
               # One-time BUILD-TIME voice rendering: the shipped mod is fully offline.
               # Fail closed if neural assets are unavailable; NEVER package narrator
@@ -4947,7 +4950,7 @@ jobs:
 
           mkdir -p dist
           if [ "$GITHUB_REF_NAME" = "1.7.8" ]; then
-            cp work/build/libs/*.jar dist/xSxLabs-Network-Storage-1.7.8-v18.jar
+            cp work/build/libs/*.jar dist/xSxLabs-Network-Storage-1.7.8-v19.jar
           else
             cp work/build/libs/*.jar dist/
           fi
@@ -5254,7 +5257,7 @@ jobs:
         if: github.ref != 'refs/heads/v1.7.6' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref == 'refs/heads/1.7.8' && 'xsxlabs-network-storage-1.7.8-v18' || (github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate')) }}
+          name: ${{ github.ref == 'refs/heads/1.7.8' && 'xsxlabs-network-storage-1.7.8-v19' || (github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate')) }}
           path: dist/
           if-no-files-found: error
           retention-days: 14
