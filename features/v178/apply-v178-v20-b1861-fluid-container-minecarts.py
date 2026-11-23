@@ -79,7 +79,7 @@ old="""    if(current.isAir()||!current.getFluidState().isEmpty()
     // Ownership enforced for every voxel, including cross-border selections.
     // Fail closed: target chunk must be owned by the builder operator.
     // No arbitrary wilderness or third-party-claimed mining.
-    if(!machine.owner.equals(V178Claims.owner(world,target)))return;
+    if(!V178Claims.mayMachineMine(world,target,machine.owner))return;
     if(machine.energy.getAmountAsLong()<ENERGY_PER_BLOCK)return;"""
 assert s.count(old)==1,("B1861_BASE_MINE_GATE_MISMATCH",s.count(old))
 new="""    if(target.equals(at)){++machine.cursor;continue;}
