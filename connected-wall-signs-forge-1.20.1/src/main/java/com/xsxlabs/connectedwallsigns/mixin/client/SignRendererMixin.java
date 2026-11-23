@@ -56,8 +56,8 @@ public abstract class SignRendererMixin {
         }
         pose.pushPose();
         CanvasTextLayout.Result layout = CanvasTextLayout.calculate(
-                text, Minecraft.getInstance().font, lineSpacing, maxWidth * group.width());
-        TEXT.set(new TextContext(group, front, layout.scale(), layout.verticalCenterOffset()));
+                text, Minecraft.getInstance().font, lineSpacing, maxWidth);
+        TEXT.set(new TextContext(group, front, Math.min(1.0f, layout.scale()), layout.verticalCenterOffset()));
     }
 
     @Inject(method = "translateSignText", at = @At("RETURN"))
@@ -65,10 +65,9 @@ public abstract class SignRendererMixin {
             CallbackInfo ci) {
         TextContext context = TEXT.get();
         if (context == null || context.front() != front) return;
-        // Vanilla 1.20.1 wall-sign text uses 1/64 block-to-pixel units.
-        // Offset into the center of the connected horizontal canvas.
-        double offsetPixels = context.group().centerHorizontalOffsetBlocks() * 64.0;
-        pose.translate(front ? offsetPixels : -offsetPixels, 0, 0);
+        // Keep text inside the vanilla sign's safe text rectangle.
+        // Expanding the width without updating vanilla's line layout made
+        // long lines spill far outside the physical sign model.
         pose.scale(context.scale(), context.scale(), context.scale());
         pose.translate(0, context.verticalOffset(), 0);
     }
