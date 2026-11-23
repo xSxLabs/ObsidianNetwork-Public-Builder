@@ -9,14 +9,25 @@ No world/block scans, forced chunks or network reads during GUI rendering.
 """
 from pathlib import Path
 import os
+import re
 
 J=Path(os.environ["V1_SOURCE_ROOT"])/"dev/obsidiannetwork"
 
 def replace(rel,old,new):
     p=J/rel
     s=p.read_text(encoding="utf-8")
-    assert s.count(old)==1,("B1883_SOURCE_DRIFT",rel,old[:130],s.count(old))
-    p.write_text(s.replace(old,new,1),encoding="utf-8")
+    if s.count(old)==1:
+        p.write_text(s.replace(old,new,1),encoding="utf-8")
+        return
+    # Generators use mixed Java indentation. Match complete statements,
+    # never partial tokens or a second unrelated block.
+    lines=old.splitlines()
+    pattern=r"(?m)^[ \\t]*"+r"\\n".join(
+        r"[ \\t]*"+re.escape(line.lstrip()) for line in lines)
+    matches=list(re.finditer(pattern,s))
+    assert len(matches)==1,("B1883_SOURCE_DRIFT",rel,old[:130],len(matches))
+    a=matches[0]
+    p.write_text(s[:a.start()]+new+s[a.end():],encoding="utf-8")
 
 client="client/V178ClaimsClient.java"
 replace(client,
