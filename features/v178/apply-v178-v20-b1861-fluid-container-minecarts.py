@@ -106,7 +106,7 @@ new="""    if(target.equals(at)){++machine.cursor;continue;}
     }"""
 exactly(old,new)
 
-old2="""    var drops=Block.getDrops(current,world,target,null,null,machine.effectivePickaxe(world));
+old2="""     var drops=Block.getDrops(current,world,target,null,null,machine.effectivePickaxe(world));
     try(Transaction tx=Transaction.openRoot()){
      boolean fits=true;
      for(ItemStack drop:drops)if(!drop.isEmpty()
