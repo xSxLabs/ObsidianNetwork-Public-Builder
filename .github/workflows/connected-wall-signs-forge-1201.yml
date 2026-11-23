@@ -29,7 +29,18 @@ jobs:
       - name: Check source metadata
         run: bash scripts/verify-source.sh
       - name: Compile Forge mod
-        run: gradle --no-daemon build --stacktrace
+        run: |
+          for attempt in 1 2 3; do
+            if gradle --no-daemon build --stacktrace; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::ForgeGradle build failed after 3 attempts"
+              exit 1
+            fi
+            echo "::warning::ForgeGradle dependency resolution/build failed; retrying in 20 seconds (attempt $attempt)"
+            sleep 20
+          done
       - name: Upload JAR only after successful build
         if: success()
         uses: actions/upload-artifact@v4
