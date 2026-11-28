@@ -4538,6 +4538,7 @@ jobs:
                 python3 features/v178/apply-v178-v20-b1883-stable-claim-map.py
                 python3 -m unittest discover -s tests -p 'test_v178_b1883_stable_claim_map.py' -v
                 # B1895 / delivered v21: no text overlap among card help, Speed 0/16 and inventory.
+                # B1909: retry using independent text-line anchors and corrected GUI regression source assertions.
                 python3 features/v178/apply-v178-v21-b1895-miner-gui-layout.py
                 python3 -m unittest discover -s tests -p 'test_v178_b1895_miner_gui_layout.py' -v
                 # B1887: retry after source-anchor whitespace hardening, re-run full v20 claim/map build.
