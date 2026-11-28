@@ -17,8 +17,9 @@ class MiningBuilderGuiV21(unittest.TestCase):
   self.assertLess(51+9,62)
   self.assertLess(62+9,74)
   self.assertLess(74+9,84) # first inventory row begins at y+84
-  self.assertNotIn('g.text(font,"Drag a configured card"',PATCH)
-  self.assertNotIn('g.text(font,"into the real card slot"',PATCH)
+  # The patch must explicitly validate that legacy help is absent from Java.
+  self.assertIn("assert 'g.text(font,\"Drag a configured card\"' not in s",PATCH)
+  self.assertIn("assert 'g.text(font,\"into the real card slot\"' not in s",PATCH)
  def test_slots_and_functionality_unchanged(self):
   for anchor in ('new Slot(base.container,0,20,27)',
                  'new Slot(speedSlot.container,1,143,27)',
