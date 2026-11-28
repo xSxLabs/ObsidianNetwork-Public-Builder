@@ -4541,6 +4541,9 @@ jobs:
                 # B1909: retry using independent text-line anchors and corrected GUI regression source assertions.
                 python3 features/v178/apply-v178-v21-b1895-miner-gui-layout.py
                 python3 -m unittest discover -s tests -p 'test_v178_b1895_miner_gui_layout.py' -v
+                # v22: expanded loaded-only terrain prefetch after all v21 regression gates.
+                python3 features/v178/apply-v178-v22-wide-prefetch.py
+                python3 -m unittest discover -s tests -p 'test_v178_v22_wide_prefetch.py' -v
                 # B1887: retry after source-anchor whitespace hardening, re-run full v20 claim/map build.
                 # B1892: final source patch and claim toggle invalidation regression, full v20 package.
                 # B1894: accept current worldmap grid rendering paths, keep chunk cache/raster fix.
@@ -4966,7 +4969,7 @@ jobs:
 
           mkdir -p dist
           if [ "$GITHUB_REF_NAME" = "1.7.8" ]; then
-            cp work/build/libs/*.jar dist/xSxLabs-Network-Storage-1.7.8-v21.jar
+            cp work/build/libs/*.jar dist/xSxLabs-Network-Storage-1.7.8-v22.jar
           else
             cp work/build/libs/*.jar dist/
           fi
@@ -5273,7 +5276,7 @@ jobs:
         if: github.ref != 'refs/heads/v1.7.6' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '_EXPLICIT_BUILD_')
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref == 'refs/heads/1.7.8' && 'xsxlabs-network-storage-1.7.8-v21' || (github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate')) }}
+          name: ${{ github.ref == 'refs/heads/1.7.8' && 'xsxlabs-network-storage-1.7.8-v22' || (github.ref == 'refs/heads/1.7.7' && 'xsxlabs-network-storage-v1.7.7-test-jar' || (github.ref == 'refs/heads/v1.7.6' && 'xsxlabs-network-storage-v1.7.6-test-jar' || 'xsxlabs-network-storage-v1.7-clean-candidate')) }}
           path: dist/
           if-no-files-found: error
           retention-days: 14
