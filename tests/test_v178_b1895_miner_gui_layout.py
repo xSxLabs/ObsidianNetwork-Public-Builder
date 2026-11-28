@@ -30,8 +30,8 @@ class MiningBuilderGuiV21(unittest.TestCase):
  def test_build_delivers_correct_version(self):
   self.assertIn('apply-v178-v21-b1895-miner-gui-layout.py',WF)
   self.assertIn("test_v178_b1895_miner_gui_layout.py",WF)
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v21.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v21",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v22.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v22",WF)
   self.assertLess(WF.index("apply-v178-v20-b1883-stable-claim-map.py"),
                   WF.index("apply-v178-v21-b1895-miner-gui-layout.py"))
 
