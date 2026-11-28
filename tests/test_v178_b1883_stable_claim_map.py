@@ -37,6 +37,6 @@ class StableClaimProjection(unittest.TestCase):
   self.assertIn("test_v178_b1883_stable_claim_map.py",WF)
   self.assertLess(WF.index("apply-v178-v19-b1855-claim-overlay.py"),
                   WF.index("apply-v178-v20-b1883-stable-claim-map.py"))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v21.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v21",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v22.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v22",WF)
 if __name__=="__main__":unittest.main()
