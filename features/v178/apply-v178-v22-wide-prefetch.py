@@ -26,7 +26,7 @@ new=r'''  // V22: live prefetch uses independent center-out cursors for the visi
   private static final long V22_BUDGET_NS=2_000_000L;
   private static int v22VisibleCursor,v22WideCursor,v22LastX,v22LastZ;
   private static int v22LastVisible=-1,v22LastWide=-1;
-  private static ClientLevel v22LastWorld;
+  private static java.lang.ref.WeakReference<ClientLevel> v22LastWorld=new java.lang.ref.WeakReference<>(null);
   private static boolean v22Budget(long start,int done){
    return done<V22_MAX_SAMPLES&&System.nanoTime()-start<V22_BUDGET_NS;
   }
@@ -70,11 +70,11 @@ new=r'''  // V22: live prefetch uses independent center-out cursors for the visi
    int wideCount=(2*wide+1)*(2*wide+1);
    // Reset after entering a world, changing zoom, or teleporting. Ordinary
    // movement must NOT reset the wide scan or it never reaches distant rings.
-   boolean reset=v22LastWorld!=world||Math.abs((long)playerCx-v22LastX)>wide
+   boolean reset=v22LastWorld.get()!=world||Math.abs((long)playerCx-v22LastX)>wide
        ||Math.abs((long)playerCz-v22LastZ)>wide;
    if(reset||visible!=v22LastVisible)v22VisibleCursor=0;
    if(reset||wide!=v22LastWide)v22WideCursor=0;
-   v22LastWorld=world;v22LastX=playerCx;v22LastZ=playerCz;
+   if(v22LastWorld.get()!=world)v22LastWorld=new java.lang.ref.WeakReference<>(world);v22LastX=playerCx;v22LastZ=playerCz;
    v22LastVisible=visible;v22LastWide=wide;
    LinkedHashMap<Long,int[]> known=cache(world.dimension().identifier().toString());
    int done=b1843Near(world,known,playerCx,playerCz,start,0);
