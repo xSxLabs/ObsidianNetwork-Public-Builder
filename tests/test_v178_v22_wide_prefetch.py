@@ -27,7 +27,7 @@ class WidePrefetch(unittest.TestCase):
         for t in ("V22_MAX_RADIUS=80,V22_MIN_RADIUS=32","visible*4","V22_MAX_SAMPLES=12",
                   "V22_BUDGET_NS=2_000_000L","V22_WIDE_PROBES=1024","MAX_CACHED=8192",
                   "known.containsKey(pos(x,z))||!world.hasChunk(x,z)",
-                  "v22WideCursor=(i+1)%wideCount","v22LastWorld!=world",
+                  "v22WideCursor=(i+1)%wideCount","v22LastWorld.get()!=world",
                   "Math.min(16,(int)Math.ceil(speed*2.5D))"):
             self.assertIn(t,src)
         self.assertIn("cp work/build/libs/*.jar dist/xSxLabs-Network-Storage-1.7.8-v22.jar",WF)
