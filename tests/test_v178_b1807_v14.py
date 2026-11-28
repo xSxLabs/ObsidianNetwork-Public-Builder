@@ -13,8 +13,8 @@ class V14MapAndBuilder(unittest.TestCase):
   self.assertIn(p,W)
   self.assertLess(W.index('python3 features/v178/apply-v178-b1804-v13.py'),W.index(p))
   self.assertIn("python3 -m unittest discover -s tests -p 'test_v178_b1807_v14.py'",W)
-  self.assertIn('xSxLabs-Network-Storage-1.7.8-v21.jar',W)
-  self.assertIn('xsxlabs-network-storage-1.7.8-v21',W)
+  self.assertIn('xSxLabs-Network-Storage-1.7.8-v22.jar',W)
+  self.assertIn('xsxlabs-network-storage-1.7.8-v22',W)
  def test_live_terrain_beats_archive(self):
   s=P.read_text()
   self.assertIn('world.hasChunk(cx,cz)?null:archiveLookup(cx,cz)',s)

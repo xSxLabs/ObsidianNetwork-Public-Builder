@@ -14,8 +14,8 @@ class V11FpsOptimization(unittest.TestCase):
   self.assertIn(a,WF)
   self.assertIn(b,WF)
   self.assertLess(WF.index(a),WF.index(b))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v21.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v21",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v22.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v22",WF)
  def test_no_opaque_assumption_on_glass_or_dynamic_models(self):
   s=SCRIPT.read_text()
   for token in ("tRNS","kind in (4,6)",'"rotation" in el',

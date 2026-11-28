@@ -11,8 +11,8 @@ class B1810V15(unittest.TestCase):
   ast.parse(P.read_text())
   self.assertLess(WF.index("python3 features/v178/apply-v178-b1807-v14.py"),
                   WF.index("python3 features/v178/apply-v178-b1810-v15.py"))
-  self.assertIn("xSxLabs-Network-Storage-1.7.8-v21.jar",WF)
-  self.assertIn("xsxlabs-network-storage-1.7.8-v21",WF)
+  self.assertIn("xSxLabs-Network-Storage-1.7.8-v22.jar",WF)
+  self.assertIn("xsxlabs-network-storage-1.7.8-v22",WF)
  def test_terrain_radius_and_live_cache(self):
   s=P.read_text()
   self.assertIn("b1810WideCursor++%169",s)
