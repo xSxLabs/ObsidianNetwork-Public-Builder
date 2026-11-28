@@ -4544,6 +4544,9 @@ jobs:
                 # v22: expanded loaded-only terrain prefetch after all v21 regression gates.
                 python3 features/v178/apply-v178-v22-wide-prefetch.py
                 python3 -m unittest discover -s tests -p 'test_v178_v22_wide_prefetch.py' -v
+                # v22: additionally limit zoom to a fully covered, real terrain raster.
+                python3 features/v178/apply-v178-v22-complete-minimap.py
+                python3 -m unittest discover -s tests -p 'test_v178_v22_complete_minimap.py' -v
                 # B1887: retry after source-anchor whitespace hardening, re-run full v20 claim/map build.
                 # B1892: final source patch and claim toggle invalidation regression, full v20 package.
                 # B1894: accept current worldmap grid rendering paths, keep chunk cache/raster fix.
